@@ -1,0 +1,9 @@
+{
+    "label": "Telelemetry Ingestion",
+    "position": 1,
+    "link": {
+      "type": "generated-index",
+      "description": "5 minutes to learn about how to ingest telemetry data into Scout."
+    }
+  }
+  
