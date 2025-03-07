@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="1 -8 80 50">
+  <!-- Background rectangle with rounded corners -->
+  <rect
+    width="80"
+    height="40"
+    rx="12"
+    ry="12"
+    fill="#333"
+  />
+
+  <!-- Text "b14" centered in white -->
+  <text
+    x="40"
+    y="28"
+    font-family="helvettica"
+    font-size="20"
+    font-weight="400"
+    fill="white"
+    text-anchor="middle"
+  >base14</text>
+
+  <!-- Add Bevan font with regular weight -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bevan:wght@400&amp;display=swap');
+  </style>
+</svg>
