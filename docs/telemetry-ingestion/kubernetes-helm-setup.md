@@ -8,11 +8,11 @@ This guide demonstrates how to configure Scout's OpenTelemetry Collector to coll
 ## Install the Helm Chart
 
 ```bash
-helm repo add base14 https://helm.b14.dev
+helm repo add base14 https://charts.base14.io/
 ```
 
 ```bash
-helm install scout base14/scout-collector --namespace scout --create-namespace --set scout.apiKey=YOUR_API_KEY --set scout.appName=YOUR_APP_NAME --set scout.env=YOUR_ENV --set scout.region=YOUR_REGION
+helm install scout base14/scout-collector --namespace scout --create-namespace -f values.yaml
 ```
 
 ## Detailed configuration via values.yaml
@@ -22,18 +22,19 @@ Following is an example of a values.yaml file that can be used to configure scou
 ```yaml
 
 scout:
-  apiKey: YOUR_API_KEY
-  appName: YOUR_APP_NAME
-  env: YOUR_ENV
-  region: YOUR_REGION
-  excludeNamespaces:
-  - kube-system # Exclude kube-system namespace. by default all namespaces are collected
-  logs:
-    enabled: true # Defaults to true
-    logLevel: debug # Defaults to info
-    logFormat: json # Defaults to text
+  endpoint: __YOUR_ENDPOINT__
+  token_url: __YOUR_TOKEN_URL__
+  app_name: __YOUR_APP_NAME__
+  api_key: __YOUR_API_KEY__
+  distribution: EKS # or GKE, AKS, EKS
   metrics:
-    enabled: true # Defaults to true
-  traces:
-    enabled: true # Defaults to true
+    apps:
+      enabled: true
+      endpoints:
+        - name: app1
+          target: app1.app1.svc.cluster.local:9131
+          collectionInterval: 60s
+        - name: haproxy
+          collectionInterval: 60s
+          target: haproxy.gateway.svc.cluster.local
 ```
