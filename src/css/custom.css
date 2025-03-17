@@ -158,9 +158,9 @@ div[class^='announcementBar_'] {
   color: red;
 }
 
-img[src] {
-  border-radius: 16px;
-}
+/*img[src] {*/
+/*  border-radius: 16px;*/
+/*}*/
 
 img[src='/img/logo.png'] {
   border-radius: 0px;
