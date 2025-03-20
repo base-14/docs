@@ -7,13 +7,13 @@
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #fb356d;
-  --ifm-color-primary-dark: rgb(33, 175, 144);
-  --ifm-color-primary-darker: rgb(31, 165, 136);
-  --ifm-color-primary-darkest: rgb(26, 136, 112);
-  --ifm-color-primary-light: rgb(70, 203, 174);
-  --ifm-color-primary-lighter: rgb(102, 212, 189);
-  --ifm-color-primary-lightest: rgb(146, 224, 208);
+  --ifm-color-primary: #09090B;
+  --ifm-color-primary-dark: #080809;
+  --ifm-color-primary-darker: #070708;
+  --ifm-color-primary-darkest: #060606;
+  --ifm-color-primary-light: #0A0A0C;
+  --ifm-color-primary-lighter: #0B0B0D;
+  --ifm-color-primary-lightest: #0C0C0E;
   --ifm-code-font-size: 95%;
 }
 
@@ -112,15 +112,15 @@ html[data-theme="dark"] .DocSearch-Hit[aria-selected="true"] a mark {
   --type-ramp-plus-6-font-size: 40px;
   --type-ramp-plus-6-line-height: 52px;
   --neutral-color: #808080;
-  --accent-color: #da1a5f;
+  --accent-color: #171717;
   --foreground-on-accent-rest: #ffffff;
   --foreground-on-accent-hover: #ffffff;
   --foreground-on-accent-active: #ffffff;
   --foreground-on-accent-focus: #ffffff;
-  --foreground-on-accent-rest-large: #000000;
-  --foreground-on-accent-hover-large: #000000;
+  --foreground-on-accent-rest-large: #ffffff;
+  --foreground-on-accent-hover-large: #ffffff;
   --foreground-on-accent-active-large: #ffffff;
-  --foreground-on-accent-focus-large: #000000;
+  --foreground-on-accent-focus-large: #ffffff;
   --neutral-layer-card-container: #101010;
   --neutral-layer-floating: #292929;
   --neutral-layer-1: #181818;
@@ -128,14 +128,14 @@ html[data-theme="dark"] .DocSearch-Hit[aria-selected="true"] a mark {
   --neutral-layer-3: #000000;
   --neutral-layer-4: #000000;
   --fill-color: #181818;
-  --accent-fill-rest: #c01754;
-  --accent-fill-hover: #da1a5f;
-  --accent-fill-active: #a01346;
-  --accent-fill-focus: #c01754;
-  --accent-foreground-rest: #e1477e;
-  --accent-foreground-hover: #e55e8e;
-  --accent-foreground-active: #df3874;
-  --accent-foreground-focus: #e1477e;
+  --accent-fill-rest: #171717;
+  --accent-fill-hover: #2a2a2a;
+  --accent-fill-active: #0f0f0f;
+  --accent-fill-focus: #171717;
+  --accent-foreground-rest: #2a2a2a;
+  --accent-foreground-hover: #3d3d3d;
+  --accent-foreground-active: #171717;
+  --accent-foreground-focus: #2a2a2a;
   --neutral-fill-rest: #2b2b2b;
   --neutral-fill-hover: #333333;
   --neutral-fill-active: #262626;
@@ -313,23 +313,23 @@ article {
 }
 
 html[data-theme="dark"] {
-  --ifm-link-color: #fb356d;
+  --ifm-link-color: #2a2a2a;
   --ifm-color-primary: var(--ifm-link-color);
-  --ifm-breadcrumb-color-active: #fb4b7d;
-  --ifm-link-hover-color: #fc4579;
-  --ifm-navbar-link-hover-color: #fc4579;
-  --ifm-menu-color-active: #fc4579;
+  --ifm-breadcrumb-color-active: #3d3d3d;
+  --ifm-link-hover-color: #454545;
+  --ifm-navbar-link-hover-color: #454545;
+  --ifm-menu-color-active: #454545;
 }
 
 html[data-theme="light"] {
-  --ifm-link-color: #db0054;
+  --ifm-link-color: #171717;
   --ifm-color-primary: var(--ifm-link-color);
   --ifm-menu-color-active: var(--ifm-link-color);
   --ifm-breadcrumb-color-active: var(--ifm-link-color);
 }
 
 a code {
-  --ifm-link-color: #ff5ac4;
+  --ifm-link-color: #2a2a2a;
 }
 
 html[data-theme="dark"] {
