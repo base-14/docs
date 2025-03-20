@@ -15,9 +15,9 @@ Signup at base14 playground **immediately** with **[scout.new](https://play.b14.
 
 ### Follow the tutorial per your Environment
 
-- [Docker Compose](/docs/telemetry-ingestion/docker-compose-example)
-- [kubernetes (EKS, GKE, AKS)](/docs/telemetry-ingestion/kubernetes-helm-setup)
-<!-- - [AWS ECS](/docs/telemetry-ingestion/aws-ecs-setup) -->
+- [Docker Compose](/telemetry-ingestion/docker-compose-example)
+- [kubernetes (EKS, GKE, AKS)](/telemetry-ingestion/kubernetes-helm-setup)
+<!-- - [AWS ECS](/telemetry-ingestion/aws-ecs-setup) -->
 
 ### Login to Scout
 
