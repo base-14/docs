@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080">
+  <defs>
+    <!-- Arrowhead Marker -->
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34d399"/>
+    </marker>
+    <!-- Database Cylinder Symbol -->
+    <symbol id="database-cylinder" width="70" height="70">
+      <rect x="0" y="14" width="70" height="40" fill="#f2f2f2"/>
+      <path d="M0,14 A35,14 0 1,1 70,14 A35,14 0 1,1 0,14" fill="#f2f2f2" stroke="#34d399" stroke-width="2"/>
+      <path d="M0,14 L0,54 M70,14 L70,54" fill="none" stroke="#34d399" stroke-width="2"/>
+      <path d="M0,54 A35,14 0 1,0 70,54" fill="#f2f2f2" stroke="#34d399" stroke-width="2"/>
+    </symbol>
+  </defs>
+
+  <!-- Title -->
+  <text x="960" y="40" font-family="Arial, sans-serif" font-size="36" font-weight="bold" text-anchor="middle" fill="#333">Scout OTEL collectors</text>
+
+  <!-- Central Hub - OpenTelemetry Logo -->
+  <circle cx="960" cy="540" r="120" fill="#f2f2f2" stroke="#34d399" stroke-width="2"/>
+  <text x="960" y="520" font-family="Arial, sans-serif" font-size="28" font-weight="bold" text-anchor="middle" fill="#333">OpenTelemetry</text>
+  <text x="960" y="555" font-family="Arial, sans-serif" font-size="22" text-anchor="middle" fill="#666">Unified Collector</text>
+  <text x="960" y="585" font-family="Arial, sans-serif" font-size="20" text-anchor="middle" fill="#888">Metrics • Logs • Traces</text>
+
+  <!-- Language Section -->
+  <g id="languages" transform="translate(560, 0)">
+    <text x="400" y="1000" font-family="Arial, sans-serif" font-size="22" font-weight="bold" text-anchor="middle" fill="#333">Programming Languages</text>
+
+    <!-- Language Icons (Circles) -->
+    <circle cx="140" cy="920" r="40" fill="#f2f2f2" stroke="#34d399" stroke-width="2"/>
+    <text x="140" y="925" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#333">Java</text>
+
+    <circle cx="270" cy="920" r="40" fill="#f2f2f2" stroke="#34d399" stroke-width="2"/>
+    <text x="270" y="925" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#333">Python</text>
+
+    <circle cx="400" cy="920" r="40" fill="#f2f2f2" stroke="#34d399" stroke-width="2"/>
+    <text x="400" y="925" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#333">Go</text>
+
+    <circle cx="530" cy="920" r="40" fill="#f2f2f2" stroke="#34d399" stroke-width="2"/>
+    <text x="530" y="925" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#333">Node.js</text>
+
+    <circle cx="660" cy="920" r="40" fill="#f2f2f2" stroke="#34d399" stroke-width="2"/>
+    <text x="660" y="925" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#333">.NET</text>
+
+    <!-- Connector Lines -->
+    <path d="M400 660 L 140 880" fill="none" stroke="#34d399" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead)"/>
+    <path d="M400 660 L 270 880" fill="none" stroke="#34d399" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead)"/>
+    <path d="M400 660 L 400 880" fill="none" stroke="#34d399" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead)"/>
+    <path d="M400 660 L 530 880" fill="none" stroke="#34d399" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead)"/>
+    <path d="M400 660 L 660 880" fill="none" stroke="#34d399" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead)"/>
+  </g>
+
+  <!-- Cloud Providers Section -->
+  <g id="cloud-providers" transform="translate(560, -60)">
+    <text x="400" y="160" font-family="Arial, sans-serif" font-size="22" font-weight="bold" text-anchor="middle" fill="#333">Cloud &amp; PaaS Providers</text>
+
+    <!-- Cloud Provider Icons (Hexagons) -->
+    <!-- AWS -->
+    <polygon points="140,260 190,240 190,200 140,180 90,200 90,240" fill="#f2f2f2" stroke="#34d399" stroke-width="2"/>
+    <text x="140" y="220" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#333">AWS</text>
+
+    <!-- GCP -->
+    <polygon points="270,260 320,240 320,200 270,180 220,200 220,240" fill="#f2f2f2" stroke="#34d399" stroke-width="2"/>
+    <text x="270" y="220" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#333">GCP</text>
+
+    <!-- Azure -->
+    <polygon points="400,260 450,240 450,200 400,180 350,200 350,240" fill="#f2f2f2" stroke="#34d399" stroke-width="2"/>
+    <text x="400" y="220" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#333">Azure</text>
+
+    <!-- Kubernetes -->
+    <polygon points="530,260 580,240 580,200 530,180 480,200 480,240" fill="#f2f2f2" stroke="#34d399" stroke-width="2"/>
+    <text x="530" y="220" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#333">Kubernetes</text>
+
+    <!-- Heroku -->
+    <polygon points="660,260 710,240 710,200 660,180 610,200 610,240" fill="#f2f2f2" stroke="#34d399" stroke-width="2"/>
+    <text x="660" y="220" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#333">Heroku</text>
+
+    <!-- Connector Lines -->
+    <path d="M140 260 L 400 480" fill="none" stroke="#34d399" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead)"/>
+    <path d="M270 260 L 400 480" fill="none" stroke="#34d399" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead)"/>
+    <path d="M400 260 L 400 480" fill="none" stroke="#34d399" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead)"/>
+    <path d="M530 260 L 400 480" fill="none" stroke="#34d399" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead)"/>
+    <path d="M660 260 L 400 480" fill="none" stroke="#34d399" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead)"/>
+  </g>
+
+  <!-- Left Section - Databases -->
+  <g id="databases" transform="translate(400, 0)">
+    <text x="130" y="305" font-family="Arial, sans-serif" font-size="22" font-weight="bold" text-anchor="middle" fill="#333">Databases</text>
+
+    <!-- MySQL -->
+    <use href="#database-cylinder" x="95" y="331"/>
+    <text x="130" y="375" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#333">MySQL</text>
+
+    <!-- MongoDB -->
+    <use href="#database-cylinder" x="95" y="461"/>
+    <text x="130" y="505" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#333">MongoDB</text>
+
+    <!-- Redis -->
+    <use href="#database-cylinder" x="95" y="591"/>
+    <text x="130" y="635" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#333">Redis</text>
+
+    <!-- PostgreSQL -->
+    <use href="#database-cylinder" x="95" y="721"/>
+    <text x="130" y="765" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#333">PostgreSQL</text>
+
+    <!-- Connector Lines -->
+    <path d="M165 365 L 440 540" fill="none" stroke="#34d399" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead)"/>
+    <path d="M165 495 L 440 540" fill="none" stroke="#34d399" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead)"/>
+    <path d="M165 625 L 440 540" fill="none" stroke="#34d399" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead)"/>
+    <path d="M165 755 L 440 540" fill="none" stroke="#34d399" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead)"/>
+  </g>
+
+  <!-- Right Section - Infrastructure -->
+  <g id="infrastructure" transform="translate(400, 0)">
+    <text x="1030" y="295" font-family="Arial, sans-serif" font-size="22" font-weight="bold" text-anchor="middle" fill="#333">Infrastructure</text>
+
+    <!-- Infrastructure Icons (Squares) -->
+    <!-- VM (aligned with MySQL center) -->
+    <rect x="990" y="325" width="80" height="80" fill="#f2f2f2" stroke="#34d399" stroke-width="2" rx="5" ry="5"/>
+    <text x="1030" y="370" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#333">VM</text>
+
+    <!-- Docker (aligned with MongoDB center) -->
+    <rect x="990" y="455" width="80" height="80" fill="#f2f2f2" stroke="#34d399" stroke-width="2" rx="5" ry="5"/>
+    <text x="1030" y="500" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#333">Docker</text>
+
+    <!-- Serverless (aligned with Redis center) -->
+    <rect x="990" y="585" width="80" height="80" fill="#f2f2f2" stroke="#34d399" stroke-width="2" rx="5" ry="5"/>
+    <text x="1030" y="630" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#333">Serverless</text>
+
+    <!-- On-Premise (aligned with PostgreSQL center) -->
+    <rect x="990" y="715" width="80" height="80" fill="#f2f2f2" stroke="#34d399" stroke-width="2" rx="5" ry="5"/>
+    <text x="1030" y="760" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#333">On-Premise</text>
+
+    <!-- Connector Lines -->
+    <path d="M990 365 L 680 540" fill="none" stroke="#34d399" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead)"/>
+    <path d="M990 495 L 680 540" fill="none" stroke="#34d399" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead)"/>
+    <path d="M990 625 L 680 540" fill="none" stroke="#34d399" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead)"/>
+    <path d="M990 755 L 680 540" fill="none" stroke="#34d399" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead)"/>
+  </g>
+
+  <!-- Auto-Discovery Label -->
+  <g id="auto-discovery">
+    <rect x="1150" y="350" width="140" height="40" rx="20" ry="20" fill="#34d399" opacity="0.9"/>
+    <text x="1225" y="375" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">Auto-Discovery</text>
+  </g>
+
+  <!-- Additional Technologies -->
+  <g id="additional-techs">
+    <rect x="650" y="300" width="150" height="40" rx="20" ry="20" fill="#f2f2f2" stroke="#34d399" stroke-width="1.5"/>
+    <text x="725" y="325" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#333">75+ Integrations</text>
+  </g>
+
+</svg>
