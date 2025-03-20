@@ -313,12 +313,12 @@ article {
 }
 
 html[data-theme="dark"] {
-  --ifm-link-color: #2a2a2a;
+  --ifm-link-color: #f2f2f2;
   --ifm-color-primary: var(--ifm-link-color);
-  --ifm-breadcrumb-color-active: #3d3d3d;
-  --ifm-link-hover-color: #454545;
-  --ifm-navbar-link-hover-color: #454545;
-  --ifm-menu-color-active: #454545;
+  --ifm-breadcrumb-color-active: #ffffff;
+  --ifm-link-hover-color: #d4d4d4;
+  --ifm-navbar-link-hover-color: #d4d4d4;
+  --ifm-menu-color-active: #d4d4d4;
 }
 
 html[data-theme="light"] {
