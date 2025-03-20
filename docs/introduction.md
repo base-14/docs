@@ -1,8 +1,9 @@
 ---
+slug: /
 sidebar_position: 1
 ---
 
-# Tutorial Intro
+# Introduction
 
 Let's discover **Scout in less than 5 minutes**.
 

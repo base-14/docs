@@ -33,11 +33,13 @@ const config: Config = {
 
   presets: [
     [
-      "classic",
+      "@docusaurus/preset-classic",
       {
         docs: {
+          routeBasePath: "/", // Serve the docs at the site's root
           sidebarPath: "./sidebars.ts",
         },
+        blog: false,
         theme: {
           customCss: "./src/css/custom.css",
         },
