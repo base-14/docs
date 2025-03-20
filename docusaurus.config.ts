@@ -55,7 +55,7 @@ const config: Config = {
     },
     docs: {
       sidebar: {
-        hideable: false,
+        hideable: true,
         autoCollapseCategories: true,
       },
     },
@@ -64,6 +64,7 @@ const config: Config = {
       logo: {
         alt: "Reduce downtime drastically with base14 Scout",
         src: "img/logo.svg",
+        srcDark: "img/logo-dark.svg",
       },
       items: [
         {
@@ -92,7 +93,7 @@ const config: Config = {
           items: [
             {
               label: "Tutorial",
-              to: "/docs/intro",
+              to: "/introduction",
             },
           ],
         },
