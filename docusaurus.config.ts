@@ -1,49 +1,45 @@
-import {themes as prismThemes} from 'prism-react-renderer';
-import type {Config} from '@docusaurus/types';
-import type * as Preset from '@docusaurus/preset-classic';
+import { themes as prismThemes } from "prism-react-renderer";
+import type { Config } from "@docusaurus/types";
+import type * as Preset from "@docusaurus/preset-classic";
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-  title: 'base14 docs',
-  tagline: 'Reduce downtime drastically!',
-  favicon: 'img/favicon.ico',
+  title: "base14 docs",
+  tagline: "Reduce downtime drastically!",
+  favicon: "img/favicon.ico",
 
   // Set the production url of your site here
-  url: 'https://docs.base14.io',
+  url: "https://docs.base14.io",
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/',
+  baseUrl: "/",
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'base-14', // Usually your GitHub org/user name.
-  projectName: 'docs.base14.io', // Usually your repo name.
+  organizationName: "base-14", // Usually your GitHub org/user name.
+  projectName: "docs.base14.io", // Usually your repo name.
 
-  onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'warn',
+  onBrokenLinks: "throw",
+  onBrokenMarkdownLinks: "warn",
 
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
   // may want to replace "en" with "zh-Hans".
   i18n: {
-    defaultLocale: 'en',
-    locales: ['en'],
+    defaultLocale: "en",
+    locales: ["en"],
   },
 
   presets: [
     [
-      'classic',
+      "classic",
       {
         docs: {
-          sidebarPath: './sidebars.ts',
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/base14io/docs/edit/main',
+          sidebarPath: "./sidebars.ts",
         },
         theme: {
-          customCss: './src/css/custom.css',
+          customCss: "./src/css/custom.css",
         },
       } satisfies Preset.Options,
     ],
@@ -51,50 +47,85 @@ const config: Config = {
 
   themeConfig: {
     // Replace with your project's social card
-    image: 'img/docusaurus-social-card.jpg',
+    image: "img/base14-social-card.jpg",
+    colorMode: {
+      defaultMode: "light",
+    },
+    docs: {
+      sidebar: {
+        hideable: false,
+        autoCollapseCategories: true,
+      },
+    },
     navbar: {
-      title: 'base14',
+      title: "base14",
       logo: {
-        alt: 'base14 logo',
-        src: 'img/logo.svg',
+        alt: "Reduce downtime drastically with base14 Scout",
+        src: "img/logo.svg",
       },
       items: [
         {
-          type: 'docSidebar',
-          sidebarId: 'tutorialSidebar',
-          position: 'left',
-          label: 'Scout',
+          type: "docSidebar",
+          sidebarId: "tutorialSidebar",
+          position: "left",
+          label: "Scout",
         },
         {
-          href: 'https://github.com/base14io/docs',
-          label: 'GitHub',
-          position: 'right',
+          href: "https://base14.io",
+          label: "Home",
+          position: "right",
+        },
+        {
+          href: "https://github.com/base-14/docs",
+          label: "GitHub",
+          position: "right",
         },
       ],
     },
     footer: {
-      style: 'dark',
+      style: "dark",
       links: [
         {
-          title: 'Docs',
+          title: "Docs",
           items: [
             {
-              label: 'Tutorial',
-              to: '/docs/intro',
+              label: "Tutorial",
+              to: "/docs/intro",
             },
           ],
         },
         {
-          title: 'Community',
+          title: "Legal",
           items: [
             {
-              label: 'X',
-              href: 'https://x.com/base14io',
+              label: "Terms of use",
+              href: "https://base14.io/terms-of-service",
+            },
+            {
+              label: "Privacy",
+              href: "https://base14.io/privacy",
+            },
+          ],
+        },
+        {
+          title: "Social",
+          items: [
+            {
+              label: "GitHub",
+              href: "https://github.com/base-14",
+            },
+            {
+              label: "X",
+              href: "https://twitter.com/base14io",
+            },
+            {
+              label: "LinkedIn",
+              href: "https://www.linkedin.com/company/base14-io",
             },
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} base14, Inc. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} base14. Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,
