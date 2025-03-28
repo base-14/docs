@@ -10,101 +10,143 @@ Every OpenTelemetry Collector release includes APK, DEB, and RPM packaging for L
 
 To install the OpenTelemetry Collector on Debian-based systems, run the following commands:
 
-{{< tabpane text=true >}} {{% tab AMD64 %}}
+```mdx-code-block
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs>
+<TabItem value="amd64" label="AMD64">
+```
 
 ```sh
 sudo apt-get update
 sudo apt-get -y install wget
-wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v{{% param vers %}}/otelcol_{{% param vers %}}_linux_amd64.deb
-sudo dpkg -i otelcol_{{% param vers %}}_linux_amd64.deb
+wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.47.0/otelcol_0.47.0_linux_amd64.deb
+sudo dpkg -i otelcol_0.47.0_linux_amd64.deb
 ```
 
-{{% /tab %}} {{% tab ARM64 %}}
+```mdx-code-block
+</TabItem>
+<TabItem value="arm64" label="ARM64">
+```
 
 ```sh
 sudo apt-get update
 sudo apt-get -y install wget
-wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v{{% param vers %}}/otelcol_{{% param vers %}}_linux_arm64.deb
-sudo dpkg -i otelcol_{{% param vers %}}_linux_arm64.deb
+wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.47.0/otelcol_0.47.0_linux_arm64.deb
+sudo dpkg -i otelcol_0.47.0_linux_arm64.deb
 ```
 
-{{% /tab %}} {{% tab i386 %}}
+```mdx-code-block
+</TabItem>
+<TabItem value="i386" label="i386">
+```
 
 ```sh
 sudo apt-get update
 sudo apt-get -y install wget
-wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v{{% param vers %}}/otelcol_{{% param vers %}}_linux_386.deb
-sudo dpkg -i otelcol_{{% param vers %}}_linux_386.deb
+wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.47.0/otelcol_0.47.0_linux_386.deb
+sudo dpkg -i otelcol_0.47.0_linux_386.deb
 ```
 
-{{% /tab %}} {{< /tabpane >}}
+```mdx-code-block
+</TabItem>
+</Tabs>
+```
 
 ## RPM Installation
 
 To install the OpenTelemetry Collector on Red Hat-based systems, run the following commands:
 
-{{< tabpane text=true >}} {{% tab AMD64 %}}
+```mdx-code-block
+<Tabs>
+<TabItem value="amd64" label="AMD64">
+```
 
 ```sh
 sudo yum update
 sudo yum -y install wget systemctl
-wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v{{% param vers %}}/otelcol_{{% param vers %}}_linux_amd64.rpm
-sudo rpm -ivh otelcol_{{% param vers %}}_linux_amd64.rpm
+wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.47.0/otelcol_0.47.0_linux_amd64.rpm
+sudo rpm -ivh otelcol_0.47.0_linux_amd64.rpm
 ```
 
-{{% /tab %}} {{% tab ARM64 %}}
+```mdx-code-block
+</TabItem>
+<TabItem value="arm64" label="ARM64">
+```
 
 ```sh
 sudo yum update
 sudo yum -y install wget systemctl
-wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v{{% param vers %}}/otelcol_{{% param vers %}}_linux_arm64.rpm
-sudo rpm -ivh otelcol_{{% param vers %}}_linux_arm64.rpm
+wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.47.0/otelcol_0.47.0_linux_arm64.rpm
+sudo rpm -ivh otelcol_0.47.0_linux_arm64.rpm
 ```
 
-{{% /tab %}} {{% tab i386 %}}
+```mdx-code-block
+</TabItem>
+<TabItem value="i386" label="i386">
+```
 
 ```sh
 sudo yum update
 sudo yum -y install wget systemctl
-wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v{{% param vers %}}/otelcol_{{% param vers %}}_linux_386.rpm
-sudo rpm -ivh otelcol_{{% param vers %}}_linux_386.rpm
+wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.47.0/otelcol_0.47.0_linux_386.rpm
+sudo rpm -ivh otelcol_0.47.0_linux_386.rpm
 ```
 
-{{% /tab %}} {{< /tabpane >}}
+```mdx-code-block
+</TabItem>
+</Tabs>
+```
 
 ## Manual Linux Installation
 
 The OpenTelemetry Collector [releases](https://github.com/open-telemetry/opentelemetry-collector-releases/releases) are available for various architectures. You can download the binary and install it manually:
 
-{{< tabpane text=true >}} {{% tab AMD64 %}}
-
-```sh
-curl --proto '=https' --tlsv1.2 -fOL https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v{{% param vers %}}/otelcol_{{% param vers %}}_linux_amd64.tar.gz
-tar -xvf otelcol_{{% param vers %}}_linux_amd64.tar.gz
+```mdx-code-block
+<Tabs>
+<TabItem value="amd64" label="AMD64">
 ```
 
-{{% /tab %}} {{% tab ARM64 %}}
-
 ```sh
-curl --proto '=https' --tlsv1.2 -fOL https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v{{% param vers %}}/otelcol_{{% param vers %}}_linux_arm64.tar.gz
-tar -xvf otelcol_{{% param vers %}}_linux_arm64.tar.gz
+curl --proto '=https' --tlsv1.2 -fOL https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.47.0/otelcol_0.47.0_linux_amd64.tar.gz
+tar -xvf otelcol_0.47.0_linux_amd64.tar.gz
 ```
 
-{{% /tab %}} {{% tab i386 %}}
-
-```sh
-curl --proto '=https' --tlsv1.2 -fOL https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v{{% param vers %}}/otelcol_{{% param vers %}}_linux_386.tar.gz
-tar -xvf otelcol_{{% param vers %}}_linux_386.tar.gz
+```mdx-code-block
+</TabItem>
+<TabItem value="arm64" label="ARM64">
 ```
 
-{{% /tab %}} {{% tab ppc64le %}}
-
 ```sh
-curl --proto '=https' --tlsv1.2 -fOL https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v{{% param vers %}}/otelcol_{{% param vers %}}_linux_ppc64le.tar.gz
-tar -xvf otelcol_{{% param vers %}}_linux_ppc64le.tar.gz
+curl --proto '=https' --tlsv1.2 -fOL https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.47.0/otelcol_0.47.0_linux_arm64.tar.gz
+tar -xvf otelcol_0.47.0_linux_arm64.tar.gz
 ```
 
-{{% /tab %}} {{< /tabpane >}}
+```mdx-code-block
+</TabItem>
+<TabItem value="i386" label="i386">
+```
+
+```sh
+curl --proto '=https' --tlsv1.2 -fOL https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.47.0/otelcol_0.47.0_linux_386.tar.gz
+tar -xvf otelcol_0.47.0_linux_386.tar.gz
+```
+
+```mdx-code-block
+</TabItem>
+<TabItem value="ppc64le" label="PPC64LE">
+```
+
+```sh
+curl --proto '=https' --tlsv1.2 -fOL https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.47.0/otelcol_0.47.0_linux_ppc64le.tar.gz
+tar -xvf otelcol_0.47.0_linux_ppc64le.tar.gz
+```
+
+```mdx-code-block
+</TabItem>
+</Tabs>
+```
 
 ## Configuring the OpenTelemetry Collector Service
 
