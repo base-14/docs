@@ -16,7 +16,7 @@ Scout is a fully OpenTelemetry-native observability platform designed for seamle
 - Visualize service dependencies with dynamic graphs
 
 
-![Scout OTel Native Architecture](/img/img/otel-scout-base14.svg)
+![Scout OTel Native Architecture](/img/otel-scout-base14.svg)
 
 
 ## Getting Started
