@@ -131,7 +131,7 @@ const config: Config = {
       copyright: `Copyright © ${new Date().getFullYear()} base14. Built with Docusaurus.`,
     },
     prism: {
-      theme: prismThemes.nightOwlLight,
+      theme: prismThemes.oneLight,
       darkTheme: prismThemes.nightOwl,
     },
   } satisfies Preset.ThemeConfig,
