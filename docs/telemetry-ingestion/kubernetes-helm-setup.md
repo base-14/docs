@@ -23,9 +23,9 @@ Following is an example of a values.yaml file that can be used to configure scou
 
 scout:
   endpoint: __YOUR_ENDPOINT__
-  token_url: __YOUR_TOKEN_URL__
-  app_name: __YOUR_APP_NAME__
-  api_key: __YOUR_API_KEY__
+  tokenUrl: __YOUR_TOKEN_URL__
+  appName: __YOUR_APP_NAME__
+  apiKey: __YOUR_API_KEY__
   distribution: EKS # or GKE, AKS, EKS
   metrics:
     apps:
@@ -38,3 +38,77 @@ scout:
           collectionInterval: 60s
           target: haproxy.gateway.svc.cluster.local
 ```
+
+## Scout helm chart uses the above configuration to configure the OpenTelemetry Collector
+
+1. Collects logs for the current cluster
+2. Sends k8s events data.
+3. Sends node and pods metrics data.
+4. Sends apps metrics data for the configured app endpoints.
+5. Sets up a local otlp endpoint for apps to send traces which are then forwarded to Scout.
+
+## Using Otelcol style configuration
+
+Following is an example of a values.yaml file that can be used to configure scout collector using otelcol style configuration. Here the configuration follows the same semantics as the OpenTelemetry Collector otelcol config. This gives a greater flexibility in terms of what you can configure to be scraped, collected etc. Reference the [otelcol-config](/otelcol-config/otelcol-config.md) for more details.
+
+```yaml
+
+scout:
+  endpoint: __YOUR_ENDPOINT__
+  tokenUrl: __YOUR_TOKEN_URL__
+  appName: __YOUR_APP_NAME__
+  apiKey: __YOUR_API_KEY__
+  distribution: microk8s
+
+  otelcolConfig:
+    enabled: enabled
+    config: |
+      receivers:
+        otlp:
+          protocols:
+            grpc:
+              endpoint: 0.0.0.0:4317
+            http:
+              endpoint: 0.0.0.0:4318
+      processors:
+        batch:
+
+      exporters:
+        otlphttp/base14:
+          endpoint: {{scout.endpoint}}
+          auth:
+            authenticator: oauth2client
+          tls:
+            insecure_skip_verify: true
+
+      extensions:
+        health_check:
+        pprof:
+        zpages:
+        oauth2client:
+          client_id: {{scout.clientId}}
+          client_secret: {{scout.clientSecret}}
+          endpoint_params:
+            audience: b14collector
+          token_url: {{scout.tokenUrl}}
+          tls:
+            insecure_skip_verify: true
+
+      service:
+        extensions: [health_check, pprof, zpages]
+        pipelines:
+          traces:
+            receivers: [otlp]
+            processors: [batch]
+            exporters: [otlphttp/base14]
+          metrics:
+            receivers: [otlp]
+            processors: [batch]
+            exporters: [otlphttp/base14]
+          logs:
+            receivers: [otlp]
+            processors: [batch]
+            exporters: [otlphttp/base14]
+
+```
+

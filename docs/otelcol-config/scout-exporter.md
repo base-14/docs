@@ -1,5 +1,6 @@
 # Scout Exporter Configuration
 
+The Scout exporter is a custom exporter for the OpenTelemetry Collector that exports telemetry data to the Scout endpoint.
 
 ## Configuration
 
