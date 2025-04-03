@@ -1,8 +1,0 @@
-{
-  "label": "OpenTelemetry Instrumentation",
-  "position": 3,
-  "link": {
-    "type": "generated-index",
-    "description": "10 minutes to learn about how to Instrument OpenTelemetry Tracing."
-  }
-}

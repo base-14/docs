@@ -1,8 +1,8 @@
-# OpenTelemetry Instrumentation for python services
+# Python
 
-This guide explains how to instrument OTEL into your python codebase.
+This guide demonstrates how to instrument tracing and metrics using OpenTelemetry and export them to a collector using python OTEL sdk.
 
-> **Note:** This guide is a subset of the official OpenTelemetry documentation. For in-depth knowledge, refer to the [official OpenTelemetry documentation](https://opentelemetry.io/docs/languages/python/). The content in this guide is taken from the official OTEL documentation.
+> **Note:** This guide is a subset of the official OpenTelemetry documentation. For in-depth knowledge, refer to the [official OpenTelemetry documentation](https://opentelemetry.io/docs/languages/python/).
 
 ## Setup
 
