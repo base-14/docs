@@ -1,7 +1,8 @@
 # OpenTelemetry Instrumentation for python services
 
+This guide explains how to instrument OTEL into your python codebase.
 
-This guide explains how to instrument OTEL into your codebase.
+> **Note:** This guide is a subset of the official OpenTelemetry documentation. For in-depth knowledge, refer to the [official OpenTelemetry documentation](https://opentelemetry.io/docs/languages/python/). The content in this guide is taken from the official OTEL documentation.
 
 ## Setup
 
@@ -88,7 +89,6 @@ def do_work():
     print("doing some work...")
 ```
 
-
 [Official Span Documentation](https://opentelemetry.io/docs/concepts/signals/traces/#spans)
 
 ### Attributes
@@ -109,7 +109,7 @@ def do_work():
 
 #### Adding Semantic Attributes to a Span
 
-Semantic Attributes are pre-defined Attributes that are well-known naming conventions for common kinds of data. 
+Semantic Attributes are pre-defined Attributes that are well-known naming conventions for common kinds of data.
 Using Semantic Attributes lets you normalize this kind of information across your systems.
 
 > Ensure that you have installed `opentelemetry-semantic-conventions` package for using Semantic Attributes
@@ -129,7 +129,7 @@ def do_work():
 
 ### Events
 
-An event is a human-readable message on a span that represents “something happening” during its lifetime. 
+An event is a human-readable message on a span that represents “something happening” during its lifetime.
 You can think of it as a primitive log.
 
 #### Adding an event to a span
@@ -146,8 +146,8 @@ def do_work():
 
 ### Span Status
 
-A Status can be set on a Span, typically used to specify that a Span has not completed successfully - Error. 
-By default, all spans are Unset, which means a span completed without error. The Ok status is reserved for 
+A Status can be set on a Span, typically used to specify that a Span has not completed successfully - Error.
+By default, all spans are Unset, which means a span completed without error. The Ok status is reserved for
 when you need to explicitly mark a span as successful rather than stick with the default of Unset (i.e., “without error”).
 We also look at how to record an exception in the Span.
 
@@ -192,6 +192,7 @@ meter = metrics.get_meter("my.meter.name")
 ```
 
 ### Counter
+
 Counter is a synchronous Instrument which supports non-negative increments.
 
 #### Creating a Synchronous Counter
@@ -225,6 +226,7 @@ meter.create_observable_counter(name="PF", description="process page faults", ca
 [Official Counter Documentation](https://opentelemetry.io/docs/specs/otel/metrics/api/#counter)
 
 ### Histogram
+
 Histogram is a synchronous Instrument which can be used to report arbitrary values that are likely to be statistically meaningful. It is intended for statistics such as histograms, summaries, and percentile.
 
 #### Creating a Histogram
@@ -242,4 +244,3 @@ http_server_duration.Record(100, http_method="GET", http_scheme="http")
 ```
 
 [Official Histogram Documentation](https://opentelemetry.io/docs/specs/otel/metrics/api/#histogram)
-
