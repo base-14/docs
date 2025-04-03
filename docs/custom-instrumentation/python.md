@@ -2,7 +2,7 @@
 
 This guide demonstrates how to instrument tracing and metrics using OpenTelemetry and export them to a collector using python OTEL sdk.
 
-> **Note:** This guide is a subset of the official OpenTelemetry documentation. For in-depth knowledge, refer to the [official OpenTelemetry documentation](https://opentelemetry.io/docs/languages/python/).
+> **Note:** This guide provides a concise overview based on the official OpenTelemetry documentation. For a deeper understanding, refer to the [official OpenTelemetry documentation](https://opentelemetry.io/docs/languages/python/).
 
 ## Setup
 
