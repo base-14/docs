@@ -1,9 +1,15 @@
 ---
 sidebar_position: 3
 ---
-# Kubernetes Helm Setup
-This guide demonstrates how to configure Scout's OpenTelemetry Collector to collect logs, metrics and traces from Kubernetes pods and forward them to Scout. We'll use Helm to install the collector and configure it to collect the telemetry from all pods in the all the namespaces (except the configured system kube-system).
 
+# Kubernetes Helm Setup
+
+This guide demonstrates how to configure Scout's OpenTelemetry Collector to
+collect logs, metrics and traces from
+Kubernetes pods and forward them to Scout. We'll use Helm to install the
+collector and configure it to collect the
+telemetry from all pods in the all the namespaces (except the configured system
+kube-system).
 
 ## Install the Helm Chart
 
@@ -12,12 +18,14 @@ helm repo add base14 https://charts.base14.io/
 ```
 
 ```bash
-helm install scout base14/scout-collector --namespace scout --create-namespace -f values.yaml
+helm install scout base14/scout-collector  \
+--namespace scout --create-namespace -f values.yaml
 ```
 
 ## Detailed configuration via values.yaml
 
-Following is an example of a values.yaml file that can be used to configure scout colllector.
+Following is an example of a values.yaml file that can be used to configure
+scout colllector.
 
 ```yaml
 
@@ -45,11 +53,18 @@ scout:
 2. Sends k8s events data.
 3. Sends node and pods metrics data.
 4. Sends apps metrics data for the configured app endpoints.
-5. Sets up a local otlp endpoint for apps to send traces which are then forwarded to Scout.
+5. Sets up a local otlp endpoint for apps to send traces which are then
+   forwarded to Scout.
 
 ## Using Otelcol style configuration
 
-Following is an example of a values.yaml file that can be used to configure scout collector using otelcol style configuration. Here the configuration follows the same semantics as the OpenTelemetry Collector otelcol config. This gives a greater flexibility in terms of what you can configure to be scraped, collected etc. Reference the [otelcol-config](/otelcol-config/otelcol-config.md) for more details.
+Following is an example of a values.yaml file that can be used to configure
+scout collector using otelcol style
+configuration. Here the configuration follows the same semantics as the
+OpenTelemetry Collector otelcol config. This
+gives a greater flexibility in terms of what you can configure to be scraped,
+collected etc. Reference
+the [otelcol-config](/otelcol-config/otelcol-config.md) for more details.
 
 ```yaml
 
@@ -111,4 +126,3 @@ scout:
             exporters: [otlphttp/base14]
 
 ```
-

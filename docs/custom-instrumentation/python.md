@@ -1,13 +1,19 @@
 # Python
 
-This guide demonstrates how to instrument tracing and metrics using OpenTelemetry and export them to a collector using python OTEL sdk.
+This guide demonstrates how to instrument tracing and metrics using
+OpenTelemetry and export them to a collector using python OTEL sdk.
 
-> **Note:** This guide provides a concise overview based on the official OpenTelemetry documentation. For complete information, please consult the [official OpenTelemetry documentation](https://opentelemetry.io/docs/languages/python/).
+> **Note:** This guide provides a concise overview based on the official
+> OpenTelemetry documentation. For complete information, please consult
+>
+the [official OpenTelemetry documentation](https://opentelemetry.io/docs/languages/python/).
 
 ## Setup
 
-opentelemetry-api defines the API interfaces for tracing, metrics, and logging and opentelemetry-sdk provides the implementation for these APIs.
-Run the following commands to install the necessary packages or add it to `requirements.txt` and install it.
+opentelemetry-api defines the API interfaces for tracing, metrics, and logging
+and opentelemetry-sdk provides the implementation for these APIs.
+Run the following commands to install the necessary packages or add it to
+`requirements.txt` and install it.
 
 ```shell
 pip install opentelemetry-api
@@ -40,17 +46,18 @@ exporters:
 service:
   pipelines:
     traces:
-      receivers: [otlp]
-      exporters: [debug, otlp]
+      receivers: [ otlp ]
+      exporters: [ debug, otlp ]
     metrics:
-      receivers: [otlp]
-      exporters: [debug, otlp]
+      receivers: [ otlp ]
+      exporters: [ debug, otlp ]
     logs:
-      receivers: [otlp]
-      exporters: [debug]
+      receivers: [ otlp ]
+      exporters: [ debug ]
 ```
 
 Create a Docker compose file
+
 ```yaml
 version: "3.8"
 
@@ -62,7 +69,7 @@ services:
     image: otel/opentelemetry-collector
     container_name: otel-collector
     restart: unless-stopped
-    command: ["--config=/etc/otelcol/config.yaml"]
+    command: [ "--config=/etc/otelcol/config.yaml" ]
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol/config.yaml
     ports:
@@ -85,22 +92,31 @@ services:
 ```
 
 Run the below command to start the local development setup
+
 ```shell
 docker-compose up -d
 ```
 
 ## Traces
 
-Traces give us the big picture of what happens when a request is made to an application. Whether your application is a monolith with a single
-database or a sophisticated mesh of services, traces are essential to understanding the full “path” a request takes in your application.
+Traces give us the big picture of what happens when a request is made to an
+application. Whether your application is a monolith with a single
+database or a sophisticated mesh of services, traces are essential to
+understanding the full “path” a request takes in your application.
 
 ### Initialization
 
-To Start tracing first a tracer should be acquired and a TraceProvider should be initialized optionally we can pass a resource to TraceProvider.
+To Start tracing first a tracer should be acquired and a TraceProvider should be
+initialized optionally we can pass a resource to TraceProvider.
 
-> A Resource is an immutable representation of the entity producing telemetry. For example, a process
-producing telemetry that is running in a container on Kubernetes has a Pod name, it is in a namespace and possibly
-is part of a Deployment which also has a name. All three of these attributes can be included in the Resource.
+> A Resource is an immutable representation of the entity producing telemetry.
+> For example, a process
+> producing telemetry that is running in a container on Kubernetes has a Pod
+> name,
+> it is in a namespace and possibly
+> is part of a Deployment which also has a name. All three of these attributes
+> can
+> be included in the Resource.
 
 Sample Reference code for Initialization
 
@@ -134,7 +150,8 @@ tracer = trace.get_tracer("my.tracer.name")
 
 ### Span
 
-A span represents a unit of work or operation. Spans are the building blocks of Traces. In OpenTelemetry, they include some necessary information.
+A span represents a unit of work or operation. Spans are the building blocks of
+Traces. In OpenTelemetry, they include some necessary information.
 
 #### Creating a Span
 
@@ -170,7 +187,8 @@ def do_work():
 
 ### Attributes
 
-Attributes let you attach key/value pairs to a span so it carries more information about the current operation that it’s tracking.
+Attributes let you attach key/value pairs to a span so it carries more
+information about the current operation that it’s tracking.
 
 #### Adding Attributes to a Span
 
@@ -186,10 +204,13 @@ def do_work():
 
 #### Adding Semantic Attributes to a Span
 
-Semantic Attributes are pre-defined Attributes that are well-known naming conventions for common kinds of data.
-Using Semantic Attributes lets you normalize this kind of information across your systems.
+Semantic Attributes are pre-defined Attributes that are well-known naming
+conventions for common kinds of data.
+Using Semantic Attributes lets you normalize this kind of information across
+your systems.
 
-> Ensure that you have installed `opentelemetry-semantic-conventions` package for using Semantic Attributes
+> Ensure that you have installed `opentelemetry-semantic-conventions` package
+> for using Semantic Attributes
 
 ```python
 from opentelemetry.semconv.trace import SpanAttributes
@@ -206,7 +227,8 @@ def do_work():
 
 ### Events
 
-An event is a human-readable message on a span that represents “something happening” during its lifetime.
+An event is a human-readable message on a span that represents “something
+happening” during its lifetime.
 You can think of it as a primitive log.
 
 #### Adding an event to a span
@@ -223,9 +245,12 @@ def do_work():
 
 ### Span Status
 
-A Status can be set on a Span, typically used to specify that a Span has not completed successfully - Error.
-By default, all spans are Unset, which means a span completed without error. The Ok status is reserved for
-when you need to explicitly mark a span as successful rather than stick with the default of Unset (i.e., “without error”).
+A Status can be set on a Span, typically used to specify that a Span has not
+completed successfully - Error.
+By default, all spans are Unset, which means a span completed without error. The
+Ok status is reserved for
+when you need to explicitly mark a span as successful rather than stick with the
+default of Unset (i.e., “without error”).
 We also look at how to record an exception in the Span.
 
 #### Setting a Span Status
@@ -247,7 +272,8 @@ def do_work():
 
 ### Initialization
 
-To start collecting metrics, you’ll need to initialize a MeterProvider and optionally set it as the global default.
+To start collecting metrics, you’ll need to initialize a MeterProvider and
+optionally set it as the global default.
 
 Sample Reference code for Metrics Initialization
 
@@ -304,7 +330,9 @@ meter.create_observable_counter(name="PF", description="process page faults", ca
 
 ### Histogram
 
-Histogram is a synchronous Instrument which can be used to report arbitrary values that are likely to be statistically meaningful. It is intended for statistics such as histograms, summaries, and percentile.
+Histogram is a synchronous Instrument which can be used to report arbitrary
+values that are likely to be statistically meaningful. It is intended for
+statistics such as histograms, summaries, and percentile.
 
 #### Creating a Histogram
 
