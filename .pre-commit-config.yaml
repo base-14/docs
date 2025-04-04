@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: markdownlint
+        name: MarkdownLint
+        entry: yarn markdownlint
+        language: system
+        types: [file]
+        files: \.md$
