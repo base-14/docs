@@ -35,6 +35,8 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          GOOGLE_ANALYTICS_ID: ${{ secrets.GOOGLE_ANALYTICS_ID }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
