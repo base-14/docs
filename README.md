@@ -3,10 +3,22 @@
 This website is built using [Docusaurus](https://docusaurus.io/), a modern
 static website generator.
 
-## Installation
+## Setup
+
+> Install the Required Packages
 
 ```shell
 yarn
+```
+
+> Install Pre-commit Hook
+> To set up Git pre-commit hooks,
+> you first need to install the pre-commit tool.
+> Follow the instructions in
+> the [official documentation](https://pre-commit.com/).
+
+```shell
+pre-commit install
 ```
 
 ## Local Development
