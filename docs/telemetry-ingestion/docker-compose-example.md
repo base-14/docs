@@ -1,39 +1,51 @@
 ---
 sidebar_position: 2
 ---
+
 # Docker Compose Example
 
-This guide demonstrates how to configure Docker container log collection using the OpenTelemetry Collector and forward those logs to Scout. We'll use Docker Compose to set up both a sample application and the collector.
+This guide demonstrates how to configure Docker container log collection using
+the OpenTelemetry Collector and forward
+those logs to Scout. We'll use Docker Compose to set up both a sample
+application and the collector.
 
 ## Prerequisites
 
 Docker and Docker Compose installed on your system
-A Scout account with access credentials
+A Scout account with access credentials\
 
 ## Overview
-The OpenTelemetry Collector's file logs receiver component enables collection of Docker container logs. When properly configured, the collector will:
+
+The OpenTelemetry Collector's file logs receiver component enables collection of
+Docker container logs. When properly
+configured, the collector will:
 
 - Monitor container log files
 - Process and transform the logs
 - Forward them to your Scout instance
 
 ## Configuration
-The following example uses Docker Compose to create a complete logging pipeline with a sample application and the OpenTelemetry Collector.
+
+The following example uses Docker Compose to create a complete logging pipeline
+with a sample application and the
+OpenTelemetry Collector.
 
 ### Docker Compose Configuration
 
-Following is a sample docker-compose.yml file that sets up a sample application that uses redis as a component and the OpenTelemetry Collector. 
+Following is a sample docker-compose.yml file that sets up a sample application
+that uses redis as a component and the
+OpenTelemetry Collector.
 
 ```yaml
 
 version: '3.8'
 
 x-default-logging: &logging
- driver: "json-file"
- options:
-   max-size: "5m"
-   max-file: "2"
-   tag: "{{.Name}}|{{.ImageName}}|{{.ID}}"
+  driver: "json-file"
+  options:
+    max-size: "5m"
+    max-file: "2"
+    tag: "{{.Name}}|{{.ImageName}}|{{.ID}}"
 
 services:
   web:
@@ -50,7 +62,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "localhost:8000/ping"]
+      test: [ "CMD", "curl", "-f", "localhost:8000/ping" ]
     logging: *logging
 
   redis:
@@ -59,7 +71,7 @@ services:
       - "6379:6379"
     logging: *logging
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
 
 
   otel-collector:
@@ -70,7 +82,7 @@ services:
         limits:
           memory: 200M
     restart: unless-stopped
-    command: [ "--config=/etc/otelcol-config.yaml"]
+    command: [ "--config=/etc/otelcol-config.yaml" ]
     user: 0:0
     volumes:
       - /:/hostfs:ro
@@ -89,9 +101,11 @@ volumes:
 ### Collector Configuration
 
 OpenTelemetry Collector is configured to
+
 - Monitor Redis metrics
 - Monitor logs for all containers using json logs driver and filereciver
-- Collect telemetry data into otel-collector container and then forward them to Scout using an otlp exporter
+- Collect telemetry data into otel-collector container and then forward them to
+  Scout using an otlp exporter
 
 ```yaml
 
@@ -123,9 +137,9 @@ processors:
 
   resource:
     attributes:
-    - key: service.name
-      value: ${env:SERVICE_NAME}
-      action: upsert
+      - key: service.name
+        value: ${env:SERVICE_NAME}
+        action: upsert
 
 receivers:
   otlp:
@@ -135,35 +149,35 @@ receivers:
 
   filelog:
     include:
-    - /var/lib/docker/containers/*/*-json.log
+      - /var/lib/docker/containers/*/*-json.log
     operators:
-    - id: parser-docker
-      timestamp:
-        layout: '%Y-%m-%dT%H:%M:%S.%LZ'
-        parse_from: attributes.time
-      type: json_parser
-    - field: attributes.time
-      type: remove
-    - id: extract_metadata_from_docker_tag
-      parse_from: attributes.attrs.tag
-      regex: ^(?P<name>[^\|]+)\|(?P<image_name>[^\|]+)\|(?P<id>[^$]+)$
-      type: regex_parser
-      if: 'attributes?.attrs?.tag != nil'
-    - from: attributes.name
-      to: resource["docker.container.name"]
-      type: move
-      if: 'attributes?.name != nil'
-    - from: attributes.image_name
-      to: resource["docker.image.name"]
-      type: move
-      if: 'attributes?.image_name != nil'
-    - from: attributes.id
-      to: resource["docker.container.id"]
-      type: move
-      if: 'attributes?.id != nil'
-    - from: attributes.log
-      to: body
-      type: move
+      - id: parser-docker
+        timestamp:
+          layout: '%Y-%m-%dT%H:%M:%S.%LZ'
+          parse_from: attributes.time
+        type: json_parser
+      - field: attributes.time
+        type: remove
+      - id: extract_metadata_from_docker_tag
+        parse_from: attributes.attrs.tag
+        regex: ^(?P<name>[^\|]+)\|(?P<image_name>[^\|]+)\|(?P<id>[^$]+)$
+        type: regex_parser
+        if: 'attributes?.attrs?.tag != nil'
+      - from: attributes.name
+        to: resource["docker.container.name"]
+        type: move
+        if: 'attributes?.name != nil'
+      - from: attributes.image_name
+        to: resource["docker.image.name"]
+        type: move
+        if: 'attributes?.image_name != nil'
+      - from: attributes.id
+        to: resource["docker.container.id"]
+        type: move
+        if: 'attributes?.id != nil'
+      - from: attributes.log
+        to: body
+        type: move
 
 
   docker_stats:
@@ -193,4 +207,3 @@ service:
     logs:
       level: info
 ```
-
