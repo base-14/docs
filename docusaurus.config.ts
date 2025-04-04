@@ -43,6 +43,12 @@ const config: Config = {
         theme: {
           customCss: "./src/css/custom.css",
         },
+        gtag: process.env.GOOGLE_ANALYTICS_ID
+          ? {
+              trackingID: process.env.GOOGLE_ANALYTICS_ID,
+              anonymizeIP: true,
+            }
+          : undefined,
       } satisfies Preset.Options,
     ],
   ],
