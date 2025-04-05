@@ -23,79 +23,11 @@ pip install opentelemetry-sdk
 pip install opentelemetry-semantic-conventions
 ```
 
-### Local Dev Environment Setup
+:::warning
 
-Copy the below content to `otel-collector-config.yaml`
-
-```yaml
-receivers:
-  otlp:
-    protocols:
-      grpc:
-        endpoint: 0.0.0.0:4317
-      http:
-        endpoint: 0.0.0.0:4318
-exporters:
-  debug:
-    verbosity: detailed
-  otlp:
-    endpoint: "jaeger:4317"
-    tls:
-      insecure: true
-
-service:
-  pipelines:
-    traces:
-      receivers: [ otlp ]
-      exporters: [ debug, otlp ]
-    metrics:
-      receivers: [ otlp ]
-      exporters: [ debug, otlp ]
-    logs:
-      receivers: [ otlp ]
-      exporters: [ debug ]
-```
-
-Create a Docker compose file
-
-```yaml
-version: "3.8"
-
-networks:
-  otel-network:
-
-services:
-  otel-collector:
-    image: otel/opentelemetry-collector
-    container_name: otel-collector
-    restart: unless-stopped
-    command: [ "--config=/etc/otelcol/config.yaml" ]
-    volumes:
-      - ./otel-collector-config.yaml:/etc/otelcol/config.yaml
-    ports:
-      - "4317:4317"
-      - "4318:4318"
-    networks:
-      - otel-network
-
-  jaeger:
-    image: jaegertracing/all-in-one:latest
-    container_name: jaeger
-    restart: unless-stopped
-    environment:
-      - COLLECTOR_ZIPKIN_HTTP_PORT=9411
-    ports:
-      - "16686:16686"
-      - "9411:9411"
-    networks:
-      - otel-network
-```
-
-Run the below command to start the local development setup
-
-```shell
-docker-compose up -d
-```
+Make sure you have set up the local development environment as
+described in [here](../local-dev-env-setup.md).
+:::
 
 ## Traces
 
