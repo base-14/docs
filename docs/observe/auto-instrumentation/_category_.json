@@ -1,0 +1,8 @@
+{
+  "label": "Auto Instrumentation",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "description": "10 minutes guide on instrumenting auto tracing with OpenTelemetry."
+  }
+}
