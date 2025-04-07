@@ -2,12 +2,16 @@
 sidebar_position: 1
 ---
 
-
 # Otel Collector Binary Example
-## Install the collector binary
-The collector binary can be downloaded from the [releases page](https://github.com/open-telemetry/opentelemetry-collector-releases/releases).
 
-An example of how to download and extract the collector binary is shown below for macos arm64.
+## Install the collector binary
+
+The collector binary can be downloaded from
+the [releases page](https://github.com/open-telemetry/opentelemetry-collector-releases/releases).
+
+An example of how to download and extract the collector binary is shown below
+for macos arm64.
+
 ```bash
 
 curl --proto '=https' --tlsv1.2 -fOL https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.119.0/otelcol_0.119.0_darwin_arm64.tar.gz
@@ -15,6 +19,7 @@ tar -xvf otelcol_0.119.0_darwin_arm64.tar.gz
 ```
 
 ## Example configuration
+
 An example config can be seen to collect logs from a file to export to Scout
 
 ```yaml
@@ -38,8 +43,8 @@ processors:
   batch:
     redaction:
       blocked_values:
-         - "(5[1-5][0-9]{14})"       ## MasterCard number
-       summary: debug
+        - "(5[1-5][0-9]{14})"       ## MasterCard number
+        summary: debug
 
 receivers:
   # Data sources: traces, metrics, logs
@@ -64,7 +69,8 @@ service:
 
 ## Run an app
 
-Run the app and redirect the output to a file app.log which is being watched by the collector.
+Run the app and redirect the output to a file app.log which is being watched by
+the collector.
 
 As an example we can use the following node app.
 
@@ -87,9 +93,12 @@ child.info('hello child!')
 ```
 
 run the app and redirect the output to a file app.log
+
 ```bash
 node main.js > app.log
 ```
 
 ## View logs in Scout
-Open the Scout UI and navigate to the Logs tab. You should see the logs from the app.
+
+Open the Scout UI and navigate to the Logs tab. You should see the logs from the
+app.

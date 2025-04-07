@@ -1,14 +1,19 @@
 # Linux OpenTelemetry Collector Setup
 
-This guide explains how to install the OpenTelemetry Collector on Linux systems. Our solution leverages the official OpenTelemetry Collector releases to provide a standards-compliant telemetry collection solution.
+This guide explains how to install the OpenTelemetry Collector on Linux systems.
+Our solution leverages the official OpenTelemetry Collector releases to provide
+a standards-compliant telemetry collection solution.
 
-Every OpenTelemetry Collector release includes APK, DEB, and RPM packaging for Linux amd64/arm64/i386 systems. After installation, you can find the default configuration in `/etc/otelcol/config.yaml`.
+Every OpenTelemetry Collector release includes APK, DEB, and RPM packaging for
+Linux amd64/arm64/i386 systems. After installation, you can find the default
+configuration in `/etc/otelcol/config.yaml`.
 
 > Note: `systemd` is required for automatic service configuration.
 
 ## DEB Installation
 
-To install the OpenTelemetry Collector on Debian-based systems, run the following commands:
+To install the OpenTelemetry Collector on Debian-based systems, run the
+following commands:
 
 ```mdx-code-block
 import Tabs from '@theme/Tabs';
@@ -56,7 +61,8 @@ sudo dpkg -i otelcol_0.47.0_linux_386.deb
 
 ## RPM Installation
 
-To install the OpenTelemetry Collector on Red Hat-based systems, run the following commands:
+To install the OpenTelemetry Collector on Red Hat-based systems, run the
+following commands:
 
 ```mdx-code-block
 <Tabs>
@@ -101,7 +107,10 @@ sudo rpm -ivh otelcol_0.47.0_linux_386.rpm
 
 ## Manual Linux Installation
 
-The OpenTelemetry Collector [releases](https://github.com/open-telemetry/opentelemetry-collector-releases/releases) are available for various architectures. You can download the binary and install it manually:
+The OpenTelemetry
+Collector [releases](https://github.com/open-telemetry/opentelemetry-collector-releases/releases)
+are available for various architectures. You can download the binary and install
+it manually:
 
 ```mdx-code-block
 <Tabs>
@@ -150,11 +159,20 @@ tar -xvf otelcol_0.47.0_linux_ppc64le.tar.gz
 
 ## Configuring the OpenTelemetry Collector Service
 
-By default, the `otelcol` systemd service starts with the `--config=/etc/otelcol/config.yaml` option after installation. This configuration follows the [OpenTelemetry Collector Configuration](https://opentelemetry.io/docs/collector/configuration/) standards.
+By default, the `otelcol` systemd service starts with the
+`--config=/etc/otelcol/config.yaml` option after installation. This
+configuration follows
+the [OpenTelemetry Collector Configuration](https://opentelemetry.io/docs/collector/configuration/)
+standards.
 
-To customize the collector settings, modify the `OTELCOL_OPTIONS` variable in the `/etc/otelcol/otelcol.conf` systemd environment file with appropriate command-line options. Run `/usr/bin/otelcol --help` to see all available options. Additional environment variables can be passed to the `otelcol` service by adding them to this file.
+To customize the collector settings, modify the `OTELCOL_OPTIONS` variable in
+the `/etc/otelcol/otelcol.conf` systemd environment file with appropriate
+command-line options. Run `/usr/bin/otelcol --help` to see all available
+options. Additional environment variables can be passed to the `otelcol` service
+by adding them to this file.
 
-After modifying the Collector configuration file or `/etc/otelcol/otelcol.conf`, restart the `otelcol` service to apply the changes:
+After modifying the Collector configuration file or `/etc/otelcol/otelcol.conf`,
+restart the `otelcol` service to apply the changes:
 
 ```sh
 sudo systemctl restart otelcol
@@ -166,4 +184,6 @@ To check the logs from the `otelcol` service, run:
 sudo journalctl -u otelcol
 ```
 
-For more information on configuring and using the OpenTelemetry Collector, refer to the [official OpenTelemetry documentation](https://opentelemetry.io/docs/collector/).
+For more information on configuring and using the OpenTelemetry Collector, refer
+to
+the [official OpenTelemetry documentation](https://opentelemetry.io/docs/collector/).
