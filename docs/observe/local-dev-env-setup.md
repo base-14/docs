@@ -117,5 +117,5 @@ Run the below command to start the local development setup
 docker-compose up -d
 ```
 
-> Goto <http://localhost:16686/> to see the Jaeger UI.
-> Goto <http://localhost:9090> to see the Prometheus UI.
+> Goto [http://localhost:16686/](http://localhost:16686/) to see the Jaeger UI.
+> Goto [http://localhost:9090](http://localhost:9090) to see the Prometheus UI.
