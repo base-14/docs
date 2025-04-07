@@ -110,7 +110,7 @@ scout:
             insecure_skip_verify: true
 
       service:
-        extensions: [health_check, pprof, zpages]
+        extensions: [health_check, pprof, zpages, oauth2client]
         pipelines:
           traces:
             receivers: [otlp]
