@@ -1,9 +1,8 @@
 {
-    "label": "ECS",
-    "position": 3,
-    "link": {
-      "type": "generated-index",
-      "description": "Collecting Telemetry from ECS using Sidecar Containers."
-    }
+  "label": "ECS",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "description": "Collecting Telemetry from ECS using Sidecar Containers."
   }
-  
+}
