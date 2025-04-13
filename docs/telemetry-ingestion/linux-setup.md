@@ -1,10 +1,15 @@
 # Installing OpenTelemetry Collector on Linux
 
-This comprehensive guide walks you through installing and configuring the OpenTelemetry Collector on Linux systems. Whether you're using Debian, Red Hat, or other Linux distributions, you'll learn how to set up telemetry collection for your observability needs.
+This comprehensive guide walks you through installing and configuring the
+OpenTelemetry Collector on Linux systems.
+
+Whether you're using Debian, Red Hat, or other Linux distributions,
+you'll learn how to set up telemetry collection for your observability needs.
 
 ## Overview
 
-The OpenTelemetry Collector is a vendor-agnostic agent that collects, processes, and exports telemetry data. This guide covers:
+The OpenTelemetry Collector is a vendor-agnostic agent that collects, processes,
+and exports telemetry data. This guide covers:
 
 - Installing OpenTelemetry Collector via DEB packages (Ubuntu, Debian)
 - Installing OpenTelemetry Collector via RPM packages (RHEL, CentOS, Fedora)
@@ -23,6 +28,7 @@ The OpenTelemetry Collector is a vendor-agnostic agent that collects, processes,
 ## Package Availability
 
 Official OpenTelemetry Collector packages are available in the following formats:
+
 - DEB packages for Debian-based systems
 - RPM packages for Red Hat-based systems
 - Precompiled binaries for manual installation
@@ -180,8 +186,7 @@ tar -xvf otelcol_0.47.0_linux_ppc64le.tar.gz
 
 By default, the `otelcol` systemd service starts with the
 `--config=/etc/otelcol/config.yaml` option after installation. This
-configuration follows
-the [OpenTelemetry Collector Configuration](https://opentelemetry.io/docs/collector/configuration/)
+configuration follows the [OpenTelemetry Collector Configuration](https://opentelemetry.io/docs/collector/configuration/)
 standards.
 
 To customize the collector settings, modify the `OTELCOL_OPTIONS` variable in
