@@ -1,5 +1,17 @@
 # Local Dev Environment Setup
 
+This guide helps you set up a local observability stack for development and testing purposes. The setup includes:
+
+- **OpenTelemetry Collector**: For collecting, processing, and exporting telemetry data
+- **Jaeger**: For distributed tracing visualization and analysis
+- **Prometheus**: For metrics collection and monitoring
+
+This environment allows you to:
+- Collect and visualize distributed traces using Jaeger
+- Monitor application metrics using Prometheus
+- Process logs, metrics, and traces through the OpenTelemetry Collector
+- Test your instrumentation code locally before deploying to production
+
 ## Requirements
 
 - [Docker](https://www.docker.com/) Installed.

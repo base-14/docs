@@ -5,20 +5,26 @@ sidebar_position: 1
 
 # Introduction
 
-## Scout
+Scout provides comprehensive observability capabilities through a fully OpenTelemetry-native platform. Our observability solution helps you:
 
-Scout is a fully OpenTelemetry-native observability platform designed for
-seamless integration with OTel collectors,
-SDKs, and libraries.
+## Key Features
 
-- End-to-end observability: logs, metrics, traces, events, and errors
-- Unified "single pane of glass" for holistic insights
-- Correlate across signal types for deep diagnostics
-- Built on a high-performance, cost-efficient telemetry data lake
-- Native support for SLIs, SLOs, and error budgets
-- Visualize service dependencies with dynamic graphs
+- **Unified Data Collection**: Collect all telemetry signals (logs, metrics, traces) through a single OpenTelemetry pipeline
+- **Real-time Monitoring**: Monitor your applications and infrastructure with near real-time visibility
+- **Distributed Tracing**: Track requests across service boundaries with detailed trace visualization
+- **Metrics Analysis**: Analyze system and application metrics with powerful querying and visualization
+- **Automated Instrumentation**: Leverage OpenTelemetry auto-instrumentation for popular frameworks and libraries
+- **Custom Instrumention**: Flexibility to add custom instrumentation for business-specific telemetry
+
+## Architecture Benefits
 
 ![Scout OTel Native Architecture](/img/otel-scout-base14.svg)
+
+- Native OpenTelemetry support ensures future-proof observability
+- Scalable collection and processing of telemetry data
+- Efficient storage optimized for different signal types
+- Correlation between logs, metrics, and traces
+- Built-in support for service maps and dependency analysis
 
 ## Getting Started
 
