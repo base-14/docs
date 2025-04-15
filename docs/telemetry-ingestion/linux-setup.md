@@ -1,14 +1,39 @@
-# Linux OpenTelemetry Collector Setup
+# Installing OpenTelemetry Collector on Linux
 
-This guide explains how to install the OpenTelemetry Collector on Linux systems.
-Our solution leverages the official OpenTelemetry Collector releases to provide
-a standards-compliant telemetry collection solution.
+This comprehensive guide walks you through installing and configuring the
+OpenTelemetry Collector on Linux systems.
 
-Every OpenTelemetry Collector release includes APK, DEB, and RPM packaging for
-Linux amd64/arm64/i386 systems. After installation, you can find the default
-configuration in `/etc/otelcol/config.yaml`.
+Whether you're using Debian, Red Hat, or other Linux distributions,
+you'll learn how to set up telemetry collection for your observability needs.
 
-> Note: `systemd` is required for automatic service configuration.
+## Overview
+
+The OpenTelemetry Collector is a vendor-agnostic agent that collects, processes,
+and exports telemetry data. This guide covers:
+
+- Installing OpenTelemetry Collector via DEB packages (Ubuntu, Debian)
+- Installing OpenTelemetry Collector via RPM packages (RHEL, CentOS, Fedora)
+- Manual installation for other Linux distributions
+- Post-installation configuration and service management
+- Troubleshooting and logging
+
+## System Requirements
+
+- Linux operating system (amd64/arm64/i386)
+- `systemd` for service management
+- Root or sudo access
+- Minimum 512MB RAM
+- 1GB free disk space
+
+## Package Availability
+
+Official OpenTelemetry Collector packages are available in the following formats:
+
+- DEB packages for Debian-based systems
+- RPM packages for Red Hat-based systems
+- Precompiled binaries for manual installation
+
+Default configuration path: `/etc/otelcol/config.yaml`
 
 ## DEB Installation
 
@@ -161,8 +186,7 @@ tar -xvf otelcol_0.47.0_linux_ppc64le.tar.gz
 
 By default, the `otelcol` systemd service starts with the
 `--config=/etc/otelcol/config.yaml` option after installation. This
-configuration follows
-the [OpenTelemetry Collector Configuration](https://opentelemetry.io/docs/collector/configuration/)
+configuration follows the [OpenTelemetry Collector Configuration](https://opentelemetry.io/docs/collector/configuration/)
 standards.
 
 To customize the collector settings, modify the `OTELCOL_OPTIONS` variable in
