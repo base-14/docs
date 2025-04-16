@@ -51,8 +51,8 @@ import TabItem from '@theme/TabItem';
 ```sh
 sudo apt-get update
 sudo apt-get -y install wget
-wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.47.0/otelcol_0.47.0_linux_amd64.deb
-sudo dpkg -i otelcol_0.47.0_linux_amd64.deb
+wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.124.0/otelcol_0.124.0_linux_amd64.deb
+sudo dpkg -i otelcol_0.124.0_linux_amd64.deb
 ```
 
 ```mdx-code-block
@@ -63,8 +63,8 @@ sudo dpkg -i otelcol_0.47.0_linux_amd64.deb
 ```sh
 sudo apt-get update
 sudo apt-get -y install wget
-wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.47.0/otelcol_0.47.0_linux_arm64.deb
-sudo dpkg -i otelcol_0.47.0_linux_arm64.deb
+wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.124.0/otelcol_0.124.0_linux_arm64.deb
+sudo dpkg -i otelcol_0.124.0_linux_arm64.deb
 ```
 
 ```mdx-code-block
@@ -75,8 +75,8 @@ sudo dpkg -i otelcol_0.47.0_linux_arm64.deb
 ```sh
 sudo apt-get update
 sudo apt-get -y install wget
-wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.47.0/otelcol_0.47.0_linux_386.deb
-sudo dpkg -i otelcol_0.47.0_linux_386.deb
+wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.124.0/otelcol_0.124.0_linux_386.deb
+sudo dpkg -i otelcol_0.124.0_linux_386.deb
 ```
 
 ```mdx-code-block
@@ -97,8 +97,8 @@ following commands:
 ```sh
 sudo yum update
 sudo yum -y install wget systemctl
-wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.47.0/otelcol_0.47.0_linux_amd64.rpm
-sudo rpm -ivh otelcol_0.47.0_linux_amd64.rpm
+wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.124.0/otelcol_0.124.0_linux_amd64.rpm
+sudo rpm -ivh otelcol_0.124.0_linux_amd64.rpm
 ```
 
 ```mdx-code-block
@@ -109,8 +109,8 @@ sudo rpm -ivh otelcol_0.47.0_linux_amd64.rpm
 ```sh
 sudo yum update
 sudo yum -y install wget systemctl
-wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.47.0/otelcol_0.47.0_linux_arm64.rpm
-sudo rpm -ivh otelcol_0.47.0_linux_arm64.rpm
+wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.124.0/otelcol_0.124.0_linux_arm64.rpm
+sudo rpm -ivh otelcol_0.124.0_linux_arm64.rpm
 ```
 
 ```mdx-code-block
@@ -121,8 +121,8 @@ sudo rpm -ivh otelcol_0.47.0_linux_arm64.rpm
 ```sh
 sudo yum update
 sudo yum -y install wget systemctl
-wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.47.0/otelcol_0.47.0_linux_386.rpm
-sudo rpm -ivh otelcol_0.47.0_linux_386.rpm
+wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.124.0/otelcol_0.124.0_linux_386.rpm
+sudo rpm -ivh otelcol_0.124.0_linux_386.rpm
 ```
 
 ```mdx-code-block
@@ -143,8 +143,8 @@ it manually:
 ```
 
 ```sh
-curl --proto '=https' --tlsv1.2 -fOL https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.47.0/otelcol_0.47.0_linux_amd64.tar.gz
-tar -xvf otelcol_0.47.0_linux_amd64.tar.gz
+curl --proto '=https' --tlsv1.2 -fOL https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.124.0/otelcol_0.124.0_linux_amd64.tar.gz
+tar -xvf otelcol_0.124.0_linux_amd64.tar.gz
 ```
 
 ```mdx-code-block
@@ -153,8 +153,8 @@ tar -xvf otelcol_0.47.0_linux_amd64.tar.gz
 ```
 
 ```sh
-curl --proto '=https' --tlsv1.2 -fOL https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.47.0/otelcol_0.47.0_linux_arm64.tar.gz
-tar -xvf otelcol_0.47.0_linux_arm64.tar.gz
+curl --proto '=https' --tlsv1.2 -fOL https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.124.0/otelcol_0.124.0_linux_arm64.tar.gz
+tar -xvf otelcol_0.124.0_linux_arm64.tar.gz
 ```
 
 ```mdx-code-block
@@ -163,8 +163,8 @@ tar -xvf otelcol_0.47.0_linux_arm64.tar.gz
 ```
 
 ```sh
-curl --proto '=https' --tlsv1.2 -fOL https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.47.0/otelcol_0.47.0_linux_386.tar.gz
-tar -xvf otelcol_0.47.0_linux_386.tar.gz
+curl --proto '=https' --tlsv1.2 -fOL https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.124.0/otelcol_0.124.0_linux_386.tar.gz
+tar -xvf otelcol_0.124.0_linux_386.tar.gz
 ```
 
 ```mdx-code-block
@@ -173,8 +173,8 @@ tar -xvf otelcol_0.47.0_linux_386.tar.gz
 ```
 
 ```sh
-curl --proto '=https' --tlsv1.2 -fOL https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.47.0/otelcol_0.47.0_linux_ppc64le.tar.gz
-tar -xvf otelcol_0.47.0_linux_ppc64le.tar.gz
+curl --proto '=https' --tlsv1.2 -fOL https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.124.0/otelcol_0.124.0_linux_ppc64le.tar.gz
+tar -xvf otelcol_0.124.0_linux_ppc64le.tar.gz
 ```
 
 ```mdx-code-block
