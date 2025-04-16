@@ -1,7 +1,6 @@
 # OTel Collector on Linux
 
-This comprehensive guide walks you through installing and configuring the
-OpenTelemetry Collector on Linux systems.
+Install and configure the OpenTelemetry Collector on Linux systems.
 
 Whether you're using Debian, Red Hat, or other Linux distributions,
 you'll learn how to set up telemetry collection for your observability needs.

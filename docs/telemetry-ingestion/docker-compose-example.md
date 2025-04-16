@@ -25,13 +25,16 @@ logs and metrics using OpenTelemetry Collector and forwarding them to base14 Sco
 
 ## Configuration
 
-This section demonstrates how to set up a complete observability pipeline using Docker Compose. The setup includes:
+This section demonstrates how to set up a complete observability pipeline using
+Docker Compose. The setup includes:
+
 - A sample web application with Redis backend
 - OpenTelemetry Collector for telemetry collection
 
 ### Docker Compose Configuration
 
 The following `docker-compose.yml` configuration creates a three-service stack:
+
 1. A web service running a Python application
 2. A Redis instance for data storage
 3. OpenTelemetry Collector for telemetry processing
@@ -103,6 +106,7 @@ The OpenTelemetry Collector is configured with multiple components to provide
 comprehensive observability:
 
 #### Key Features
+
 - **Metrics Collection**:
   - Redis metrics monitoring
   - Docker container stats collection
@@ -119,6 +123,7 @@ comprehensive observability:
   - Debug capabilities via zPages UI
 
 #### Components Overview
+
 ```yaml title="otelcol-config.yaml"
 extensions:
   zpages:

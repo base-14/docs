@@ -4,8 +4,8 @@ sidebar_position: 3
 
 # OTel Collector on Kubernetes using Helm
 
-This guide walks you through deploying and configuring the Scout OpenTelemetry
-Collector on Kubernetes using Helm.
+Deploy and configure the base14 Scout OpenTelemetry Collector on Kubernetes
+using Helm.
 
 ## Overview
 

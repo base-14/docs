@@ -4,20 +4,32 @@ sidebar_position: 1
 
 # OTel Collector Binary Example
 
+Set up and configure the OpenTelemetry Collector through binary downloaded from
+releases page.
+
 ## Overview
 
 This guide demonstrates how to set up and configure the OpenTelemetry Collector binary
-for collecting and exporting telemetry data to base14 Scout. You'll learn how to:
+for collecting and exporting telemetry data to base14 Scout.
 
-- Install the OpenTelemetry Collector binary
-- Configure the collector for logs collection
-- Run a sample application with structured logging
+- Binary installation and configuration
+- Log collection setup with file monitoring
+- Secure data export with OAuth2 authentication
+- Sample application integration
+
+### Key Features
+
+- **Easy Installation**: Direct binary download and setup
+- **Flexible Configuration**: YAML-based configuration
+- **Secure Authentication**: Built-in OAuth2 support
+- **Data Processing**: Log filtering and batching
+- **Real-time Monitoring**: Live log collection and export
 
 ## Prerequisites
 
 - `curl` command-line tool
 - `Node.js` (for running the example application)
-- A base14 Scout account with authentication credentials
+- A base14 Scout account with valid authentication credentials
 
 ## Install the collector binary
 
