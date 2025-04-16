@@ -28,8 +28,8 @@ An example of how to download and extract the collector binary is shown below
 for macos arm64.
 
 ```bash
-curl --proto '=https' --tlsv1.2 -fOL https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.124.0/otelcol_0.124.0_darwin_arm64.tar.gz
-tar -xvf otelcol_0.124.0_darwin_arm64.tar.gz
+curl --proto '=https' --tlsv1.2 -fOL https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.119.0/otelcol_0.119.0_darwin_arm64.tar.gz
+tar -xvf otelcol_0.119.0_darwin_arm64.tar.gz
 ```
 
 ## Example configuration
