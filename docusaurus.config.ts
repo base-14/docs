@@ -137,6 +137,7 @@ const config: Config = {
       copyright: `Copyright © ${new Date().getFullYear()} base14. Built with Docusaurus.`,
     },
     prism: {
+      additionalLanguages: ["powershell"],
       theme: prismThemes.oneLight,
       darkTheme: prismThemes.oneDark,
     },
