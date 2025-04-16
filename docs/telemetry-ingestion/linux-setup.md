@@ -1,4 +1,4 @@
-# Installing OpenTelemetry Collector on Linux
+# OTel Collector on Linux
 
 This comprehensive guide walks you through installing and configuring the
 OpenTelemetry Collector on Linux systems.

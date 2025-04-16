@@ -2,16 +2,36 @@
 sidebar_position: 3
 ---
 
-# Kubernetes Helm Setup
+# OTel Collector on Kubernetes using Helm
 
-This guide demonstrates how to configure Scout's OpenTelemetry Collector to
-collect logs, metrics and traces from
-Kubernetes pods and forward them to Scout. We'll use Helm to install the
-collector and configure it to collect the
-telemetry from all pods in the all the namespaces (except the configured system
-kube-system).
+This guide walks you through deploying and configuring the Scout OpenTelemetry
+Collector on Kubernetes using Helm.
 
-## Install the Helm Chart
+## Overview
+
+This guide covers how to collect telemetry data (logs, metrics, and traces)
+from your Kubernetes environment and send it to base14 Scout.
+
+- Install base14 Scout's OpenTelemetry Collector using Helm
+- Configure telemetry collection for Kubernetes pods
+- Set up multi-namespace monitoring
+- Configure custom metrics endpoints
+- Implement trace collection
+
+## Prerequisites
+
+- A Kubernetes cluster (EKS, GKE, AKS, or other distributions)
+- Helm 3.x installed
+- `kubectl` configured with cluster access
+- Scout account credentials
+  - Endpoint URL
+  - API Key
+  - Token URL
+  - Application Name
+
+## Quick Start Guide
+
+Deploy base14 Scout OpenTelemetry Collector in minutes by following these steps:
 
 ```bash
 helm repo add base14 https://charts.base14.io/
@@ -22,13 +42,15 @@ helm install scout base14/scout-collector  \
 --namespace scout --create-namespace -f values.yaml
 ```
 
-## Detailed configuration via values.yaml
+## Configuration Guide
 
-Following is an example of a values.yaml file that can be used to configure
-scout colllector.
+### Basic Configuration
 
-```yaml
+The `values.yaml` file below demonstrates a standard configuration for the base14
+Scout collector. This configuration is suitable for most deployments and
+covers essential telemetry collection.
 
+```yaml title="values.yaml"
 scout:
   endpoint: __YOUR_ENDPOINT__
   tokenUrl: __YOUR_TOKEN_URL__
@@ -47,27 +69,45 @@ scout:
           target: haproxy.gateway.svc.cluster.local
 ```
 
-## Scout helm chart uses the above configuration to configure the OpenTelemetry Collector
+#### Features Enabled by Default
 
-1. Collects logs for the current cluster
-2. Sends k8s events data.
-3. Sends node and pods metrics data.
-4. Sends apps metrics data for the configured app endpoints.
-5. Sets up a local otlp endpoint for apps to send traces which are then
-   forwarded to Scout.
+The Scout Helm chart automatically configures the following telemetry
+collection capabilities:
 
-## Using Otelcol style configuration
+1. **Cluster Logging**: Complete log collection from all cluster components
+2. **Kubernetes Events**: Real-time monitoring of all cluster events
+3. **Resource Metrics**: Comprehensive metrics from nodes and pods
+4. **Application Metrics**: Custom metrics from specified application endpoints
+5. **Distributed Tracing**: OTLP endpoint for trace collection and forwarding
 
-Following is an example of a values.yaml file that can be used to configure
-scout collector using otelcol style
-configuration. Here the configuration follows the same semantics as the
-OpenTelemetry Collector otelcol config. This
-gives a greater flexibility in terms of what you can configure to be scraped,
-collected etc. Reference
-the [otelcol-config](/otelcol-config/otelcol-config.md) for more details.
+### Advanced Configuration (OpenTelemetry Native)
+
+For advanced use cases, base14 Scout supports native OpenTelemetry Collector
+configuration, giving you complete control over your telemetry pipeline:
+
+#### Key Capabilities
+
+- **Receivers**:
+  Configure custom data ingestion points for metrics, traces, and logs
+- **Processors**:
+  Apply transformations, filtering, and batching to your telemetry data
+- **Exporters**: Set up multiple export destinations with custom authentication
+- **Extensions**:
+  Enable advanced features like health checks, debugging, and custom authentication
+- **Custom Pipelines**: Design specialized data flows for different telemetry types
+
+#### Common Use Cases
+
+- Multi-cluster telemetry aggregation
+- Complex data transformation requirements
+- Custom authentication mechanisms
+- High-performance pipeline optimization
+- Integration with external monitoring systems
+
+For detailed configuration options and examples,
+see our [OpenTelemetry Configuration Guide](/otelcol-config/otelcol-config.md).
 
 ```yaml
-
 scout:
   endpoint: __YOUR_ENDPOINT__
   tokenUrl: __YOUR_TOKEN_URL__
@@ -124,5 +164,4 @@ scout:
             receivers: [otlp]
             processors: [batch]
             exporters: [otlphttp/base14]
-
 ```

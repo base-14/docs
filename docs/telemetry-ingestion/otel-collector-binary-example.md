@@ -82,17 +82,23 @@ service:
 
 ## Run a Sample Node.js Application
 
-Let's create a simple Node.js application that generates structured logs using the `pino` logging library. The OpenTelemetry Collector will collect these logs and forward them to Scout.
+Let's create a simple Node.js application that generates structured logs using
+the `pino` logging library. The OpenTelemetry Collector will collect these
+logs and forward them to Scout.
 
 ### 1. Install Dependencies
-First, install the `pino` logging library, which provides structured JSON logging capabilities:
+
+First, install the `pino` logging library, which provides structured JSON
+logging capabilities:
 
 ```bash
 npm install pino
 ```
 
 ### 2. Create the Application
-Create a new file called `main.js` with the following code that demonstrates basic logging functionality:
+
+Create a new file called `main.js` with the following code that demonstrates
+basic logging functionality:
 
 ```js title="main.js"
 const logger = require('pino')()
@@ -104,7 +110,9 @@ child.info('hello child!')
 ```
 
 ### 3. Run the Application
-Execute the application and redirect its output to `app.log`. The OpenTelemetry Collector will monitor this file as configured in the previous section:
+
+Execute the application and redirect its output to `app.log`. The OpenTelemetry
+Collector will monitor this file as configured in the previous section:
 
 ```bash
 node main.js > app.log
@@ -120,4 +128,5 @@ After running the application, you can view the collected logs in Scout:
    - A "hello world" message from the root logger
    - A "hello child!" message with an additional property `{a: 'property'}`
 
-The logs will appear with timestamps and other metadata added by the OpenTelemetry Collector.
+The logs will appear with timestamps and other metadata added by the
+OpenTelemetry Collector.
