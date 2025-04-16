@@ -2,42 +2,44 @@
 sidebar_position: 2
 ---
 
-# Docker Compose Example
+# OTel Collector on Docker Compose
 
-This guide demonstrates how to configure Docker container log collection using
-the OpenTelemetry Collector and forward
-those logs to Scout. We'll use Docker Compose to set up both a sample
-application and the collector.
-
-## Prerequisites
-
-Docker and Docker Compose installed on your system
-A Scout account with access credentials\
+Collect and monitor Docker container logs using OpenTelemetry Collector and
+base14 Scout with a complete `Docker Compose` setup.
 
 ## Overview
 
-The OpenTelemetry Collector's file logs receiver component enables collection of
-Docker container logs. When properly
-configured, the collector will:
+This guide provides a comprehensive setup for collecting Docker container
+logs and metrics using OpenTelemetry Collector and forwarding them to base14 Scout.
 
-- Monitor container log files
-- Process and transform the logs
-- Forward them to your Scout instance
+- Set up a complete logging pipeline using `Docker Compose`
+- Configure OpenTelemetry Collector for container log and metrics collection
+- Transform and process logs with custom operators
+- Forward telemetry data to Scout platform
+
+## Prerequisites
+
+- Docker Engine (version 20.10+) installed
+- Docker Compose (version 2.0+) installed
+- A base14 Scout account with valid access credentials
 
 ## Configuration
 
-The following example uses Docker Compose to create a complete logging pipeline
-with a sample application and the
-OpenTelemetry Collector.
+This section demonstrates how to set up a complete observability pipeline using
+Docker Compose. The setup includes:
+
+- A sample web application with Redis backend
+- OpenTelemetry Collector for telemetry collection
 
 ### Docker Compose Configuration
 
-Following is a sample docker-compose.yml file that sets up a sample application
-that uses redis as a component and the
-OpenTelemetry Collector.
+The following `docker-compose.yml` configuration creates a three-service stack:
 
-```yaml
+1. A web service running a Python application
+2. A Redis instance for data storage
+3. OpenTelemetry Collector for telemetry processing
 
+```yaml title="docker-compose.yml"
 version: '3.8'
 
 x-default-logging: &logging
@@ -100,15 +102,29 @@ volumes:
 
 ### Collector Configuration
 
-OpenTelemetry Collector is configured to
+The OpenTelemetry Collector is configured with multiple components to provide
+comprehensive observability:
 
-- Monitor Redis metrics
-- Monitor logs for all containers using json logs driver and filereciver
-- Collect telemetry data into otel-collector container and then forward them to
-  Scout using an otlp exporter
+#### Key Features
 
-```yaml
+- **Metrics Collection**:
+  - Redis metrics monitoring
+  - Docker container stats collection
+  - Application metrics via OTLP protocol
 
+- **Log Management**:
+  - Container log collection using JSON driver
+  - Automated log parsing and attribute extraction
+  - Custom log processing pipeline
+
+- **Data Export**:
+  - Secure forwarding to base14 Scout platform
+  - OAuth2 authentication
+  - Debug capabilities via zPages UI
+
+#### Components Overview
+
+```yaml title="otelcol-config.yaml"
 extensions:
   zpages:
     endpoint: 0.0.0.0:55679
