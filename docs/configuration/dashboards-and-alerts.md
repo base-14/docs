@@ -221,6 +221,7 @@ grizzly_linux_amd64 -o grizzly
 
       - name: Apply Grafana Resources
         run: grr apply -f .
+```
 
 ### In this workflow
 
