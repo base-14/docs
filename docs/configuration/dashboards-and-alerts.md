@@ -36,7 +36,7 @@ grr config set grafana.url <your_base14_grafana_url>
 grr config set grafana.token <your_base14_grafana_api_token>
 ```
 
-Replace <your_base14_grafana_url> with the actual URL of your Grafana instance.
+Replace `<your_base14_grafana_url>` with the actual URL of your Grafana instance.
 
 ## Defining Grafana Resources with YAML
 
@@ -154,7 +154,7 @@ To use Jsonnet with Grizzly, you would typically:
 * Use Grizzly to apply the generated .json files.
 
 For detailed information and examples of using Jsonnet with Grafana, please refer
-to the official Jsonnet documentation: <https://jsonnet.org/> and Grafana's
+to the official [Jsonnet documentation](https://jsonnet.org/): and Grafana's
 documentation on using Jsonnet for dashboards.
 
 ## Automation Examples
