@@ -1,9 +1,8 @@
 {
-    "label": "Configuration",
-    "position": 4,
-    "link": {
-      "type": "generated-index",
-      "description": "10 minutes guide on configuration management."
-    }
+  "label": "Configuration",
+  "position": 4,
+  "link": {
+    "type": "generated-index",
+    "description": "10 minutes guide on configuration management."
   }
-  
+}
