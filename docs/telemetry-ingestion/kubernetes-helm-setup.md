@@ -105,7 +105,7 @@ configuration, giving you complete control over your telemetry pipeline:
 - Integration with external monitoring systems
 
 For detailed configuration options and examples,
-see our [OpenTelemetry Configuration Guide](/otelcol-config/otelcol-config.md).
+see our [OpenTelemetry Configuration Guide](/otelcol-config/otel-collector-config.md).
 
 ```yaml
 scout:

@@ -1,42 +1,62 @@
 # Express
 
-This guide demonstrates how to Auto instrument tracing and metrics using
-OpenTelemetry for Express and export them to a collector using OTEL sdk.
+Implement OpenTelemetry instrumentation for `Express.js` applications to collect
+traces, metrics and monitor HTTP requests using the `Node.js` OTel SDK.
 
 > **Note:** This guide provides a concise overview based on the official
 > OpenTelemetry documentation. For complete information, please consult
 > the
 > [official OpenTelemetry documentation](https://opentelemetry.io/docs/languages/js/instrumentation/).
 
-## Setup
+## Overview
 
-opentelemetry-api defines the API interfaces for tracing, metrics, and logging
-and opentelemetry-sdk provides the implementation for these APIs.
-Run the following commands to install the necessary packages or add it to
-`package.json` and install it.
+This guide demonstrates how to:
 
-```plaintext
-'@opentelemetry/api'
-'@opentelemetry/resources'
-'@opentelemetry/sdk-node'
-'@opentelemetry/semantic-conventions'
-```
+- Set up OpenTelemetry instrumentation for `Express.js`
+- Configure automatic request and response tracing
+- Implement custom instrumentation
+- Collect HTTP metrics
+- Export telemetry data to OpenTelemetry Collector
+
+## Prerequisites
+
+Before starting, ensure you have:
+
+- Node.js 14 or later installed
+- An application with `Express.js`
+- Access to npm for package installation
 
 :::warning
-
 Make sure you have set up the local development environment as
-described in [here](../local-dev-env-setup.md).
+described [here](../local-dev-env-setup.md).
 :::
 
-## Initialization
+## Required Packages
 
-Before any other module in your application is loaded, you must initialize the
-SDK. If you fail to initialize the SDK or initialize it too late, no-op
-implementations will be provided to any library that acquires a tracer or meter
-from the API.
+`opentelemetry-api` defines the API interfaces for tracing, metrics and logging;
+`opentelemetry-sdk` provides the implementation for these APIs.
 
-```typescript
-// src/utils/telemetry.ts
+Install the following necessary packages or add it to `package.json`
+and install it.
+
+```plaintext
+@opentelemetry/api
+@opentelemetry/resources
+@opentelemetry/sdk-node
+@opentelemetry/semantic-conventions
+```
+
+## Configuration
+
+The setup process involves three main components:
+
+1. **SDK Initialization**:
+
+- Configure OpenTelemetry SDK
+- Set up resource attributes
+- Initialize trace and metric exporters
+
+```typescript title="src/utils/telemetry.ts"
 
 import {NodeSDK} from '@opentelemetry/sdk-node';
 import {PeriodicExportingMetricReader} from '@opentelemetry/sdk-metrics';
@@ -67,20 +87,20 @@ const sdk = new NodeSDK({
 sdk.start();
 ```
 
-```typescript
-// src/index.ts ( Main Entry Point )
+```typescript title="src/index.ts"
+// ( Main Entry Point )
 // Before importing Anything importing this would initilize the sdk
 
 import '../src/utils/telemetry';
 ```
 
-## Capturing Request and Response Info
+1. **Middleware Configuration**:
 
-We will have a middleware which capture the request headers, url, path and the
-response headers.
+- Set up request tracking
+- Configure response monitoring
+- Implement error handling
 
-```typescript
-//src/middlewares/telemetryMiddleware.ts
+```typescript title="src/middlewares/telemetryMiddleware.ts"
 
 import {Request, Response, NextFunction} from 'express';
 import {context, trace, SpanStatusCode, metrics} from '@opentelemetry/api';
@@ -152,8 +172,7 @@ export function telemetryMiddleware(
 }
 ```
 
-```typescript
-// src/index.ts
+```typescript title="src/index.ts"
 
 import {telemetryMiddleware} from './middleware/telemetryMiddleware';
 
@@ -165,16 +184,16 @@ app.use(telemetryMiddleware);
 > This will capture the request and response information and construct traces
 > out of it.
 
-## Traces
+### Traces
 
 Traces give us the big picture of what happens when a request is made to an
 application. Whether your application is a monolith with a single
 database or a sophisticated mesh of services, traces are essential to
 understanding the full “path” a request takes in your application.
 
-### Custom Instrumentation
+#### Custom Instrumentation
 
-#### Add Span Attributes in Child Functions
+##### Add Span Attributes in Child Functions
 
 ```typescript
 import opentelemetry from '@opentelemetry/api';
@@ -192,9 +211,11 @@ const do_work = () => {
 }
 ```
 
+###### Reference
+
 [Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
 
-### Create Nested Spans
+##### Create Nested Spans
 
 ```typescript
 import opentelemetry from '@opentelemetry/api';
@@ -219,7 +240,7 @@ const child_func = () => {
 };
 ```
 
-### Add Span Events
+##### Add Span Events
 
 ```typescript
 import opentelemetry from '@opentelemetry/api';
@@ -237,16 +258,23 @@ const do_work = () => {
 }
 ```
 
+Once configured, trace data will be automatically collected and sent to
+the OpenTelemetry Collector.
+
+> View these traces in base14 Scout observability backend.
+
+###### Reference
+
 [Official Span Events Documentation](https://opentelemetry.io/docs/concepts/signals/traces/#span-events)
 
-## Metrics
+### Metrics
 
 Metrics combine individual measurements into aggregates, and produce data which
 is constant as a function of system load. Aggregates lack details required to
 diagnose low level issues, but complement spans by helping to identify trends
 and providing application runtime telemetry.
 
-### Add a Counter Metric
+#### Add a Counter Metric
 
 ```typescript
 import {metrics} from '@opentelemetry/api';
@@ -264,5 +292,12 @@ totalRequestsCounter.add(1, {
 });
 
 ```
+
+Metrics will be automatically exported to the OpenTelemetry Collector at the
+configured interval.
+
+> View these metrics in base14 Scout observability backend.
+
+##### Reference
 
 [Official Metrics Documentation](https://opentelemetry.io/docs/concepts/signals/metrics/)

@@ -1,9 +1,8 @@
 {
-    "label": "OpenTelemetry Collector Configuration",
+    "label": "OTel Collector Configuration",
     "position": 2,
     "link": {
       "type": "generated-index",
-      "description": "10 minutes to learn about how to configure OpenTelemetry Collector."
+      "description": "Learn how to configure the OpenTelemetry Collector (otelcol) with detailed guides covering core components, exporters, and the base14 Scout integration. Includes configuration examples, best practices, and step-by-step setup instructions."
     }
   }
-  

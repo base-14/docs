@@ -1,19 +1,43 @@
 # Celery
 
-This guide demonstrates how to Auto instrument tracing, metrics and logs using
-OpenTelemetry for Celery and export them to a collector using python OTEL sdk.
+Implement OpenTelemetry auto instrumentation for `Celery` to collect
+logs, metrics and traces using the `Python` OTel SDK.
 
 > **Note:** This guide provides a concise overview based on the official
 > OpenTelemetry documentation. For complete information, please consult
 > the
 > [official OpenTelemetry documentation](https://opentelemetry-python-contrib.readthedocs.io/en/latest/instrumentation/celery/celery.html).
 
-## Setup
+## Overview
 
-opentelemetry-api defines the API interfaces for tracing, metrics, and logging
-and opentelemetry-sdk provides the implementation for these APIs.
-Install the following necessary packages or add it to
-`requirements.txt` and install it.
+This guide demonstrates how to:
+
+- Set up OpenTelemetry instrumentation for `Celery`
+- Configure automatic tracing for task execution
+- Collect metrics from Celery workers
+- Capture structured logs from Celery operations
+- Export telemetry data to OpenTelemetry Collector
+
+## Prerequisites
+
+Before starting, ensure you have:
+
+- Python 3.7 or later installed
+- A project set up with Celery
+- Access to package installation (`pip`)
+
+:::warning
+Ensure the local development environment is complete as described
+[here](../local-dev-env-setup.md).
+:::
+
+## Required Packages
+
+`opentelemetry-api` defines the API interfaces for logging, metrics, and tracing;
+`opentelemetry-sdk` provides the implementation for these APIs.
+
+Install the following necessary packages or add it to `requirements.txt`
+and install it.
 
 ```plaintext
 opentelemetry-api
@@ -22,20 +46,36 @@ opentelemetry-exporter-otlp-proto-http
 opentelemetry-instrumentation-celery
 ```
 
-:::warning
+## Configuration
 
-Make sure you have set up the local development environment as
-described in [here](../local-dev-env-setup.md).
-:::
+The setup process involves three main components:
 
-## Traces
+1. **Traces Configuration**:
+
+- Initialize Celery instrumentation
+- Configure trace context propagation
+- Set up custom span attributes
+
+1. **Metrics Configuration**:
+
+- Set up meter provider
+- Configure metric exporters
+- Define collection intervals
+
+1. **Logs Configuration**:
+
+- Initialize logger provider
+- Set up log processors
+- Configure log exporters
+
+### Traces
 
 Traces give us the big picture of what happens when a request is made to an
 application. Whether your application is a monolith with a single
 database or a sophisticated mesh of services, traces are essential to
 understanding the full “path” a request takes in your application.
 
-### Auto Instrumentation of Traces
+#### Auto Instrumentation of Traces
 
 ```python
 from opentelemetry.instrumentation.celery import CeleryInstrumentor
@@ -56,11 +96,25 @@ def add(x, y):
 add.delay(42, 50)
 ```
 
-> Trace data will now be sent to the OTEL Collector.
+Once configured, trace data will be automatically collected and sent to
+the OpenTelemetry Collector with the following details:
+
+- Task execution spans
+- Task arguments and results
+- Task timing information
+- Error details (if any)
+- Distributed context propagation
+
+> View your traces in the base14 Scout observability platform.
+>
+> **Note**: Ensure your OpenTelemetry Collector is properly configured to
+> receive and process the trace data.
+
+#### Reference
 
 [Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
 
-### Adding Custom Instrumentation
+#### Adding Custom Instrumentation
 
 ```python
 from opentelemetry.propagate import inject, extract
@@ -80,8 +134,7 @@ app = Celery("tasks", broker="amqp://localhost")
 def add(x, y, carrier):
     with tracer.start_as_current_span("add", context=ctx):
         return x + y
-    
-    
+
 def do_work():
     carrier = {}
     inject(carrier)
@@ -93,18 +146,22 @@ def do_work():
         ctx = extract(context)
     else:
         ctx = get_current()
-        
+
 do_work()
 ```
 
-## Metrics
+### Metrics
 
-A metric is a measurement of a service captured at runtime. The moment of
-capturing a measurements is known as a metric event, which consists not only of
-the measurement itself, but also the time at which it was captured and
-associated metadata.
+OpenTelemetry metrics provide quantitative data about service behavior and
+performance. Celery metrics capture:
 
-### Auto Instrumentation of Metrics
+- Task execution times
+- Queue lengths
+- Worker status
+- Task success/failure rates
+- Resource utilization
+
+#### Auto Instrumentation of Metrics
 
 ```python
 from opentelemetry.instrumentation.celery import CeleryInstrumentor
@@ -122,6 +179,7 @@ def init_celery_tracing(*args, **kwargs):
 
 app = Celery("tasks", broker="amqp://localhost")
 
+# Configure metrics with service name and export interval
 resource = Resource(attributes={SERVICE_NAME: "celery"})
 metric_reader = PeriodicExportingMetricReader(
     OTLPMetricExporter(endpoint="http://0.0.0.0:4318/v1/metrics"),
@@ -138,16 +196,35 @@ def add(x, y):
 add.delay(42, 50)
 ```
 
-> Metrics will now be exported to the OTEL Collector.
+Key metrics collected:
+
+- `celery.task.execution.time`: Duration of task execution
+- `celery.tasks.pending`: Number of tasks waiting in queue
+- `celery.workers.active`: Count of active workers
+- `celery.task.retries`: Number of task retry attempts
+- `celery.memory.usage`: Memory consumption by workers
+
+Metrics will be automatically exported to the OpenTelemetry Collector at the
+configured interval.
+
+> View these metrics in base14 Scout observability backend.
+
+#### Reference
 
 [Official Metrics Documentation](https://opentelemetry.io/docs/concepts/signals/metrics/)
 
-## Logs
+### Logs
 
-A log is a timestamped text record, either structured (recommended) or
-unstructured, with optional metadata.
+OpenTelemetry logs provide detailed insights into application behavior through
+structured records. The Celery logging integration captures:
 
-### Auto Instrumentation of Logs
+- Task execution events
+- Worker state changes
+- Error conditions
+- System statistics
+- Queue operations
+
+#### Auto Instrumentation of Logs
 
 ```python
 from opentelemetry.instrumentation.celery import CeleryInstrumentor
@@ -156,7 +233,6 @@ from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
 from opentelemetry.exporter.otlp.proto.http._log_exporter import OTLPLogExporter
 from opentelemetry import _logs
 import logging
-
 
 from celery import Celery
 from celery.signals import worker_process_init
@@ -167,18 +243,22 @@ def init_celery_tracing(*args, **kwargs):
 
 app = Celery("tasks", broker="amqp://localhost")
 
-
+# Configure logger provider with resource attributes
 provider = LoggerProvider(resource=resource)
 _logs.set_logger_provider(provider)
 
+# Set up OTLP log exporter
 log_exporter = OTLPLogExporter(endpoint="http://localhost:4318/v1/logs")
 provider.add_log_record_processor(BatchLogRecordProcessor(log_exporter))
 
+# Configure logging handler
 otel_handler = LoggingHandler(level=logging.INFO)
 
+# Set up root logger
 root_logger = logging.getLogger()
 root_logger.addHandler(otel_handler)
 
+# Configure Celery-specific loggers
 for name in [
     "celery",
     "celery.app.trace",
@@ -197,6 +277,10 @@ def add(x, y):
 add.delay(42, 50)
 ```
 
-> Logs will now be exported to OTEL Collector.
+Logs will be automatically exported to the OpenTelemetry Collector.
+
+> View these metrics in base14 Scout observability backend.
+
+#### Reference
 
 [Official Logs Documentation](https://opentelemetry.io/docs/concepts/signals/logs/)

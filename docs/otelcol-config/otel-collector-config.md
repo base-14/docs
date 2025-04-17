@@ -1,18 +1,31 @@
-# OpenTelemetry Collector Configuration Guide
+# Configure OTel Collector (otelcol)
 
-The OpenTelemetry Collector (otelcol) is a vendor-agnostic implementation that
-receives, processes, and exports
-telemetry data. Its configuration is defined in YAML and consists of several
-major sections that control different
-aspects of telemetry data handling.
+Collect, process and export telemetry data efficiently with
+the OpenTelemetry Collector (`otelcol`).
 
-## Core Configuration Sections
+## Overview
+
+OpenTelemetry Collector serves as a vendor-agnostic implementation for
+handling telemetry data. This guide covers:
+
+- Core configuration components (receivers, processors, exporters)
+- Advanced configuration options
+- Best practices and examples
+
+## Prerequisites
+
+- Basic understanding of OpenTelemetry concepts
+
+## Configuration
+
+The OpenTelemetry Collector uses YAML for its configuration. The configuration
+file is structured into several sections:
 
 ### receivers
 
-Receivers are the entry points for data into the collector. They define how the
-collector ingests telemetry data from
-various sources.
+OpenTelemetry receivers serve as data ingestion points for the collector,
+accepting telemetry data from multiple sources. They support various protocols
+and formats for collecting logs, metrics and traces.
 
 ```yaml
 receivers:
@@ -31,17 +44,21 @@ receivers:
             - targets: [ '0.0.0.0:8888' ]
 ```
 
-Each receiver has its own configuration settings. For example, the OTLP receiver
-supports both gRPC and HTTP protocols
-with specific endpoint configurations.
+Key features of receivers:
+
+- Protocol support: OTLP, Prometheus, Jaeger, Zipkin
+- Multiple transport options: gRPC, HTTP, TCP
+- Configurable endpoints and TLS settings
+- Custom metadata handling
+
+#### Reference
 
 [Official Receivers Documentation](https://opentelemetry.io/docs/collector/configuration/#receivers)
 
 ### processors
 
 Processors are applied to the data between reception and export. They can
-perform various transformations, filtering,
-and enrichment operations.
+perform various transformations, filtering, and enrichment operations.
 
 ```yaml
 processors:
@@ -68,12 +85,15 @@ Common processors include:
 - `resourcedetection`: Detects resource information
 - `attributes`: Modifies, adds, or removes attributes from the telemetry data
 
+#### Reference
+
 [Official Processors Documentation](https://opentelemetry.io/docs/collector/configuration/#processors)
 
 ### exporters
 
-Exporters define where and how the collected telemetry data is sent after
-processing.
+OpenTelemetry exporters transmit telemetry data to destination backends. They
+handle the delivery of logs, metrics and traces to various
+observability platforms and monitoring systems.
 
 ```yaml
 exporters:
@@ -89,21 +109,27 @@ exporters:
     endpoint: http://zipkin:9411/api/v2/spans
 ```
 
-Exporters can send data to:
+Supported export destinations:
 
-- Other OpenTelemetry Collectors
+- Other OpenTelemetry Collectors e.g. OpenTelemetry protocol (OTLP) endpoints
 - Backend observability platforms
-- Monitoring systems
-- Logging solutions
+- Monitoring systems e.g. Prometheus systems
+- Logging platforms
 - Tracing systems
+
+#### Reference
 
 [Official Exporters Documentation](https://opentelemetry.io/docs/collector/configuration/#exporters)
 
 ### extensions
 
-Extensions provide capabilities that are not directly related to data
-processing, such as health monitoring, service
-discovery, and performance metrics.
+OpenTelemetry Collector extensions enhance core functionality by providing
+operational features such as:
+
+- Health monitoring and readiness checks
+- Performance profiling and debugging
+- Service discovery mechanisms
+- Diagnostic tools and dashboards
 
 ```yaml
 extensions:
@@ -115,19 +141,27 @@ extensions:
     endpoint: 0.0.0.0:55679
 ```
 
-Common extensions include:
+Common OpenTelemetry extensions include:
 
-- `health_check`: Exposes health information
-- `pprof`: Enables pprof endpoint for go profiling
-- `zpages`: Provides in-process diagnostics
+- `health_check`:
+  HTTP endpoint for monitoring collector health and readiness status
+- `pprof`:
+  Performance profiling endpoints for debugging and optimization
+- `zpages`:
+  Zero-configuration diagnostic web pages for troubleshooting
+
+#### Reference
 
 [Official Extensions Documentation](https://opentelemetry.io/docs/collector/configuration/#extensions)
 
 ### service
 
-The service section defines the collector's operational aspects, including which
-components are enabled and how they're
-connected.
+The OpenTelemetry Collector service configuration defines pipeline architecture,
+data flow, and operational settings such as:
+
+- Pipeline definitions for logs, metrics and traces
+- Component enablement and connections
+- Collector telemetry settings
 
 ```yaml
 service:
@@ -154,10 +188,15 @@ service:
 
 Key components:
 
-- `extensions`: Lists enabled extensions
-- `pipelines`: Defines data flow paths for different telemetry types (traces,
-  metrics, logs)
-- `telemetry`: Configuration for the collector's own telemetry
+- `extensions`:
+  Configure and enable operational extensions like health checks, profiling,
+  and diagnostics
+- `pipelines`:
+  Define data processing workflows for different telemetry types
+- `telemetry`:
+  Configuration for the collector's self-monitoring capabilities
+
+#### Reference
 
 [Official Service Documentation](https://opentelemetry.io/docs/collector/configuration/#service)
 
@@ -166,8 +205,11 @@ Key components:
 ### connectors
 
 Connectors function as both exporters and receivers, allowing telemetry data to
-be routed between pipelines internally
-without leaving the collector.
+be routed between pipelines internally without leaving the collector.
+
+- Cross-pipeline data routing
+- Span-to-metrics conversion
+- Internal data transformation
 
 ```yaml
 connectors:
@@ -179,17 +221,31 @@ connectors:
     metrics_flush_interval: 15s
 ```
 
-Common connectors include:
+Common OpenTelemetry connector types include:
 
-- `forward`: Forwards telemetry data between pipelines
-- `spanmetrics`: Generates metrics from spans
+- `forward`:
+  Internal pipeline connector for routing telemetry data between processing chains
+- `spanmetrics`:
+  Generates performance metrics from trace spans for latency analysis
+- `count`:
+  Creates count metrics from spans or logs
+- `servicegraph`:
+  Builds service dependency graphs from trace data
+
+#### Reference
 
 [Official Connectors Documentation](https://opentelemetry.io/docs/collector/configuration/#connectors)
 
 ### telemetry
 
-The telemetry section configures how the collector reports its own operational
-metrics, logs, and traces.
+The OpenTelemetry Collector telemetry configuration manages the collector's
+self-monitoring capabilities, including:
+
+- Internal metrics collection and reporting
+- Diagnostic log management
+- Trace sampling configuration
+- Performance monitoring endpoints
+- Health status reporting
 
 ```yaml
 service:
@@ -203,13 +259,13 @@ service:
       address: 0.0.0.0:8888
 ```
 
-This controls:
+Telemetry configuration options include:
 
 - Log verbosity and format
 - Internal metrics reporting
 - Self-monitoring capabilities
 
-[Official Telemetry Documentation](https://opentelemetry.io/docs/collector/configuration/#service)
+[Official Telemetry Documentation](https://opentelemetry.io/docs/collector/configuration/#telemetry)
 
 ## Configuration Best Practices
 
@@ -230,6 +286,57 @@ This controls:
    load
 5. **Enable Health Checks**: Include health_check extension for monitoring
 6. **Use Batching**: Implement batching for efficient data transmission
+
+## OpenTelemetry Collector Configuration Best Practices
+
+Essential configuration guidelines for optimal OpenTelemetry Collector deployment:
+
+1. **Start Simple**:
+
+- Begin with basic OpenTelemetry configuration
+- Add components incrementally
+- Test each configuration change
+- Validate telemetry flow
+
+1. **Use Environment Variables**:
+
+- Implement dynamic configuration
+- Secure sensitive information
+- Enable deployment flexibility
+
+  ```yaml
+  exporters:
+    otlp:
+      endpoint: ${OTLP_ENDPOINT}
+  ```
+
+1. **Implement Memory Protection**:
+
+- Configure `memory_limiter` processor
+- Prevent out-of-memory (OOM) crashes
+- Set appropriate memory thresholds
+- Monitor memory usage
+
+1. **Resource Management**:
+
+- Configure CPU limits
+- Set memory boundaries
+- Adjust based on telemetry volume
+- Monitor resource utilization
+
+1. **Health Monitoring**:
+
+- Enable `health_check` extension
+- Configure monitoring endpoints
+- Set up alerting
+- Monitor collector status
+
+1. **Performance Optimization**:
+
+- Enable batch processing
+- Configure optimal batch sizes
+- Set appropriate timeouts
+- Monitor throughput metrics
 
 ## Configuration Examples
 
