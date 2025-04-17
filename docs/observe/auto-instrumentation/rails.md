@@ -36,7 +36,7 @@ described [here](../local-dev-env-setup.md).
 Install the following necessary packages by `gem install` or add it to
 `Gemfile` and run `bundle install`.
 
-```plaintext
+```ruby
 gem 'opentelemetry-sdk'
 gem 'opentelemetry-exporter-otlp'
 gem 'opentelemetry-instrumentation-all'
