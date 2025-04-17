@@ -54,7 +54,9 @@ requests
 
 ### Traces
 
-OpenTelemetry traces provide visibility into request flows across your FastAPI application. They help understand:
+OpenTelemetry traces provide visibility into request flows across your `FastAPI`
+application. They help understand:
+
 - Request paths through your services
 - Performance bottlenecks
 - Error sources and propagation
@@ -106,6 +108,7 @@ Key tracing features:
 > View these metrics in base14 Scout observability backend.
 
 ##### Reference
+
 [Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
 
 #### Adding Custom Instrumentation
@@ -189,14 +192,18 @@ class MetricsMiddleware(BaseHTTPMiddleware):
     )
     return response
 ```
+
 Metrics will be automatically exported to the OpenTelemetry Collector at the
-configured interval. `MetricsMiddleware` captures each HTTP request, including the method, path, and status code, and tracks the total request count.
+configured interval. `MetricsMiddleware` captures each HTTP request,
+including the method, path, and status code, and tracks the total request count.
 
 > View these metrics in base14 Scout observability backend.
 
 ##### Reference
+
 [Official Metrics Documentation](https://opentelemetry.io/docs/concepts/signals/metrics/)
 
 ## Sample Application
+>
 > A sample application with OpenTelemetry instrumentation can be found at
 > this [GitHub repository](https://github.com/base-14/examples/tree/main)

@@ -11,6 +11,7 @@ logs, metrics and traces using the `Python` OTel SDK.
 ## Overview
 
 This guide demonstrates how to:
+
 - Set up OpenTelemetry instrumentation for `Celery`
 - Configure automatic tracing for task execution
 - Collect metrics from Celery workers
@@ -20,6 +21,7 @@ This guide demonstrates how to:
 ## Prerequisites
 
 Before starting, ensure you have:
+
 - Python 3.7 or later installed
 - A project set up with Celery
 - Access to package installation (`pip`)
@@ -31,9 +33,11 @@ Ensure the local development environment is complete as described
 
 ## Required Packages
 
-`opentelemetry-api` defines the API interfaces for logging, metrics, and tracing; `opentelemetry-sdk` provides the implementation for these APIs.
+`opentelemetry-api` defines the API interfaces for logging, metrics, and tracing;
+`opentelemetry-sdk` provides the implementation for these APIs.
 
-Install the following necessary packages or add it to `requirements.txt` and install it.
+Install the following necessary packages or add it to `requirements.txt`
+and install it.
 
 ```plaintext
 opentelemetry-api
@@ -41,24 +45,28 @@ opentelemetry-sdk
 opentelemetry-exporter-otlp-proto-http
 opentelemetry-instrumentation-celery
 ```
+
 ## Configuration
 
 The setup process involves three main components:
 
 1. **Traces Configuration**:
-  - Initialize Celery instrumentation
-  - Configure trace context propagation
-  - Set up custom span attributes
 
-2. **Metrics Configuration**:
-  - Set up meter provider
-  - Configure metric exporters
-  - Define collection intervals
+- Initialize Celery instrumentation
+- Configure trace context propagation
+- Set up custom span attributes
 
-3. **Logs Configuration**:
-  - Initialize logger provider
-  - Set up log processors
-  - Configure log exporters
+1. **Metrics Configuration**:
+
+- Set up meter provider
+- Configure metric exporters
+- Define collection intervals
+
+1. **Logs Configuration**:
+
+- Initialize logger provider
+- Set up log processors
+- Configure log exporters
 
 ### Traces
 
@@ -90,6 +98,7 @@ add.delay(42, 50)
 
 Once configured, trace data will be automatically collected and sent to
 the OpenTelemetry Collector with the following details:
+
 - Task execution spans
 - Task arguments and results
 - Task timing information
@@ -98,9 +107,11 @@ the OpenTelemetry Collector with the following details:
 
 > View your traces in the base14 Scout observability platform.
 >
-> **Note**: Ensure your OpenTelemetry Collector is properly configured to receive and process the trace data.
+> **Note**: Ensure your OpenTelemetry Collector is properly configured to
+> receive and process the trace data.
 
 #### Reference
+
 [Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
 
 #### Adding Custom Instrumentation
@@ -143,6 +154,7 @@ do_work()
 
 OpenTelemetry metrics provide quantitative data about service behavior and
 performance. Celery metrics capture:
+
 - Task execution times
 - Queue lengths
 - Worker status
@@ -185,6 +197,7 @@ add.delay(42, 50)
 ```
 
 Key metrics collected:
+
 - `celery.task.execution.time`: Duration of task execution
 - `celery.tasks.pending`: Number of tasks waiting in queue
 - `celery.workers.active`: Count of active workers
@@ -197,6 +210,7 @@ configured interval.
 > View these metrics in base14 Scout observability backend.
 
 #### Reference
+
 [Official Metrics Documentation](https://opentelemetry.io/docs/concepts/signals/metrics/)
 
 ### Logs
@@ -268,4 +282,5 @@ Logs will be automatically exported to the OpenTelemetry Collector.
 > View these metrics in base14 Scout observability backend.
 
 #### Reference
+
 [Official Logs Documentation](https://opentelemetry.io/docs/concepts/signals/logs/)

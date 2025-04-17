@@ -11,6 +11,7 @@ collect traces, metrics, and monitor HTTP requests using the Ruby OTel SDK.
 ## Overview
 
 This guide demonstrates how to:
+
 - Set up OpenTelemetry instrumentation for Rails applications
 - Configure automatic request and database tracing
 - Implement custom instrumentation
@@ -20,6 +21,7 @@ This guide demonstrates how to:
 ## Prerequisites
 
 Before starting, ensure you have:
+
 - Ruby 2.7 or later installed
 - Rails application set up
 - Bundler installed for package management
@@ -155,4 +157,5 @@ the OpenTelemetry Collector.
 > receive and process the trace data.
 
 #### Reference
+
 [Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)

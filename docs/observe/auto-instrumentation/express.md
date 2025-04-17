@@ -11,6 +11,7 @@ traces, metrics and monitor HTTP requests using the `Node.js` OTel SDK.
 ## Overview
 
 This guide demonstrates how to:
+
 - Set up OpenTelemetry instrumentation for `Express.js`
 - Configure automatic request and response tracing
 - Implement custom instrumentation
@@ -20,6 +21,7 @@ This guide demonstrates how to:
 ## Prerequisites
 
 Before starting, ensure you have:
+
 - Node.js 14 or later installed
 - An application with `Express.js`
 - Access to npm for package installation
@@ -33,7 +35,9 @@ described [here](../local-dev-env-setup.md).
 
 `opentelemetry-api` defines the API interfaces for tracing, metrics and logging;
 `opentelemetry-sdk` provides the implementation for these APIs.
-Install the following necessary packages or add it to `package.json` and install it.
+
+Install the following necessary packages or add it to `package.json`
+and install it.
 
 ```plaintext
 @opentelemetry/api
@@ -90,7 +94,7 @@ sdk.start();
 import '../src/utils/telemetry';
 ```
 
-2. **Middleware Configuration**:
+1. **Middleware Configuration**:
 
 - Set up request tracking
 - Configure response monitoring
@@ -187,7 +191,7 @@ application. Whether your application is a monolith with a single
 database or a sophisticated mesh of services, traces are essential to
 understanding the full “path” a request takes in your application.
 
-#### Custom Instrumentation:
+#### Custom Instrumentation
 
 ##### Add Span Attributes in Child Functions
 
@@ -208,6 +212,7 @@ const do_work = () => {
 ```
 
 ###### Reference
+
 [Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
 
 ##### Create Nested Spans
@@ -259,6 +264,7 @@ the OpenTelemetry Collector.
 > View these traces in base14 Scout observability backend.
 
 ###### Reference
+
 [Official Span Events Documentation](https://opentelemetry.io/docs/concepts/signals/traces/#span-events)
 
 ### Metrics
@@ -292,5 +298,6 @@ configured interval.
 
 > View these metrics in base14 Scout observability backend.
 
-###### Reference
+##### Reference
+
 [Official Metrics Documentation](https://opentelemetry.io/docs/concepts/signals/metrics/)
