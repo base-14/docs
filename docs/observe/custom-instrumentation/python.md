@@ -1,33 +1,68 @@
 # Python
 
-This guide demonstrates how to instrument tracing and metrics using
-OpenTelemetry and export them to a collector using python OTEL sdk.
+Implement OpenTelemetry custom instrumentation for `Python` applications to
+collect logs, metrics, and traces using the Python OTel SDK.
 
 > **Note:** This guide provides a concise overview based on the official
-> OpenTelemetry documentation. For complete information, please consult
->
-the [official OpenTelemetry documentation](https://opentelemetry.io/docs/languages/python/).
+> OpenTelemetry documentation. For complete information, please consult the
+> [official OpenTelemetry documentation](https://opentelemetry.io/docs/languages/python/).
 
-## Setup
+## Overview
 
-opentelemetry-api defines the API interfaces for tracing, metrics, and logging
-and opentelemetry-sdk provides the implementation for these APIs.
-Run the following commands to install the necessary packages or add it to
-`requirements.txt` and install it.
+This guide demonstrates how to:
+
+- Set up OpenTelemetry custom instrumentation for `Python`
+- Configure manual tracing using spans
+- Create and manage custom metrics
+- Add semantic attributes and events
+- Export telemetry data to OpenTelemetry Collector
+
+## Prerequisites
+
+Before starting, ensure you have:
+
+- Python 3.7 or later installed
+- A Python project set up
+- Access to package installation (`pip`)
+
+:::warning
+Make sure you have set up the local development environment as described
+[here](../local-dev-env-setup.md).
+:::
+
+## Required Packages
+
+Install the following necessary packages or add them to `requirements.txt`:
 
 ```bash
 pip install opentelemetry-api
 pip install opentelemetry-sdk
 
-# Optional
+# Optional but recommended
 pip install opentelemetry-semantic-conventions
 ```
 
-:::warning
+## Configuration
 
-Make sure you have set up the local development environment as
-described in [here](../local-dev-env-setup.md).
-:::
+The setup process involves three main components:
+
+1. **Traces Configuration**:
+
+- Initialize TracerProvider
+- Configure span processors
+- Set up span exporters
+
+1. **Metrics Configuration**:
+
+- Initialize MeterProvider
+- Set up metric readers
+- Configure metric exporters
+
+1. **Custom Instrumentation**:
+
+- Create and manage spans
+- Add attributes and events
+- Handle span status and errors
 
 ## Traces
 
@@ -38,16 +73,13 @@ understanding the full “path” a request takes in your application.
 
 ### Initialization
 
-To Start tracing first a tracer should be acquired and a TraceProvider should be
+To Start tracing, first a tracer should be acquired and a TraceProvider should be
 initialized optionally we can pass a resource to TraceProvider.
 
 > A Resource is an immutable representation of the entity producing telemetry.
-> For example, a process
-> producing telemetry that is running in a container on Kubernetes has a Pod
-> name,
-> it is in a namespace and possibly
-> is part of a Deployment which also has a name. All three of these attributes
-> can
+> For example, a process producing telemetry that is running in a container on
+> Kubernetes has a Pod name, it is in a namespace and possibly is part of a
+> Deployment which also has a name. All three of these attributes can
 > be included in the Resource.
 
 Sample Reference code for Initialization
@@ -77,6 +109,13 @@ trace.set_tracer_provider(provider)
 tracer = trace.get_tracer("my.tracer.name")
 
 ```
+
+> View your traces in the base14 Scout observability platform.
+>
+> **Note**: Ensure your OpenTelemetry Collector is properly configured to
+> receive and process the trace data.
+
+#### Reference
 
 [Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
 
@@ -114,6 +153,10 @@ def do_work():
 def do_work():
     print("doing some work...")
 ```
+
+> View these spans in base14 Scout observability backend.
+
+#### Reference
 
 [Official Span Documentation](https://opentelemetry.io/docs/concepts/signals/traces/#spans)
 
@@ -155,12 +198,20 @@ def do_work():
         print("doing some work...")
 ```
 
+> View these spans in the base14 Scout observability platform.
+>
+> **Note**: Ensure your OpenTelemetry Collector is properly configured to
+> receive and process the span data.
+
+#### Reference
+
 [Official Attributes Documentation](https://opentelemetry.io/docs/concepts/signals/traces/#attributes)
 
 ### Events
 
 An event is a human-readable message on a span that represents “something
 happening” during its lifetime.
+
 You can think of it as a primitive log.
 
 #### Adding an event to a span
@@ -173,16 +224,18 @@ def do_work():
         span.add_event("Finished working")
 ```
 
+#### Reference
+
 [Official Event Documentation](https://opentelemetry.io/docs/concepts/signals/traces/#span-events)
 
 ### Span Status
 
 A Status can be set on a Span, typically used to specify that a Span has not
-completed successfully - Error.
+completed successfully - `Error`.
 By default, all spans are Unset, which means a span completed without error. The
-Ok status is reserved for
-when you need to explicitly mark a span as successful rather than stick with the
-default of Unset (i.e., “without error”).
+`Ok` status is reserved for when you need to explicitly mark a span as successful
+rather than stick with the default of `Unset` (i.e., “without error”).
+
 We also look at how to record an exception in the Span.
 
 #### Setting a Span Status
@@ -199,6 +252,11 @@ def do_work():
             span.set_status(Status(StatusCode.ERROR))
             span.record_exception(exception)
 ```
+
+> View these spans in the base14 Scout observability platform.
+>
+> **Note**: Ensure your OpenTelemetry Collector is properly configured to
+> receive and process the span data.
 
 ## Metrics
 
@@ -226,6 +284,11 @@ metrics.set_meter_provider(metric_provider)
 meter = metrics.get_meter("my.meter.name")
 ```
 
+> View these metrics in base14 Scout observability backend.
+>
+> **Note**: Ensure your OpenTelemetry Collector is properly configured to
+> receive and process the trace data.
+
 ### Counter
 
 Counter is a synchronous Instrument which supports non-negative increments.
@@ -242,6 +305,8 @@ def do_work(work_type: string):
     print("doing some work...")
 ```
 
+> View these metrics in base14 Scout observability backend.
+
 #### Creating Asynchronous Counter
 
 ```python
@@ -257,6 +322,10 @@ def pf_callback(callback_options):
 
 meter.create_observable_counter(name="PF", description="process page faults", callbacks=[pf_callback])
 ```
+
+> View these metrics in base14 Scout observability backend.
+
+#### Reference
 
 [Official Counter Documentation](https://opentelemetry.io/docs/specs/otel/metrics/api/#counter)
 
@@ -279,5 +348,9 @@ http_server_duration.Record(50, {"http.request.method": "POST", "url.scheme": "h
 http_server_duration.Record(100, http_method="GET", http_scheme="http")
 
 ```
+
+> View these metrics in base14 Scout observability backend.
+
+#### Reference
 
 [Official Histogram Documentation](https://opentelemetry.io/docs/specs/otel/metrics/api/#histogram)
