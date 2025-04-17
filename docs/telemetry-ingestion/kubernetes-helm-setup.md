@@ -33,11 +33,11 @@ from your Kubernetes environment and send it to base14 Scout.
 
 Deploy base14 Scout OpenTelemetry Collector in minutes by following these steps:
 
-```shell
+```bash
 helm repo add base14 https://charts.base14.io/
 ```
 
-```shell
+```bash
 helm install scout base14/scout-collector  \
 --namespace scout --create-namespace -f values.yaml
 ```

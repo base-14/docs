@@ -130,7 +130,7 @@ scrape_configs:
 
 Run the below command to start the local development setup
 
-```shell
+```bash
 docker-compose up -d
 ```
 

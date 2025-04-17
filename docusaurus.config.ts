@@ -137,7 +137,7 @@ const config: Config = {
       copyright: `Copyright © ${new Date().getFullYear()} base14. Built with Docusaurus.`,
     },
     prism: {
-      additionalLanguages: ["ruby"],
+      additionalLanguages: ["ruby", "bash"],
       theme: prismThemes.oneLight,
       darkTheme: prismThemes.oneDark,
     },

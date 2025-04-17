@@ -15,7 +15,7 @@ and opentelemetry-sdk provides the implementation for these APIs.
 Run the following commands to install the necessary packages or add it to
 `requirements.txt` and install it.
 
-```shell
+```bash
 pip install opentelemetry-api
 pip install opentelemetry-sdk
 
@@ -75,7 +75,7 @@ trace.set_tracer_provider(provider)
 
 # Creates a tracer from the global tracer provider
 tracer = trace.get_tracer("my.tracer.name")
-    
+
 ```
 
 [Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
@@ -130,7 +130,7 @@ def do_work():
         span.set_attribute("operation.value", 1)
         span.set_attribute("operation.name", "Saying hello!")
         span.set_attribute("operation.other-stuff", [1, 2, 3])
-        
+
         print("doing some work...")
 ```
 
@@ -151,7 +151,7 @@ def do_work():
     with tracer.start_as_current_span("span.name") as span:
         span.set_attribute(SpanAttributes.HTTP_METHOD, "GET")
         span.set_attribute(SpanAttributes.HTTP_URL, "https://base14.io/")
-        
+
         print("doing some work...")
 ```
 

@@ -39,7 +39,7 @@ the [releases page](https://github.com/open-telemetry/opentelemetry-collector-re
 An example of how to download and extract the collector binary is shown below
 for macos arm64.
 
-```shell
+```bash
 curl --proto '=https' --tlsv1.2 -fOL https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.119.0/otelcol_0.119.0_darwin_arm64.tar.gz
 tar -xvf otelcol_0.119.0_darwin_arm64.tar.gz
 ```
@@ -88,7 +88,7 @@ service:
 
 ## Running the collector
 
-```shell
+```bash
 ./otelcol --config ./config.yaml
 ```
 
@@ -103,7 +103,7 @@ logs and forward them to Scout.
 First, install the `pino` logging library, which provides structured JSON
 logging capabilities:
 
-```shell
+```bash
 npm install pino
 ```
 
@@ -126,7 +126,7 @@ child.info('hello child!')
 Execute the application and redirect its output to `app.log`. The OpenTelemetry
 Collector will monitor this file as configured in the previous section:
 
-```shell
+```bash
 node main.js > app.log
 ```
 

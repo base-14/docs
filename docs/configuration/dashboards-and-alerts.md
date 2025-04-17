@@ -31,7 +31,7 @@ Grafana URL and API token.
 The Grafana URL for your Base14 Observability Platform instance will be provided
 to you during the service setup. Use the following Grizzly command to configure it:
 
-```shell
+```bash
 grr config set grafana.url <your_base14_grafana_url>
 grr config set grafana.token <your_base14_grafana_api_token>
 ```
@@ -102,13 +102,13 @@ them to your Base14 Grafana instance.
 To apply all YAML files in a specific directory (e.g., dashboards), use the apply
 command:
 
-```shell
+```bash
 grr apply -f dashboards/
 ```
 
 You can also apply all resources in all subdirectories:
 
-```shell
+```bash
 grr apply -f .
 ```
 
@@ -116,7 +116,7 @@ grr apply -f .
 
 To apply a specific YAML file:
 
-```shell
+```bash
 grr apply -f dashboards/application-metrics.yaml
 ```
 
@@ -125,7 +125,7 @@ grr apply -f dashboards/application-metrics.yaml
 Before applying changes, it's often useful to see the differences between your local
 definitions and the resources in Grafana:
 
-```shell
+```bash
 grr diff -f dashboards/application-metrics.yaml
 ```
 
