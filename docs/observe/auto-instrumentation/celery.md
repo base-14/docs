@@ -279,7 +279,7 @@ add.delay(42, 50)
 
 Logs will be automatically exported to the OpenTelemetry Collector.
 
-> View these metrics in base14 Scout observability backend.
+> View these logs in base14 Scout observability backend.
 
 #### Reference
 

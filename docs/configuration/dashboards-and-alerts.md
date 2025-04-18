@@ -1,10 +1,9 @@
-# Leveraging Grizzly with Base14 Observability Platform
+# Leveraging Grizzly with Base14 Scout Observability Platform
 
-Welcome to the Base14 Observability Platform! This article guides developers on how
-to effectively manage their Grafana resources using Grizzly, a powerful command-line
-tool that leverages the Grafana API. Since our platform is fully compatible with
-the Grafana API, Grizzly integrates seamlessly, allowing you to define and deploy
-your observability configurations as code.
+Effectively manage Grafana resources using `Grizzly`, a powerful command-line
+tool that leverages the Grafana API. Since base14 Scout platform is fully
+compatible with the Grafana API, Grizzly integrates seamlessly, allowing you to
+define and deploy your observability configurations as code.
 
 ## Why Grizzly?
 
