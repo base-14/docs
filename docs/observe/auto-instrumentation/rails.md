@@ -36,7 +36,7 @@ described [here](../local-dev-env-setup.md).
 Install the following necessary packages by `gem install` or add it to
 `Gemfile` and run `bundle install`.
 
-```ruby
+```ruby showLineNumbers
 gem 'opentelemetry-sdk'
 gem 'opentelemetry-exporter-otlp'
 gem 'opentelemetry-instrumentation-all'
@@ -59,8 +59,7 @@ understanding the full “path” a request takes in your application.
 
 #### Auto Instrumentation
 
-```ruby title="config/initializers/otel.rb"
-
+```ruby showLineNumbers title="config/initializers/otel.rb"
 require 'opentelemetry/sdk'
 require 'opentelemetry/exporter/otlp'
 
@@ -92,7 +91,7 @@ TRACER = OpenTelemetry.tracer_provider.tracer('rails-app', '0.1.0')
 
 #### Add Custom Spans
 
-```ruby
+```ruby showLineNumbers
 def do_work():
     TRACER.in_span("span.name") do |span|
         # doing some work
@@ -105,7 +104,7 @@ end
 Attributes let you attach key/value pairs to a span so it carries more
 information about the current operation that it’s tracking.
 
-```ruby
+```ruby showLineNumbers
 def do_work():
     TRACER.in_span("span.name") do |span|
         span.set_attribute("attribute.key", "attribute.value")
@@ -119,7 +118,7 @@ end
 Semantic Attributes are pre-defined Attributes that are well-known naming
 conventions for common kinds of data.
 
-```ruby
+```ruby showLineNumbers
 require 'opentelemetry/semantic_conventions'
 
 def do_work():
@@ -138,7 +137,7 @@ end
 A span event is a human-readable message on a span that represents “something
 happening” during it’s lifetime.
 
-```ruby
+```ruby showLineNumbers
 def do_work():
     TRACER.in_span("span.name") do |span|
         span.add_event("Starting to work")

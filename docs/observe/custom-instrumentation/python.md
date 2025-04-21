@@ -84,8 +84,7 @@ initialized optionally we can pass a resource to TraceProvider.
 
 Sample Reference code for Initialization
 
-```python
-
+```python showLineNumbers
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.resources import Resource, SERVICE_NAME
@@ -107,7 +106,6 @@ trace.set_tracer_provider(provider)
 
 # Creates a tracer from the global tracer provider
 tracer = trace.get_tracer("my.tracer.name")
-
 ```
 
 > View your traces in the base14 Scout observability platform.
@@ -126,7 +124,7 @@ Traces. In OpenTelemetry, they include some necessary information.
 
 #### Creating a Span
 
-```python
+```python showLineNumbers
 def do_work():
     with tracer.start_as_current_span("span.name") as span:
         # do some work that 'span' tracks
@@ -135,7 +133,7 @@ def do_work():
 
 #### Creating nested Spans
 
-```python
+```python showLineNumbers
 def do_work():
     with tracer.start_as_current_span("parent") as parent:
         # do some work that 'parent' tracks
@@ -148,7 +146,7 @@ def do_work():
 
 #### Creating Spans with decorators
 
-```python
+```python showLineNumbers
 @tracer.start_as_current_span("span")
 def do_work():
     print("doing some work...")
@@ -167,7 +165,7 @@ information about the current operation that it’s tracking.
 
 #### Adding Attributes to a Span
 
-```python
+```python showLineNumbers
 def do_work():
     with tracer.start_as_current_span("span.name") as span:
         span.set_attribute("operation.value", 1)
@@ -187,7 +185,7 @@ your systems.
 > Ensure that you have installed `opentelemetry-semantic-conventions` package
 > for using Semantic Attributes
 
-```python
+```python showLineNumbers
 from opentelemetry.semconv.trace import SpanAttributes
 
 def do_work():
@@ -216,7 +214,7 @@ You can think of it as a primitive log.
 
 #### Adding an event to a span
 
-```python
+```python showLineNumbers
 def do_work():
     with tracer.start_as_current_span("span.name") as span:
         span.add_event("Starting some work")
@@ -240,7 +238,7 @@ We also look at how to record an exception in the Span.
 
 #### Setting a Span Status
 
-```python
+```python showLineNumbers
 from opentelemetry import trace
 from opentelemetry.trace import Status, StatusCode
 
@@ -267,7 +265,7 @@ optionally set it as the global default.
 
 Sample Reference code for Metrics Initialization
 
-```python
+```python showLineNumbers
 from opentelemetry import metrics
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import (
@@ -295,7 +293,7 @@ Counter is a synchronous Instrument which supports non-negative increments.
 
 #### Creating a Synchronous Counter
 
-```python
+```python showLineNumbers
 work_counter = meter.create_counter(
     "work.counter", unit="1", description="Counts the amount of work done"
 )
@@ -309,7 +307,7 @@ def do_work(work_type: string):
 
 #### Creating Asynchronous Counter
 
-```python
+```python showLineNumbers
 from opentelemetry.metrics import Observation
 
 def pf_callback(callback_options):
@@ -337,7 +335,7 @@ statistics such as histograms, summaries, and percentile.
 
 #### Creating a Histogram
 
-```python
+```python showLineNumbers
 http_server_duration = meter.create_histogram(
     name="http.server.duration",
     description="measures the duration of the inbound HTTP request",
@@ -346,7 +344,6 @@ http_server_duration = meter.create_histogram(
 
 http_server_duration.Record(50, {"http.request.method": "POST", "url.scheme": "https"})
 http_server_duration.Record(100, http_method="GET", http_scheme="http")
-
 ```
 
 > View these metrics in base14 Scout observability backend.

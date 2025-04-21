@@ -64,7 +64,7 @@ application. They help understand:
 
 #### Auto Instrumentation of Traces
 
-```python
+```python showLineNumbers
 from fastapi import FastAPI
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry import trace
@@ -113,7 +113,7 @@ Key tracing features:
 
 #### Adding Custom Instrumentation
 
-```python
+```python showLineNumbers
 def do_work():
     tracer = trace.get_tracer(__name__)
     parent_span = trace.get_current_span()
@@ -136,7 +136,7 @@ including:
 
 #### Auto Instrumentation of Metrics
 
-```python title="main.py"
+```python title="main.py" showLineNumbers
 
 from fastapi import FastAPI
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
@@ -166,7 +166,7 @@ app.add_middleware(MetricsMiddleware)
 FastAPIInstrumentor.instrument_app(app)
 ```
 
-```python title="MetricsMiddleware.py"
+```python title="MetricsMiddleware.py" showLineNumbers
 from starlette.middleware.base import BaseHTTPMiddleware
 from opentelemetry.metrics import get_meter
 

@@ -56,7 +56,7 @@ The setup process involves three main components:
 - Set up resource attributes
 - Initialize trace and metric exporters
 
-```typescript title="src/utils/telemetry.ts"
+```typescript title="src/utils/telemetry.ts" showLineNumbers
 
 import {NodeSDK} from '@opentelemetry/sdk-node';
 import {PeriodicExportingMetricReader} from '@opentelemetry/sdk-metrics';
@@ -87,7 +87,7 @@ const sdk = new NodeSDK({
 sdk.start();
 ```
 
-```typescript title="src/index.ts"
+```typescript title="src/index.ts" showLineNumbers
 // ( Main Entry Point )
 // Before importing Anything importing this would initilize the sdk
 
@@ -100,7 +100,7 @@ import '../src/utils/telemetry';
 - Configure response monitoring
 - Implement error handling
 
-```typescript title="src/middlewares/telemetryMiddleware.ts"
+```typescript title="src/middlewares/telemetryMiddleware.ts" showLineNumbers
 
 import {Request, Response, NextFunction} from 'express';
 import {context, trace, SpanStatusCode, metrics} from '@opentelemetry/api';
@@ -172,7 +172,7 @@ export function telemetryMiddleware(
 }
 ```
 
-```typescript title="src/index.ts"
+```typescript title="src/index.ts" showLineNumbers
 
 import {telemetryMiddleware} from './middleware/telemetryMiddleware';
 
@@ -195,7 +195,7 @@ understanding the full “path” a request takes in your application.
 
 ##### Add Span Attributes in Child Functions
 
-```typescript
+```typescript showLineNumbers
 import opentelemetry from '@opentelemetry/api';
 import {trace, Span, context} from '@opentelemetry/api';
 
@@ -217,7 +217,7 @@ const do_work = () => {
 
 ##### Create Nested Spans
 
-```typescript
+```typescript showLineNumbers
 import opentelemetry from '@opentelemetry/api';
 import {trace, context} from '@opentelemetry/api';
 
@@ -242,7 +242,7 @@ const child_func = () => {
 
 ##### Add Span Events
 
-```typescript
+```typescript showLineNumbers
 import opentelemetry from '@opentelemetry/api';
 import {trace, Span, context} from '@opentelemetry/api';
 
@@ -276,7 +276,7 @@ and providing application runtime telemetry.
 
 #### Add a Counter Metric
 
-```typescript
+```typescript showLineNumbers
 import {metrics} from '@opentelemetry/api';
 
 const meter = metrics.getMeter('express-application');

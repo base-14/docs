@@ -25,7 +25,7 @@ This environment allows you to:
 
 Copy the below content to `otel-collector-config.yaml`
 
-```yaml
+```yaml showLineNumbers
 receivers:
   otlp:
     protocols:
@@ -65,7 +65,7 @@ service:
 
 Create a Docker compose file `compose.yml`
 
-```yaml
+```yaml showLineNumbers
 version: "3.8"
 
 networks:
@@ -116,7 +116,7 @@ services:
 
 Create a `prometheus.yml`
 
-```yaml
+```yaml showLineNumbers
 global:
   scrape_interval: 5s
 

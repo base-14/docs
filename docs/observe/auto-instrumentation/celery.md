@@ -77,7 +77,7 @@ understanding the full “path” a request takes in your application.
 
 #### Auto Instrumentation of Traces
 
-```python
+```python showLineNumbers
 from opentelemetry.instrumentation.celery import CeleryInstrumentor
 
 from celery import Celery
@@ -116,7 +116,7 @@ the OpenTelemetry Collector with the following details:
 
 #### Adding Custom Instrumentation
 
-```python
+```python showLineNumbers
 from opentelemetry.propagate import inject, extract
 from opentelemetry.instrumentation.celery import CeleryInstrumentor
 from opentelemetry.trace import get_tracer
@@ -163,7 +163,7 @@ performance. Celery metrics capture:
 
 #### Auto Instrumentation of Metrics
 
-```python
+```python showLineNumbers
 from opentelemetry.instrumentation.celery import CeleryInstrumentor
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
@@ -226,7 +226,7 @@ structured records. The Celery logging integration captures:
 
 #### Auto Instrumentation of Logs
 
-```python
+```python showLineNumbers
 from opentelemetry.instrumentation.celery import CeleryInstrumentor
 from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
 from opentelemetry.sdk._logs.export import BatchLogRecordProcessor

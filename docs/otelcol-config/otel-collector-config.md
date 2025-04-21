@@ -27,7 +27,7 @@ OpenTelemetry receivers serve as data ingestion points for the collector,
 accepting telemetry data from multiple sources. They support various protocols
 and formats for collecting logs, metrics and traces.
 
-```yaml
+```yaml showLineNumbers
 receivers:
   otlp:
     protocols:
@@ -60,7 +60,7 @@ Key features of receivers:
 Processors are applied to the data between reception and export. They can
 perform various transformations, filtering, and enrichment operations.
 
-```yaml
+```yaml showLineNumbers
 processors:
   batch:
     timeout: 1s
@@ -95,7 +95,7 @@ OpenTelemetry exporters transmit telemetry data to destination backends. They
 handle the delivery of logs, metrics and traces to various
 observability platforms and monitoring systems.
 
-```yaml
+```yaml showLineNumbers
 exporters:
   otlp:
     endpoint: otelcol:4317
@@ -131,7 +131,7 @@ operational features such as:
 - Service discovery mechanisms
 - Diagnostic tools and dashboards
 
-```yaml
+```yaml showLineNumbers
 extensions:
   health_check:
     endpoint: 0.0.0.0:13133
@@ -163,7 +163,7 @@ data flow, and operational settings such as:
 - Component enablement and connections
 - Collector telemetry settings
 
-```yaml
+```yaml showLineNumbers
 service:
   extensions: [ health_check, pprof, zpages ]
   pipelines:
@@ -211,7 +211,7 @@ be routed between pipelines internally without leaving the collector.
 - Span-to-metrics conversion
 - Internal data transformation
 
-```yaml
+```yaml showLineNumbers
 connectors:
   forward:
   spanmetrics:
@@ -247,7 +247,7 @@ self-monitoring capabilities, including:
 - Performance monitoring endpoints
 - Health status reporting
 
-```yaml
+```yaml showLineNumbers
 service:
   telemetry:
     logs:
@@ -274,7 +274,7 @@ Telemetry configuration options include:
 2. **Use Environment Variables**: Leverage environment variable substitution for
    dynamic configuration
 
-   ```yaml
+   ```yaml showLineNumbers
    exporters:
      otlp:
        endpoint: ${OTLP_ENDPOINT}
@@ -304,7 +304,7 @@ Essential configuration guidelines for optimal OpenTelemetry Collector deploymen
 - Secure sensitive information
 - Enable deployment flexibility
 
-  ```yaml
+  ```yaml showLineNumbers
   exporters:
     otlp:
       endpoint: ${OTLP_ENDPOINT}
@@ -342,7 +342,7 @@ Essential configuration guidelines for optimal OpenTelemetry Collector deploymen
 
 ### Basic Collection and Export
 
-```yaml
+```yaml showLineNumbers
 receivers:
   otlp:
     protocols:
@@ -380,7 +380,7 @@ service:
 
 ### Advanced Configuration with Multiple Pipelines
 
-```yaml
+```yaml showLineNumbers
 receivers:
   otlp:
     protocols:

@@ -36,7 +36,7 @@ The Scout exporter requires two main configuration components:
 - Configure authentication
 - Enable TLS settings
 
-```yaml
+```yaml showLineNumbers
 extensions:
   oauth2client:
     client_id: __YOUR_CLIENT_ID__
