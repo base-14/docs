@@ -80,7 +80,6 @@ scout:
 
 ## Using Otelcol style configuration
 
-<<<<<<< HEAD
 Following is an example of a values.yaml file that can be used to configure
 scout collector using otelcol style
 configuration. Here the configuration follows the same semantics as the
@@ -88,34 +87,6 @@ OpenTelemetry Collector otelcol config. This
 gives a greater flexibility in terms of what you can configure to be scraped,
 collected etc. Reference
 the [otelcol-config](./otelcol-config.md) for more details.
-=======
-### Advanced Configuration (OpenTelemetry Native)
-
-For advanced use cases, base14 Scout supports native OpenTelemetry Collector
-configuration, giving you complete control over your telemetry pipeline:
-
-#### Key Capabilities
-
-- **Receivers**:
-  Configure custom data ingestion points for metrics, traces, and logs
-- **Processors**:
-  Apply transformations, filtering, and batching to your telemetry data
-- **Exporters**: Set up multiple export destinations with custom authentication
-- **Extensions**:
-  Enable advanced features like health checks, debugging, and custom authentication
-- **Custom Pipelines**: Design specialized data flows for different telemetry types
-
-#### Common Use Cases
-
-- Multi-cluster telemetry aggregation
-- Complex data transformation requirements
-- Custom authentication mechanisms
-- High-performance pipeline optimization
-- Integration with external monitoring systems
-
-For detailed configuration options and examples,
-see our [OpenTelemetry Configuration Guide](./otel-collector-config.md).
->>>>>>> 98dd91d (fixing merge problems as i had pushed without merging earlier)
 
 ```yaml showLineNumbers
 scout:

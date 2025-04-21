@@ -4,8 +4,7 @@ Implement OpenTelemetry instrumentation for `FastAPI` applications to collect
 traces and metrics; monitor HTTP requests using the Python OTel SDK.
 
 > **Note:** This guide provides a concise overview based on the official
-> OpenTelemetry documentation. For complete information, please consult
-> the
+> OpenTelemetry documentation. For complete information, please consult the
 > [official OpenTelemetry documentation](https://opentelemetry-python-contrib.readthedocs.io/en/latest/instrumentation/fastapi/fastapi.html).
 
 ## Overview
@@ -31,8 +30,8 @@ Before starting, ensure you have:
 `opentelemetry-api` defines the API interfaces for tracing, metrics and logging;
 `opentelemetry-sdk` provides the implementation for these APIs.
 
-Install the following necessary packages or add it to
-`requirements.txt` and install it.
+Install the following necessary packages or add it to `requirements.txt` and
+install it.
 
 ```plaintext
 opentelemetry-instrumentation-fastapi
@@ -48,9 +47,9 @@ requests
 ## Traces
 
 Traces give us the big picture of what happens when a request is made to an
-application. Whether your application is a monolith with a single
-database or a sophisticated mesh of services, traces are essential to
-understanding the full “path” a request takes in your application.
+application. Whether your application is a monolith with a single database or a
+sophisticated mesh of services, traces are essential to understanding the full
+“path” a request takes in your application.
 
 ### Auto Instrumentation of Traces
 
@@ -97,7 +96,7 @@ Key tracing features:
 
 > View these metrics in base14 Scout observability backend.
 
-##### Reference
+#### Reference
 
 [Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
 
@@ -184,8 +183,8 @@ class MetricsMiddleware(BaseHTTPMiddleware):
 ```
 
 Metrics will be automatically exported to the OpenTelemetry Collector at the
-configured interval. `MetricsMiddleware` captures each HTTP request,
-including the method, path, and status code, and tracks the total request count.
+configured interval. `MetricsMiddleware` captures each HTTP request, including
+the method, path, and status code, and tracks the total request count.
 
 > View these metrics in base14 Scout observability backend.
 
@@ -194,6 +193,6 @@ including the method, path, and status code, and tracks the total request count.
 [Official Metrics Documentation](https://opentelemetry.io/docs/concepts/signals/metrics/)
 
 ## Sample Application
->
-> A sample application with OpenTelemetry instrumentation can be found at
-> this [GitHub repository](https://github.com/base-14/examples/tree/main)
+
+> A sample application with OpenTelemetry instrumentation can be found at this
+> [GitHub repository](https://github.com/base-14/examples/tree/main)

@@ -15,7 +15,6 @@ and opentelemetry-sdk provides the implementation for these APIs.
 Run the following commands to install the necessary packages or add it to
 `package.json` and install it.
 
-<<<<<<< HEAD
 ```plaintext
 '@opentelemetry/api'
 '@opentelemetry/resources'
@@ -23,8 +22,6 @@ Run the following commands to install the necessary packages or add it to
 '@opentelemetry/semantic-conventions'
 ```
 
-=======
->>>>>>> 98dd91d (fixing merge problems as i had pushed without merging earlier)
 ## Required Packages
 
 `opentelemetry-api` defines the API interfaces for tracing, metrics and logging;
