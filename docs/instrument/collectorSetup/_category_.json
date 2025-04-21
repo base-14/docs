@@ -1,0 +1,9 @@
+{
+    "label": "Otel Collector Setup",
+    "position": 1,
+    "link": {
+      "type": "generated-index",
+      "description": "Setup OpenTelemetry collector to collect and route telemetry data to Scout."
+    }
+  }
+  

@@ -1,5 +1,5 @@
 ---
-sidebar_position: 3
+sidebar_position: 2
 ---
 
 # Kubernetes Helm Setup
@@ -64,7 +64,7 @@ configuration. Here the configuration follows the same semantics as the
 OpenTelemetry Collector otelcol config. This
 gives a greater flexibility in terms of what you can configure to be scraped,
 collected etc. Reference
-the [otelcol-config](/otelcol-config/otelcol-config.md) for more details.
+the [otelcol-config](./otelcol-config.md) for more details.
 
 ```yaml
 

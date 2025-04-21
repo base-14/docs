@@ -1,4 +1,8 @@
-# Local Dev Environment Setup
+---
+sidebar_position: 7
+---
+
+# Test your otel collector with Local Dev Environment Setup
 
 This guide helps you set up a local observability stack for development
 and testing purposes. The setup includes:

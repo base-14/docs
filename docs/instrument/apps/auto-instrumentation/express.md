@@ -22,12 +22,6 @@ Run the following commands to install the necessary packages or add it to
 '@opentelemetry/semantic-conventions'
 ```
 
-:::warning
-
-Make sure you have set up the local development environment as
-described in [here](../local-dev-env-setup.md).
-:::
-
 ## Initialization
 
 Before any other module in your application is loaded, you must initialize the

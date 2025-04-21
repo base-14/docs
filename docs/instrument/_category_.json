@@ -1,0 +1,9 @@
+{
+    "label": "Instrument",
+    "position": 2,
+    "link": {
+      "type": "generated-index",
+      "description": "Setup OpenTelemetry collector and instrument your apps and infrastucture."
+    }
+  }
+  

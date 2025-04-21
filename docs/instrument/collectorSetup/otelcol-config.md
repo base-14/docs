@@ -1,3 +1,7 @@
+---
+sidebar_position: 6
+---
+
 # OpenTelemetry Collector Configuration Guide
 
 The OpenTelemetry Collector (otelcol) is a vendor-agnostic implementation that

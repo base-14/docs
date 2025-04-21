@@ -1,3 +1,7 @@
+---
+sidebar_position: 3
+---
+
 # Installing OpenTelemetry Collector on Linux
 
 This comprehensive guide walks you through installing and configuring the

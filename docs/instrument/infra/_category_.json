@@ -1,0 +1,9 @@
+{
+    "label": "Infrastucture Instrumentation",
+    "position": 4,
+    "link": {
+      "type": "generated-index",
+      "description": "Next, lets instrument our infrastucture to collect infra metrics."
+    }
+  }
+  

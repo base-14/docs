@@ -25,12 +25,6 @@ gem 'opentelemetry-instrumentation-rack'
 gem 'opentelemetry-semantic_conventions'
 ```
 
-:::warning
-
-Make sure you have set up the local development environment as
-described in [here](../local-dev-env-setup.md).
-:::
-
 ## Traces
 
 Traces give us the big picture of what happens when a request is made to an
