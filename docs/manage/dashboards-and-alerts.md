@@ -1,10 +1,9 @@
-# Leveraging Grizzly with Base14 Observability Platform
+# Leveraging Grizzly with Base14 Scout Observability Platform
 
-Welcome to the Base14 Observability Platform! This article guides developers on how
-to effectively manage their Grafana resources using Grizzly, a powerful command-line
-tool that leverages the Grafana API. Since our platform is fully compatible with
-the Grafana API, Grizzly integrates seamlessly, allowing you to define and deploy
-your observability configurations as code.
+Effectively manage Grafana resources using `Grizzly`, a powerful command-line
+tool that leverages the Grafana API. Since base14 Scout platform is fully
+compatible with the Grafana API, Grizzly integrates seamlessly, allowing you to
+define and deploy your observability configurations as code.
 
 ## Why Grizzly?
 
@@ -47,7 +46,7 @@ can define folders, dashboards, alerts, and contact points:
 Folders help organize your dashboards. Here's an example of a YAML definition for
 a folder:
 
-```yaml
+```yaml showLineNumbers
 apiVersion: grizzly.grafana.com/v1alpha1
 kind: DashboardFolder
 metadata:
@@ -62,7 +61,7 @@ the `folder` field in the dashboard definition.
 
 1. Dashboards
 
-```yaml
+```yaml showLineNumbers
 apiVersion: grizzly.grafana.com/v1alpha1
 kind: Dashboard
 metadata:
@@ -190,7 +189,7 @@ diff-dashboards:
 
 ### Sample GitHub Actions Workflow
 
-```yaml
+```yaml showLineNumbers
 name: Apply Grafana Configuration
 
 on:

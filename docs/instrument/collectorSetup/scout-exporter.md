@@ -9,8 +9,21 @@ exports telemetry data to Scout.
 
 ## Configuration
 
-```yaml
+The Scout exporter requires two main configuration components:
 
+1. OAuth2 Authentication Setup:
+
+- Configure OAuth2 client credentials
+- Set up token endpoint
+- Configure TLS settings
+
+1. Exporter Configuration:
+
+- Set up endpoint URL
+- Configure authentication
+- Enable TLS settings
+
+```yaml showLineNumbers
 extensions:
   oauth2client:
     client_id: __YOUR_CLIENT_ID__

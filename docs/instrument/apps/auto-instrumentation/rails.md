@@ -1,19 +1,42 @@
 # Rails
 
-This guide demonstrates how to Auto instrument tracing using
-OpenTelemetry for Rails and export them to a collector using OTEL sdk.
+Implement OpenTelemetry instrumentation for `Ruby on Rails` applications to
+collect traces, metrics, and monitor HTTP requests using the Ruby OTel SDK.
 
 > **Note:** This guide provides a concise overview based on the official
 > OpenTelemetry documentation. For complete information, please consult
 > the
 > [official OpenTelemetry documentation](https://opentelemetry.io/docs/languages/ruby/instrumentation).
 
-## Setup
+## Overview
+
+This guide demonstrates how to:
+
+- Set up OpenTelemetry instrumentation for Rails applications
+- Configure automatic request and database tracing
+- Implement custom instrumentation
+- Collect HTTP metrics
+- Export telemetry data to OpenTelemetry Collector
+
+## Prerequisites
+
+Before starting, ensure you have:
+
+- Ruby 2.7 or later installed
+- Rails application set up
+- Bundler installed for package management
+
+:::warning
+Make sure you have set up the local development environment as
+described [here](../local-dev-env-setup.md).
+:::
+
+## Required Packages
 
 Install the following necessary packages by `gem install` or add it to
 `Gemfile` and run `bundle install`.
 
-```plaintext
+```ruby showLineNumbers
 gem 'opentelemetry-sdk'
 gem 'opentelemetry-exporter-otlp'
 gem 'opentelemetry-instrumentation-all'
@@ -34,9 +57,7 @@ understanding the full “path” a request takes in your application.
 
 ### Auto Instrumentation
 
-```ruby
-// config/initializers/otel.rb
-
+```ruby showLineNumbers title="config/initializers/otel.rb"
 require 'opentelemetry/sdk'
 require 'opentelemetry/exporter/otlp'
 
@@ -66,9 +87,9 @@ TRACER = OpenTelemetry.tracer_provider.tracer('rails-app', '0.1.0')
 
 > Trace data will now be sent to the OTEL Collector.
 
-### Add Custom Spans
+#### Add Custom Spans
 
-```ruby
+```ruby showLineNumbers
 def do_work():
     TRACER.in_span("span.name") do |span|
         # doing some work
@@ -76,12 +97,12 @@ def do_work():
 end
 ```
 
-### Add Span Attributes
+#### Add Span Attributes
 
 Attributes let you attach key/value pairs to a span so it carries more
 information about the current operation that it’s tracking.
 
-```ruby
+```ruby showLineNumbers
 def do_work():
     TRACER.in_span("span.name") do |span|
         span.set_attribute("attribute.key", "attribute.value")
@@ -90,12 +111,12 @@ def do_work():
 end
 ```
 
-### Add Semantic Attribute
+#### Add Semantic Attribute
 
 Semantic Attributes are pre-defined Attributes that are well-known naming
 conventions for common kinds of data.
 
-```ruby
+```ruby showLineNumbers
 require 'opentelemetry/semantic_conventions'
 
 def do_work():
@@ -109,12 +130,12 @@ def do_work():
 end
 ```
 
-### Add Span Events
+#### Add Span Events
 
 A span event is a human-readable message on a span that represents “something
 happening” during it’s lifetime.
 
-```ruby
+```ruby showLineNumbers
 def do_work():
     TRACER.in_span("span.name") do |span|
         span.add_event("Starting to work")
@@ -123,5 +144,15 @@ def do_work():
     end
 end
 ```
+
+Once configured, trace data will be automatically collected and sent to
+the OpenTelemetry Collector.
+
+> View your traces in the base14 Scout observability platform.
+>
+> **Note**: Ensure your OpenTelemetry Collector is properly configured to
+> receive and process the trace data.
+
+#### Reference
 
 [Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)

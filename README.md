@@ -7,7 +7,7 @@ static website generator.
 
 > Install the Required Packages
 
-```shell
+```bash
 yarn
 ```
 
@@ -17,13 +17,13 @@ yarn
 > Follow the instructions in
 > the [official documentation](https://pre-commit.com/).
 
-```shell
+```bash
 pre-commit install
 ```
 
 ## Local Development
 
-```shell
+```bash
 yarn start
 ```
 
@@ -32,13 +32,13 @@ Most changes are reflected live without having to restart the server.
 
 ## linting
 
-```shell
+```bash
 npm run markdownlint
 ```
 
 ## Build
 
-```shell
+```bash
 yarn build
 ```
 
@@ -49,13 +49,13 @@ served using any static contents hosting service.
 
 Using SSH:
 
-```shell
+```bash
 USE_SSH=true yarn deploy
 ```
 
 Not using SSH:
 
-```shell
+```bash
 GIT_USER=<Your GitHub username> yarn deploy
 ```
 

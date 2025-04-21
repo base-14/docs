@@ -2,16 +2,36 @@
 sidebar_position: 2
 ---
 
-# Kubernetes Helm Setup
+# OTel Collector on Kubernetes using Helm
 
-This guide demonstrates how to configure Scout's OpenTelemetry Collector to
-collect logs, metrics and traces from
-Kubernetes pods and forward them to Scout. We'll use Helm to install the
-collector and configure it to collect the
-telemetry from all pods in the all the namespaces (except the configured system
-kube-system).
+Deploy and configure the base14 Scout OpenTelemetry Collector on Kubernetes
+using Helm.
 
-## Install the Helm Chart
+## Overview
+
+This guide covers how to collect telemetry data (logs, metrics, and traces)
+from your Kubernetes environment and send it to base14 Scout.
+
+- Install base14 Scout's OpenTelemetry Collector using Helm
+- Configure telemetry collection for Kubernetes pods
+- Set up multi-namespace monitoring
+- Configure custom metrics endpoints
+- Implement trace collection
+
+## Prerequisites
+
+- A Kubernetes cluster (EKS, GKE, AKS, or other distributions)
+- Helm 3.x installed
+- `kubectl` configured with cluster access
+- Scout account credentials
+  - Endpoint URL
+  - API Key
+  - Token URL
+  - Application Name
+
+## Quick Start Guide
+
+Deploy base14 Scout OpenTelemetry Collector in minutes by following these steps:
 
 ```bash
 helm repo add base14 https://charts.base14.io/
@@ -22,13 +42,15 @@ helm install scout base14/scout-collector  \
 --namespace scout --create-namespace -f values.yaml
 ```
 
-## Detailed configuration via values.yaml
+## Configuration Guide
 
-Following is an example of a values.yaml file that can be used to configure
-scout colllector.
+### Basic Configuration
 
-```yaml
+The `values.yaml` file below demonstrates a standard configuration for the base14
+Scout collector. This configuration is suitable for most deployments and
+covers essential telemetry collection.
 
+```yaml showLineNumbers title="values.yaml"
 scout:
   endpoint: __YOUR_ENDPOINT__
   tokenUrl: __YOUR_TOKEN_URL__
@@ -66,8 +88,7 @@ gives a greater flexibility in terms of what you can configure to be scraped,
 collected etc. Reference
 the [otelcol-config](./otelcol-config.md) for more details.
 
-```yaml
-
+```yaml showLineNumbers
 scout:
   endpoint: __YOUR_ENDPOINT__
   tokenUrl: __YOUR_TOKEN_URL__
@@ -124,5 +145,4 @@ scout:
             receivers: [otlp]
             processors: [batch]
             exporters: [otlphttp/base14]
-
 ```

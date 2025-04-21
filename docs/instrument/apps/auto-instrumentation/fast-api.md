@@ -1,21 +1,45 @@
 # Fast API
 
-This guide demonstrates how to Auto instrument tracing and metrics using
-OpenTelemetry for Fast API and export them to a collector using python OTEL sdk.
+Implement OpenTelemetry instrumentation for `FastAPI` applications to collect
+traces and metrics; monitor HTTP requests using the Python OTel SDK.
 
 > **Note:** This guide provides a concise overview based on the official
 > OpenTelemetry documentation. For complete information, please consult
 > the
 > [official OpenTelemetry documentation](https://opentelemetry-python-contrib.readthedocs.io/en/latest/instrumentation/fastapi/fastapi.html).
 
-## Setup
+## Overview
 
-opentelemetry-api defines the API interfaces for tracing, metrics, and logging
-and opentelemetry-sdk provides the implementation for these APIs.
+This guide demonstrates how to:
+
+- Set up OpenTelemetry instrumentation for FastAPI
+- Configure automatic request and response tracing
+- Implement custom instrumentation
+- Collect HTTP metrics
+- Export telemetry data to OpenTelemetry Collector
+
+## Prerequisites
+
+Before starting, ensure you have:
+
+- Python 3.7 or later installed
+- FastAPI application set up
+- Access to package installation (`pip`)
+
+:::warning
+Ensure the local development environment is complete as described
+[here](../local-dev-env-setup.md).
+:::
+
+## Required Packages
+
+`opentelemetry-api` defines the API interfaces for tracing, metrics and logging;
+`opentelemetry-sdk` provides the implementation for these APIs.
+
 Install the following necessary packages or add it to
 `requirements.txt` and install it.
 
-```shell
+```plaintext
 opentelemetry-instrumentation-fastapi
 opentelemetry-sdk
 opentelemetry-exporter-otlp
@@ -35,7 +59,7 @@ understanding the full “path” a request takes in your application.
 
 ### Auto Instrumentation of Traces
 
-```python
+```python showLineNumbers
 from fastapi import FastAPI
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry import trace
@@ -47,13 +71,15 @@ from opentelemetry.sdk.trace.export import (
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.requests import RequestsInstrumentor
 
-
+# Configure trace provider with service name
 resource = Resource.create({"service.name": "custom-fastapi-service"})
 trace.set_tracer_provider(
     TracerProvider(
         resource=resource
     )
 )
+
+# Set up trace exporter
 trace.get_tracer_provider().add_span_processor(
     BatchSpanProcessor(OTLPSpanExporter(endpoint="http://0.0.0.0:4318/v1/traces"))
 )
@@ -62,18 +88,27 @@ app = FastAPI()
 
 FastAPIInstrumentor.instrument_app(app)
 
-# Optional to capture traces for requests made using requests package
+# Optional: Instrument HTTP client requests
 RequestsInstrumentor().instrument()
 ```
 
-> Trace data will now be sent to the OTEL Collector, enabling distributed
-> tracing and deeper insights into request flows within the application.
+Key tracing features:
+
+- Automatic HTTP request/response tracking
+- Error and exception capturing
+- Request context propagation
+- Custom attribute support
+- Distributed tracing capabilities
+
+> View these metrics in base14 Scout observability backend.
+
+##### Reference
 
 [Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
 
-### Adding Custom Instrumentation
+#### Adding Custom Instrumentation
 
-```python
+```python showLineNumbers
 def do_work():
     tracer = trace.get_tracer(__name__)
     parent_span = trace.get_current_span()
@@ -84,17 +119,19 @@ def do_work():
         # do some work ...
 ```
 
-## Metrics
+### Metrics
 
-A metric is a measurement of a service captured at runtime. The moment of
-capturing a measurements is known as a metric event, which consists not only of
-the measurement itself, but also the time at which it was captured and
-associated metadata.
+OpenTelemetry metrics capture runtime measurements of your FastAPI application,
+including:
 
-### Auto Instrumentation of Metrics
+- HTTP request counts and latencies
+- Response status codes
+- Resource utilization
+- Custom business metrics
 
-```python
-// main.py
+#### Auto Instrumentation of Metrics
+
+```python title="main.py" showLineNumbers
 
 from fastapi import FastAPI
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
@@ -105,9 +142,11 @@ from .MetricsMiddleware import MetricsMiddleware
 
 from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
 from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
+
+# Configure metrics with service name
 resource = Resource.create({"service.name": "custom-fastapi-service"})
 
-
+# Set up metrics export
 metric_reader = PeriodicExportingMetricReader(
     OTLPMetricExporter(endpoint="http://0.0.0.0:4318/v1/metrics"),
     export_interval_millis=1000
@@ -120,45 +159,46 @@ app = FastAPI()
 
 app.add_middleware(MetricsMiddleware)
 FastAPIInstrumentor.instrument_app(app)
-
 ```
 
-```python
-// MetricsMiddleware.py
-
+```python title="MetricsMiddleware.py" showLineNumbers
 from starlette.middleware.base import BaseHTTPMiddleware
 from opentelemetry.metrics import get_meter
 
 class MetricsMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app):
-        super().__init__(app)
-        self.meter = get_meter("custom-fastapi-service")
-        self.http_requests_counter = self.meter.create_counter(
-            name="http_requests_total",
-            unit="1",
-            description="Number of HTTP requests per route"
-        )
+  def __init__(self, app):
+    super().__init__(app)
+    self.meter = get_meter("custom-fastapi-service")
+    self.http_requests_counter = self.meter.create_counter(
+      name="http_requests_total",
+      unit="1",
+      description="Number of HTTP requests per route"
+    )
 
-    async def dispatch(self, request, call_next):
-        response = await call_next(request)
-        self.http_requests_counter.add(
-            1,
-            {
-                "method": request.method,
-                "path": request.url.path,
-                "status_code": str(response.status_code),
-            }
-        )
-        return response
-
+  async def dispatch(self, request, call_next):
+    response = await call_next(request)
+    self.http_requests_counter.add(
+      1,
+      {
+        "method": request.method,
+        "path": request.url.path,
+        "status_code": str(response.status_code),
+      }
+    )
+    return response
 ```
 
-> Metrics will now be exported to the OTEL Collector. The `MetricsMiddleware`
-> captures each HTTP request, including the method, path, and status code, and
-> tracks the total request count.
+Metrics will be automatically exported to the OpenTelemetry Collector at the
+configured interval. `MetricsMiddleware` captures each HTTP request,
+including the method, path, and status code, and tracks the total request count.
+
+> View these metrics in base14 Scout observability backend.
+
+##### Reference
 
 [Official Metrics Documentation](https://opentelemetry.io/docs/concepts/signals/metrics/)
 
-> 🧪 **Sample Application:** A sample application with OpenTelemetry
-> instrumentation can be found at
+## Sample Application
+>
+> A sample application with OpenTelemetry instrumentation can be found at
 > this [GitHub repository](https://github.com/base-14/examples/tree/main)
