@@ -49,11 +49,10 @@ and forward your telemetry data.
 
 2. `otel-col-sidecar.yaml`:
 
-   ```yaml
-   
+   ```yaml showLineNumbers
    extensions:
      health_check:
-   
+
    receivers:
      awsecscontainermetrics:
        collection_interval: 30s
@@ -65,7 +64,7 @@ and forward your telemetry data.
            endpoint: 0.0.0.0:4318
      fluentforward:
        endpoint: 0.0.0.0:8006
-   
+
    processors:
      batch:
        timeout: 10s
@@ -83,7 +82,7 @@ and forward your telemetry data.
              - ecs.task.storage.read_bytes
              - ecs.task.storage.write_bytes
              - container.duration
-   
+
    exporters:
      otlp:
        endpoint: "<SCOUT_ENDPOINT>:4317"
@@ -91,7 +90,7 @@ and forward your telemetry data.
          insecure: true
      debug:
        verbosity: detailed
-   
+
    service:
      extensions: [ health_check ]
      pipelines:

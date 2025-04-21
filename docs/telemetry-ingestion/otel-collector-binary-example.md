@@ -48,7 +48,7 @@ tar -xvf otelcol_0.119.0_darwin_arm64.tar.gz
 
 An example config can be seen to collect logs from a file to export to Scout
 
-```yaml
+```yaml showLineNumbers
 extensions:
   oauth2client:
     client_id: demo

@@ -39,7 +39,7 @@ The following `docker-compose.yml` configuration creates a three-service stack:
 2. A Redis instance for data storage
 3. OpenTelemetry Collector for telemetry processing
 
-```yaml title="docker-compose.yml"
+```yaml showLineNumbers title="docker-compose.yml"
 version: '3.8'
 
 x-default-logging: &logging
@@ -124,7 +124,7 @@ comprehensive observability:
 
 #### Components Overview
 
-```yaml title="otelcol-config.yaml"
+```yaml showLineNumbers title="otelcol-config.yaml"
 extensions:
   zpages:
     endpoint: 0.0.0.0:55679

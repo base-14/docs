@@ -50,7 +50,7 @@ The `values.yaml` file below demonstrates a standard configuration for the base1
 Scout collector. This configuration is suitable for most deployments and
 covers essential telemetry collection.
 
-```yaml title="values.yaml"
+```yaml showLineNumbers title="values.yaml"
 scout:
   endpoint: __YOUR_ENDPOINT__
   tokenUrl: __YOUR_TOKEN_URL__
@@ -107,7 +107,7 @@ configuration, giving you complete control over your telemetry pipeline:
 For detailed configuration options and examples,
 see our [OpenTelemetry Configuration Guide](/otelcol-config/otel-collector-config.md).
 
-```yaml
+```yaml showLineNumbers
 scout:
   endpoint: __YOUR_ENDPOINT__
   tokenUrl: __YOUR_TOKEN_URL__

@@ -46,7 +46,7 @@ can define folders, dashboards, alerts, and contact points:
 Folders help organize your dashboards. Here's an example of a YAML definition for
 a folder:
 
-```yaml
+```yaml showLineNumbers
 apiVersion: grizzly.grafana.com/v1alpha1
 kind: DashboardFolder
 metadata:
@@ -61,7 +61,7 @@ the `folder` field in the dashboard definition.
 
 1. Dashboards
 
-```yaml
+```yaml showLineNumbers
 apiVersion: grizzly.grafana.com/v1alpha1
 kind: Dashboard
 metadata:
@@ -189,7 +189,7 @@ diff-dashboards:
 
 ### Sample GitHub Actions Workflow
 
-```yaml
+```yaml showLineNumbers
 name: Apply Grafana Configuration
 
 on:
