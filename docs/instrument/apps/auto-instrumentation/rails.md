@@ -26,10 +26,6 @@ Before starting, ensure you have:
 - Rails application set up
 - Bundler installed for package management
 
-:::warning
-Make sure you have set up the local development environment as
-described [here](../local-dev-env-setup.md).
-:::
 
 ## Required Packages
 

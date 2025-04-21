@@ -1,12 +1,8 @@
-<<<<<<<< HEAD:docs/instrument/collectorSetup/otelcol-config.md
 ---
 sidebar_position: 6
 ---
 
 # OpenTelemetry Collector Configuration Guide
-========
-# Configure OTel Collector (otelcol)
->>>>>>>> main:docs/instrument/collectorSetup/otel-collector-config.md
 
 Collect, process and export telemetry data efficiently with
 the OpenTelemetry Collector (`otelcol`).

@@ -26,10 +26,6 @@ Before starting, ensure you have:
 - FastAPI application set up
 - Access to package installation (`pip`)
 
-:::warning
-Ensure the local development environment is complete as described
-[here](../local-dev-env-setup.md).
-:::
 
 ## Required Packages
 
