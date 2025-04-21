@@ -26,7 +26,6 @@ Before starting, ensure you have:
 - Rails application set up
 - Bundler installed for package management
 
-
 ## Required Packages
 
 Install the following necessary packages by `gem install` or add it to

@@ -26,7 +26,6 @@ Before starting, ensure you have:
 - FastAPI application set up
 - Access to package installation (`pip`)
 
-
 ## Required Packages
 
 `opentelemetry-api` defines the API interfaces for tracing, metrics and logging;
