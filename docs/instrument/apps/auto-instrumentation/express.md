@@ -8,28 +8,19 @@ traces, metrics and monitor HTTP requests using the `Node.js` OTel SDK.
 > the
 > [official OpenTelemetry documentation](https://opentelemetry.io/docs/languages/js/instrumentation/).
 
-## Overview
+## Setup
 
-This guide demonstrates how to:
+opentelemetry-api defines the API interfaces for tracing, metrics, and logging
+and opentelemetry-sdk provides the implementation for these APIs.
+Run the following commands to install the necessary packages or add it to
+`package.json` and install it.
 
-- Set up OpenTelemetry instrumentation for `Express.js`
-- Configure automatic request and response tracing
-- Implement custom instrumentation
-- Collect HTTP metrics
-- Export telemetry data to OpenTelemetry Collector
-
-## Prerequisites
-
-Before starting, ensure you have:
-
-- Node.js 14 or later installed
-- An application with `Express.js`
-- Access to npm for package installation
-
-:::warning
-Make sure you have set up the local development environment as
-described [here](../local-dev-env-setup.md).
-:::
+```plaintext
+'@opentelemetry/api'
+'@opentelemetry/resources'
+'@opentelemetry/sdk-node'
+'@opentelemetry/semantic-conventions'
+```
 
 ## Required Packages
 

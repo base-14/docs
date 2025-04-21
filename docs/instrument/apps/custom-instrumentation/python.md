@@ -25,11 +25,6 @@ Before starting, ensure you have:
 - A Python project set up
 - Access to package installation (`pip`)
 
-:::warning
-Make sure you have set up the local development environment as described
-[here](../local-dev-env-setup.md).
-:::
-
 ## Required Packages
 
 Install the following necessary packages or add them to `requirements.txt`:
@@ -41,28 +36,6 @@ pip install opentelemetry-sdk
 # Optional but recommended
 pip install opentelemetry-semantic-conventions
 ```
-
-## Configuration
-
-The setup process involves three main components:
-
-1. **Traces Configuration**:
-
-- Initialize TracerProvider
-- Configure span processors
-- Set up span exporters
-
-1. **Metrics Configuration**:
-
-- Initialize MeterProvider
-- Set up metric readers
-- Configure metric exporters
-
-1. **Custom Instrumentation**:
-
-- Create and manage spans
-- Add attributes and events
-- Handle span status and errors
 
 ## Traces
 

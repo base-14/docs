@@ -1,8 +1,0 @@
-{
-  "label": "Telemetry Ingestion",
-  "position": 1,
-  "link": {
-    "type": "generated-index",
-    "description": "Learn how to collect and ingest telemetry data into base14 Scout using OpenTelemetry Collector. This guide cover - Binary and Docker Compose installations, Log collection and metrics monitoring setup, Secure data forwarding with OAuth2 and Real-time container monitoring. Get started with comprehensive observability in just 5 minutes."
-  }
-}

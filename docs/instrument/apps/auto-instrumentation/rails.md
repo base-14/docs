@@ -26,11 +26,6 @@ Before starting, ensure you have:
 - Rails application set up
 - Bundler installed for package management
 
-:::warning
-Make sure you have set up the local development environment as
-described [here](../local-dev-env-setup.md).
-:::
-
 ## Required Packages
 
 Install the following necessary packages by `gem install` or add it to
@@ -48,16 +43,14 @@ gem 'opentelemetry-instrumentation-rack'
 gem 'opentelemetry-semantic_conventions'
 ```
 
-## Configuration
-
-### Traces
+## Traces
 
 Traces give us the big picture of what happens when a request is made to an
 application. Whether your application is a monolith with a single
 database or a sophisticated mesh of services, traces are essential to
 understanding the full “path” a request takes in your application.
 
-#### Auto Instrumentation
+### Auto Instrumentation
 
 ```ruby showLineNumbers title="config/initializers/otel.rb"
 require 'opentelemetry/sdk'

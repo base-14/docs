@@ -1,24 +1,11 @@
-# Configure base14 Scout Exporter
+---
+sidebar_position: 5
+---
 
-Securely send telemetry data to the base14 Scout observability platform using
-the Scout exporter for OpenTelemetry Collector.
+# Scout Exporter Configuration
 
-## Overview
-
-The Scout exporter is a specialized OpenTelemetry Collector exporter that enables:
-
-- Secure telemetry data export to base14 Scout
-- OAuth2 authentication support
-
-## Prerequisites
-
-To configure the Scout exporter, ensure you have:
-
-- base14 account credentials
-- base14 tenant ID
-- OAuth2 client credentials (client ID and secret)
-- Network access to base14 endpoints
-- OpenTelemetry Collector installed and running
+The Scout exporter is a custom exporter for the OpenTelemetry Collector that
+exports telemetry data to Scout.
 
 ## Configuration
 
