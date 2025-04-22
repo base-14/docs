@@ -9,7 +9,7 @@ hide_table_of_contents: true
 ## Overview
 
 This guide will walk you through collecting rich telemetry data from your ECS
-infrastructure using Scout by base14.io. We'll implement the elegant sidecar
+infrastructure using Scout by base14. We'll implement the elegant sidecar
 pattern—a design where a companion container runs alongside your application
 container to handle cross-cutting concerns like monitoring and observability.
 

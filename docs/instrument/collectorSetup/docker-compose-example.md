@@ -1,8 +1,10 @@
 ---
+keywords: [docker, docker-compose, opentelemetry, otel-collector, scout]
+tags: [docker, opentelemetry, base14 scout]
 sidebar_position: 1
 ---
 
-# OTel Collector on Docker Compose
+# Docker Compose
 
 Collect and monitor Docker container logs using OpenTelemetry Collector and
 base14 Scout with a complete `Docker Compose` setup.
@@ -124,7 +126,7 @@ comprehensive observability:
 
 #### Components Overview
 
-```yaml showLineNumbers title="otelcol-config.yaml"
+```yaml showLineNumbers title="otel-collector-config.yaml"
 extensions:
   zpages:
     endpoint: 0.0.0.0:55679

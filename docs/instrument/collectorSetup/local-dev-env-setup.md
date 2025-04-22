@@ -1,11 +1,13 @@
 ---
+keywords: [jaeger, prometheus, opentelemetry, otel-collector, scout]
+tags: [jaeger, prometheus, base14 scout]
 sidebar_position: 7
 ---
 
-# Test your otel collector with Local Dev Environment Setup
+# Local Dev Environment
 
-This guide helps you set up a local observability stack for development
-and testing purposes. The setup includes:
+Set up a local observability stack for development and testing purposes.
+It includes:
 
 - **OpenTelemetry Collector**:
   For collecting, processing, and exporting telemetry data

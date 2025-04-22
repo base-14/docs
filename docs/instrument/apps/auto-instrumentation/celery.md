@@ -31,7 +31,7 @@ understanding the full “path” a request takes in your application.
 
 ### Auto Instrumentation of Traces
 
-```python
+```python showLineNumbers
 from opentelemetry.instrumentation.celery import CeleryInstrumentor
 
 from celery import Celery
@@ -56,7 +56,7 @@ add.delay(42, 50)
 
 ### Adding Custom Instrumentation
 
-```python
+```python showLineNumbers
 from opentelemetry.propagate import inject, extract
 from opentelemetry.instrumentation.celery import CeleryInstrumentor
 from opentelemetry.trace import get_tracer
@@ -74,8 +74,8 @@ app = Celery("tasks", broker="amqp://localhost")
 def add(x, y, carrier):
     with tracer.start_as_current_span("add", context=ctx):
         return x + y
-    
-    
+
+
 def do_work():
     carrier = {}
     inject(carrier)
@@ -87,7 +87,7 @@ def do_work():
         ctx = extract(context)
     else:
         ctx = get_current()
-        
+
 do_work()
 ```
 
@@ -100,7 +100,7 @@ associated metadata.
 
 ### Auto Instrumentation of Metrics
 
-```python
+```python showLineNumbers
 from opentelemetry.instrumentation.celery import CeleryInstrumentor
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
@@ -143,7 +143,7 @@ unstructured, with optional metadata.
 
 ### Auto Instrumentation of Logs
 
-```python
+```python showLineNumbers
 from opentelemetry.instrumentation.celery import CeleryInstrumentor
 from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
 from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
