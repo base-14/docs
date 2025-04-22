@@ -85,8 +85,8 @@ scout collector using otelcol style
 configuration. Here the configuration follows the same semantics as the
 OpenTelemetry Collector otelcol config. This
 gives a greater flexibility in terms of what you can configure to be scraped,
-collected etc. Reference
-the [otelcol-config](./otelcol-config.md) for more details.
+collected etc. Reference the [otel-collector-config](./otel-collector-config.md)
+for more details.
 
 ```yaml showLineNumbers
 scout:

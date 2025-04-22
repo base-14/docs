@@ -2,7 +2,7 @@
 sidebar_position: 6
 ---
 
-# OpenTelemetry Collector Configuration Guide
+# OTel Collector Configuration Guide
 
 Collect, process and export telemetry data efficiently with
 the OpenTelemetry Collector (`otelcol`).

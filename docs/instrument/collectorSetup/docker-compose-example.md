@@ -124,7 +124,7 @@ comprehensive observability:
 
 #### Components Overview
 
-```yaml showLineNumbers title="otelcol-config.yaml"
+```yaml showLineNumbers title="otel-collector-config.yaml"
 extensions:
   zpages:
     endpoint: 0.0.0.0:55679

@@ -2,7 +2,7 @@
 sidebar_position: 3
 ---
 
-# Installing OpenTelemetry Collector on Linux
+# OTel Collector on Linux
 
 Install and configure the OpenTelemetry Collector on Linux systems.
 
