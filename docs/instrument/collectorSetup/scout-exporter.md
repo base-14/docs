@@ -1,8 +1,10 @@
 ---
+keywords: [opentelemetry, otel-collector, scout exporter]
+tags: [opentelemetry, base14 scout]
 sidebar_position: 5
 ---
 
-# Scout Exporter Configuration
+# Scout Exporter
 
 The Scout exporter is a custom exporter for the OpenTelemetry Collector that
 exports telemetry data to Scout.

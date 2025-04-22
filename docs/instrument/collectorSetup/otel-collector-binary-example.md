@@ -1,8 +1,10 @@
 ---
+keywords: [download, binary, open-telemetry, otel-collector, scout]
+tags: [open-telemetry, base14 scout]
 sidebar_position: 4
 ---
 
-# OTel Collector Binary Example
+# OpenTelemetry Binary
 
 Set up and configure the OpenTelemetry Collector through binary downloaded from
 releases page.

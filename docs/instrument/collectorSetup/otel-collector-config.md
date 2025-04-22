@@ -1,8 +1,10 @@
 ---
+keywords: [opentelemetry, otel-collector, configuration, vendor-agnostic, scout]
+tags: [opentelemetry, base14 scout]
 sidebar_position: 6
 ---
 
-# OTel Collector Configuration Guide
+# Configuration
 
 Collect, process and export telemetry data efficiently with
 the OpenTelemetry Collector (`otelcol`).

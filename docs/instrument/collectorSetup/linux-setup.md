@@ -1,8 +1,10 @@
 ---
+keywords: [linux, opentelemetry, otel-collector, scout]
+tags: [linux, opentelemetry, base14 scout]
 sidebar_position: 3
 ---
 
-# OTel Collector on Linux
+# Linux
 
 Install and configure the OpenTelemetry Collector on Linux systems.
 
