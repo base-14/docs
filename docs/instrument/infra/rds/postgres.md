@@ -275,11 +275,6 @@ receivers:
             - targets: ["0.0.0.0:9106"]
           metric_relabel_configs:
             - source_labels: [__name__]
-              regex: aws_applicationelb_.*
-              target_label: service
-              replacement: alb
-
-            - source_labels: [__name__]
               regex: aws_rds_.*
               target_label: service
               replacement: rds
