@@ -1,7 +1,7 @@
 ---
 date: 2025-04-26
 id: collecting-aws-rds-postgres-telemetry
-title: Telemetry Collection from RDS Postgres via CloudWatch and Prometheus
+title: Using CloudWatch and Prometheus cloudwatch exporter
 description: Use Scout to monitor your AWS RDS postgres instance with ease
 hide_table_of_contents: true
 ---
