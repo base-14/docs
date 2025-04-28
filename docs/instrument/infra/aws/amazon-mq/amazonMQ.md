@@ -1,7 +1,7 @@
 ---
 date: 2025-04-27
 id: collecting-aws-amazon-mq-telemetry
-title: Telemetry Collection from Amazon MQ via CloudWatch and Prometheus
+title: Using CloudWatch and Prometheus cloudwatch exporter
 description: Use Scout to monitor your AWS Amazon MQ with ease
 hide_table_of_contents: true
 ---
