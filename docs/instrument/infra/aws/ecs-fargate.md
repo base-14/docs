@@ -4,6 +4,9 @@ id: collecting-ecs-sidecar-infra
 title: Collecting Telemetry from ECS using Sidecar Containers
 description: Use Scout to monitor your ECS infrastructure with ease
 hide_table_of_contents: true
+keywords: [AWS, ECS, Cloudwatch, OTLP, Sidecar, base14 Scout]
+tags: [aws, ecs, otlp]
+sidebar_position: 1
 ---
 
 ## Overview
