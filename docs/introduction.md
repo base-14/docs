@@ -65,7 +65,7 @@ Let's setup **Scout in less than 5 minutes**. We will follow the steps below:
 5. **Instrument your infrastructure**: Use OpenTelemetry to collect telemetry
    data from your infrastructure components. This can include servers,
    databases, and other services. For example, for AWS ECS Fargate, please read
-   [AWS ECS Instrumentation](./instrument/infra/ecs/ecs-fargate.md) to collect
+   [AWS ECS Instrumentation](./instrument/infra/aws/ecs-fargate.md) to collect
    telemetry data from your Fargate services.
 6. **Observe your telemetry data**: Access the Scout UI to view and analyze your
    telemetry data. You can explore logs, metrics, and traces to gain insights
