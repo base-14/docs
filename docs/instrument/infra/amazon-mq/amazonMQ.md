@@ -38,11 +38,100 @@ and update the region key with relevant value.
 ---
 region: us-east-1
 metrics:
-  - aws_namespace:
-    aws_metric_name:
-    aws_dimensions:
-    aws_statistics:
+  - aws_namespace: AWS/AmazonMQ
+    aws_metric_name: SystemCpuUtilization
+    aws_dimensions: [Broker]
+    aws_statistics: [Average, Maximum]
 
+  - aws_namespace: AWS/AmazonMQ
+    aws_metric_name: RabbitMQFdUsed
+    aws_dimensions: [Broker]
+    aws_statistics: [Average, Maximum]
+
+  - aws_namespace: AWS/AmazonMQ
+    aws_metric_name: RabbitMQMemLimit
+    aws_dimensions: [Broker]
+    aws_statistics: [Average, Maximum]
+
+  - aws_namespace: AWS/AmazonMQ
+    aws_metric_name: RabbitMQIOReadAverageTime
+    aws_dimensions: [Broker]
+    aws_statistics: [Average, Maximum]
+
+  - aws_namespace: AWS/AmazonMQ
+    aws_metric_name: RabbitMQDiskFreeLimit
+    aws_dimensions: [Broker]
+    aws_statistics: [Average, Maximum]
+
+  - aws_namespace: AWS/AmazonMQ
+    aws_metric_name: MessageUnacknowledgedCount
+    aws_dimensions: [Broker]
+    aws_statistics: [Average, Maximum]
+
+  - aws_namespace: AWS/AmazonMQ
+    aws_metric_name: ChannelCount
+    aws_dimensions: [Broker]
+    aws_statistics: [Average, Maximum]
+
+  - aws_namespace: AWS/AmazonMQ
+    aws_metric_name: MessageReadyCount
+    aws_dimensions: [Broker]
+    aws_statistics: [Average, Maximum]
+
+  - aws_namespace: AWS/AmazonMQ
+    aws_metric_name: AckRate
+    aws_dimensions: [Broker]
+    aws_statistics: [Average, Maximum]
+
+  - aws_namespace: AWS/AmazonMQ
+    aws_metric_name: ConfirmRate
+    aws_dimensions: [Broker]
+    aws_statistics: [Average, Maximum]
+
+  - aws_namespace: AWS/AmazonMQ
+    aws_metric_name: ConnectionCount
+    aws_dimensions: [Broker]
+    aws_statistics: [Average, Maximum]
+
+  - aws_namespace: AWS/AmazonMQ
+    aws_metric_name: ExchangeCount
+    aws_dimensions: [Broker]
+    aws_statistics: [Average, Maximum]
+
+  - aws_namespace: AWS/AmazonMQ
+    aws_metric_name: QueueCount 
+    aws_dimensions: [Broker]
+    aws_statistics: [Average, Maximum]
+
+  - aws_namespace: AWS/AmazonMQ
+    aws_metric_name: MessageCount 
+    aws_dimensions: [Broker]
+    aws_statistics: [Average, Maximum]
+
+  - aws_namespace: AWS/AmazonMQ
+    aws_metric_name: PublishRate 
+    aws_dimensions: [Broker]
+    aws_statistics: [Average, Maximum]
+
+  - aws_namespace: AWS/AmazonMQ
+    aws_metric_name: ConsumerCount 
+    aws_dimensions: [Broker]
+    aws_statistics: [Average, Maximum]
+
+  - aws_namespace: AWS/AmazonMQ
+    aws_metric_name: RabbitMQMemUsed 
+    aws_dimensions: [Broker]
+    aws_statistics: [Average, Maximum]
+
+  - aws_namespace: AWS/AmazonMQ
+    aws_metric_name: RabbitMQDiskFree 
+    aws_dimensions: [Broker]
+    aws_statistics: [Average, Maximum]
+
+  - aws_namespace: AWS/AmazonMQ
+    aws_metric_name: RabbitMQIOWriteAverageTime 
+    aws_dimensions: [Broker]
+    aws_statistics: [Average, Maximum]
 ```
 
 ### 2. Run the below command to Start the Exporter
