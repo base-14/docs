@@ -1,0 +1,8 @@
+{
+  "label": "RDS",
+  "position": 5,
+  "link": {
+    "type": "generated-index",
+    "description": "Collecting RDS Telemetry data using cloudwatch and prometheus cloudwatch exporter."
+  }
+}
