@@ -3,6 +3,6 @@
   "position": 5,
   "link": {
     "type": "generated-index",
-    "description": "Collecting RDS Telemetry data using cloudwatch and prometheus cloudwatch exporter."
+    "description": "Collecting Telemetry from RDS using cloudwatch and prometheus cloudwatch exporter."
   }
 }
