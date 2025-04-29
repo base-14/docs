@@ -1,1 +1,83 @@
-# Guide: Transform logs - copy field to another field
+---
+date: 2025-04-29
+id: extracting-trace-id-and-span-id-from-log-body
+title: Guide -  Extracting TraceId and SpanId from Log Bodies 
+description: Comprehesive guide to extract trace and span id from log body
+hide_table_of_contents: true
+---
+
+This guide demonstrates how to extract trace and span identifiers from the
+body of your logs using Scout's transform processors, enabling better
+distributed tracing correlation and observability.
+
+### Overview
+
+When working with logs that contain trace and span identifiers in their
+body (often in JSON format), you need to extract these values to standard
+fields to enable proper trace correlation. This guide shows how to use
+Scout's transform processor to parse and extract these values.
+
+### Step 1: Initialize Default Values
+
+First, we'll initialize default trace and span IDs to ensure these
+fields always exist:
+
+```yaml
+processors:
+  transform/initialize:
+    log_statements:
+      - context: log
+        statements:
+          - set(trace_id.string, "00000000000000000000000000000000")
+          - set(span_id.string, "0000000000000000")
+```
+
+### Step 2: Extract TraceId
+
+Next, we'll extract the `traceId` from the JSON body:
+
+```yaml
+transform/extract_trace:
+  error_mode: ignore
+  log_statements:
+    - context: log
+      statements:
+        - set(trace_id.string, ParseJSON(log.body)["traceId"])
+```
+
+> Note: Replace `traceId` if you are using other key name.
+
+### Step 3: Extract SpanId
+
+Similarly, we'll extract the `spanId` from the JSON body:
+
+```yaml
+transform/extract_span:
+  error_mode: ignore
+  log_statements:
+    - context: log
+      statements:
+        - set(span_id.string, ParseJSON(log.body)["spanId"])
+```
+
+> Note: Replace `spanId` if you are using other key name.
+>
+### Step 4: Configure Pipeline
+
+Finally, add these processors to your logs pipeline:
+
+```yaml
+logs/otlp:
+  receivers: [otlp]
+  processors: [transform/initialize, transform/extract_trace, transform/extract_span]
+  exporters: [debug]
+```
+
+#### Notes
+
+- The `error_mode: ignore` directive prevents pipeline failures
+when a log entry doesn't contain the expected fields
+- This configuration assumes the trace and span IDs are directly
+available at the top level of the JSON structure
+- The example uses the debug exporter, but you should replace
+it with your actual exporters and recievers.
