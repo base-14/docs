@@ -1,7 +1,7 @@
 ---
 date: 2025-04-29
 id: extracting-trace-id-and-span-id-from-log-body
-title: Guide -  Extracting TraceId and SpanId from Log Bodies 
+title: Guide -  Extracting TraceId and SpanId from Json log Bodies
 description: Comprehesive guide to extract trace and span id from log body
 hide_table_of_contents: true
 ---
