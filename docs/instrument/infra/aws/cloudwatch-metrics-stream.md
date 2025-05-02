@@ -22,9 +22,9 @@ First, We'll create a s3 to bucket to store the metrics
 
 ![S3 Dashboard ScreenShot](/img/cloudwatch-kinesis-stream/s3-dashboard.png)
 
-### 3. Enter the bucket name as `cloudwatch-metrics-stream-bucket` and
+### 3. Enter the bucket name as `cloudwatch-metrics-stream-bucket`
 
-### leave all the other settings to default
+> leave all the other settings to default options.
 
 ![S3 config page screenshot](/img/cloudwatch-kinesis-stream/create-s3-page.png)
 
