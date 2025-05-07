@@ -130,7 +130,7 @@ bucket.
 - Click on `Add`.
 - Navigate to `Configuration` and then to `Environment variables`.
 - Click on `edit` and these two environment variables with correct values.
-(`OTEL_COLLECTOR_URL`,`S3_BUCKET_NAME`).
+(`OTEL_COLLECTOR_URL`, `S3_BUCKET_NAME`, `OTEL_SERVICE_NAME`).
 
 Now the actual part, copy the below code into the `code source`
 in your lambda function.
@@ -144,7 +144,7 @@ from opentelemetry.proto.collector.metrics.v1.metrics_service_pb2 import ExportM
 
 # CONFIGURE THESE:
 OTEL_COLLECTOR_URL = os.environ.get('OTEL_COLLECTOR_URL')
-
+SERVICE_NAME = os.environ.get('OTEL_SERVICE_NAME', "awsCloudwatchMetrics")
 # Initialize the S3 client
 s3_client = boto3.client('s3')
 
@@ -152,6 +152,12 @@ def send_metrics_to_otel(request_obj):
     headers = {
         "Content-Type": "application/x-protobuf",
     }
+    for resource_metric in request_obj.resource_metrics:
+        if resource_metric.resource:
+            resource_metric.resource.attributes.add(
+                key="service.name",
+                value={"string_value": SERVICE_NAME}
+            )
     payload = request_obj.SerializeToString()
     response = requests.post(OTEL_COLLECTOR_URL, headers=headers, data=payload)
     if response.status_code == 200:
