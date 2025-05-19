@@ -1,4 +1,3 @@
-<!-- markdownlint-disable-file -->
 ---
 keywords: [kubernetes, helm, opentelemetry, otel-collector, scout]
 tags: [kubernetes, opentelemetry, base14 scout]
