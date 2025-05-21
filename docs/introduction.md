@@ -42,17 +42,17 @@ Let's setup **Scout in less than 5 minutes**. We will follow the steps below:
    receive, process, and export telemetry data. You can install it using Docker,
    Kubernetes, or directly on your machine. The installation method will depend
    on your environment and preferences.
-    - [Docker Compose](./instrument/collectorSetup/docker-compose-example)
-    - [Kubernetes (EKS, GKE, AKS)](./instrument/collectorSetup/kubernetes-helm-setup.md)
-    - [Linux](./instrument/collectorSetup/linux-setup)
-    - [Using Otel Binary](./instrument/collectorSetup/otel-collector-binary-example.md)
+    - [Docker Compose](./instrument/collector-setup/docker-compose-example)
+    - [Kubernetes (EKS, GKE, AKS)](./instrument/collector-setup/kubernetes-helm-setup.md)
+    - [Linux](./instrument/collector-setup/linux-setup)
+    - [Using Otel Binary](./instrument/collector-setup/otel-collector-binary-example.md)
 2. **Configure the OpenTelemetry Collector**: Step 1 should help you get started
    with a collector that can receive, process, and export telemetry data. For
    advanced configurations, you can refer to
-   [detailed OpenTelemetry Collector configuration guide](./instrument/collectorSetup/otel-collector-config.md)
+   [detailed OpenTelemetry Collector configuration guide](./instrument/collector-setup/otel-collector-config.md)
 3. **Configure the Scout Exporter**: Next, configure your otel collector to send
    data to Scout. You can find the configuration details in the
-   [Scout Exporter](./instrument/collectorSetup/scout-exporter.md)
+   [Scout Exporter](./instrument/collector-setup/scout-exporter.md)
    documentation. This will typically involve setting up the endpoint,
    authentication, and any other required parameters. Scout exporter is
    available for all signals (logs, metrics, traces) and can be configured to
