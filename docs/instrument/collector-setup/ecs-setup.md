@@ -76,15 +76,15 @@ Run the below commands to generate the task defintion for scout collector
 export AWS_TASK_EXECUTION_ROLE=<ARN of the task execution Role>
 
 AWS_TASK_EXECUTION_ROLE=${AWS_TASK_EXECUTION_ROLE} \
-TASK_NAME='Scout_agent_collector' \
-SERVICE_NAME='Scout_agent_collector' \
+TASK_NAME='Scout_collector' \
+SERVICE_NAME='Scout_collector' \
 <!-- markdownlint-disable-next-line MD013 -->
 SCOUT_CONFIG_CONTENT=$(cat scout-collector-config.yaml | awk 'BEGIN {ORS="\\n"} {print}' | sed 's/"/\\"/g') \
-envsubst < task-definition.json > scout-agent-collector-task-definiton.json
+envsubst < task-definition.json > scout-collector-task-definiton.json
 
 ```
 
-You will now have two task defintions, Copy the contents of it
+You will now have a task defintions, Copy the contents of it
 and create a task deinition in aws console and run the below
 commands to create a service and deploy it to an ecs cluster
 
