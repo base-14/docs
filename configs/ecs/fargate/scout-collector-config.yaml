@@ -1,0 +1,145 @@
+receivers:
+  postgres:
+    endpoint: localhost:5432
+    transport: tcp
+    username: postgres
+    password: postgres
+    databases:
+      - postres
+    collection_interval: 5m
+
+  otlp:
+    protocols:
+      grpc:
+        endpoint: "0.0.0.0:4317"
+      http:
+        endpoint: "0.0.0.0:4318"
+
+processors:
+  batch:
+    timeout: 2s
+    send_batch_size: 8192
+    send_batch_max_size: 10000
+  memory_limiter:
+    check_interval: 5s
+    limit_percentage: 80
+    spike_limit_percentage: 30
+  resource:
+    attributes:
+      - key: service.name
+        value: zinc
+        action: upsert
+  resource/ecs:
+    attributes:
+      - key: service.name
+        value: ecs
+        action: upsert
+  resource/postgres:
+    attributes:
+      - key: service.name
+        value: postgres
+        action: upsert
+  resource/env:
+    attributes:
+      - key: environment
+        value: staging
+        action: upsert
+  resourcedetection:
+    detectors: [ecs, system]
+    timeout: 2s
+    system:
+      resource_attributes:
+        host.arch:
+          enabled: true
+        host.cpu.cache.l2.size:
+          enabled: true
+        host.cpu.family:
+          enabled: true
+        host.cpu.model.id:
+          enabled: true
+        host.cpu.model.name:
+          enabled: true
+        host.cpu.stepping:
+          enabled: true
+        host.cpu.vendor.id:
+          enabled: true
+        host.id:
+          enabled: true
+        host.ip:
+          enabled: true
+        host.mac:
+          enabled: true
+        host.name:
+          enabled: true
+        os.description:
+          enabled: true
+        os.type:
+          enabled: true
+        os.version:
+          enabled: true
+
+exporters:
+  otlphttp/b14:
+    endpoint: ${SCOUT_ENDPOINT}
+    auth:
+      authenticator: oauth2client
+    tls:
+      insecure_skip_verify: true
+  debug:
+    verbosity: detailed
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+  zpages:
+    endpoint: 0.0.0.0:55679
+  oauth2client:
+    client_id: ${SCOUT_CLIENT_ID}
+    client_secret: ${SCOUT_CLIENT_SECRET}
+    endpoint_params:
+      audience: b14collector
+    token_url: ${SCOUT_TOKEN_URL}
+    tls:
+      insecure_skip_verify: true
+service:
+  extensions: [oauth2client, zpages, health_check]
+  pipelines:
+    logs:
+      receivers: [otlp]
+      processors: [resourcedetection, resource/env, resource]
+      exporters: [otlphttp/b14]
+    metrics:
+      receivers: [otlp]
+      processors: [resourcedetection, resource/env, resource]
+      exporters: [otlphttp/b14]
+    metrics/postgres:
+      receivers: [postgres]
+      processors: [resourcedetection, resource/env, resource/postgres]
+      exporters: [otlphttp/b14]
+    traces:
+      receivers: [otlp]
+      processors: [resourcedetection, resource/env, resource]
+      exporters: [otlphttp/b14]
+  telemetry:
+    metrics:
+      readers:
+        - periodic:
+            exporter:
+              otlp:
+                protocol: http/protobuf
+                endpoint: http://0.0.0.0:4318
+    logs:
+      level: debug
+      encoding: json
+      processors:
+        - batch:
+            exporter:
+              otlp:
+                protocol: http/protobuf
+                endpoint: http://0.0.0.0:4318
+    traces:
+      processors:
+        - batch:
+            exporter:
+              otlp:
+                protocol: http/protobuf
+                endpoint: http://0.0.0.0:4318
