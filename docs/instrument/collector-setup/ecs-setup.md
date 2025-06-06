@@ -62,11 +62,11 @@ curl -o scout-agent-collector-config.yaml https://raw.githubusercontent.com/base
 :::warning
 
 - Replace the clientId, clientSecret, Endpoint,
-TokenUrl placeholders with the actual value. \
+  TokenUrl placeholders with the actual value. \
 - Go through the config once before continuing
-further to remove or add new pipelines \
+  further to remove or add new pipelines \
 - Click [here](https://docs.base14.io/instrument/collector-setup/otel-collector-config)
- to more about the config
+  to more about the config
 
 :::
 
@@ -78,7 +78,6 @@ export AWS_TASK_EXECUTION_ROLE=<ARN of the task execution Role>
 AWS_TASK_EXECUTION_ROLE=${AWS_TASK_EXECUTION_ROLE} \
 TASK_NAME='Scout_collector' \
 SERVICE_NAME='Scout_collector' \
-<!-- markdownlint-disable-next-line MD013 -->
 SCOUT_CONFIG_CONTENT=$(cat scout-collector-config.yaml | awk 'BEGIN {ORS="\\n"} {print}' | sed 's/"/\\"/g') \
 envsubst < task-definition.json > scout-collector-task-definiton.json
 
@@ -106,7 +105,7 @@ aws ecs create-service \
 In the case of managed nodes, we'll use two Task Definitions. One deploys
 OpenTelemetry collectors using the DAEMON strategy, and the other uses the
 REPLICA strategy. The replica collector acts as an agent collector, while the
-daemon collector retrieves node metrics and sends them to the agent collector.
+daemon collector retrieves node metrics.
 
 Download the `task-definition.json`
 
