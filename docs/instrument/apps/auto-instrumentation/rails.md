@@ -35,12 +35,6 @@ Install the following necessary packages by `gem install` or add it to
 gem 'opentelemetry-sdk'
 gem 'opentelemetry-exporter-otlp'
 gem 'opentelemetry-instrumentation-all'
-gem 'opentelemetry-instrumentation-rails'
-gem 'opentelemetry-instrumentation-net_http'
-gem 'opentelemetry-instrumentation-active_support'
-gem 'opentelemetry-instrumentation-active_record'
-gem 'opentelemetry-instrumentation-rack'
-gem 'opentelemetry-semantic_conventions'
 ```
 
 ## Traces
@@ -56,25 +50,19 @@ understanding the full “path” a request takes in your application.
 require 'opentelemetry/sdk'
 require 'opentelemetry/exporter/otlp'
 
+otlp_endpoint = ENV.fetch('OTEL_EXPORTER_OTLP_ENDPOINT', 'http://0.0.0.0:4318')
+
 OpenTelemetry::SDK.configure do |c|
-  c.service_name = 'rails-app'
-
-  c.use 'OpenTelemetry::Instrumentation::Rails'
-  c.use 'OpenTelemetry::Instrumentation::ActiveRecord'
-  c.use 'OpenTelemetry::Instrumentation::Net::HTTP'
-  c.use 'OpenTelemetry::Instrumentation::ActiveSupport'
-  c.use 'OpenTelemetry::Instrumentation::Rack', {
-    record_frontend_span: true
-  }
-
-  c.add_span_processor(
-    OpenTelemetry::SDK::Trace::Export::BatchSpanProcessor.new(
-      OpenTelemetry::Exporter::OTLP::Exporter.new(
-        endpoint: 'http://localhost:4318/v1/traces'
+    c.service_name = ENV.fetch('OTEL_SERVICE_NAME', 'rails-app')
+    c.add_span_processor(
+      OpenTelemetry::SDK::Trace::Export::BatchSpanProcessor.new(
+        OpenTelemetry::Exporter::OTLP::Exporter.new(
+          endpoint: otlp_endpoint
+        )
       )
     )
-  )
 
+    c.use_all
 end
 
 TRACER = OpenTelemetry.tracer_provider.tracer('rails-app', '0.1.0')
