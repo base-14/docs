@@ -1,8 +1,14 @@
 # Spring Boot
 
-Implement OpenTelemetry instrumentation for `Spring Boot` applications to collect traces and metrics, and monitor HTTP requests using the Java OTel SDK.
+Implement OpenTelemetry instrumentation for `Spring Boot` applications to
+collect traces and metrics, and monitor HTTP requests using the Java OTel SDK.
 
-> **Note:** This guide provides a concise overview. For complete information, consult the [official OpenTelemetry documentation](https://opentelemetry.io/docs/zero-code/java/spring-boot-starter/).
+> **Note:** This guide provides a concise overview. For complete information,
+> consult the [official OpenTelemetry documentation][otel-docs].
+
+[otel-docs]: https://opentelemetry.io/docs/zero-code/java/spring-boot-starter/
+
+---
 
 ## Overview
 
@@ -14,11 +20,15 @@ This guide demonstrates how to:
 - Collect HTTP metrics
 - Export telemetry data to OpenTelemetry Collector
 
+---
+
 ## Prerequisites
 
 - Java 17 or later
 - Spring Boot 3.2.0 or later
 - Maven 3.6+ or Gradle 7.6+
+
+---
 
 ## Required Dependencies
 
@@ -37,10 +47,13 @@ This guide demonstrates how to:
         <dependency>
             <groupId>io.opentelemetry.instrumentation</groupId>
             <artifactId>opentelemetry-instrumentation-bom</artifactId>
-            <version>${opentelemetry.instrumentation.version}-alpha</version>
+            <version>
+                ${opentelemetry.instrumentation.version}-alpha
+            </version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
+    </dependencies>
 </dependencyManagement>
 
 <dependencies>
@@ -49,11 +62,13 @@ This guide demonstrates how to:
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
+
     <!-- OpenTelemetry -->
     <dependency>
         <groupId>io.opentelemetry.instrumentation</groupId>
         <artifactId>opentelemetry-spring-boot-starter</artifactId>
     </dependency>
+
     <dependency>
         <groupId>io.micrometer</groupId>
         <artifactId>micrometer-registry-otlp</artifactId>
@@ -61,7 +76,8 @@ This guide demonstrates how to:
 </dependencies>
 ```
 
-### gradle (`build.gradle`)
+### Gradle (`build.gradle`)
+
 ```groovy
 plugins {
     id 'java'
@@ -78,35 +94,34 @@ ext {
 dependencyManagement {
     imports {
         // OpenTelemetry Instrumentation BOM
-        mavenBom "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${opentelemetry.instrumentation.version}-alpha"
-}
+        mavenBom "io.opentelemetry.instrumentation:" +
+            "opentelemetry-instrumentation-bom:" +
+            "${opentelemetry.instrumentation.version}-alpha"
+    }
 }
 
 dependencies {
     // Spring Boot Starters
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    
+
     // OpenTelemetry
-    implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter'
+    implementation 'io.opentelemetry.instrumentation:' +
+        'opentelemetry-spring-boot-starter'
     implementation 'io.micrometer:micrometer-registry-otlp'
 }
-
 ```
 
-### Configuration Application Properties
-Add to 
-(application.properties)
-:
+### Configuration (`application.properties`)
 
-```ini properties
-# properties
-
+```properties
+# Server
 server.port=8080
 server.address=0.0.0.0
 
 # OpenTelemetry
 otel.service.name=your-service-name
-otel.resource.attributes=service.namespace=your-namespace,deployment.environment=dev
+otel.resource.attributes=service.namespace=your-namespace,\
+    deployment.environment=dev
 
 # OTLP Exporter
 otel.traces.exporter=otlp
@@ -120,13 +135,16 @@ management.endpoints.web.exposure.include=health,info,metrics,prometheus
 management.tracing.sampling.probability=1.0
 ```
 
-### Traces 
+## Traces
+
 ### Auto Instrumentation
-Spring Boot's auto-configuration automatically instruments:
+
+Spring Boot auto-configures instrumentation for:
+
 - HTTP requests/responses
 - JDBC operations
-- WebClient/RestTemplate calls
-- Kafka/Redis/MongoDB operations
+- WebClient / RestTemplate
+- Kafka / Redis / MongoDB
 
 ### Custom Instrumentation
 
@@ -140,35 +158,36 @@ import org.springframework.stereotype.Service;
 @Service
 public class MyService {
     private final Tracer tracer;
-    
+
     public MyService(OpenTelemetry openTelemetry) {
         this.tracer = openTelemetry.getTracer(MyService.class.getName());
     }
-    
+
     public void doWork() {
         Span span = tracer.spanBuilder("my-operation").startSpan();
         try (Scope scope = span.makeCurrent()) {
-            // Add attributes to the span
             span.setAttribute("custom.attribute", "value");
-            
-            // Your business logic here
-            
+            // business logic
         } finally {
             span.end();
         }
     }
 }
 ```
-### Metrics
+
+## Metrics
+
 ### Auto Instrumentation
-Spring Boot Actuator with Micrometer automatically provides:
+
+With Micrometer and Spring Boot Actuator, you get:
 
 - JVM metrics (memory, threads, GC)
 - HTTP server metrics
-- Database connection pool metrics
-- System metrics
+- DB connection pool metrics
+- System-level metrics
 
-Custom Metrics
+### Custom Metrics
+
 ```java
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -177,20 +196,22 @@ import org.springframework.stereotype.Component;
 @Component
 public class MyMetrics {
     private final Counter myCounter;
-    
+
     public MyMetrics(MeterRegistry registry) {
         this.myCounter = Counter.builder("my.custom.counter")
             .description("Counts custom operations")
             .tag("environment", "dev")
             .register(registry);
     }
-    
+
     public void incrementCounter() {
         myCounter.increment();
     }
 }
 ```
-Running with Docker Compose
+
+## Running with Docker Compose
+
 ```yaml
 services:
   otel-collector:
@@ -212,7 +233,15 @@ services:
       - otel-collector
 ```
 
-Viewing Telemetry
-> Note: Logs will be exported to the OpenTelemetry Collector and Grafana can be used to view the telemetry data at http://localhost:3000 
+---
 
-A sample application with OpenTelemetry instrumentation can be found at this [GitHub repository]( https://github.com/base-14/examples/tree/main/spring-boot).
+## Viewing Telemetry
+
+> Logs, traces, and metrics are exported to the OpenTelemetry Collector.
+> You can visualize them in **Grafana** by connecting it to **Tempo**,
+> **Prometheus**, or **Loki**.
+
+- Access Grafana at: `http://localhost:3000`
+- Sample application: [base-14/examples (Spring Boot)][example-repo]
+
+[example-repo]: https://github.com/base-14/examples/tree/main/spring-boot
