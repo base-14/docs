@@ -237,8 +237,8 @@ services:
 
 ## Viewing Telemetry
 
-> Logs, traces, and metrics are exported to the base14 Scout observability backend [refer](https://docs.base14.io/) .
-
+> Logs, traces and metrics are exported to the base14 Scout observability backend
+[refer](https://docs.base14.io/) .
 
 ### References
 
