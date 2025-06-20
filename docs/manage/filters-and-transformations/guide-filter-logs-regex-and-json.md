@@ -2,41 +2,34 @@
 date: 2025-06-19
 id: filtering-logs-based-on-regex-and-attributes
 title: Guide – Filtering Logs Using Regex and Attribute-Based Conditions
-description: Filter logs using regex patterns and JSON attribute conditions in
-  OpenTelemetry pipelines
+description: How to filter logs using regex matches and JSON attribute-based conditions in OpenTelemetry pipelines
 hide_table_of_contents: true
 ---
 
-## Problem Statement
+This guide demonstrates how to filter logs using either regex patterns or specific
+JSON attribute conditions within OpenTelemetry pipelines, enabling more precise
+log processing, debugging, and routing.
 
-When working with OpenTelemetry log pipelines, you often need to filter logs
-based
-on specific criteria. Common scenarios include:
+---
 
-1. **Pattern Matching**: Identifying logs containing specific text patterns
-   (e.g., error messages, keywords)
-2. **JSON Attribute Filtering**: Selecting logs based on specific JSON field
-   values or existence
+### Overview
 
-## Solution
+In scenarios where your log stream includes structured JSON logs or plain-text
+messages, you might want to drop, allow, or route logs based on:
 
-The OpenTelemetry Collector's `filter` processor provides a powerful way to
-implement these filtering requirements. This guide shows how to:
+- Text pattern matches (e.g., contains `"spans"`)
+- The presence or value of specific JSON keys (e.g., `path != nil`)
 
-1. Filter logs using regular expressions
-2. Filter based on JSON attributes
+This guide provides a solution using the `filter` processor in the OpenTelemetry
+Collector configuration.
 
-## Implementation
-
-### Prerequisites
-
-- An OpenTelemetry Collector configuration file
+---
 
 ### Example Scenario
 
 #### Input Logs
 
-**Plaintext log:**
+**Plaintext log line:**
 
 ```text
 Evaluating spans in status code filter
@@ -45,7 +38,6 @@ User loged in
 ```
 
 **Structured JSON log:**
-
 ```json
 {
   "method": "GET",
@@ -70,12 +62,18 @@ User loged in
 }
 ```
 
-### Step 1: Configure the Filter Processor
+---
 
-Add this configuration to filter logs where:
+### Goal
 
-- The log body contains the word "spans" OR
-- The log contains a JSON object with a "path" field
+You want to filter logs where either:
+
+- The body contains the keyword `"spans"` (text match)
+- The JSON body has a field named `"path"`
+
+---
+
+### Step 1: Add the Filter Processor to drop the logs based on the conditions
 
 ```yaml
 processors:
@@ -97,21 +95,3 @@ service:
       processors: [filter/drop_logs]
       exporters: [oltp]
 ```
-
-> **Note:** The above filter is used to drop the logs that match the above
-> conditions.
-
-## How It Works
-
-- `IsMatch(body, ".*\bspans\b.*")` matches any log containing the word
-  "spans"
-- `ParseJSON(body)["path"] != nil` checks for the existence of a "path" field
-  in JSON logs
-- `error_mode: ignore` ensures the pipeline continues processing even if some
-  logs don't match the expected format
-
-## Best Practices
-
-1. Test your regex patterns thoroughly
-2. Use `error_mode: ignore` to prevent pipeline failures from malformed logs
-3. Consider performance impact when processing large log volumes
