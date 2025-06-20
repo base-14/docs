@@ -237,11 +237,10 @@ services:
 
 ## Viewing Telemetry
 
-> Logs, traces, and metrics are exported to the OpenTelemetry Collector.
-> You can visualize them in **Grafana** by connecting it to **Tempo**,
-> **Prometheus**, or **Loki**.
+> Logs, traces, and metrics are exported to the base14 Scout observability backend [refer](https://docs.base14.io/) .
 
-- Access Grafana at: `http://localhost:3000`
-- Sample application: [base-14/examples (Spring Boot)][example-repo]
 
-[example-repo]: https://github.com/base-14/examples/tree/main/spring-boot
+### References
+
+- [OpenTelemetry Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
+- Sample application: [Spring Boot Otel Instrumentation](https://github.com/base-14/examples/tree/main/spring-boot)
