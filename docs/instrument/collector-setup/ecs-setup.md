@@ -65,7 +65,7 @@ curl -o scout-agent-collector-config.yaml https://raw.githubusercontent.com/base
   TokenUrl placeholders with the actual value. \
 - Go through the config once before continuing
   further to remove or add new pipelines \
-- Click [here](https://docs.base14.io/instrument/collector-setup/otel-collector-config)
+- Visit [docs.base14.io](https://docs.base14.io/instrument/collector-setup/otel-collector-config)
   to more about the config
 
 :::
@@ -133,7 +133,7 @@ curl -o scout-agent-collector-config.yaml https://raw.githubusercontent.com/base
   placeholders with their actual values.
 - Review the configuration to remove or add new pipelines before proceeding.
 <!-- markdownlint-disable-next-line MD013 -->
-- Click [here](https://docs.base14.io/instrument/collector-setup/otel-collector-config) for more details on the configuration.
+- Visit [docs.base14.io](https://docs.base14.io/instrument/collector-setup/otel-collector-config) for more details on the configuration.
 
 :::
 
