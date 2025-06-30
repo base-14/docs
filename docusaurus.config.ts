@@ -141,7 +141,12 @@ const config: Config = {
       theme: prismThemes.oneLight,
       darkTheme: prismThemes.oneDark,
     },
+    algolia: {
+      appId: process.env.ALGOLIA_APP_ID ,
+      apiKey: process.env.ALGOLIA_SEARCH_API_KEY,
+      indexName: process.env.ALGOLIA_DOCSEARCH_INDEX_NAME,
+      contextualSearch: true,
+    },
   } satisfies Preset.ThemeConfig,
 };
-
 export default config;
