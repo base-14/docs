@@ -37,6 +37,9 @@ jobs:
         run: npm run build
         env:
           GOOGLE_ANALYTICS_ID: ${{ secrets.GOOGLE_ANALYTICS_ID }}
+          ALGOLIA_APP_ID: ${{ secrets.ALGOLIA_APP_ID }}
+          ALGOLIA_SEARCH_API_KEY: ${{ secrets.ALGOLIA_SEARCH_API_KEY }}
+          ALGOLIA_DOCSEARCH_INDEX_NAME: ${{ vars.ALGOLIA_DOCSEARCH_INDEX_NAME }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
