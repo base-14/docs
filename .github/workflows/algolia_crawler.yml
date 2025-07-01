@@ -1,0 +1,28 @@
+name: Algolia Crawler Workflow
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  algolia-crawler:
+    runs-on: ubuntu-latest
+    env:
+      ENABLE_ALGOLIA_CRAWLER: $ {{ vars.ENABLE_ALGOLIA_CRAWLER }} # Default to true,
+      SITE_URL: "https://docs.base14.io/"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Algolia crawler creation and crawl
+        if: ${{ env.ENABLE_ALGOLIA_CRAWLER == 'true' }}
+        uses: algolia/algoliasearch-crawler-github-actions@v1.0.10
+        id: algolia_crawler
+        with:
+          crawler-user-id: ${{ secrets.CRAWLER_USER_ID }}
+          crawler-api-key: ${{ secrets.CRAWLER_API_KEY }}
+          algolia-app-id: ${{ secrets.ALGOLIA_APP_ID }}
+          algolia-api-key: ${{ secrets.ALGOLIA_SEARCH_API_KEY }}
+          site-url: ${{ env.SITE_URL }}
