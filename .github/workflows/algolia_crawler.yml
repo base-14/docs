@@ -9,7 +9,7 @@ jobs:
   algolia-crawler:
     runs-on: ubuntu-latest
     env:
-      ENABLE_ALGOLIA_CRAWLER: ${{ vars.ENABLE_ALGOLIA_CRAWLER }} # Default to true,
+      ENABLE_ALGOLIA_CRAWLER: $ {{ vars.ENABLE_ALGOLIA_CRAWLER }} # Default to true,
       SITE_URL: "https://docs.base14.io/"
 
     steps:
