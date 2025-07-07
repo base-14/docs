@@ -45,7 +45,6 @@ composer require \
 ```
 
 ## Traces
-### Initialization
 
 To start tracing, you need to initialize a TracerProvider and create a Tracer:
 
@@ -111,8 +110,6 @@ try {
 
 ## Metrics
 
-### Initialization
-
 ```php
 use OpenTelemetry\SDK\Metrics\MeterProvider;
 use OpenTelemetry\SDK\Metrics\MetricReader\ExportingReader;
@@ -159,8 +156,6 @@ $histogram->record($duration, ['http.method' => 'GET', 'http.status_code' => 200
 ```
 
 ## Logs
-
-### Initialization
 
 ```php
 use OpenTelemetry\SDK\Logs\LoggerProvider;
@@ -242,6 +237,7 @@ $tracerProvider->addSpanProcessor($processor);
 ```
 
 ## Best Practices
+
 1. **Error Handling**:
    - Always end spans in a `finally` block
    - Record exceptions using `$span->recordException($e)`
