@@ -1,149 +1,111 @@
-# React
+# React – Custom Instrumentation with OpenTelemetry
 
-Implement OpenTelemetry custom instrumentation for `React`
-applications to collect logs, metrics, and traces using the
-JavaScript OTel SDK.
-
+This guide provides instructions for setting up **custom instrumentation**
+in React applications using the OpenTelemetry JavaScript SDK.It covers
+how to manually create spans, capture custom metrics, and log structured events.
 > **Note:** This guide provides a concise overview based on the official
 > OpenTelemetry documentation. For complete information, please consult the
-> [official OpenTelemetry documentation](https://opentelemetry.io/docs/languages/js/).
+> [official OpenTelemetry documentation](https://opentelemetry.io/docs/languages/js/getting-started/browser/).
 
 ## Overview
 
 This guide demonstrates how to:
 
-- Set up OpenTelemetry custom instrumentation for `React`
-- Configure manual instrumentation
-- Create and manage custom metrics and logs
-- Add semantic attributes and events
+- Set up OpenTelemetry custom instrumentation for React
 - Export telemetry data to OpenTelemetry Collector
+
+> **Note:** Auto instrumentation does not support metrics. To collect meaningful
+metrics, you need to implement them manually.
+
+---
 
 ## Prerequisites
 
-Before starting, ensure you have:
+- Node.js 16+
+- React application setup
+- OTLP Collector setup
 
-- Node.js 16 or later installed
-- A React application set up (create-react-app or similar)
-- Access to package installation (npm or yarn)
+---
 
 ## Required Packages
 
-Install the following necessary packages or add them to your `package.json`:
+Install the following packages:
 
 ```bash
-# Core packages
-npm install @opentelemetry/sdk-trace-web @opentelemetry/sdk-metrics @opentelemetry/api
-
-# Instrumentation and Exporters
-npm install @opentelemetry/auto-instrumentations-web \
-  @opentelemetry/exporter-trace-otlp-http \
-  @opentelemetry/exporter-metrics-otlp-http \
-  @opentelemetry/exporter-logs-otlp-http
-
-# Additional required packages
-npm install @opentelemetry/resources @opentelemetry/sdk-logs @opentelemetry/api-logs
+npm install @opentelemetry/api     
+npm install @opentelemetry/sdk-trace-web 
+npm install @opentelemetry/sdk-metrics 
+npm install @opentelemetry/sdk-logs 
+npm install @opentelemetry/api-logs 
+npm install @opentelemetry/context-zone 
+npm install @opentelemetry/exporter-trace-otlp-http 
+npm install @opentelemetry/exporter-metrics-otlp-http 
+npm install @opentelemetry/exporter-logs-otlp-http 
+npm install @opentelemetry/resources
 ```
 
-## Basic Configuration
+---
 
-Create a `telemetry.js` file in your `src` directory with the
-following OpenTelemetry setup:
+## Custom Instrumentation Setup (`telemetry.js`)
 
 ```javascript
 // src/telemetry.js
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
-import { registerInstrumentations } from '@opentelemetry/instrumentation';
-import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
-import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
-import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
+import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { Resource } from '@opentelemetry/resources';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
-import { getWebAutoInstrumentations } from '@opentelemetry/auto-instrumentations-web';
+import { ZoneContextManager } from '@opentelemetry/context-zone';
 import { MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { LoggerProvider, SimpleLogRecordProcessor } from '@opentelemetry/sdk-logs';
+import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
 import * as logsAPI from '@opentelemetry/api-logs';
+import * as api from '@opentelemetry/api';
 
 export const setupTelemetry = () => {
-  // Create resource
   const resource = new Resource({
     [SemanticResourceAttributes.SERVICE_NAME]: 'your-react-app',
     [SemanticResourceAttributes.SERVICE_VERSION]: '1.0.0',
   });
 
-  // 1. Configure Traces
-  const traceExporter = new OTLPTraceExporter({
-    url: 'http://localhost:4318/v1/traces',
-  });
-  
-  const traceProvider = new WebTracerProvider({
-    resource,
-    spanProcessors: [new BatchSpanProcessor(traceExporter)],
-  });
-  
-  traceProvider.register();
+  // Trace setup
+  const traceExporter = new OTLPTraceExporter({ url: 'http://0.0.0.0:4318/v1/traces' });
+  const traceProvider = new WebTracerProvider({ resource });
+  traceProvider.addSpanProcessor(new BatchSpanProcessor(traceExporter));
+  traceProvider.register({ contextManager: new    () });
 
-  // 2. Configure Metrics
-  const metricExporter = new OTLPMetricExporter({
-    url: 'http://localhost:4318/v1/metrics',
-  });
-  
+  // Metric setup
+  const metricExporter = new OTLPMetricExporter({ url: 'http://0.0.0.0:4318/v1/metrics' });
   const meterProvider = new MeterProvider({
     resource,
-    readers: [
-      new PeriodicExportingMetricReader({
-        exporter: metricExporter,
-        exportIntervalMillis: 10000, // 10 seconds
-      })
-    ],
+    readers: [new PeriodicExportingMetricReader({
+      exporter: metricExporter,
+      exportIntervalMillis: 10000,
+    })],
   });
 
-  // 3. Configure Logs
-  const logExporter = new OTLPLogExporter({
-    url: 'http://localhost:4318/v1/logs',
-  });
-  
+  api.metrics.setGlobalMeterProvider(meterProvider);
+
+  // Log setup
+  const logExporter = new OTLPLogExporter({ url: 'http://0.0.0.0:4318/v1/logs' });
   const loggerProvider = new LoggerProvider({
     resource,
     processors: [new SimpleLogRecordProcessor(logExporter)],
   });
-  
   logsAPI.logs.setGlobalLoggerProvider(loggerProvider);
-
-  // 4. Auto-instrumentation
-  registerInstrumentations({
-    instrumentations: [
-      getWebAutoInstrumentations({
-        '@opentelemetry/instrumentation-xml-http-request': {
-          propagateTraceHeaderCorsUrls: [/.+/g],
-        },
-        '@opentelemetry/instrumentation-fetch': {
-          propagateTraceHeaderCorsUrls: [/.+/g],
-        },
-      }),
-    ],
-  });
-
-  return {
-    traceProvider,
-    meterProvider,
-    loggerProvider,
-  };
 };
 ```
 
-### Initialization in Your App
+### Initialize in index.js
 
-Initialize the telemetry in your application's entry point (e.g., `index.js`):
-
-```javascript
+```js
 // src/index.js
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { setupTelemetry } from './telemetry';
 import App from './App';
+import { setupTelemetry } from './telemetry';
 
-// Initialize OpenTelemetry
 setupTelemetry();
 
 ReactDOM.render(
@@ -154,21 +116,22 @@ ReactDOM.render(
 );
 ```
 
-## Traces
+---
 
-### Basic Tracing
+## Custom Tracing Example
 
 ```javascript
-// This will use the globally registered trace provider
+
 import { trace } from '@opentelemetry/api';
 
 function fetchUserData(userId) {
+  // Get the tracer from the global tracer provider set in the setupTelemetry function
   const tracer = trace.getTracer('user-service');
   return tracer.startActiveSpan('fetchUserData', async (span) => {
     try {
       span.setAttribute('user.id', userId);
-      const response = await fetch(`/api/users/${userId}`);
-      return await response.json();
+      const res = await fetch(`/api/users/${userId}`);
+      return await res.json();
     } catch (error) {
       span.recordException(error);
       throw error;
@@ -179,98 +142,33 @@ function fetchUserData(userId) {
 }
 ```
 
-### 1. Track Component Performance
+---
+
+## Custom Metrics Example
 
 ```javascript
-import { trace } from '@opentelemetry/api';
 
-function withPerformanceMonitor(WrappedComponent, componentName) {
-  return function MonitoredComponent(props) {
-    const tracer = trace.getTracer('react-performance');
-    const span = tracer.startSpan(`render:${componentName}`);
-    
-    try {
-      return <WrappedComponent {...props} />;
-    } finally {
-      span.end();
-    }
-  };
-}
-```
-
-### 2. Track User Interactions
-
-```javascript
-function trackInteraction(interactionName, attributes = {}) {
-  const tracer = trace.getTracer('user-interactions');
-  const span = tracer.startSpan(interactionName);
-  
-  Object.entries(attributes).forEach(([key, value]) => {
-    span.setAttribute(key, value);
-  });
-  
-  span.end();
-}
-```
-
-## Metrics
-
-### Component Metrics
-
-```javascript
 import { metrics } from '@opentelemetry/api';
-
+//Gets the meter from the global meter provider set in the setupTelemetry function
 const meter = metrics.getMeter('react-app');
-const pageLoadTime = meter.createHistogram('page.load.time', { unit: 'ms' });
 const renderCount = meter.createCounter('component.render.count');
 
 function TrackedComponent() {
   useEffect(() => {
-    const start = performance.now();
     renderCount.add(1, { component: 'TrackedComponent' });
-    
-    return () => {
-      pageLoadTime.record(performance.now() - start, { page: 'home' });
-    };
   }, []);
-  
-  return <div>Component</div>;
+
+  return <div>Tracked!</div>;
 }
 ```
 
-### API Metrics
+---
 
-```javascript
-const apiDuration = meter.createHistogram('api.duration', { unit: 'ms' });
-
-async function fetchWithMetrics(url, options = {}) {
-  const start = performance.now();
-  try {
-    const res = await fetch(url, options);
-    apiDuration.record(performance.now() - start, {
-      method: options.method || 'GET',
-      status: res.status,
-      path: new URL(url).pathname
-    });
-    return res;
-  } catch (error) {
-    apiDuration.record(performance.now() - start, {
-      method: options.method || 'GET',
-      error: error.message,
-      path: new URL(url).pathname
-    });
-    throw error;
-  }
-}
-```
-
-## Logs
-
-### Structured Logging
+## Custom Logs Example
 
 ```javascript
 import { logs } from '@opentelemetry/api-logs';
-
+//Gets the logger from the global logger provider set in the setupTelemetry function
 const logger = logs.getLogger('app');
 
 function logEvent(action, details = {}) {
@@ -283,38 +181,24 @@ function logEvent(action, details = {}) {
     }
   });
 }
-
-// Usage
-function Login() {
-  const login = (email) => {
-    try {
-      // login logic
-      logEvent('login_success', { email });
-    } catch (error) {
-      logEvent('login_failed', { 
-        error: error.message,
-        email,
-        stack: error.stack 
-      });
-    }
-  };
-}
 ```
+
+---
 
 ## Configuration
 
-### CORS Headers
+### CORS Headers for Otel Collector
 
 ```http
-Access-Control-Allow-Origin: http://localhost:3000
-Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Origin: http://0.0.0.0:{application_port}
+Access-Control-Allow-Headers: Content-Type, Traceparent
 Access-Control-Allow-Methods: POST, OPTIONS
 ```
 
-### CSP Headers
+### CSP Headers (if applicable)
 
 ```csp
-connect-src 'self' http://localhost:4318;
+connect-src 'self' http://0.0.0.0:{application_port};
 img-src 'self' data:;
 ```
 
@@ -342,6 +226,9 @@ img-src 'self' data:;
 | High memory usage | Adjust batch sizes and sampling |
 | Missing logs | Verify log level configuration |
 
-## Next Steps
+> View these traces in base14 Scout observability backend.
+>
 
-- [OpenTelemetry JavaScript Documentation](https://opentelemetry.io/docs/languages/js/)
+## References
+
+ Sample react application with OTel instrumentation: <https://github.com/base14/react-custom-instrumentation>
