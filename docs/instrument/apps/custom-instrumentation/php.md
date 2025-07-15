@@ -3,10 +3,6 @@
 Implement OpenTelemetry custom instrumentation for `PHP` applications to
 collect logs, metrics, and traces using the PHP OpenTelemetry SDK.
 
-> **Note:** This guide provides a concise overview based on the official
-> OpenTelemetry documentation. For complete information, please consult the
-> [official OpenTelemetry PHP documentation](https://opentelemetry.io/docs/languages/php/).
-
 ## Overview
 
 This guide demonstrates how to:
@@ -15,7 +11,7 @@ This guide demonstrates how to:
 - Configure manual tracing using spans
 - Create and manage custom metrics
 - Add semantic attributes and events
-- Export telemetry data to OpenTelemetry Collector (scout)
+- Export telemetry data to Base14 Scout backend collector.
 
 ## Prerequisites
 
@@ -208,7 +204,7 @@ use OpenTelemetry\SDK\Trace\SpanProcessor\SimpleSpanProcessor;
 
 // Create OTLP exporter
 $otlpExporter = new OtlpHttpExporter(
-    'http://collector:4318/v1/traces', // OTLP HTTP endpoint
+    'http://0.0.0.0:4318/v1/traces', // OTLP HTTP endpoint
     'application/json',
     [], // Headers
     10, // Timeout in seconds
@@ -268,6 +264,8 @@ $tracerProvider->addSpanProcessor($processor);
    - `Class not found`: Ensure all required extensions are installed
    - `Export failed`: Check network connectivity to the collector
    - `Invalid argument`: Verify attribute types match expected values
+
+> View the telemetry data in the Base14 Scout observability backend.
 
 ## Next Steps
 
