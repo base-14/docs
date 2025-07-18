@@ -70,8 +70,6 @@ end
 
 # 'Tracer' can be used throughout your code now
 MyAppTracer = OpenTelemetry.tracer_provider.tracer('my.tracer.name')
-
-
 ```
 
 >
@@ -96,12 +94,11 @@ def do_work
     puts "[do_work] Doing some traced work..."
   end
 end
-
 ```
 
 #### Creating nested Spans
 
-```python showLineNumbers
+```ruby showLineNumbers
 def do_work
   MyAppTracer.in_span("parent") do |span|
     puts "Doing some work..."
@@ -190,6 +187,7 @@ def do_work
   else
     span.add_event("Lock already in use")
   end
+end
 ```
 
 #### Reference
@@ -220,6 +218,7 @@ def do_work():
     current_span.status = OpenTelemetry::Trace::Status.error("error message here!")
     current_span.record_exception(e)
   end
+end
 ```
 
 >
