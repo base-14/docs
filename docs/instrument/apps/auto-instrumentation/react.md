@@ -3,10 +3,6 @@
 Implement OpenTelemetry auto instrumentation for `React` applications to collect
 traces using the JavaScript OTel SDK.
 
-> **Note:** This guide provides a concise overview based on the official
-> OpenTelemetry documentation. For complete information, please consult the
-> [official OpenTelemetry documentation](https://opentelemetry.io/docs/languages/js/getting-started/browser/).
-
 ## Overview
 
 This guide demonstrates how to:
@@ -70,12 +66,12 @@ import { ZoneContextManager } from '@opentelemetry/context-zone';
 
 export const setupTelemetry = () => {
   const resource = new Resource({
-    [SemanticResourceAttributes.SERVICE_NAME]: 'react-app',
+    [SemanticResourceAttributes.SERVICE_NAME]: 'react-service',
     [SemanticResourceAttributes.SERVICE_VERSION]: '1.0.0',
   });
 
   const traceExporter = new OTLPTraceExporter({
-    url: 'http://0.0.0.0:4318/v1/traces',   //Update this to your collector's endpoint
+    url: 'http://<scout-collector-endpoint>:4318/v1/traces'
   });
 
 
@@ -83,10 +79,12 @@ export const setupTelemetry = () => {
   
   provider.addSpanProcessor(new BatchSpanProcessor(traceExporter));
 
+  // Register the tracer provider with ZoneContextManager as it:
+  // 1. Maintains context across async operations (Promises, setTimeout, etc.)
+  // 2. Ensures proper trace context propagation in React's async rendering
 
-  // Register the tracer provider with ZoneContextManager
   provider.register({
-    contextManager: new ZoneContextManager() // Ensures context is preserved across async operations
+    contextManager: new ZoneContextManager()
   });
 
 
@@ -138,7 +136,7 @@ everal  key interactions:
 ## CORS Setup for Otel Collector
 
 ```http
-Access-Control-Allow-Origin: http://localhost:{application_port}
+Access-Control-Allow-Origin: http://<application-endpoint>:<application-port>
 Access-Control-Allow-Headers: Content-Type, Traceparent 
 Access-Control-Allow-Methods: POST, OPTIONS
 ```
@@ -146,7 +144,7 @@ Access-Control-Allow-Methods: POST, OPTIONS
 ## CSP Headers (if applicable)
 
 ```csp
-connect-src 'self' http://0.0.0.0:{application_port};
+connect-src 'self' http://<application-endpoint>:<application-port>;
 img-src 'self' data:;
 ```
 
@@ -176,7 +174,8 @@ img-src 'self' data:;
 >
 ## What's Next?
 
-To monitor logs and metrics, see the custom instrumentation guide here.
+To monitor logs and metrics, see the
+[custom instrumentation guide for JavaScript browser applications](https://github.com/base-14/docs/tree/main/docs/instrument/apps/custom-instrumentation/javascript-browser.md)
 
 ## References
 
