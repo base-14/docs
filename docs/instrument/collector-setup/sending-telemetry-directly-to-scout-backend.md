@@ -12,13 +12,13 @@ Application → OpenTelemetry SDK → OTLP Exporter → Scout Backend
 
 The direct export flow consists of:
 
-1. **Application generates telemetry**: This pattern consists of applications
-instrumented with an OpenTelemetry SDK that
-export telemetry signals (traces, metrics, logs)directly into the Scout backend.
+1. **Application generates telemetry**: The application is instrumented with an
+OpenTelemetry SDK that exports telemetry signals (traces, metrics, logs)directly
+into the Scout backend.
 2. **OpenTelemetry SDK**: The SDK batches and processes telemetry data
 3. **OTLP Exporter**: Data is exported via OTLP (OpenTelemetry Protocol) over HTTP/gRPC
 4. **Authentication**: OIDC token-based authentication secures the connection
-5. **Scout Backend**: The backend collector receives and processes the telemetry
+5. **Scout Backend**: The scout backend receives and processes the telemetry
  and send them for visualization in the Scout UI.
 Refer [this](https://docs.base14.io/) for more details.
 
@@ -58,14 +58,14 @@ Set these environment variables for your application:
 
 ```bash
 # Service identification
-OTEL_SERVICE_NAME=your-service-name
+OTEL_SERVICE_NAME=rails-service-name
 RAILS_ENV=production  # or staging
 
 # Scout collector configuration
-SCOUT_ENDPOINT=https://your-scout-collector.example.com/v1/traces
+SCOUT_ENDPOINT=https://scout-collector-endpoint/v1/traces
 SCOUT_CLIENT_ID=your-client-id
 SCOUT_CLIENT_SECRET=your-client-secret
-SCOUT_TOKEN_URL=https://your-scout-collector.example.com/oauth/token
+SCOUT_TOKEN_URL=https://id.b14.dev/realms/your-tenant/protocol/openid-connect/token
 ```
 
 ### 2. Opentelemetry Configuration
@@ -152,7 +152,7 @@ Always ensure these attributes are properly set.
 # In your OpenTelemetry configuration
 # Add environment as resource attribute
 c.resource = OpenTelemetry::SDK::Resources::Resource.create({
-  "service.name" => ENV.fetch("OTEL_SERVICE_NAME", "your-service-name"),
+  "service.name" => ENV.fetch("OTEL_SERVICE_NAME", "rails-service-name"),
   "service.version" => "1.0.0",
   "deployment.environment" => ENV.fetch("RAILS_ENV", "development")
 })
@@ -191,5 +191,5 @@ end
 
 ## References
 
-- For Rails instrumentation doc [this](https://docs.base14.io/instrument/apps/auto-instrumentation/rails)
-- For Rails instrumentaion example repo [this](https://github.com/base-14/examples/tree/main/rails)
+- [Rails instrumentation doc](https://docs.base14.io/instrument/apps/auto-instrumentation/rails)
+- [Rails instrumentaion code](https://github.com/base-14/examples/tree/main/rails)
