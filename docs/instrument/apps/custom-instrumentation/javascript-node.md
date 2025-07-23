@@ -3,11 +3,6 @@
 Implement OpenTelemetry custom instrumentation for Node.js applications to collect
 logs, metrics, and traces using the Node.js OTel SDK.
 
-> **Note:** This guide provides a concise overview based on the official
-> OpenTelemetry documentation. For complete information, please consult the
-> [official OpenTelemetry documentation]
-> (<https://opentelemetry.io/docs/languages/python/>).
-
 ## Overview
 
 This guide demonstrates how to:
@@ -44,7 +39,7 @@ npm install @opentelemetry/api
 npm install @opentelemetry/api-logs
 ```
 
-> **Note**: Ensure your OpenTelemetry Collector is properly configured to receive
+> **Note**: Ensure the scout collector is properly configured to receive
 > and process the telemetry data before forwarding to Scout backend.
 [Click to know more](https://docs.base14.io/instrument/collector-setup/scout-exporter)
 >
@@ -64,7 +59,7 @@ const { BatchSpanProcessor } = require('@opentelemetry/sdk-trace-base');
 
 // Define your service information
 const resource = new Resource({
-  'service.name': 'course-management-app-backend',
+  'service.name': 'node-js-service',
   'service.version': '1.0.0',
 });
 
@@ -72,7 +67,7 @@ const resource = new Resource({
 const sdk = new NodeSDK({
   resource,
   spanProcessor: new BatchSpanProcessor(new OTLPTraceExporter({
-    url: 'http://localhost:4318/v1/traces'
+    url: 'http://scout-collector:4318/v1/traces'
   })),
 });
 
@@ -111,19 +106,19 @@ const app = express();
 ```javascript
 const express = require('express');
 const { trace, context } = require('@opentelemetry/api');
-const tracer = trace.getTracer('course-management-app-backend');
+const tracer = trace.getTracer('node-js-service');
 
 const router = express.Router();
 
-router.get('/users', async (req, res) => {
-  const span = tracer.startSpan('get-users');
+router.get('/ping', async (req, res) => {
+  const span = tracer.startSpan('get-ping');
   const ctx = trace.setSpan(context.active(), span);
   
   try {
-    await context.with(ctx, async () => {
+    await context.with(ctx, ()) => {
       // Your route logic here
-      const users = await User.findAll();
-      res.json(users);
+      //Your logs passed with trace context
+      res.json({ message: 'pong' });
     });
   } finally {
     span.end();
@@ -142,63 +137,45 @@ These features help in better understanding and debugging the behavior of your a
 ```javascript
 const { trace, context } = require('@opentelemetry/api');
 
-router.post('/users', async (req, res) => {
+router.get('/ping', async (req, res) => {
   // Start a new span
-  const span = tracer.startSpan('create-user');
+  const span = tracer.startSpan('handle-ping');
   const ctx = trace.setSpan(context.active(), span);
   
   try {
-    // Add attributes to the span
+    // Add basic attributes to the span
     span.setAttributes({
       'http.method': req.method,
-      'http.route': '/users',
-      'user.id': req.body?.id || 'unknown',
-      'operation.type': 'create',
+      'http.route': '/ping',
       'request.size': JSON.stringify(req.body).length
     });
 
-    // Add an event for the start of user creation
-    span.addEvent('Starting user creation', {
-      'user.email': req.body?.email || 'unknown',
+    // Add an event for the request
+    span.addEvent('Received ping request', {
       'timestamp': new Date().toISOString()
     });
 
-    // Business logic
-    const user = await User.create(req.body);
+    // Simple response with timestamp
+    const response = {
+      status: 'ok',
+      message: 'pong',
+      timestamp: new Date().toISOString()
+    };
     
-    // Add another event for successful creation
-    span.addEvent('User created successfully', {
-      'user.id': user.id,
-      'timestamp': new Date().toISOString()
+    // Log the successful response
+    span.addEvent('Sent pong response', {
+      'timestamp': response.timestamp
     });
     
-    // Set span status to OK (optional as it's the default)
+    // Return the response
+    res.status(200).json(response);
+    
+    // Set span status to OK
     span.setStatus({ code: 1 }); // 1 = OK, 2 = Error
     
-    res.status(201).json(user);
+    res.status(200).json(response); 
   } catch (error) {
-    // Record the exception
-    span.recordException(error);
-    
-    // Set error status and add error details
-    span.setStatus({
-      code: 2, // Error code
-      message: error.message
-    });
-    
-    // Add error-specific attributes
-    span.setAttributes({
-      'error.type': error.name,
-      'error.stack': error.stack
-    });
-    
-    // Add an error event
-    span.addEvent('User creation failed', {
-      'error.message': error.message,
-      'error.type': error.name,
-      'timestamp': new Date().toISOString()
-    });
-    
+    // Handle error
     res.status(400).json({ error: error.message });
   } finally {
     // Always end the span
@@ -223,7 +200,7 @@ const sdk = new NodeSDK({
   resource,
   metricReader: new PeriodicExportingMetricReader({
     exporter: new OTLPMetricExporter({
-      url: 'http://localhost:4318/v1/metrics'
+      url: 'http://scout-collector:4318/v1/metrics'
     }),
   }),
 });
@@ -234,10 +211,10 @@ sdk.start();
 ### Application Setup
 
 ```javascript
-// app.js
+// index.js
 const { metrics } = require('@opentelemetry/api');
 
-const meter = metrics.getMeter('course-management-app-backend');
+const meter = metrics.getMeter('node-js-service');
 ```
 
 ### Metrics types
@@ -249,7 +226,7 @@ const meter = metrics.getMeter('course-management-app-backend');
 ```javascript
 const { metrics } = require('@opentelemetry/api');
 
-const meter = metrics.getMeter('course-management-app-backend');
+const meter = metrics.getMeter('node-js-service');
 
 // Create a counter
 const requestCounter = meter.createCounter('http_requests_total', {
@@ -271,7 +248,7 @@ app.use((req, res, next) => {
 ##### Creating a Histogram
 
 ```javascript
-const meter = metrics.getMeter('course-management-app-backend');
+const meter = metrics.getMeter('node-js-service');
 
 const requestDurationHistogram = meter.createHistogram(
   'http_request_duration_seconds', {
@@ -308,7 +285,7 @@ const { OTLPLogExporter } = require('@opentelemetry/exporter-logs-otlp-http');
 const sdk = new NodeSDK({
   resource,
   logRecordProcessor: new BatchLogRecordProcessor(new OTLPLogExporter({
-    url: 'http://localhost:4318/v1/logs'
+    url: 'http://scout-collector:4318/v1/logs'
   })),
 });
 ```
@@ -318,31 +295,34 @@ const sdk = new NodeSDK({
 ```javascript
 const logAPI = require('@opentelemetry/api-logs');
 
-const logger = logAPI.logs.getLogger('course-management-app-backend');
+const logger = logAPI.logs.getLogger('node-js-service');
 
-// Emit a log with trace correlation
-router.get('/users', async (req, res) => {
-  const span = tracer.startSpan('get-users');
+// Health check endpoint with logging
+router.get('/ping', async (req, res) => {
+  const span = tracer.startSpan('health-check');
   
   try {
-    const users = await User.findAll();
+    const healthStatus = {
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime()
+    };
     
-    // Emit log with trace correlation
+    // Emit log with health check details
     logger.emit({
-      body: 'Users fetched successfully',
+      body: 'Health check performed',
       severityNumber: logAPI.SeverityNumber.INFO,
       attributes: {
-        userCount: users.length,
-        endpoint: req.url
+        status: healthStatus.status,
+        uptime: healthStatus.uptime,
+        endpoint: req.url,
+        timestamp: healthStatus.timestamp
       },
       traceId: span.spanContext().traceId,
       spanId: span.spanContext().spanId,
     });
     
-    res.json(users);
-  } finally {
-    span.end();
-  }
+    res.json(healthStatus);
 });
 ```
 
@@ -351,7 +331,7 @@ router.get('/users', async (req, res) => {
 
 ## References
 
-- For complete setup example refer to [sample-react-full-stack application](https://opentelemetry.io/docs/instrumentation/js/)
+- For complete setup example refer to [sample-full-stack application](https://opentelemetry.io/docs/instrumentation/js/)
 - [Official OpenTelemetry Node.js Documentation](https://opentelemetry.io/docs/languages/js/getting-started/nodejs/)
 - [OpenTelemetry API Documentation](https://opentelemetry.io/docs/reference/specification/)
 - [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/reference/specification/semantic-conventions/)
