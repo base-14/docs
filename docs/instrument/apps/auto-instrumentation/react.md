@@ -1,4 +1,4 @@
-# React Auto Instrumentation with OpenTelemetry
+# React
 
 Implement OpenTelemetry auto instrumentation for `React` applications to collect
 traces using the JavaScript OTel SDK.
@@ -179,4 +179,4 @@ To monitor logs and metrics, see the
 
 ## References
 
- Sample react application with OTel instrumentation: <https://github.com/base14/react-auto-instrumentation>
+[Sample react application with OTel instrumentation:](https://github.com/base14/react-auto-instrumentation)
