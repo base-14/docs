@@ -1,4 +1,4 @@
-# Node.js OpenTelemetry Custom Instrumentation Guide
+# Javascript Node
 
 Implement OpenTelemetry custom instrumentation for Node.js applications to collect
 logs, metrics, and traces using the Node.js OTel SDK.
