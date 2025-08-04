@@ -32,6 +32,7 @@ Install the following necessary packages or add them to `requirements.txt`:
 ```bash
 pip install opentelemetry-api
 pip install opentelemetry-sdk
+pip install opentelemetry-exporter-otlp
 
 # Optional but recommended
 pip install opentelemetry-semantic-conventions
