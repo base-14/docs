@@ -1,6 +1,7 @@
 import { themes as prismThemes } from "prism-react-renderer";
 import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
+import { ENABLE_ALGOLIA_CRAWLER } from "./configs/algolia-docsearch";
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
@@ -141,12 +142,15 @@ const config: Config = {
       theme: prismThemes.oneLight,
       darkTheme: prismThemes.oneDark,
     },
-    algolia: {
-      appId: process.env.ALGOLIA_APP_ID ,
-      apiKey: process.env.ALGOLIA_SEARCH_API_KEY,
-      indexName: process.env.ALGOLIA_DOCSEARCH_INDEX_NAME,
-      contextualSearch: true,
-    },
+    // Only enable Algolia if ENABLE_ALGOLIA_CRAWLER is set to 'true'
+    ...(ENABLE_ALGOLIA_CRAWLER === 'true' ? {
+      algolia: {
+        appId: process.env.ALGOLIA_APP_ID,
+        apiKey: process.env.ALGOLIA_SEARCH_API_KEY,
+        indexName: process.env.ALGOLIA_DOCSEARCH_INDEX_NAME,
+        contextualSearch: true,
+      }
+    } : {}),
   } satisfies Preset.ThemeConfig,
 };
 export default config;
