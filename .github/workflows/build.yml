@@ -50,4 +50,4 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          ALGOLIA_ENABLE_CRAWLER: false
+          ENABLE_ALGOLIA_CRAWLER: false
