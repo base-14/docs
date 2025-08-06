@@ -40,6 +40,7 @@ jobs:
           ALGOLIA_APP_ID: ${{ secrets.ALGOLIA_APP_ID }}
           ALGOLIA_SEARCH_API_KEY: ${{ secrets.ALGOLIA_SEARCH_API_KEY }}
           ALGOLIA_DOCSEARCH_INDEX_NAME: ${{ vars.ALGOLIA_DOCSEARCH_INDEX_NAME }}
+          ENABLE_ALGOLIA_CRAWLER: ${{ vars.ENABLE_ALGOLIA_CRAWLER }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
