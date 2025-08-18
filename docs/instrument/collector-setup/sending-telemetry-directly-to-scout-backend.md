@@ -1,4 +1,4 @@
-# Sending OpenTelemetry Signals Directly to Scout Collector Backend
+# Sending OpenTelemetry Signals Directly to Scout Backend
 
 This guide explains how to configure applications to send OpenTelemetry traces,
 logs, and metrics directly to the Scout backend,
