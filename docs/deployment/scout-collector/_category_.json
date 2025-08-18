@@ -1,0 +1,8 @@
+{
+  "label": "Scout Collector Deployment",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "Learn how to deploy the Scout Collector for optimal observability. This section covers different deployment patterns including No Collector, Agent Collector, and Gateway Collector strategies, helping you choose the right approach for your infrastructure and scale requirements."
+  }
+}
