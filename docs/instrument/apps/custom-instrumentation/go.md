@@ -549,7 +549,7 @@ func getCurrentCPUUsage() int64 {
 
 > View all telemetry data in the base14 Scout observability platform.
 
-### References
+## References
 
 - [Official OpenTelemetry Go Documentation](https://opentelemetry.io/docs/languages/go/instrumentation/)
 - [Sample Go application with Otel instrumentation here](https://github.com/base-14/examples/tree/main/go)
