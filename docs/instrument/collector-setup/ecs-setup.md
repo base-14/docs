@@ -56,7 +56,7 @@ curl -o task-defintion.json https://raw.githubusercontent.com/base-14/docs/main/
 Download the `scout-agent-collector-config.yaml`
 
 ```shell
-curl -o scout-agent-collector-config.yaml https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/fargate/scout-agent-collector-config.yaml
+curl -o scout-agent-collector-config.yaml https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/fargate/scout-collector-config.yaml
 ```
 
 :::warning
