@@ -94,7 +94,7 @@ html[data-theme="light"] .DocSearch {
   --docsearch-modal-background: var(--ifm-color-secondary-lighter);
   --docsearch-searchbox-background: var(--ifm-color-secondary);
   --docsearch-searchbox-focus-background: var(--ifm-color-white);
-  --docsearch-footer-background: var(--ifm-color-white);
+  --docsearch-footer-background: var(--ifm-color-primary-darkest);
 }
 
 html[data-theme="dark"] .DocSearch {
@@ -403,10 +403,6 @@ html[data-theme="dark"] {
   --ifm-table-stripe-background: #202021;
 }
 
-.footer {
-  border-top: 1px solid var(--ifm-color-emphasis-300);
-}
-
 html[data-theme="dark"] .footer {
   background-color: var(--ifm-background-color);
 }
@@ -491,10 +487,9 @@ nav.navbar {
 }
 
 .footer {
-  border-bottom: none;
-  border-top: none;
-  background: var(--ifm-color-primary-darkest) !important; /* #064e3b */
-  margin-top: 2rem;
+  border-top: 1px solid var(--base14-glass-border);
+  background: var(--ifm-color-primary-darkest) !important;
+  margin-top: 0;
   width: 100%;
   color: #d1d5db !important; /* gray-300 */
 }
