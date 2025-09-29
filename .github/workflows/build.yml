@@ -25,9 +25,9 @@ jobs:
 
       - uses: DavidAnson/markdownlint-cli2-action@v19
         with:
-          globs: '**/*.md'
-          continue-on-error: true
-  
+          globs: "**/*.md"
+        continue-on-error: true
+
   build:
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
@@ -41,7 +41,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "24"
           cache: npm
 
       - name: Install dependencies
