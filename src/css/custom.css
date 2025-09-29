@@ -455,7 +455,6 @@ html[data-theme="dark"] .footer {
    Base14 Design System Implementation
    ======================================== */
 
-/* Warm Gradient Background */
 html {
   background: linear-gradient(135deg, var(--base14-orange-lightest), var(--base14-amber-lightest));
   min-height: 100vh;
@@ -500,27 +499,25 @@ nav.navbar {
   color: #d1d5db !important; /* gray-300 */
 }
 
-/* Footer text styles */
 .footer__title {
-  color: #d1d5db !important; /* gray-300 for bold headers */
+  color: #d1d5db !important; /* gray-300 */
   font-weight: 700;
 }
 
 .footer__link-item,
 .footer__link {
-  color: #9ca3af !important; /* gray-400 for links */
+  color: #9ca3af !important; /* gray-400 */
 }
 
 .footer__link:hover {
-  color: #d1d5db !important; /* gray-300 on hover */
+  color: #d1d5db !important; /* gray-300 */
   text-decoration: underline;
 }
 
 .footer__copyright {
-  color: #9ca3af !important; /* gray-400 for copyright */
+  color: #9ca3af !important; /* gray-400 */
 }
 
-/* Sidebar sticky positioning */
 .theme-doc-sidebar-container {
   position: sticky !important;
   top: var(--ifm-navbar-height);
@@ -529,12 +526,10 @@ nav.navbar {
   border-radius: 0 !important;
 }
 
-/* Ensure main content area allows footer visibility */
 .theme-doc-page {
   min-height: 100vh;
 }
 
-/* Footer should span full width when visible */
 .docMainContainer {
   display: flex;
   flex-direction: column;
@@ -545,7 +540,6 @@ nav.navbar {
   flex: 1;
 }
 
-/* Navbar Logo and Brand Styling */
 .navbar__brand {
   transition: var(--base14-transition-medium);
   border-radius: 8px;
@@ -586,7 +580,6 @@ nav.navbar {
   background-clip: text;
 }
 
-/* Navbar Items Styling */
 .navbar__item {
   font-weight: 500;
   transition: var(--base14-transition-fast);
