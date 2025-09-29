@@ -7,19 +7,85 @@
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #09090B;
-  --ifm-color-primary-dark: #080809;
-  --ifm-color-primary-darker: #070708;
-  --ifm-color-primary-darkest: #060606;
-  --ifm-color-primary-light: #0A0A0C;
-  --ifm-color-primary-lighter: #0B0B0D;
-  --ifm-color-primary-lightest: #0C0C0E;
-  --ifm-footer-background-color: var(--ifm-color-white);
-  --ifm-code-font-size: 95%;
-}
+  /* Base14 Emerald Primary Colors */
+  --ifm-color-primary: #059669;
+  --ifm-color-primary-dark: #047857;
+  --ifm-color-primary-darker: #065f46;
+  --ifm-color-primary-darkest: #064e3b;
+  --ifm-color-primary-light: #10b981;
+  --ifm-color-primary-lighter: #34d399;
+  --ifm-color-primary-lightest: #6ee7b7;
 
-html {
-  overflow-x: hidden;
+  /* Base14 Color Palette - Orange */
+  --base14-orange: #fb923c;
+  --base14-orange-dark: #f97316;
+  --base14-orange-darker: #ea580c;
+  --base14-orange-darkest: #dc2626;
+  --base14-orange-light: #fdba74;
+  --base14-orange-lighter: #fed7aa;
+  --base14-orange-lightest: #fff7ed;
+
+  /* Base14 Color Palette - Amber */
+  --base14-amber: #fbbf24;
+  --base14-amber-dark: #f59e0b;
+  --base14-amber-darker: #d97706;
+  --base14-amber-darkest: #b45309;
+  --base14-amber-light: #fcd34d;
+  --base14-amber-lighter: #fde68a;
+  --base14-amber-lightest: #fffbeb;
+
+  /* Glass Effects */
+  --base14-glass-blur: 16px;
+  --base14-glass-blur-strong: 20px;
+  --base14-glass-blur-light: 8px;
+  --base14-glass-bg: rgba(255, 255, 255, 0.1);
+  --base14-glass-border: rgba(255, 255, 255, 0.2);
+  --base14-glass-subtle: rgba(255, 255, 255, 0.05);
+
+  /* White Glass Effects (for cards and panels) */
+  --base14-white-glass-strong: rgba(255, 255, 255, 0.95);
+  --base14-white-glass-medium: rgba(255, 255, 255, 0.85);
+
+  /* Emerald Glass Effects (for cards) */
+  --base14-emerald-glass: rgba(5, 150, 105, 0.1);
+  --base14-emerald-glass-hover: rgba(5, 150, 105, 0.15);
+  --base14-emerald-shadow-light: rgba(5, 150, 105, 0.15);
+
+  /* Orange Glass Effects (for tags and badges) */
+  --base14-orange-glass: rgba(254, 243, 199, 0.2);
+  --base14-orange-glass-light: rgba(254, 243, 199, 0.3);
+  --base14-orange-glass-hover: rgba(254, 243, 199, 0.4);
+  --base14-orange-glass-subtle: rgba(254, 243, 199, 0.15);
+  --base14-orange-glass-border: rgba(254, 215, 170, 0.4);
+  --base14-orange-glass-border-light: rgba(254, 215, 170, 0.3);
+
+  /* Common Values */
+  --base14-radius: 1rem;
+  --base14-radius-pill: 24px;
+  --base14-transition-fast: all 0.2s ease;
+  --base14-transition-medium: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --base14-shadow-emerald: 0 2px 6px rgba(5, 150, 105, 0.2);
+  --base14-border-accent: var(--ifm-color-primary-dark); /* #047857 */
+
+  /* Background & Surfaces */
+  --ifm-background-color: transparent;
+  --ifm-background-surface-color: rgba(255, 255, 255, 0.95);
+  --ifm-footer-background-color: transparent;
+
+  /* Menu Hover States */
+  --ifm-menu-color-background-hover: rgba(5, 150, 105, 0.1);
+  --ifm-menu-color-background-active: rgba(5, 150, 105, 0.15);
+  --ifm-menu-link-padding-horizontal: 1rem;
+
+  /* Border Radius */
+  --ifm-global-radius: 1rem;
+  --ifm-card-border-radius: 1rem;
+  --ifm-button-border-radius: 0.75rem;
+
+  /* Code */
+  --ifm-code-font-size: 95%;
+  --ifm-code-background: rgba(255, 255, 255, 0.5);
+  --ifm-code-border-radius: 0.5rem;
 }
 
 html[data-theme="light"] .DocSearch {
@@ -289,7 +355,7 @@ li {
   text-align: center;
   border-radius: 3px;
   font-size: var(--type-ramp-base-font-size);
-  transition: all 0.3s ease-out 0s;
+  transition: var(--base14-transition-medium);
 }
 
 .section-showcase-item svg {
@@ -347,16 +413,8 @@ html[data-theme="dark"] .footer {
 
 @media screen and (min-width: 900px) {
   .frontpage {
-    --type-ramp-base-font-size: 14px;
-    --type-ramp-base-line-height: 20px;
-    --type-ramp-minus-1-font-size: 12px;
-    --type-ramp-minus-1-line-height: 16px;
-    --type-ramp-minus-2-font-size: 10px;
-    --type-ramp-minus-2-line-height: 16px;
-    --type-ramp-plus-1-font-size: 16px;
-    --type-ramp-plus-1-line-height: 24px;
-    --type-ramp-plus-2-font-size: 20px;
-    --type-ramp-plus-2-line-height: 28px;
+    /* Type ramp variables inherited from base .frontpage class */
+    /* Only override values that actually change for larger screens */
     --type-ramp-plus-3-font-size: 28px;
     --type-ramp-plus-3-line-height: 36px;
     --type-ramp-plus-4-font-size: 34px;
@@ -391,4 +449,344 @@ html[data-theme="dark"] .footer {
   .theme-code-block {
     width: unset;
   }
+}
+
+/* ========================================
+   Base14 Design System Implementation
+   ======================================== */
+
+/* Warm Gradient Background */
+html {
+  background: linear-gradient(135deg, var(--base14-orange-lightest), var(--base14-amber-lightest));
+  min-height: 100vh;
+}
+
+body {
+  background: transparent;
+}
+
+/* Glass Effects for Components */
+nav.navbar,
+.footer,
+.theme-doc-sidebar-container,
+article,
+.markdown > div,
+.theme-code-block {
+  backdrop-filter: blur(var(--base14-glass-blur));
+  -webkit-backdrop-filter: blur(var(--base14-glass-blur));
+  background: var(--base14-glass-bg) !important;
+  border: 1px solid var(--base14-glass-border);
+  border-radius: var(--base14-radius);
+  overflow: hidden;
+}
+
+nav.navbar,
+.footer {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+}
+
+nav.navbar {
+  border-top: none;
+}
+
+.footer {
+  border-bottom: none;
+  border-top: none;
+  background: var(--ifm-color-primary-darkest) !important; /* #064e3b */
+  margin-top: 2rem;
+  width: 100%;
+  color: #d1d5db !important; /* gray-300 */
+}
+
+/* Footer text styles */
+.footer__title {
+  color: #d1d5db !important; /* gray-300 for bold headers */
+  font-weight: 700;
+}
+
+.footer__link-item,
+.footer__link {
+  color: #9ca3af !important; /* gray-400 for links */
+}
+
+.footer__link:hover {
+  color: #d1d5db !important; /* gray-300 on hover */
+  text-decoration: underline;
+}
+
+.footer__copyright {
+  color: #9ca3af !important; /* gray-400 for copyright */
+}
+
+/* Sidebar sticky positioning */
+.theme-doc-sidebar-container {
+  position: sticky !important;
+  top: var(--ifm-navbar-height);
+  height: calc(100vh - var(--ifm-navbar-height));
+  overflow-y: auto;
+  border-radius: 0 !important;
+}
+
+/* Ensure main content area allows footer visibility */
+.theme-doc-page {
+  min-height: 100vh;
+}
+
+/* Footer should span full width when visible */
+.docMainContainer {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - var(--ifm-navbar-height));
+}
+
+.container {
+  flex: 1;
+}
+
+/* Navbar Logo and Brand Styling */
+.navbar__brand {
+  transition: var(--base14-transition-medium);
+  border-radius: 8px;
+  padding: 4px 8px;
+}
+
+.navbar__brand:hover {
+  background: var(--base14-glass-subtle);
+}
+
+.navbar__logo {
+  height: 2rem;
+  margin-right: 0.5rem;
+  transition: var(--base14-transition-fast);
+  filter: brightness(0) saturate(100%) invert(21%) sepia(68%) saturate(1535%) hue-rotate(129deg) brightness(96%) contrast(101%);
+}
+
+.navbar__brand:hover .navbar__logo {
+  filter: brightness(0) saturate(100%) invert(25%) sepia(95%) saturate(1456%) hue-rotate(128deg) brightness(95%) contrast(98%);
+}
+
+.navbar__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+  background: var(--ifm-color-primary-darker);
+  -webkit-background-clip: text;
+  -moz-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: var(--base14-transition-fast);
+}
+
+.navbar__brand:hover .navbar__title {
+  background: var(--ifm-color-primary-dark);
+  -webkit-background-clip: text;
+  -moz-background-clip: text;
+  background-clip: text;
+}
+
+/* Navbar Items Styling */
+.navbar__item {
+  font-weight: 500;
+  transition: var(--base14-transition-fast);
+}
+
+.navbar__link {
+  color: var(--ifm-color-primary-darker) !important;
+  font-weight: 500;
+  transition: var(--base14-transition-fast);
+  border-radius: 8px;
+  padding: 6px 12px;
+}
+
+.navbar__link:hover {
+  color: var(--ifm-color-primary) !important;
+  background: rgba(236, 253, 245, 0.5) !important;
+  text-decoration: none;
+}
+
+.navbar__link--active {
+  color: var(--ifm-color-primary-darkest) !important;
+  background: var(--base14-glass-subtle);
+}
+
+.menu__link {
+  border-left: 3px solid transparent;
+  transition: var(--base14-transition-fast);
+}
+
+.menu__link:hover,
+.menu__link:active {
+  border-left: 3px solid #047857;
+  padding-left: calc(var(--ifm-menu-link-padding-horizontal) - 3px);
+}
+
+.card,
+article .card,
+[class*="cardContainer"],
+[class*="docCardList"] .card {
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  background: linear-gradient(90deg, var(--base14-emerald-glass), transparent) !important;
+  border-radius: var(--base14-radius) !important;
+  transition: var(--base14-transition-fast);
+  contain: layout style paint;
+}
+
+.card:hover,
+article .card:hover,
+[class*="cardContainer"]:hover,
+[class*="docCardList"] .card:hover {
+  background: linear-gradient(90deg, var(--base14-emerald-glass-hover), var(--base14-emerald-glass)) !important;
+  border: 1px solid var(--ifm-color-primary-lighter) !important;
+  transform: translate3d(1px, 0, 0);
+  box-shadow: var(--base14-shadow-emerald);
+}
+
+.pagination-nav__link {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: linear-gradient(90deg, var(--base14-white-glass-strong), transparent);
+  border-radius: var(--base14-radius);
+  transition: var(--base14-transition-fast);
+  contain: layout style;
+}
+
+.pagination-nav__link.pagination-nav__link--next {
+  background: linear-gradient(270deg, var(--base14-white-glass-strong), transparent);
+}
+
+.pagination-nav__link:hover {
+  background: linear-gradient(270deg, var(--base14-white-glass-medium), var(--base14-white-glass-strong));
+  border: 1px solid var(--ifm-color-primary-light) !important;
+  transform: translate3d(-1px, 0, 0);
+  box-shadow: 0 4px 12px var(--base14-emerald-shadow-light);
+}
+
+.pagination-nav__link.pagination-nav__link--next:hover {
+  transform: translate3d(1px, 0, 0);
+}
+
+.table-of-contents {
+  backdrop-filter: blur(var(--base14-glass-blur-light));
+  -webkit-backdrop-filter: blur(var(--base14-glass-blur-light));
+  background: var(--base14-glass-bg);
+  padding: 1rem;
+  border-radius: var(--base14-radius);
+  border: 1px solid var(--base14-glass-border);
+  contain: layout style;
+}
+
+.table-of-contents__link {
+  transition: var(--base14-transition-fast);
+  border-left: 2px solid transparent;
+}
+
+.table-of-contents__link:hover,
+.table-of-contents__link--active {
+  border-left-color: #047857 !important;
+  color: #047857 !important;
+  padding-left: 2px;
+}
+
+.theme-code-block {
+  margin: 0;
+  background: transparent !important;
+  border: 1px solid var(--base14-orange-lighter) !important;
+  border-radius: var(--base14-radius) !important;
+  overflow: hidden;
+  contain: layout style paint;
+}
+
+.theme-code-block [class*="codeBlockTitle"],
+.theme-code-block [class*="codeBlockHeader"],
+div[class*="codeBlockTitle"],
+div[class*="codeBlockHeader"] {
+  position: relative;
+  margin: 0;
+  background: var(--base14-glass-subtle) !important;
+  border-bottom: 1px solid var(--base14-orange-lighter) !important;
+  border-radius: var(--base14-radius) var(--base14-radius) 0 0;
+  backdrop-filter: blur(var(--base14-glass-blur-strong));
+  -webkit-backdrop-filter: blur(var(--base14-glass-blur-strong));
+}
+
+.theme-code-block [class*="codeBlockLinesWithNumbering"] {
+  padding: 0;
+}
+
+.theme-code-block .codeLineNumber,
+.theme-code-block [class*="codeLineNumber"],
+.theme-code-block [class*="codeLineNumber"] {
+  border-right: 1px solid var(--base14-orange-lighter) !important;
+}
+
+.theme-code-block [class*="codeLineContent"] {
+  padding-left: 8px;
+}
+
+a[class*="tag_"][class*="tagRegular"],
+[class*="tag_"] a {
+  display: inline-flex !important;
+  align-items: center;
+  padding: 0.25rem 1rem !important;
+
+  border-radius: var(--base14-radius-pill) !important;
+
+  backdrop-filter: blur(12px) saturate(150%) !important;
+  background: linear-gradient(135deg,
+      var(--base14-orange-glass-light),
+      var(--base14-orange-glass)) !important;
+  border: 1px solid var(--base14-orange-glass-border) !important;
+
+  color: var(--base14-orange-darker) !important;
+  text-decoration: none !important;
+
+  transition: var(--base14-transition-medium) !important;
+  transform: translateZ(0);
+}
+
+a[class*="tag_"][class*="tagRegular"]:hover,
+[class*="tag_"] a:hover {
+  background: linear-gradient(135deg,
+      var(--base14-orange-glass-hover),
+      var(--base14-orange-glass-light)) !important;
+  transform: translate3d(0, -1px, 0);
+  color: var(--base14-orange-darkest) !important;
+}
+
+.breadcrumbs__item,
+.breadcrumbs__link,
+nav[aria-label="Breadcrumbs"] li a,
+nav[aria-label="Breadcrumbs"] li span {
+  display: inline-flex !important;
+  align-items: center;
+
+  border-radius: var(--base14-radius-pill) !important;
+
+  border: 1px solid transparent !important;
+
+  color: var(--base14-orange-dark) !important;
+  text-decoration: none !important;
+
+  transition: var(--base14-transition-medium) !important;
+  transform: translateZ(0);
+}
+
+.breadcrumbs__link:hover,
+nav[aria-label="Breadcrumbs"] li a:hover {
+  background: var(--base14-orange-glass-subtle) !important;
+  border-color: var(--base14-orange-glass-border-light) !important;
+  transform: translate3d(0, -1px, 0);
+}
+
+.breadcrumbs__item--active .breadcrumbs__link,
+nav[aria-label="Breadcrumbs"] li:last-child span {
+  backdrop-filter: blur(12px) saturate(150%) !important;
+  background: linear-gradient(135deg,
+    var(--base14-orange-glass-light),
+    var(--base14-orange-glass)) !important;
+  border: 1px solid var(--base14-orange-glass-border) !important;
+  font-weight: 500 !important;
 }
