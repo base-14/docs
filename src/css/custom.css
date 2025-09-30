@@ -125,6 +125,37 @@ html[data-theme="dark"] .DocSearch-Hit[aria-selected="true"] a mark {
   color: var(--ifm-color-primary) !important;
 }
 
+/* Algolia Search Theming */
+.DocSearch-Button {
+  background: var(--base14-glass-bg) !important;
+  border: 1px solid var(--base14-glass-border) !important;
+  border-radius: var(--base14-radius) !important;
+}
+
+.DocSearch-Button:hover {
+  background: var(--base14-glass-subtle) !important;
+  box-shadow: 0 2px 8px rgba(251, 146, 60, 0.1) !important;
+}
+
+.DocSearch-Modal {
+  background: rgba(255, 247, 237, 0.98) !important;
+}
+
+.DocSearch-Footer {
+  background: linear-gradient(135deg,
+    rgba(255, 247, 237, 0.95),
+    rgba(255, 251, 235, 0.95)) !important;
+  border-top: 1px solid var(--base14-glass-border) !important;
+}
+
+.DocSearch-Hit[aria-selected="true"] {
+  background: var(--base14-orange-glass-light) !important;
+}
+
+.DocSearch-Hit-action {
+  color: var(--base14-orange-dark) !important;
+}
+
 .example-dialog::part(control) {
   --dialog-width: 400px;
   --dialog-height: auto;
