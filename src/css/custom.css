@@ -127,33 +127,61 @@ html[data-theme="dark"] .DocSearch-Hit[aria-selected="true"] a mark {
 
 /* Algolia Search Theming */
 .DocSearch-Button {
-  background: var(--base14-glass-bg) !important;
-  border: 1px solid var(--base14-glass-border) !important;
-  border-radius: var(--base14-radius) !important;
+  background: linear-gradient(135deg,
+    var(--base14-orange-glass-light),
+    var(--base14-orange-glass)) !important;
+  border: 1px solid var(--base14-orange-glass-border) !important;
+  border-radius: var(--base14-radius-pill) !important;
+  color: var(--base14-orange-dark) !important;
+  transition: var(--base14-transition-medium) !important;
 }
 
 .DocSearch-Button:hover {
-  background: var(--base14-glass-subtle) !important;
-  box-shadow: 0 2px 8px rgba(251, 146, 60, 0.1) !important;
+  background: linear-gradient(135deg,
+    var(--base14-orange-glass-hover),
+    var(--base14-orange-glass-light)) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(251, 146, 60, 0.15) !important;
+}
+
+.DocSearch-Button-Placeholder,
+.DocSearch-Button-Key {
+  color: var(--base14-orange-darker) !important;
 }
 
 .DocSearch-Modal {
-  background: rgba(255, 247, 237, 0.98) !important;
+  background: linear-gradient(135deg,
+    rgba(255, 247, 237, 0.98),
+    rgba(255, 251, 235, 0.95)) !important;
 }
 
-.DocSearch-Footer {
-  background: linear-gradient(135deg,
-    rgba(255, 247, 237, 0.95),
-    rgba(255, 251, 235, 0.95)) !important;
-  border-top: 1px solid var(--base14-glass-border) !important;
+.DocSearch-SearchBar {
+  background: linear-gradient(90deg, var(--base14-emerald-glass), transparent) !important;
+  border-bottom: 1px solid var(--base14-glass-border) !important;
+}
+
+.DocSearch-Hit {
+  background: rgba(255, 255, 255, 0.5) !important;
+  border: 1px solid transparent !important;
+  border-radius: var(--base14-radius) !important;
+  margin: 4px 8px !important;
+  transition: var(--base14-transition-fast) !important;
 }
 
 .DocSearch-Hit[aria-selected="true"] {
-  background: var(--base14-orange-glass-light) !important;
+  background: linear-gradient(90deg, var(--base14-emerald-glass), transparent) !important;
+  border: 1px solid var(--ifm-color-primary-lighter) !important;
+  transform: translateX(2px) !important;
+  box-shadow: var(--base14-shadow-emerald) !important;
 }
 
 .DocSearch-Hit-action {
   color: var(--base14-orange-dark) !important;
+}
+
+.DocSearch-Footer {
+  background: var(--base14-emerald-glass) !important;
+  border-top: 1px solid var(--base14-glass-border) !important;
 }
 
 .example-dialog::part(control) {
