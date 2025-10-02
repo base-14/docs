@@ -322,15 +322,6 @@ article {
   --ifm-link-decoration: underline;
 }
 
-html[data-theme="dark"] {
-  --ifm-link-color: #f2f2f2;
-  --ifm-color-primary: var(--ifm-link-color);
-  --ifm-breadcrumb-color-active: #ffffff;
-  --ifm-link-hover-color: #d4d4d4;
-  --ifm-navbar-link-hover-color: #d4d4d4;
-  --ifm-menu-color-active: #d4d4d4;
-}
-
 html[data-theme="light"] {
   --ifm-link-color: #171717;
   --ifm-color-primary: var(--ifm-link-color);
@@ -340,14 +331,6 @@ html[data-theme="light"] {
 
 a code {
   --ifm-link-color: #2a2a2a;
-}
-
-html[data-theme="dark"] {
-  --ifm-table-stripe-background: #202021;
-}
-
-html[data-theme="dark"] .footer {
-  background-color: var(--ifm-background-color);
 }
 
 @media screen and (min-width: 900px) {
