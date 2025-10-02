@@ -20,7 +20,7 @@ Cloud-native and OpenTelemetry-native platform.
     querying and visualization
 - **Automated Instrumentation**: Leverage OpenTelemetry auto-instrumentation
     for popular frameworks and libraries
-- **Custom Instrumention**: Flexibility to add custom instrumentation for
+- **Custom Instrumentation**: Flexibility to add custom instrumentation for
     business-specific telemetry
 
 ## Architecture Benefits
