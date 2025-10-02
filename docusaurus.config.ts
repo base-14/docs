@@ -97,6 +97,14 @@ const config: Config = {
   themeConfig: {
     // Replace with your project's social card
     image: "img/base14-social-card.jpg",
+    announcementBar: {
+      id: "announcement-bar",
+      content:
+        '🚀 Welcome to base14 Scout documentation! Check out the latest updates on our <a href="https://base14.io/changelog" target="_blank" rel="noopener noreferrer" style="color: #FFFFFF; text-decoration: underline;">changelog</a>.',
+      backgroundColor: "#047857",
+      textColor: "#FFFFFF",
+      isCloseable: true,
+    },
     colorMode: {
       defaultMode: "light",
       disableSwitch: true,
@@ -184,17 +192,19 @@ const config: Config = {
       theme: prismThemes.oneLight,
     },
     // Only enable Algolia if ENABLE_ALGOLIA_CRAWLER is set to 'true'
-    ...(process.env.ENABLE_ALGOLIA_CRAWLER === 'true' &&
-        process.env.ALGOLIA_APP_ID &&
-        process.env.ALGOLIA_SEARCH_API_KEY &&
-        process.env.ALGOLIA_DOCSEARCH_INDEX_NAME ? {
-      algolia: {
-        appId: process.env.ALGOLIA_APP_ID,
-        apiKey: process.env.ALGOLIA_SEARCH_API_KEY,
-        indexName: process.env.ALGOLIA_DOCSEARCH_INDEX_NAME,
-        contextualSearch: true,
-      }
-    } : {}),
+    ...(process.env.ENABLE_ALGOLIA_CRAWLER === "true" &&
+    process.env.ALGOLIA_APP_ID &&
+    process.env.ALGOLIA_SEARCH_API_KEY &&
+    process.env.ALGOLIA_DOCSEARCH_INDEX_NAME
+      ? {
+          algolia: {
+            appId: process.env.ALGOLIA_APP_ID,
+            apiKey: process.env.ALGOLIA_SEARCH_API_KEY,
+            indexName: process.env.ALGOLIA_DOCSEARCH_INDEX_NAME,
+            contextualSearch: true,
+          },
+        }
+      : {}),
   } satisfies Preset.ThemeConfig,
 };
 export default config;
