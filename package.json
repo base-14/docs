@@ -13,7 +13,9 @@
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
     "typecheck": "tsc",
-    "markdownlint": "markdownlint '**/*.md' -f --ignore node_modules"
+    "markdownlint": "markdownlint '**/*.md' -f --ignore node_modules",
+    "build-lint": "npm run typecheck && npm run markdownlint && npm run build",
+    "test": "echo \"No tests configured yet\" && exit 0"
   },
   "dependencies": {
     "@docusaurus/core": "3.9.1",
