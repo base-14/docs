@@ -774,19 +774,19 @@ nav[aria-label="Breadcrumbs"] li:last-child span {
 
 /* Algolia DocSearch - Using CSS Variables */
 .DocSearch {
-  --docsearch-container-background: rgba(94, 100, 112, 0.5);
+  --docsearch-container-background: var(--base14-glass-bg);
   --docsearch-modal-background: var(--base14-white-glass-medium);
   --docsearch-searchbox-background: var(--base14-white-glass-strong);
   --docsearch-searchbox-focus-background: var(--base14-white-glass-strong);
-  --docsearch-hit-background: rgba(236, 253, 245, 0.8); /* emerald-50 */
-  --docsearch-hit-highlight-color: rgba(209, 250, 229, 0.9); /* emerald-100 */
+  --docsearch-hit-background: var(--base14-emerald-glass);
+  --docsearch-hit-highlight-color: var(--base14-emerald-glass-hover);
   --docsearch-footer-background: var(--base14-white-glass-strong);
   --docsearch-key-background: var(--base14-orange-glass-light);
   --docsearch-key-color: var(--base14-orange-dark);
   --docsearch-muted-color: var(--base14-orange-dark);
   --docsearch-icon-color: var(--base14-orange-dark);
   --docsearch-logo-color: var(--base14-orange-dark);
-  --docsearch-highlight-color: var(--base14-orange-dark); /* Changed to orange */
+  --docsearch-highlight-color: var(--base14-orange-dark);
   --docsearch-border-radius: var(--ifm-card-border-radius);
   --docsearch-subtle-color: var(--base14-glass-border);
 }
