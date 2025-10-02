@@ -1,63 +1,82 @@
-# Website
+# base14 Scout Documentation
 
 This website is built using [Docusaurus](https://docusaurus.io/), a modern
 static website generator.
 
+## Prerequisites
+
+- Node.js >= 24.0
+- npm (comes with Node.js)
+
 ## Setup
 
-> Install the Required Packages
+Install the required packages:
 
 ```bash
-yarn
+npm install
 ```
 
-> Install Pre-commit Hook
-> To set up Git pre-commit hooks,
-> you first need to install the pre-commit tool.
-> Follow the instructions in
-> the [official documentation](https://pre-commit.com/).
+Install pre-commit hooks (optional):
 
 ```bash
+# First install pre-commit tool: https://pre-commit.com/
 pre-commit install
 ```
 
-## Local Development
+## Development
+
+Start the local development server:
 
 ```bash
-yarn start
+npm start
 ```
 
-This command starts a local development server and opens up a browser window.
+This command starts a local development server and opens a browser window.
 Most changes are reflected live without having to restart the server.
 
-## linting
+## Testing & Linting
+
+Run TypeScript type checking:
+
+```bash
+npm run typecheck
+```
+
+Run markdown linting:
 
 ```bash
 npm run markdownlint
 ```
 
-## Build
+Run all checks and build:
 
 ```bash
-yarn build
+npm run build-lint
 ```
 
-This command generates static content into the `build` directory and can be
-served using any static contents hosting service.
+Run tests:
+
+```bash
+npm test
+```
+
+## Build
+
+Build the static site:
+
+```bash
+npm run build
+```
+
+This generates static content into the `build` directory.
+
+Serve the build locally:
+
+```bash
+npm run serve
+```
 
 ## Deployment
 
-Using SSH:
-
-```bash
-USE_SSH=true yarn deploy
-```
-
-Not using SSH:
-
-```bash
-GIT_USER=<Your GitHub username> yarn deploy
-```
-
-If you are using GitHub pages for hosting, this command is a convenient way to
-build the website and push to the `gh-pages` branch.
+Deployment is handled automatically via GitHub Actions when you push to the
+`main` branch. See `.github/workflows/deploy.yml` for details.
