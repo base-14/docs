@@ -22,6 +22,107 @@ const config: Config = {
 
   onBrokenLinks: "throw",
 
+  headTags: [
+    {
+      tagName: "link",
+      attributes: {
+        rel: "canonical",
+        href: "https://docs.base14.io",
+      },
+    },
+    {
+      tagName: "meta",
+      attributes: {
+        name: "keywords",
+        content: "OpenTelemetry, observability, monitoring, tracing, metrics, logs, base14, Scout",
+      },
+    },
+    {
+      tagName: "meta",
+      attributes: {
+        name: "author",
+        content: "base14",
+      },
+    },
+    {
+      tagName: "meta",
+      attributes: {
+        property: "og:type",
+        content: "website",
+      },
+    },
+    {
+      tagName: "meta",
+      attributes: {
+        property: "og:site_name",
+        content: "base14 Scout Documentation",
+      },
+    },
+    {
+      tagName: "meta",
+      attributes: {
+        property: "og:title",
+        content: "base14 Scout - Cloud-native OpenTelemetry Observability",
+      },
+    },
+    {
+      tagName: "meta",
+      attributes: {
+        property: "og:description",
+        content: "Comprehensive observability with OpenTelemetry. Monitor applications and infrastructure with unified telemetry collection.",
+      },
+    },
+    {
+      tagName: "meta",
+      attributes: {
+        property: "og:image",
+        content: "https://docs.base14.io/img/base14-social-card.jpg",
+      },
+    },
+    {
+      tagName: "meta",
+      attributes: {
+        property: "og:url",
+        content: "https://docs.base14.io",
+      },
+    },
+    {
+      tagName: "meta",
+      attributes: {
+        name: "twitter:card",
+        content: "summary_large_image",
+      },
+    },
+    {
+      tagName: "meta",
+      attributes: {
+        name: "twitter:site",
+        content: "@base14io",
+      },
+    },
+    {
+      tagName: "meta",
+      attributes: {
+        name: "twitter:title",
+        content: "base14 Scout - Cloud-native OpenTelemetry Observability",
+      },
+    },
+    {
+      tagName: "meta",
+      attributes: {
+        name: "twitter:description",
+        content: "Comprehensive observability with OpenTelemetry. Monitor applications and infrastructure with unified telemetry collection.",
+      },
+    },
+    {
+      tagName: "meta",
+      attributes: {
+        name: "twitter:image",
+        content: "https://docs.base14.io/img/base14-social-card.jpg",
+      },
+    },
+  ],
+
   markdown: {
     hooks: {
       onBrokenMarkdownLinks: "warn",
@@ -47,6 +148,12 @@ const config: Config = {
         blog: false,
         theme: {
           customCss: "./src/css/custom.css",
+        },
+        sitemap: {
+          changefreq: "weekly",
+          priority: 0.5,
+          ignorePatterns: ["/tags/**"],
+          filename: "sitemap.xml",
         },
         gtag: process.env.GOOGLE_ANALYTICS_ID
           ? {
