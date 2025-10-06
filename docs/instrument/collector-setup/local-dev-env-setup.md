@@ -1,25 +1,19 @@
 ---
-keywords: [jaeger, prometheus, opentelemetry, otel-collector, scout]
-tags: [jaeger, prometheus, base14 scout]
+keywords: [opentelemetry, otel-collector, scout]
+tags: [development, local, base14 scout]
 sidebar_position: 7
 ---
 
 # Local Dev Environment
 
-Set up a local observability stack for development and testing purposes.
+Set up a Scout collector locally for development and testing purposes.
 It includes:
 
-- **OpenTelemetry Collector**:
-  For collecting, processing, and exporting telemetry data
-- **Jaeger**:
-  For distributed tracing visualization and analysis
-- **Prometheus**:
-  For metrics collection and monitoring
+- **Scout Collector**:
+  For collecting, processing, and exporting telemetry data to Scout Backend
 
 This environment allows you to:
 
-- Collect and visualize distributed traces using Jaeger
-- Monitor application metrics using Prometheus
 - Process logs, metrics, and traces through the OpenTelemetry Collector
 - Test your instrumentation code locally before deploying to production
 
@@ -42,97 +36,81 @@ receivers:
 exporters:
   debug:
     verbosity: detailed
-  otlp:
-    endpoint: "jaeger:4317"
+  otlphttp/b14:
+    endpoint: ${SCOUT_ENDPOINT}
+    auth:
+      authenticator: oauth2client
     tls:
-      insecure: true
-  prometheus:
-    endpoint: "0.0.0.0:8889"
-    namespace: app-namespace
-    send_timestamps: true
-    metric_expiration: 180m
-    resource_to_telemetry_conversion:
-      enabled: true
+      insecure_skip_verify: true
+    compression: gzip
+
+processors:
+  resource/env:
+    attributes:
+      - key: environment
+        value: development
+        action: upsert
+    
+extensions:
+  oauth2client:
+    client_id: ${SCOUT_CLIENT_ID}
+    client_secret: ${SCOUT_CLIENT_SECRET}
+    endpoint_params:
+      audience: b14collector
+    token_url: ${SCOUT_TOKEN_URL}
+    tls:
+      insecure_skip_verify: true
 
 service:
+  extensions: [oauth2client]
   pipelines:
     traces:
       receivers: [ otlp ]
-      exporters: [ debug, otlp ]
+      processors: [ resource/env ]
+      exporters: [ otlphttp/b14 ]
     metrics:
       receivers: [ otlp ]
-      exporters: [ debug, otlp, prometheus ]
+      processors: [ resource/env ]
+      exporters: [ otlphttp/b14 ]
     logs:
       receivers: [ otlp ]
-      exporters: [ debug ]
+      processors: [ resource/env ]
+      exporters: [ otlphttp/b14 ]
 ```
 
-## Docker Compose
+> Replace the placeholders with your Scout credentials.
+
+> For Adding Receiver, Processor, Exporter, and Service Extensions,
+> please refer to [OpenTelemetry Collector Configuration](https://opentelemetry.io/docs/collector/configuration/)
+
+
+## Start the Containers
+
+```mdx-code-block
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs>
+<TabItem value="docker-compose" label="Using Docker Compose">
+```
 
 Create a Docker compose file `compose.yml`
 
 ```yaml showLineNumbers
 version: "3.8"
 
-networks:
-  otel-network:
-
 services:
   otel-collector:
-    image: otel/opentelemetry-collector-contrib
+    image: otel/opentelemetry-collector-contrib:0.130.0
     container_name: otel-collector
     restart: unless-stopped
     command: [ "--config=/etc/otelcol/config.yaml" ]
-    environment:
-      - PROMETHEUS_EXPORTER_ENDPOINT = 0.0.0.0:8899
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol/config.yaml
     ports:
       - "4317:4317"
       - "4318:4318"
-      - "8889:8889"
-    networks:
-      - otel-network
-
-  jaeger:
-    image: jaegertracing/all-in-one:latest
-    container_name: jaeger
-    restart: unless-stopped
-    environment:
-      - COLLECTOR_ZIPKIN_HTTP_PORT=9411
-    ports:
-      - "16686:16686"
-      - "9411:9411"
-    networks:
-      - otel-network
-
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    restart: unless-stopped
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
-    networks:
-      - otel-network
 ```
-
-## Prometheus Config
-
-Create a `prometheus.yml`
-
-```yaml showLineNumbers
-global:
-  scrape_interval: 5s
-
-scrape_configs:
-  - job_name: "otel-collector"
-    static_configs:
-      - targets: [ "otel-collector:8889" ]
-```
-
-## Start the Containers
 
 Run the below command to start the local development setup
 
@@ -140,5 +118,29 @@ Run the below command to start the local development setup
 docker-compose up -d
 ```
 
-> Goto [http://localhost:16686/](http://localhost:16686/) to see the Jaeger UI.
-> Goto [http://localhost:9090](http://localhost:9090) to see the Prometheus UI.
+
+```mdx-code-block
+</TabItem>
+<TabItem value="docker-run" label="Using Docker Run">
+```
+
+Run the below command to start the local development setup
+
+```shell
+docker run -d \
+  --name otel-collector \
+  --restart unless-stopped \
+  -p 4317:4317 \
+  -p 4318:4318 \
+  -v $(pwd)/otel-collector-config.yaml:/etc/otelcol/config.yaml \
+  otel/opentelemetry-collector-contrib:0.130.0 \
+  --config=/etc/otelcol/config.yaml
+```
+```mdx-code-block
+</TabItem>
+</Tabs>
+```
+
+
+That's it! Navigate to Scout Grafana dashboards 
+to visualize the data.
