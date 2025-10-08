@@ -134,41 +134,17 @@ everal  key interactions:
 3. **Document Loading**
 
 ## CORS Setup for Otel Collector
-
-```http
-Access-Control-Allow-Origin: http://<application-endpoint>:<application-port>
-Access-Control-Allow-Headers: Content-Type, Traceparent 
-Access-Control-Allow-Methods: POST, OPTIONS
+Add the following CORS headers to the Otel Collector configuration:
+```yaml
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+        cors:
+          allowed_origins:
+            - "https://example.com"
 ```
-
-## CSP Headers (if applicable)
-
-```csp
-connect-src 'self' http://<application-endpoint>:<application-port>;
-img-src 'self' data:;
-```
-
-## Performance Considerations
-
-1. **Bundle Size**
-   - Use dynamic imports for non-critical instrumentation
-   - Only include necessary instrumentations
-
-2. **Sampling**
-   - Sample high-frequency events to reduce overhead
-   - Consider head-based sampling for distributed tracing
-
-3. **Batching**
-   - Use batch processors for better performance
-   - Configure appropriate batch sizes and timeouts
-
-## Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| CORS errors | Verify collector CORS settings |
-| Missing spans | Check browser console for errors |
-| High memory usage | Adjust batch sizes and sampling |
 
 > View these traces in base14 Scout observability backend.
 >

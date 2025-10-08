@@ -51,9 +51,10 @@ receivers:
 
     direct_connection: true  # false for replica sets
     
-    # Metrics Configuration (Some metrics are disabled by default)
-    mongodb.uptime:
-      enabled: true
+    metrics:
+      mongodb.uptime:
+        enabled: true
+
 
 processors:
   resource:

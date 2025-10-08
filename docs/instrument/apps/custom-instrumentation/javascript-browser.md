@@ -13,15 +13,11 @@ This guide demonstrates how to:
 > **Note:** Auto instrumentation does not support metrics. To collect meaningful
 metrics, you need to implement them manually.
 
----
-
 ## Prerequisites
 
 - Node.js 16+
 - JavaScript browser application setup
 - Scout Collector setup
-
----
 
 ## Required Packages
 
@@ -32,15 +28,11 @@ npm install @opentelemetry/api
 npm install @opentelemetry/sdk-trace-web 
 npm install @opentelemetry/sdk-metrics 
 npm install @opentelemetry/sdk-logs 
-npm install @opentelemetry/api-logs 
 npm install @opentelemetry/context-zone 
 npm install @opentelemetry/exporter-trace-otlp-http 
-npm install @opentelemetry/exporter-metrics-otlp-http 
-npm install @opentelemetry/exporter-logs-otlp-http 
+npm install @opentelemetry/exporter-metrics-otlp-http  
 npm install @opentelemetry/resources
 ```
-
----
 
 ## Custom Instrumentation Setup (`telemetry.js`)
 
@@ -113,8 +105,6 @@ ReactDOM.render(
 );
 ```
 
----
-
 ## Custom Tracing Example
 
 ```javascript
@@ -140,8 +130,6 @@ async function checkServiceHealth() {
 }
 ```
 
----
-
 ## Custom Metrics Example
 
 ```javascript
@@ -160,71 +148,23 @@ function TrackedComponent() {
 }
 ```
 
----
-
-## Custom Logs Example
-
-```javascript
-import { logs } from '@opentelemetry/api-logs';
-//Gets the logger from the global logger provider set in the setupTelemetry function
-const logger = logs.getLogger('app');
-
-function logEvent(action, details = {}) {
-  logger.emit({
-    severityNumber: logs.SeverityNumber.INFO,
-    body: action,
-    attributes: {
-      ...details,
-      timestamp: new Date().toISOString()
-    }
-  });
-}
-```
-
----
-
 ## Configuration
 
 ### CORS Headers for Otel Collector
 
-```http
-Access-Control-Allow-Origin: http://<application-endpoint>:<application_port>
-Access-Control-Allow-Headers: Content-Type, Traceparent
-Access-Control-Allow-Methods: POST, OPTIONS
+Add the following CORS headers to the Otel Collector configuration:
+```yaml
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+        cors:
+          allowed_origins:
+            - "https://example.com"
 ```
 
-### CSP Headers (if applicable)
-
-```csp
-connect-src 'self' http://<application-endpoint>:<application_port>;  
-img-src 'self' data:;
-```
-
-## Best Practices
-
-1. **Component Instrumentation**
-   - Wrap performance-critical components with performance monitors
-   - Track user journeys with custom spans
-
-2. **Error Handling**
-   - Use Error Boundaries to catch React errors
-   - Log errors with relevant context
-
-3. **Performance**
-   - Batch telemetry data to reduce network requests
-   - Use sampling in production
-   - Monitor bundle size impact
-
-## Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| CORS errors | Verify collector CORS settings |
-| Missing spans | Check browser console for errors |
-| High memory usage | Adjust batch sizes and sampling |
-| Missing logs | Verify log level configuration |
-
-> View these traces in base14 Scout observability backend.
+> View these traces in Scout Grafana dashboards.
 >
 
 ## References

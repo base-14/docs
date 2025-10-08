@@ -100,19 +100,6 @@ Key tracing features:
 
 [Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
 
-#### Adding Custom Instrumentation
-
-```python showLineNumbers
-def do_work():
-    tracer = trace.get_tracer(__name__)
-    parent_span = trace.get_current_span()
-    ctx_with_parent_span = trace.set_span_in_context(parent_span)
-
-    with tracer.start_as_current_span("span", context=ctx_with_parent_span) as span:
-        span.set_attribute("key", "value")
-        # do some work ...
-```
-
 ### Metrics
 
 OpenTelemetry metrics capture runtime measurements of your FastAPI application,
