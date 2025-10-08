@@ -1,7 +1,7 @@
 ---
 date: 2025-04-27
 id: collecting-aws-amazon-mq-telemetry
-title: Using CloudWatch and Prometheus cloudwatch exporter
+title: Collecting AWS Amazon MQ Metrics
 description: Use Scout to monitor your AWS Amazon MQ with ease
 hide_table_of_contents: true
 ---
@@ -9,160 +9,43 @@ hide_table_of_contents: true
 ## Overview
 
 This guide will walk you through collecting rich telemetry data from your
-Amazon MQ using cloudwatch. We'll implement the prometheus cloudwatch exporter
-to collect telemetry data from cloudwatch.
-
-## Prerequisites
-
-Before we begin, ensure you have:
-
-### 1. AWS Credentials and Permissions
-
-Required IAM Permissions:
-
-- `cloudwatch:ListMetrics`
-- `cloudwatch:GetMetricStatistics`
-- `cloudwatch:GetMetricData`
-- `logs:DescribeLogGroups`
-- `logs:FilterLogEvents`
+Amazon MQ using CloudWatch Metrics Stream. We recommend using CloudWatch
+Metrics Stream over Prometheus exporters as it provides faster metric delivery
+(2-3 minute latency) and is more efficient for AWS services.
 
 ## Collecting Amazon MQ Metrics
 
-### Step 1. Configure the Prometheus exporter
+For collecting Amazon MQ metrics, we recommend using **CloudWatch Metrics Stream** instead of Prometheus exporters. CloudWatch Metrics Stream provides:
 
-Save the fallowing config for collecting AWS Amazon MQ
-metrics in a file named `aws-amazon-mq-metrics.yaml`
-and update the region key with relevant value.
+- **Faster delivery**: 2-3 minute latency vs 5+ minutes with polling
+- **Lower cost**: No need to run dedicated exporters
+- **Better scalability**: Native AWS service integration
+- **Automatic metric discovery**: No need to manually configure metric lists
 
-```yaml
----
-region: us-east-1
-metrics:
-  - aws_namespace: AWS/AmazonMQ
-    aws_metric_name: SystemCpuUtilization
-    aws_dimensions: [Broker]
-    aws_statistics: [Average, Maximum]
+### Step 1: Set up CloudWatch Metrics Stream
 
-  - aws_namespace: AWS/AmazonMQ
-    aws_metric_name: RabbitMQFdUsed
-    aws_dimensions: [Broker]
-    aws_statistics: [Average, Maximum]
+Follow our comprehensive [CloudWatch Metrics Stream guide](../cloudwatch-metrics-stream.md) to set up the infrastructure.
 
-  - aws_namespace: AWS/AmazonMQ
-    aws_metric_name: RabbitMQMemLimit
-    aws_dimensions: [Broker]
-    aws_statistics: [Average, Maximum]
+### Step 2: Configure Amazon MQ metrics filtering
 
-  - aws_namespace: AWS/AmazonMQ
-    aws_metric_name: RabbitMQIOReadAverageTime
-    aws_dimensions: [Broker]
-    aws_statistics: [Average, Maximum]
+When configuring your CloudWatch Metrics Stream in **Step 3** of the setup guide, make sure to:
 
-  - aws_namespace: AWS/AmazonMQ
-    aws_metric_name: RabbitMQDiskFreeLimit
-    aws_dimensions: [Broker]
-    aws_statistics: [Average, Maximum]
+1. **Select specific namespaces** instead of "All namespaces"
+2. **Choose only AWS/AmazonMQ** from the namespace list
+3. This ensures you only collect Amazon MQ metrics, reducing costs and data volume
 
-  - aws_namespace: AWS/AmazonMQ
-    aws_metric_name: MessageUnacknowledgedCount
-    aws_dimensions: [Broker]
-    aws_statistics: [Average, Maximum]
+### Step 3: Create OTEL Collector config for RabbitMQ metrics (Optional)
 
-  - aws_namespace: AWS/AmazonMQ
-    aws_metric_name: ChannelCount
-    aws_dimensions: [Broker]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/AmazonMQ
-    aws_metric_name: MessageReadyCount
-    aws_dimensions: [Broker]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/AmazonMQ
-    aws_metric_name: AckRate
-    aws_dimensions: [Broker]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/AmazonMQ
-    aws_metric_name: ConfirmRate
-    aws_dimensions: [Broker]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/AmazonMQ
-    aws_metric_name: ConnectionCount
-    aws_dimensions: [Broker]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/AmazonMQ
-    aws_metric_name: ExchangeCount
-    aws_dimensions: [Broker]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/AmazonMQ
-    aws_metric_name: QueueCount 
-    aws_dimensions: [Broker]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/AmazonMQ
-    aws_metric_name: MessageCount 
-    aws_dimensions: [Broker]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/AmazonMQ
-    aws_metric_name: PublishRate 
-    aws_dimensions: [Broker]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/AmazonMQ
-    aws_metric_name: ConsumerCount 
-    aws_dimensions: [Broker]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/AmazonMQ
-    aws_metric_name: RabbitMQMemUsed 
-    aws_dimensions: [Broker]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/AmazonMQ
-    aws_metric_name: RabbitMQDiskFree 
-    aws_dimensions: [Broker]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/AmazonMQ
-    aws_metric_name: RabbitMQIOWriteAverageTime 
-    aws_dimensions: [Broker]
-    aws_statistics: [Average, Maximum]
-```
-
-### 2. Run the below command to Start the Exporter
-
-```bash
- docker run -p 9106:9106 \
-  -v $(pwd)/aws-amazon-mq-metrics.yaml:/config/config.yml \
-  -e AWS_ACCESS_KEY_ID=<your-aws-access-key-id> \
-  -e AWS_SECRET_ACCESS_KEY=<your-aws-secret-access-key> \
-  quay.io/prometheus/cloudwatch-exporter
-```
-
-### 3. Verify the CloudWatch metrics
-
-Visit [http://localhost:9106/metrics](http://localhost:9106/metrics)
-and confirm the `aws_amazonmq_*` metrics are avialable.
-
-### 4. Create a OTEL Collector config file
-
-create `amazon-mq-metrics-collection-config.yaml`
+If you're using RabbitMQ as your broker engine and need detailed broker-specific metrics, create `amazon-mq-metrics-collection-config.yaml`:
 
 ```yaml
 receivers:
-  # Optionally if you are using rabbit mq as your broker engine,
-  # use the below reciever as well.
   rabbitmq:
     endpoint: ${env:RABBITMQ_ENDPOINT}
     username: ${env:RABBITMQ_USERNAME}
     password: ${env:RABBITMQ_PASSWORD}
     collection_interval: 10s
-     metrics:  
+    metrics:
       rabbitmq.node.disk_free:
         enabled: true
       rabbitmq.node.disk_free_limit:
@@ -197,34 +80,21 @@ receivers:
         enabled: true
       rabbitmq.node.sockets_used_details.rate:
         enabled: true
-  prometheus:
-    config:
-      scrape_configs:
-        - job_name: "aws-cloudwatch-metrics"
-          scrape_timeout: 120s
-          scrape_interval: 300s
-          static_configs:
-            - targets: ["0.0.0.0:9106"]
-          metric_relabel_configs:
-            - source_labels: [__name__]
-              regex: aws_amazonmq_.*
-              target_label: service
-              replacement: amazon-mq
 
 exporters:
   otlp:
-    endpoint: "<SCOUT_ENDPOIINT>:4317"
+    endpoint: "<SCOUT_ENDPOINT>:4317"
     tls:
       insecure: true
 
 service:
   pipelines:
     metrics/amazon_mq:
-      receivers: [rabbitmq, prometheus]
+      receivers: [rabbitmq]
       exporters: [otlp]
 ```
 
-> Make Sure the environment variables are set.
+> **Note**: CloudWatch Metrics Stream will automatically deliver AWS/AmazonMQ metrics (CPU utilization, connection counts, message counts, etc.), while the RabbitMQ receiver collects detailed broker-specific metrics if needed.
 
 ## Collecting Amazon MQ Logs
 

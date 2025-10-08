@@ -1,241 +1,40 @@
 ---
 date: 2025-04-26
-id: collecting-aws-rds-postgres-telemetry
-title: Telemetry Collection from ELB via CloudWatch, Prometheus and lambda
+id: collecting-aws-elb-telemetry
+title: Collecting AWS Application ELB Metrics
 description: Use Scout to monitor your AWS ELB with ease
 hide_table_of_contents: true
 ---
 
 ## Overview
 
-This guide will walk you through collecting rich telemetry data from your ELB
- using cloudwatch. We'll implement the prometheus cloudwatch exporter
-to collect telemetry data from cloudwatch.
+This guide will walk you through collecting rich telemetry data from your Application ELB
+using CloudWatch Metrics Stream. We recommend using CloudWatch
+Metrics Stream over Prometheus exporters as it provides faster metric delivery
+(2-3 minute latency) and is more efficient for AWS services.
 
-## Prerequisites
+## Collecting Application ELB Metrics
 
-Before we begin, ensure you have:
+For collecting Application ELB metrics, we recommend using **CloudWatch Metrics Stream** instead of Prometheus exporters. CloudWatch Metrics Stream provides:
 
-### 1. AWS Credentials and Permissions
+- **Faster delivery**: 2-3 minute latency vs 5+ minutes with polling
+- **Lower cost**: No need to run dedicated exporters
+- **Better scalability**: Native AWS service integration
+- **Automatic metric discovery**: No need to manually configure metric lists
 
-Required IAM permissions:
+### Step 1: Set up CloudWatch Metrics Stream
 
-- `cloudwatch:ListMetrics`
-- `cloudwatch:GetMetricStatistics`
-- `cloudwatch:GetMetricData`
-- `logs:DescribeLogGroups`
-- `logs:FilterLogEvents`
+Follow our comprehensive [CloudWatch Metrics Stream guide](../cloudwatch-metrics-stream.md) to set up the infrastructure.
 
-## Collecting ELB Metrics
+### Step 2: Configure Application ELB metrics filtering
 
-### Step 1. Configure the Prometheus exporter
+When configuring your CloudWatch Metrics Stream in **Step 3** of the setup guide, make sure to:
 
-Save the following config for collecting AWS ELB
-metrics in a file named `aws-elb-metrics.yaml`
-and update the region key with relevant value.
+1. **Select specific namespaces** instead of "All namespaces"
+2. **Choose only AWS/ApplicationELB** from the namespace list
+3. This ensures you only collect Application ELB metrics, reducing costs and data volume
 
-```yaml
----
-region: us-east-1
-metrics:
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "ActiveConnectionCount"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "AnomalousHostCount"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "ConsumedLCUs"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "DesyncMitigationMode_NonCompliant_Request_Count"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "ForwardedInvalidHeaderRequestCount"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "HTTPCode_ELB_4XX_Count"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "HTTPCode_ELB_502_Count"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "HTTPCode_ELB_503_Count"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "HTTPCode_ELB_504_Count"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "HTTPCode_ELB_5XX_Count"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "HTTPCode_Target_2XX_Count"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "HTTPCode_Target_3XX_Count"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "HTTPCode_Target_4XX_Count"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "HTTP_Fixed_Response_Count"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "HealthyHostCount"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "HealthyStateDNS"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "HealthyStateRouting"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "MitigatedHostCount"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "NewConnectionCount"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "PeakLCUs"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "ProcessedBytes"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "RequestCount"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "RequestCountPerTarget"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "RuleEvaluations"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "TargetConnectionErrorCount"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "TargetResponseTime"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "UnHealthyHostCount"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "UnhealthyRoutingRequestCount"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "UnhealthyStateDNS"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/ApplicationELB
-    aws_metric_name: "UnhealthyStateRouting"
-    aws_dimensions: [TargetGroup, AvailabilityZone, LoadBalancer]
-    aws_statistics: [Average, Maximum]
-```
-
-### 2. Run the below command to Start the Exporter
-
-```bash
- docker run -p 9106:9106 \
-  -v $(pwd)/aws-elb-metrics.yaml:/config/config.yml \
-  -e AWS_ACCESS_KEY_ID=<your-aws-access-key-id> \
-  -e AWS_SECRET_ACCESS_KEY=<your-aws-secret-access-key> \
-  quay.io/prometheus/cloudwatch-exporter
-```
-
-### 3. Verify the CloudWatch metrics
-
-Visit [http://localhost:9106/metrics](http://localhost:9106/metrics)
-and confirm the `aws_applicationelb_*` metrics are avialable.
-
-### 4. Create a OTEL Collector config file
-
-create `elb-metrics-collection-config.yaml`
-
-```yaml
-receivers:
- prometheus:
-    config:
-      scrape_configs:
-        - job_name: "aws-cloudwatch-metrics"
-          scrape_timeout: 120s
-          scrape_interval: 300s
-          static_configs:
-            - targets: ["0.0.0.0:9106"]
-          metric_relabel_configs:
-            - source_labels: [__name__]
-              regex: aws_applicationelb_.*
-              target_label: service
-              replacement: elb
-
-exporters:
-  otlp:
-    endpoint: "<SCOUT_ENDPOIINT>:4317"
-    tls:
-      insecure: true
-
-service:
-  pipelines:
-    metrics/elb:
-      receivers: [prometheus]
-      exporters: [otlp]
-```
+> **Note**: CloudWatch Metrics Stream will automatically deliver all AWS/ApplicationELB metrics including request counts, response times, HTTP status codes, target health, connection counts, and more.
 
 ## Collecting Application ELB Logs
 
@@ -262,13 +61,7 @@ Go to `Configurations` and select `Permissions` from the left sidebar.
 take us to AWS IAM page. Here we will add policies to get full S3 access.
 Once here, click on the `Add permissions` button and select `Attach policies`
 from the drop down list.
-3. Search “S3” and you’ll a policy named `AmazonS3FullAccess` select that and proceed.
-
-:::warning
-
-It's advisable to proceed with caution when granting full S3 access,
-particularly in a production environment.
-:::
+3. Search “S3” and you’ll a policy `GetObject` select that and proceed.
 
 ### Step 3: Adding Triggers
 
@@ -332,7 +125,10 @@ from datetime import datetime
 
 # Create an S3 client
 s3 = boto3.client('s3')
-
+client_id=os.environ.get('CLIENT_ID')
+client_secret=os.environ.get('CLIENT_SECRET')
+token_url=os.environ.get('TOKEN_URL')
+endpoint_url=os.environ.get('ENDPOINT_URL')
 
 # Function to convert a log line into a JSON object
 def convert_log_line_to_json(line):
@@ -366,7 +162,8 @@ def convert_to_otlp_format(logs):
    "resource": {
     "attributes": [
      {"key": "service.name", "value": {"stringValue": "alb"}},
-     {"key": "cloud.provider", "value": {"stringValue": "aws"}}
+     {"key": "cloud.provider", "value": {"stringValue": "aws"}},
+     {"key": "environment", "value": {"stringValue": "staging"}}
     ]
    },
    "scopeLogs": [{
@@ -429,35 +226,12 @@ def lambda_handler(event, context):
 
    log_files = [file_key]
   else:
-   # For manual invocation, use environment variables or parameters
-   bucket_name = os.environ.get('S3_BUCKET_NAME', '')
-   prefix = os.environ.get('S3_PREFIX', '')
-
-   if not bucket_name:
+    print(f"Manual Trigger is not supported yet")
     return {
-     'statusCode': 400,
-     'body': 'Missing S3_BUCKET_NAME environment variable'
-    }
+      'statusCode': 403,
+      'body': 'Manual Trigger is not supported yet'
+      }
 
-   # List objects with the given prefix
-   response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix, MaxKeys=10)
-
-   if 'Contents' not in response or not response['Contents']:
-    print(f"No files found in {bucket_name}/{prefix}")
-    return {
-     'statusCode': 404,
-     'body': f'No log files found in {bucket_name}/{prefix}'
-    }
-
-   # Filter for log files
-   log_files = [obj['Key'] for obj in response['Contents'] if obj['Key'].endswith('.log.gz')]
-
-   if not log_files:
-    print(f"No .log.gz files found in {bucket_name}/{prefix}")
-    return {
-     'statusCode': 404,
-     'body': f'No .log.gz files found in {bucket_name}/{prefix}'
-    }
 
   processed_files = 0
   total_logs = 0
@@ -494,26 +268,28 @@ def lambda_handler(event, context):
     otlp_data = convert_to_otlp_format(json_logs)
 
     # Set headers for OTEL collector
-    req_headers = {
+    headers = {
      'Content-Type': 'application/json'
     }
 
-    # Add any custom headers from environment variables
-    custom_headers = os.environ.get('OTEL_HEADERS', '')
-    if custom_headers:
-     try:
-      additional_headers = json.loads(custom_headers)
-      req_headers.update(additional_headers)
-     except json.JSONDecodeError:
-      print(f"Warning: Could not parse OTEL_HEADERS: {custom_headers}")
+    http_url = f"{endpoint_url}/v1/logs"
 
-    # Get OTEL collector endpoint from environment variable
-    otel_endpoint = os.environ.get('OTEL_ENDPOINT', 'http://localhost:4318')
-    http_url = f"{otel_endpoint}/v1/logs"
+    token_response = requests.post(
+        token_url,
+        data={
+            "grant_type": "client_credentials",
+            "audience": "b14collector",
+            },
+        auth=(client_id, client_secret),
+    )
+    token_response.raise_for_status()
+    access_token = token_response.json()["access_token"]
+    headers["Authorization"] = f"Bearer {access_token}"
+
 
     # Send the JSON data to the OTEL collector
     try:
-     response = requests.post(http_url, json=otlp_data, headers=req_headers,
+     response = requests.post(http_url, json=otlp_data, headers=headers,
                               timeout=float(os.environ.get('REQUEST_TIMEOUT', '5')))
      response.raise_for_status()
      print(f"Sent batch of {len(batch_lines)} logs to {http_url}. Response: {response.status_code}")
@@ -525,11 +301,6 @@ def lambda_handler(event, context):
 
    total_logs += log_count
    processed_files += 1
-
-   # Option to delete processed files
-   if os.environ.get('DELETE_PROCESSED_FILES', 'false').lower() == 'true':
-    s3.delete_object(Bucket=bucket_name, Key=file_key)
-    print(f"Deleted processed file: {file_key}")
 
   return {
    'statusCode': 200,
