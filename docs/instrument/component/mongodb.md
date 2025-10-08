@@ -1,22 +1,21 @@
 ---
 date: 2025-06-25
 id: collecting-mongodb-telemetry
-title: MongoDB Metrics Collection with OTel Collector
+title: MongoDB
 description: Use Scout to monitor your MongoDB instance with ease
-hide_table_of_contents: true
 ---
 
 ## Overview
 
 This guide explains how to set up MongoDB metrics collection using OTel
-Collector and forward them to Base14 Scout backend.
+Collector and forward them to Scout backend.
 
 ## Prerequisites
 
 1. MongoDB instance (standalone or replica set)
 2. MongoDB user with `clusterMonitor` role
 3. OpenTelemetry Collector installed
-4. Base14 Scout access credentials
+4. Scout access credentials
 
 ## MongoDB User Setup
 
@@ -70,39 +69,25 @@ processors:
     timeout: 10s
     send_batch_size: 1024
 
-# Export to Base14 Scout
+# Export to Scout Collector
 exporters:
-  otlphttp/b14:
+  otlphttp:
     endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT}
-    auth:
-      authenticator: oauth2client
-    tls:
-      insecure_skip_verify: true
-
-
-extensions:
-  oauth2client:
-    client_id: ${OAUTH2_CLIENT_ID}
-    client_secret: ${OAUTH2_CLIENT_SECRET}
-    token_url: ${OAUTH2_TOKEN_URL}
-    endpoint_params:
-      audience: b14collector
     tls:
       insecure_skip_verify: true
 
 service:
-  extensions: [oauth2client]
   pipelines:
     metrics:
       receivers: [mongodb]
       processors: [batch, resource]
-      exporters: [otlphttp/b14]
+      exporters: [otlphttp]
 ```
 
 ## Verification
 
 1. Check collector logs for errors
-2. Verify metrics in Base14 Scout dashboard
+2. Verify metrics in Scout dashboard
 3. Test MongoDB connectivity:
 
    ```bash

@@ -1,0 +1,8 @@
+{
+  "label": "Component Instrumentation",
+  "position": 4,
+  "link": {
+    "type": "generated-index",
+    "description": "Next, lets instrument our components to collect it's telemetry."
+  }
+}

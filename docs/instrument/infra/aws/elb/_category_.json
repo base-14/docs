@@ -1,9 +1,0 @@
-{
-  "label": "Application ELB",
-  "position": 7,
-  "link": {
-    "type": "generated-index",
-    "description": "Collecting Telemetry from Application ELB using cloudwatch and prometheus cloudwatch exporter."
-  }
-}
-

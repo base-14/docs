@@ -1,7 +1,7 @@
 ---
 date: 2025-04-26
 id: collecting-aws-rds-postgres-telemetry
-title: Collecting AWS RDS PostgreSQL Metrics
+title: RDS PostgreSQL
 description: Use Scout to monitor your AWS RDS postgres instance with ease
 hide_table_of_contents: true
 ---
@@ -24,7 +24,7 @@ For collecting RDS metrics, we recommend using **CloudWatch Metrics Stream** ins
 
 ### Step 1: Set up CloudWatch Metrics Stream
 
-Follow our comprehensive [CloudWatch Metrics Stream guide](../cloudwatch-metrics-stream.md) to set up the infrastructure.
+Follow our comprehensive [CloudWatch Metrics Stream guide](cloudwatch-metrics-stream.md) to set up the infrastructure.
 
 ### Step 2: Configure RDS metrics filtering
 

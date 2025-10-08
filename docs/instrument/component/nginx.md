@@ -223,6 +223,12 @@ sudo apt install nginx-module-otel
 </TabItem>
 </Tabs>
 ```
+:::warning
+
+Take a backup of your nginx config before installing the module.  
+It might be overwritten by the module installation.
+
+:::
 
 ### Step 3: Configure nginx to send traces
 
