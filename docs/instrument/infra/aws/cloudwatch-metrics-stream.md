@@ -1,13 +1,13 @@
 ---
 date: 2025-04-29
 id: collecting-aws-cloudwatch-metrics-using-kinesis-streams
-title: AWS CloudWatch Metric Streams with Amazon Data Firehose
+title: AWS CloudWatch Metric Streams to Scout Backend
 description: Use Scout to monitor your AWS Components
 hide_table_of_contents: true
 ---
 
 Using Amazon CloudWatch Metric Streams and Amazon Data Firehose,
-you can get CloudWatch metrics into Scout Collector with only a two to
+you can get CloudWatch metrics into Scout Backend with only a two to
 three minute latency. This is significantly faster than polling approach
 
 ## Step 1: Creating a S3 Bucket
