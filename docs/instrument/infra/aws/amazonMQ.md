@@ -1,7 +1,7 @@
 ---
 date: 2025-04-27
 id: collecting-aws-amazon-mq-telemetry
-title: Collecting AWS Amazon MQ Metrics
+title: Amazon MQ
 description: Use Scout to monitor your AWS Amazon MQ with ease
 hide_table_of_contents: true
 ---
@@ -24,7 +24,7 @@ For collecting Amazon MQ metrics, we recommend using **CloudWatch Metrics Stream
 
 ### Step 1: Set up CloudWatch Metrics Stream
 
-Follow our comprehensive [CloudWatch Metrics Stream guide](../cloudwatch-metrics-stream.md) to set up the infrastructure.
+Follow our comprehensive [CloudWatch Metrics Stream guide](cloudwatch-metrics-stream.md) to set up the infrastructure.
 
 ### Step 2: Configure Amazon MQ metrics filtering
 

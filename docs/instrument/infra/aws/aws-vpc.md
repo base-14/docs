@@ -3,6 +3,7 @@ date: 2025-04-24
 id: send-aws-vpc-flow-logs
 keywords: [AWS, VPC, Flow Logs, S3, Lambda, OTLP, base14 Scout]
 tags: [aws, vpc, s3, lambda, otlp]
+title: VPC Flow Logs
 sidebar_position: 2
 ---
 

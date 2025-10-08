@@ -1,7 +1,7 @@
 ---
 date: 2025-04-26
 id: collecting-aws-elb-telemetry
-title: Collecting AWS Application ELB Metrics
+title: Application ELB
 description: Use Scout to monitor your AWS ELB with ease
 hide_table_of_contents: true
 ---
@@ -24,7 +24,7 @@ For collecting Application ELB metrics, we recommend using **CloudWatch Metrics 
 
 ### Step 1: Set up CloudWatch Metrics Stream
 
-Follow our comprehensive [CloudWatch Metrics Stream guide](../cloudwatch-metrics-stream.md) to set up the infrastructure.
+Follow our comprehensive [CloudWatch Metrics Stream guide](cloudwatch-metrics-stream.md) to set up the infrastructure.
 
 ### Step 2: Configure Application ELB metrics filtering
 

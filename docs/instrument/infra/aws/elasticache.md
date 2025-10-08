@@ -1,7 +1,7 @@
 ---
 date: 2025-04-28
 id: collecting-aws-elasticache-telemetry
-title: Collecting AWS ElastiCache Metrics
+title: ElastiCache
 description: Use Scout to monitor your AWS ElastiCache instance with ease
 hide_table_of_contents: true
 ---
@@ -24,7 +24,7 @@ For collecting ElastiCache metrics, we recommend using **CloudWatch Metrics Stre
 
 ### Step 1: Set up CloudWatch Metrics Stream
 
-Follow our comprehensive [CloudWatch Metrics Stream guide](../cloudwatch-metrics-stream.md) to set up the infrastructure.
+Follow our comprehensive [CloudWatch Metrics Stream guide](cloudwatch-metrics-stream.md) to set up the infrastructure.
 
 ### Step 2: Configure ElastiCache metrics filtering
 
