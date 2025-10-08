@@ -24,7 +24,7 @@
       ],
       "cpu": 256,
       "memory": 512,
-      "image": "otel/opentelemetry-collector-contrib:0.127.0",
+      "image": "otel/opentelemetry-collector-contrib:0.130.0",
       "essential": true,
       "command": [
         "--config=env:SCOUT_CONFIG_CONTENT"
@@ -32,19 +32,19 @@
       "mountPoints": [],
       "volumesFrom": [],
       "name": "${TASK_NAME}",
-      "environment": [
+      "secrets": [
         {
           "name": "SCOUT_CONFIG_CONTENT",
-          "value": "${SCOUT_CONFIG_CONTENT}",
-        },
+          "valueFrom": "${SECRET_NAME}"
+        }
       ],
       "systemControls": [],
     },
   ],
   "family": "${SERVICE_NAME}",
   "requiresCompatibilities": [
-    "EC2"
+    "FARGATE"
   ],
-  "networkMode": "bridge",
+  "networkMode": "awsvpc",
   "volumes": [],
 }
