@@ -68,72 +68,9 @@ end
 TRACER = OpenTelemetry.tracer_provider.tracer('rails-app', '0.1.0')
 ```
 
-> Trace data will now be sent to the OTEL Collector.
-
-#### Add Custom Spans
-
-```ruby showLineNumbers
-def do_work():
-    TRACER.in_span("span.name") do |span|
-        # doing some work
-    end
-end
-```
-
-#### Add Span Attributes
-
-Attributes let you attach key/value pairs to a span so it carries more
-information about the current operation that it’s tracking.
-
-```ruby showLineNumbers
-def do_work():
-    TRACER.in_span("span.name") do |span|
-        span.set_attribute("attribute.key", "attribute.value")
-        # doing some work
-    end
-end
-```
-
-#### Add Semantic Attribute
-
-Semantic Attributes are pre-defined Attributes that are well-known naming
-conventions for common kinds of data.
-
-```ruby showLineNumbers
-require 'opentelemetry/semantic_conventions'
-
-def do_work():
-    TRACER.in_span("span.name") do |span|
-        span.add_attributes({
-            OpenTelemetry::SemanticConventions::Trace::HTTP_METHOD => "GET",
-            OpenTelemetry::SemanticConventions::Trace::HTTP_URL => "https://opentelemetry.io/",
-        })
-        # doing some work
-    end
-end
-```
-
-#### Add Span Events
-
-A span event is a human-readable message on a span that represents “something
-happening” during it’s lifetime.
-
-```ruby showLineNumbers
-def do_work():
-    TRACER.in_span("span.name") do |span|
-        span.add_event("Starting to work")
-        # doing some work
-        span.add_event("Ending the work")
-    end
-end
-```
-
-Once configured, trace data will be automatically collected and sent to
-the OpenTelemetry Collector.
-
-> View your traces in the base14 Scout observability platform.
+> View your traces in the base14 Scout  platform.
 >
-> **Note**: Ensure your OpenTelemetry Collector is properly configured to
+> **Note**: Ensure your Scout Collector is properly configured to
 > receive and process the trace data.
 
 #### Reference

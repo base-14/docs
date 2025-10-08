@@ -32,7 +32,14 @@ This guide demonstrates how to:
 
 ## Required Dependencies
 
-### Maven (`pom.xml`)
+```mdx-code-block
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs>
+<TabItem value="maven" label="Maven">
+```
+pom.xml
 
 ```xml
 <properties>
@@ -76,8 +83,12 @@ This guide demonstrates how to:
 </dependencies>
 ```
 
-### Gradle (`build.gradle`)
+```mdx-code-block
+</TabItem>
+<TabItem value="gradle" label="Gradle">
+```
 
+build.gradle`
 ```groovy
 plugins {
     id 'java'
@@ -111,6 +122,11 @@ dependencies {
 }
 ```
 
+```mdx-code-block
+</TabItem>
+</Tabs>
+```
+
 ### Configuration (`application.properties`)
 
 ```properties
@@ -135,110 +151,7 @@ management.endpoints.web.exposure.include=health,info,metrics,prometheus
 management.tracing.sampling.probability=1.0
 ```
 
-## Traces
-
-### Auto Instrumentation
-
-Spring Boot auto-configures instrumentation for:
-
-- HTTP requests/responses
-- JDBC operations
-- WebClient / RestTemplate
-- Kafka / Redis / MongoDB
-
-### Custom Instrumentation
-
-```java
-import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Scope;
-import org.springframework.stereotype.Service;
-
-@Service
-public class MyService {
-    private final Tracer tracer;
-
-    public MyService(OpenTelemetry openTelemetry) {
-        this.tracer = openTelemetry.getTracer(MyService.class.getName());
-    }
-
-    public void doWork() {
-        Span span = tracer.spanBuilder("my-operation").startSpan();
-        try (Scope scope = span.makeCurrent()) {
-            span.setAttribute("custom.attribute", "value");
-            // business logic
-        } finally {
-            span.end();
-        }
-    }
-}
-```
-
-## Metrics
-
-### Auto Instrumentation
-
-With Micrometer and Spring Boot Actuator, you get:
-
-- JVM metrics (memory, threads, GC)
-- HTTP server metrics
-- DB connection pool metrics
-- System-level metrics
-
-### Custom Metrics
-
-```java
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
-import org.springframework.stereotype.Component;
-
-@Component
-public class MyMetrics {
-    private final Counter myCounter;
-
-    public MyMetrics(MeterRegistry registry) {
-        this.myCounter = Counter.builder("my.custom.counter")
-            .description("Counts custom operations")
-            .tag("environment", "dev")
-            .register(registry);
-    }
-
-    public void incrementCounter() {
-        myCounter.increment();
-    }
-}
-```
-
-## Running with Docker Compose
-
-```yaml
-services:
-  otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.128.0
-    ports:
-      - "4317:4317"   # OTLP gRPC
-      - "4318:4318"   # OTLP HTTP
-    volumes:
-      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
-    command: ["--config=/etc/otel-collector-config.yaml"]
-
-  your-spring-app:
-    build: .
-    environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
-    ports:
-      - "8080:8080"
-    depends_on:
-      - otel-collector
-```
-
----
-
-## Viewing Telemetry
-
-> Logs, traces and metrics are exported to the base14 Scout observability backend
-[refer](https://docs.base14.io/) .
+> Logs, traces and metrics are exported to the base14 Scout observability backend.
 
 ### References
 

@@ -325,3 +325,36 @@ http_server_duration.Record(100, http_method="GET", http_scheme="http")
 #### Reference
 
 [Official Histogram Documentation](https://opentelemetry.io/docs/specs/otel/metrics/api/#histogram)
+
+## Extracting Trace and Span IDs
+
+To extract trace ID and span ID from the current context for log correlation or debugging purposes:
+
+```python showLineNumbers
+from opentelemetry import trace
+
+def get_trace_span_ids():
+    # Get the current span
+    current_span = trace.get_current_span()
+
+    if current_span.is_recording():
+        # Extract trace ID and span ID
+        span_context = current_span.get_span_context()
+        trace_id = format(span_context.trace_id, '032x')
+        span_id = format(span_context.span_id, '016x')
+
+        print(f"Trace ID: {trace_id}")
+        print(f"Span ID: {span_id}")
+
+        return trace_id, span_id
+    else:
+        print("No active span found")
+        return None, None
+
+# Usage within a traced function
+def traced_function():
+    with tracer.start_as_current_span("my-operation") as span:
+        trace_id, span_id = get_trace_span_ids()
+        # Use these IDs for log correlation or debugging
+        print(f"Processing operation with trace: {trace_id}, span: {span_id}")
+```

@@ -233,6 +233,42 @@ The metrics API & SDK are currently under development.
 
 The logs API & SDK are currently under development.
 
+## Extracting Trace and Span IDs
+
+To extract trace ID and span ID from the current context for log correlation or debugging purposes:
+
+```ruby showLineNumbers
+require 'opentelemetry/trace'
+
+def get_trace_span_ids
+  # Get the current span
+  current_span = OpenTelemetry::Trace.current_span
+
+  if current_span.context.valid?
+    # Extract trace ID and span ID
+    trace_id = current_span.context.trace_id.unpack1('H*')
+    span_id = current_span.context.span_id.unpack1('H*')
+
+    puts "Trace ID: #{trace_id}"
+    puts "Span ID: #{span_id}"
+
+    return trace_id, span_id
+  else
+    puts "No active span found"
+    return nil, nil
+  end
+end
+
+# Usage within a traced function
+def traced_function
+  MyAppTracer.in_span("my-operation") do |span|
+    trace_id, span_id = get_trace_span_ids
+    # Use these IDs for log correlation or debugging
+    puts "Processing operation with trace: #{trace_id}, span: #{span_id}"
+  end
+end
+```
+
 ## References
 
 - [Official OpenTelemetry Ruby Documentation](https://opentelemetry.io/docs/languages/ruby/getting-started/)

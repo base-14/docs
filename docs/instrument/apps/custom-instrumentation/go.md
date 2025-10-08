@@ -549,6 +549,44 @@ func getCurrentCPUUsage() int64 {
 
 > View all telemetry data in the base14 Scout observability platform.
 
+## Extracting Trace and Span IDs
+
+You can extract trace and span IDs from the current context for correlation with logs or external systems:
+
+```go showLineNumbers
+import "go.opentelemetry.io/otel/trace"
+
+func getTraceAndSpanIDs(ctx context.Context) (string, string) {
+    span := trace.SpanFromContext(ctx)
+    if span.SpanContext().IsValid() {
+        traceID := span.SpanContext().TraceID().String()
+        spanID := span.SpanContext().SpanID().String()
+        return traceID, spanID
+    }
+    return "", ""
+}
+
+// Usage example
+func doWork(ctx context.Context, tracer trace.Tracer) {
+    ctx, span := tracer.Start(ctx, "work.operation")
+    defer span.End()
+
+    traceID, spanID := getTraceAndSpanIDs(ctx)
+
+    // Use trace and span IDs for logging or correlation
+    fmt.Printf("TraceID: %s, SpanID: %s\n", traceID, spanID)
+
+    // Example: Add to structured logs
+    log.Printf("Processing request - TraceID: %s, SpanID: %s", traceID, spanID)
+}
+```
+
+This is particularly useful for:
+- Correlating application logs with traces
+- Adding trace context to error messages
+- Integrating with external monitoring systems
+- Creating custom dashboards with trace correlation
+
 ## References
 
 - [Official OpenTelemetry Go Documentation](https://opentelemetry.io/docs/languages/go/instrumentation/)
