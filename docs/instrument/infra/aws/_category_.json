@@ -3,6 +3,6 @@
   "position": 4,
   "link": {
     "type": "generated-index",
-    "description": "Collect Telemetry from AWS ECS using Sidecar Containers, Send AWS VPC logs. Visualise the Telemetry data in base14 Scout observability platform."
+    "description": "Collect Telemetry from AWS components and visualise the Telemetry data in Scout observability platform."
   }
 }
