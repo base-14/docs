@@ -2,6 +2,7 @@
 keywords: [ecs, opentelemetry, otel-collector, scout]
 tags: [ecs, opentelemetry, base14 scout]
 sidebar_position: 7
+hide_table_of_contents: true
 ---
 
 # AWS ECS
