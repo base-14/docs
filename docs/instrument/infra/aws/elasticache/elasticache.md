@@ -1,200 +1,49 @@
 ---
 date: 2025-04-28
 id: collecting-aws-elasticache-telemetry
-title: using CloudWatch and Prometheus Cloudwatch exporter
-description: Use Scout to monitor your AWS RDS postgres instance with ease
+title: Collecting AWS ElastiCache Metrics
+description: Use Scout to monitor your AWS ElastiCache instance with ease
 hide_table_of_contents: true
 ---
 
 ## Overview
 
 This guide will walk you through collecting rich telemetry data from your
-Elasticache caches using cloudwatch. We'll implement the prometheus cloudwatch exporter
-to collect telemetry data from cloudwatch.
+ElastiCache caches using CloudWatch Metrics Stream. We recommend using CloudWatch
+Metrics Stream over Prometheus exporters as it provides faster metric delivery
+(2-3 minute latency) and is more efficient for AWS services.
 
-## Prerequisites
+## Collecting ElastiCache Metrics
 
-Before we begin, ensure you have:
+For collecting ElastiCache metrics, we recommend using **CloudWatch Metrics Stream** instead of Prometheus exporters. CloudWatch Metrics Stream provides:
 
-### 1. AWS Credentials and Permissions
+- **Faster delivery**: 2-3 minute latency vs 5+ minutes with polling
+- **Lower cost**: No need to run dedicated exporters
+- **Better scalability**: Native AWS service integration
+- **Automatic metric discovery**: No need to manually configure metric lists
 
-Required IAM permissions:
+### Step 1: Set up CloudWatch Metrics Stream
 
-- `cloudwatch:ListMetrics`
-- `cloudwatch:GetMetricStatistics`
-- `cloudwatch:GetMetricData`
-- `logs:DescribeLogGroups`
-- `logs:FilterLogEvents`
+Follow our comprehensive [CloudWatch Metrics Stream guide](../cloudwatch-metrics-stream.md) to set up the infrastructure.
 
-## Collecting Elasticache Metrics
+### Step 2: Configure ElastiCache metrics filtering
 
-### Step 1. Configure the Prometheus exporter
+When configuring your CloudWatch Metrics Stream in **Step 3** of the setup guide, make sure to:
 
-Save the following config for collecting AWS Elasticache
-metrics in a file named `aws-elasticache-metrics.yaml`
-and update the region key with relevant value.
+1. **Select specific namespaces** instead of "All namespaces"
+2. **Choose only AWS/ElastiCache** from the namespace list
+3. This ensures you only collect ElastiCache metrics, reducing costs and data volume
 
-```yaml
----
-region: us-east-1
-metrics:
- - aws_namespace: AWS/ElastiCache
-   aws_metric_name: CPUUtilization
-   aws_dimensions: [CacheClusterId, CacheNodeId]
-   aws_statistics: [Average, Maximum]
+### Step 3: Create OTEL Collector config for Redis metrics (Optional)
 
- - aws_namespace: AWS/ElastiCache
-   aws_metric_name: FreeableMemory
-   aws_dimensions: [CacheClusterId, CacheNodeId]
-   aws_statistics: [Average, Maximum]
-
- - aws_namespace: AWS/ElastiCache
-   aws_metric_name: NetworkBytesIn
-   aws_dimensions: [CacheClusterId, CacheNodeId]
-   aws_statistics: [Sum, Average]
-
- - aws_namespace: AWS/ElastiCache
-   aws_metric_name: NetworkBytesOut
-   aws_dimensions: [CacheClusterId, CacheNodeId]
-   aws_statistics: [Sum, Average]
-
- - aws_namespace: AWS/ElastiCache
-   aws_metric_name: NetworkPacketsIn
-   aws_dimensions: [CacheClusterId, CacheNodeId]
-   aws_statistics: [Sum, Average]
-
- - aws_namespace: AWS/ElastiCache
-   aws_metric_name: NetworkPacketsOut
-   aws_dimensions: [CacheClusterId, CacheNodeId]
-   aws_statistics: [Sum, Average]
-
- - aws_namespace: AWS/ElastiCache
-   aws_metric_name: SwapUsage
-   aws_dimensions: [CacheClusterId, CacheNodeId]
-   aws_statistics: [Average, Maximum]
-
- - aws_namespace: AWS/ElastiCache
-   aws_metric_name: BytesUsedForCache
-   aws_dimensions: [CacheClusterId, CacheNodeId]
-   aws_statistics: [Sum, Maximum]
-
- - aws_namespace: AWS/ElastiCache
-   aws_metric_name: CacheHits
-   aws_dimensions: [CacheClusterId, CacheNodeId]
-   aws_statistics: [Sum]
-
- - aws_namespace: AWS/ElastiCache
-   aws_metric_name: CacheMisses
-   aws_dimensions: [CacheClusterId, CacheNodeId]
-   aws_statistics: [Sum]
-
- - aws_namespace: AWS/ElastiCache
-   aws_metric_name: CacheHitRate
-   aws_dimensions: [CacheClusterId, CacheNodeId]
-   aws_statistics: [Average]
-
- - aws_namespace: AWS/ElastiCache
-   aws_metric_name: CurrConnections
-   aws_dimensions: [CacheClusterId, CacheNodeId]
-   aws_statistics: [Average, Maximum]
-
- - aws_namespace: AWS/ElastiCache
-   aws_metric_name: CurrItems
-   aws_dimensions: [CacheClusterId, CacheNodeId]
-   aws_statistics: [Average, Maximum]
-
- - aws_namespace: AWS/ElastiCache
-   aws_metric_name: CurrVolatileItems
-   aws_dimensions: [CacheClusterId, CacheNodeId]
-   aws_statistics: [Average, Maximum]
-
- - aws_namespace: AWS/ElastiCache
-   aws_metric_name: ReplicationLag
-   aws_dimensions: [CacheClusterId, CacheNodeId]
-   aws_statistics: [Maximum]
-
- - aws_namespace: AWS/ElastiCache
-   aws_metric_name: ReplicationLag
-   aws_dimensions: [CacheClusterId, CacheNodeId]
-   aws_statistics: [Maximum]
-
- - aws_namespace: AWS/ElastiCache
-   aws_metric_name: SaveInProgress
-   aws_dimensions: [CacheClusterId, CacheNodeId]
-
- - aws_namespace: AWS/ElastiCache
-   aws_metric_name: TrafficManagementActive
-   aws_dimensions: [CacheClusterId, CacheNodeId]
-
- - aws_namespace: AWS/ElastiCache
-   aws_metric_name: DatabaseCapacityUsagePercentage
-   aws_dimensions: [CacheClusterId, CacheNodeId]
-   aws_statistics: [Average, Maximum]
-
- - aws_namespace: AWS/ElastiCache
-   aws_metric_name: DatabaseMemoryUsagePercentage
-   aws_dimensions: [CacheClusterId, CacheNodeId]
-   aws_statistics: [Average, Maximum]
-
- - aws_namespace: AWS/ElastiCache
-   aws_metric_name: EngineCPUUtilization
-   aws_dimensions: [CacheClusterId, CacheNodeId]
-   aws_statistics: [Average, Maximum]
-
- - aws_namespace: AWS/ElastiCache
-   aws_metric_name: Evictions
-   aws_dimensions: [CacheClusterId, CacheNodeId]
-   aws_statistics: [Sum, Average]
-
- - aws_namespace: AWS/ElastiCache
-   aws_metric_name: GlobalDatastoreReplicationLag
-   aws_dimensions: [CacheClusterId, CacheNodeId]
-   aws_statistics: [Average, Maximum]
-
- - aws_namespace: AWS/ElastiCache
-   aws_metric_name: MemoryFragmentationRatio
-   aws_dimensions: [CacheClusterId, CacheNodeId]
-   aws_statistics: [Average, Maximum]
-
- - aws_namespace: AWS/ElastiCache
-   aws_metric_name: MemoryFragmentationRatio
-   aws_dimensions: [CacheClusterId, CacheNodeId]
-   aws_statistics: [Sum, Average]
----
-``
-
-### 2. Run the below command to Start the Exporter
-
-```bash
- docker run -p 9106:9106 \
-  -v $(pwd)/aws-elasticache-metrics.yaml:/config/config.yml \
-  -e AWS_ACCESS_KEY_ID=<your-aws-access-key-id> \
-  -e AWS_SECRET_ACCESS_KEY=<your-aws-secret-access-key> \
-  quay.io/prometheus/cloudwatch-exporter
-```
-
-### 3. Verify the CloudWatch metrics
-
-Visit [http://localhost:9106/metrics](http://localhost:9106/metrics)
-and confirm the `aws_elasticache_*` metrics are avialable.
-
-### 4. Create a OTEL Collector config file
-
-create `elasticache-metrics-collection-config.yaml`
+If you're using Redis and need detailed cache-specific metrics, create `elasticache-metrics-collection-config.yaml`:
 
 ```yaml
 receivers:
-  # Optinally if you are using redis oss cache
-  # use the below reciever as well
   redis:
-    # The hostname and port of the Redis instance, separated by a colon.
     endpoint: ${env:REDIS_ENDPOINT}
-    # The frequency at which to collect metrics from the Redis instance.
     collection_interval: 60s
-    # The password used to access the Redis instance.
     password: ${env:REDIS_PASSWORD}
-    # The network to use for connecting to the server. 
-    # Valid Values are `tcp` or `Unix`
     # transport: tcp
     # tls:
     #   insecure: false
@@ -206,35 +55,33 @@ receivers:
         enabled: true
       redis.cmd.latency:
         enabled: true
-
-  prometheus:
-    config:
-      scrape_configs:
-        - job_name: "aws-cloudwatch-metrics"
-          scrape_timeout: 120s
-          scrape_interval: 300s
-          static_configs:
-            - targets: ["0.0.0.0:9106"]
-          metric_relabel_configs:
-            - source_labels: [__name__]
-              regex: aws_elasticache_.*
-              target_label: service
-              replacement: elasticache
+      redis.connected_clients:
+        enabled: true
+      redis.uptime:
+        enabled: true
+      redis.memory.used:
+        enabled: true
+      redis.keys.expired:
+        enabled: true
+      redis.keyspace.hits:
+        enabled: true
+      redis.keyspace.misses:
+        enabled: true
 
 exporters:
   otlp:
-    endpoint: "<SCOUT_ENDPOIINT>:4317"
+    endpoint: "<SCOUT_ENDPOINT>:4317"
     tls:
       insecure: true
 
 service:
   pipelines:
     metrics/elasticache:
-      receivers: [redis, prometheus]
+      receivers: [redis]
       exporters: [otlp]
 ```
 
-> Make Sure the environment variables are set.
+> **Note**: CloudWatch Metrics Stream will automatically deliver AWS/ElastiCache metrics (CPU utilization, memory usage, cache hits/misses, network I/O, etc.), while the Redis receiver collects detailed cache-specific metrics if needed.
 
 ## Collecting Elasticache Logs
 
