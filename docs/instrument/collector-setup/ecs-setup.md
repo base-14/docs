@@ -43,58 +43,181 @@ import TabItem from '@theme/TabItem';
 <TabItem value="fargate" label="Fargate">
 ```
 
-In Fargate, we'll have a single task definition which we willl use to deploy the
-scout collector using the REPLICA Strategy which will collect all the application
-telemetry data and from other services like rds, elasticache, amazonmq.
+For Fargate, you can deploy the Scout collector in different modes:
 
-Download the `task-definition.json`
+<Tabs groupId="fargate-deployment-mode">
+<TabItem value="service" label="Service Mode" default>
+
+**Best for**: Centralized telemetry collection and processing
+- Runs as a standalone REPLICA service
+- Collects telemetry from multiple applications and AWS services
+- Ideal for collecting metrics from RDS, ElastiCache, Amazon MQ, and application traces
+
+Download the required files:
 
 ```shell
-curl -o task-defintion.json https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/fargate/task-definition.json
-```
-
-Download the `scout-agent-collector-config.yaml`
-
-```shell
+curl -o task-definition.json https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/fargate/task-definition.json
 curl -o scout-agent-collector-config.yaml https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/fargate/scout-collector-config.yaml
 ```
 
 :::warning
 
-- Replace the clientId, clientSecret, Endpoint,
-  TokenUrl placeholders with the actual value. \
-- Go through the config once before continuing
-  further to remove or add new pipelines \
-- Click [docs.base14.io](https://docs.base14.io/instrument/collector-setup/otel-collector-config)
-  to know more about the config
+- This service mode collector can include receivers for AWS services (RDS, ElastiCache, Amazon MQ) and external databases.
+- Replace the `clientId`, `clientSecret`, `Endpoint`, and `TokenUrl` placeholders with actual values.
+- Review the configuration to add or remove pipelines based on your monitoring needs.
+- Visit [docs.base14.io](https://docs.base14.io/instrument/collector-setup/otel-collector-config) for more details on the configuration.
 
 :::
 
-Run the below commands to generate the task defintion for scout collector
+### Store Configuration in AWS Secrets Manager
+
+```shell
+# Create secret for service collector configuration
+aws secretsmanager create-secret \
+  --name "/ecs/scout/otelcol-service-config" \
+  --description "Scout OTEL Service Collector Configuration for Fargate" \
+  --secret-string file://scout-agent-collector-config.yaml
+```
+
+If the secret already exists, update it:
+
+```shell
+aws secretsmanager update-secret \
+  --secret-id "/ecs/scout/otelcol-service-config" \
+  --secret-string file://scout-agent-collector-config.yaml
+```
+
+### Generate Task Definition
 
 ```shell
 export AWS_TASK_EXECUTION_ROLE=<ARN of the task execution Role>
 
 AWS_TASK_EXECUTION_ROLE=${AWS_TASK_EXECUTION_ROLE} \
-TASK_NAME='Scout_collector' \
-SERVICE_NAME='Scout_collector' \
-SCOUT_CONFIG_CONTENT=$(cat scout-collector-config.yaml | awk 'BEGIN {ORS="\\n"} {print}' | sed 's/"/\\"/g') \
-envsubst < task-definition.json > scout-collector-task-definiton.json
-
+TASK_NAME='Scout_service_collector' \
+SERVICE_NAME='Scout_service_collector' \
+SECRET_NAME='/ecs/scout/otelcol-service-config' \
+envsubst < task-definition.json > scout-service-collector-task-definition.json
 ```
 
-You will now have a task defintions, Copy the contents of it
-and create a task deinition in aws console and run the below
-commands to create a service and deploy it to an ecs cluster
+### Deploy Service
 
 ```shell
 aws ecs create-service \
   --cluster <cluster-name> \
-  --service-name scout-collector \
-  --task-definition scout-collector-task-definiton \
+  --service-name scout-service-collector \
+  --task-definition scout-service-collector-task-definition \
   --scheduling-strategy REPLICA \
   --desired-count 1 \
   --launch-type FARGATE
+```
+
+</TabItem>
+<TabItem value="sidecar" label="Sidecar Mode">
+
+**Best for**: Application-specific telemetry collection
+- Runs alongside your application containers in the same task
+- Dedicated collector per application task
+- Ideal for collecting application traces, logs, and custom metrics
+
+Download the required files:
+
+```shell
+curl -o task-definition.json https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/fargate/task-definition.json
+curl -o scout-sidecar-collector-config.yaml https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/fargate/scout-collector-config.yaml
+```
+
+:::warning
+
+- The sidecar collector should focus on application-specific telemetry only.
+- Avoid including AWS service receivers (RDS, ElastiCache) in sidecar mode to prevent duplication.
+- Replace the `clientId`, `clientSecret`, `Endpoint`, and `TokenUrl` placeholders with actual values.
+- Configure this collector to receive OTLP data from your application containers.
+- Visit [docs.base14.io](https://docs.base14.io/instrument/collector-setup/otel-collector-config) for more details on the configuration.
+
+:::
+
+### Store Configuration in AWS Secrets Manager
+
+```shell
+# Create secret for sidecar collector configuration
+aws secretsmanager create-secret \
+  --name "/ecs/scout/otelcol-sidecar-config" \
+  --description "Scout OTEL Sidecar Collector Configuration for Fargate" \
+  --secret-string file://scout-sidecar-collector-config.yaml
+```
+
+If the secret already exists, update it:
+
+```shell
+aws secretsmanager update-secret \
+  --secret-id "/ecs/scout/otelcol-sidecar-config" \
+  --secret-string file://scout-sidecar-collector-config.yaml
+```
+
+### Generate Task Definition
+
+```shell
+export AWS_TASK_EXECUTION_ROLE=<ARN of the task execution Role>
+
+AWS_TASK_EXECUTION_ROLE=${AWS_TASK_EXECUTION_ROLE} \
+TASK_NAME='Scout_sidecar_collector' \
+SERVICE_NAME='Scout_sidecar_collector' \
+SECRET_NAME='/ecs/scout/otelcol-sidecar-config' \
+envsubst < task-definition.json > scout-sidecar-collector-task-definition.json
+```
+
+### Add to Your Application Task Definition
+
+Instead of creating a separate service, add the Scout collector container to your existing application task definition as a sidecar:
+
+```json
+{
+  "name": "scout-sidecar-collector",
+  "image": "otel/opentelemetry-collector-contrib:0.130.0",
+  "essential": false,
+  "secrets": [
+    {
+      "name": "SCOUT_CONFIG_CONTENT",
+      "valueFrom": "/ecs/scout/otelcol-sidecar-config"
+    }
+  ],
+  "command": ["--config=env:SCOUT_CONFIG_CONTENT"],
+  "portMappings": [
+    {
+      "containerPort": 4317,
+      "protocol": "tcp"
+    },
+    {
+      "containerPort": 4318,
+      "protocol": "tcp"
+    }
+  ]
+}
+```
+
+</TabItem>
+</Tabs>
+
+### Update IAM Permissions
+
+Ensure your ECS Task Execution Role has permission to access the secrets (adjust resources based on your selected deployment mode):
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "secretsmanager:GetSecretValue"
+      ],
+      "Resource": [
+        "arn:aws:secretsmanager:<aws-region>:<aws-account-id>:secret:/ecs/scout/otelcol-service-config*",
+        "arn:aws:secretsmanager:<aws-region>:<aws-account-id>:secret:/ecs/scout/otelcol-sidecar-config*"
+      ]
+    }
+  ]
+}
 ```
 
 ```mdx-code-block
@@ -102,26 +225,19 @@ aws ecs create-service \
 <TabItem value="managed-nodes" label="Managed Nodes">
 ```
 
-In the case of managed nodes, we'll use two Task Definitions. One deploys
-OpenTelemetry collectors using the DAEMON strategy, and the other uses the
-REPLICA strategy. The replica collector acts as an agent collector, while the
-daemon collector retrieves node metrics.
+For managed nodes (EC2), you can deploy the Scout collector in different modes:
 
-Download the `task-definition.json`
+<Tabs groupId="deployment-mode">
+<TabItem value="service" label="Service Mode" default>
 
-```shell
-curl -o task-defintion.json https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/ec2/task-definition.json
-```
+**Best for**: Application-specific telemetry collection and custom instrumentation
+- Runs as a REPLICA service alongside your applications
+- Ideal for collecting traces, application logs, and database metrics
 
-Download the `scout-daemon-collector-config.yaml`
+Download the required files:
 
 ```shell
-curl -o scout-daemon-collector-config.yaml https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/ec2/scout-daemon-collector-config.yaml
-```
-
-Download the `scout-agent-collector-config.yaml`
-
-```shell
+curl -o task-definition.json https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/ec2/task-definition.json
 curl -o scout-agent-collector-config.yaml https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/ec2/scout-agent-collector-config.yaml
 ```
 
@@ -132,13 +248,95 @@ curl -o scout-agent-collector-config.yaml https://raw.githubusercontent.com/base
 - Replace the `clientId`, `clientSecret`, `Endpoint`, and `TokenUrl`
   placeholders with their actual values.
 - Review the configuration to remove or add new pipelines before proceeding.
-<!-- markdownlint-disable-next-line MD013 -->
 - Visit [docs.base14.io](https://docs.base14.io/instrument/collector-setup/otel-collector-config) for more details on the configuration.
 
 :::
 
-Run the commands below to generate task definitions for both daemon and agent
-OpenTelemetry collectors.
+### Store Configuration in AWS Secrets Manager
+
+```shell
+# Create secret for agent collector configuration
+aws secretsmanager create-secret \
+  --name "/ecs/scout/otelcol-agent-config" \
+  --description "Scout OTEL Agent Collector Configuration for EC2" \
+  --secret-string file://scout-agent-collector-config.yaml
+```
+
+If the secret already exists, update it:
+
+```shell
+aws secretsmanager update-secret \
+  --secret-id "/ecs/scout/otelcol-agent-config" \
+  --secret-string file://scout-agent-collector-config.yaml
+```
+
+### Generate Task Definition
+
+```shell
+export AWS_TASK_EXECUTION_ROLE=<ARN of the task execution Role>
+
+AWS_TASK_EXECUTION_ROLE=${AWS_TASK_EXECUTION_ROLE} \
+TASK_NAME='Scout_agent_collector' \
+SERVICE_NAME='Scout_agent_collector' \
+SECRET_NAME='/ecs/scout/otelcol-agent-config' \
+envsubst < task-definition.json > scout-agent-collector-task-definition.json
+```
+
+### Deploy Service
+
+```shell
+aws ecs create-service \
+  --cluster <cluster-name> \
+  --service-name scout-agent-collector \
+  --task-definition scout-agent-collector-task-definition \
+  --scheduling-strategy REPLICA \
+  --desired-count 1 \
+  --launch-type EC2
+```
+
+</TabItem>
+<TabItem value="daemon" label="Daemon Mode">
+
+**Best for**: Infrastructure monitoring and system-level metrics
+- Runs one collector per EC2 instance using DAEMON strategy
+- Ideal for collecting ECS container metrics, host metrics, and system logs
+
+Download the required files:
+
+```shell
+curl -o task-definition.json https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/ec2/task-definition.json
+curl -o scout-daemon-collector-config.yaml https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/ec2/scout-daemon-collector-config.yaml
+```
+
+:::warning
+
+- The daemon collector focuses on infrastructure metrics and should not include application-specific receivers.
+- Replace the `clientId`, `clientSecret`, `Endpoint`, and `TokenUrl`
+  placeholders with their actual values.
+- Review the configuration to remove or add new pipelines before proceeding.
+- Visit [docs.base14.io](https://docs.base14.io/instrument/collector-setup/otel-collector-config) for more details on the configuration.
+
+:::
+
+### Store Configuration in AWS Secrets Manager
+
+```shell
+# Create secret for daemon collector configuration
+aws secretsmanager create-secret \
+  --name "/ecs/scout/otelcol-daemon-config" \
+  --description "Scout OTEL Daemon Collector Configuration for EC2" \
+  --secret-string file://scout-daemon-collector-config.yaml
+```
+
+If the secret already exists, update it:
+
+```shell
+aws secretsmanager update-secret \
+  --secret-id "/ecs/scout/otelcol-daemon-config" \
+  --secret-string file://scout-daemon-collector-config.yaml
+```
+
+### Generate Task Definition
 
 ```shell
 export AWS_TASK_EXECUTION_ROLE=<ARN of the task execution Role>
@@ -146,35 +344,130 @@ export AWS_TASK_EXECUTION_ROLE=<ARN of the task execution Role>
 AWS_TASK_EXECUTION_ROLE=${AWS_TASK_EXECUTION_ROLE} \
 TASK_NAME='Scout_daemon_collector' \
 SERVICE_NAME='Scout_daemon_collector' \
-SCOUT_CONFIG_CONTENT=$(cat scout-daemon-collector-config.yaml | awk 'BEGIN {ORS="\\n"} {print}' | sed 's/"/\\"/g') \
-envsubst < task-definition.json > scout-daemon-collector-task-definiton.json
-
-AWS_TASK_EXECUTION_ROLE=${AWS_TASK_EXECUTION_ROLE} \
-TASK_NAME='Scout_agent_collector' \
-SERVICE_NAME='Scout_agent_collector' \
-SCOUT_CONFIG_CONTENT=$(cat scout-agent-collector-config.yaml | awk 'BEGIN {ORS="\\n"} {print}' | sed 's/"/\\"/g') \
-envsubst < task-definition.json > scout-agent-collector-task-definiton.json
+SECRET_NAME='/ecs/scout/otelcol-daemon-config' \
+envsubst < task-definition.json > scout-daemon-collector-task-definition.json
 ```
 
-You will now have two task defintions, Copy the contents of
-it and create a task deinition in aws console and run the
-below commands to create a service and deploy it to an ecs cluster
+### Deploy Daemon Service
 
 ```shell
 aws ecs create-service \
-  --cluster <cluster name> \
+  --cluster <cluster-name> \
   --service-name scout-daemon-collector \
-  --task-definition scout-daemon-collector-task-definiton \
+  --task-definition scout-daemon-collector-task-definition \
+  --scheduling-strategy DAEMON \
+  --launch-type EC2
+```
+
+</TabItem>
+<TabItem value="hybrid" label="Hybrid Mode">
+
+**Best for**: Complete observability with both infrastructure and application telemetry
+- Combines both daemon and service deployments
+- Daemon collector handles infrastructure metrics
+- Service collector handles application telemetry
+
+This approach deploys both daemon and service collectors for comprehensive monitoring.
+
+Download all required files:
+
+```shell
+curl -o task-definition.json https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/ec2/task-definition.json
+curl -o scout-daemon-collector-config.yaml https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/ec2/scout-daemon-collector-config.yaml
+curl -o scout-agent-collector-config.yaml https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/ec2/scout-agent-collector-config.yaml
+```
+
+:::warning
+
+- Use PostgreSQL, Redis, RabbitMQ, AWS Firehose, etc., receivers in the agent
+  collector to avoid data duplication between daemon and agent collectors.
+- The daemon collector should focus on infrastructure metrics only.
+- Replace the `clientId`, `clientSecret`, `Endpoint`, and `TokenUrl`
+  placeholders with their actual values in both configurations.
+- Review both configurations to remove or add new pipelines before proceeding.
+- Visit [docs.base14.io](https://docs.base14.io/instrument/collector-setup/otel-collector-config) for more details on the configuration.
+
+:::
+
+### Store Configurations in AWS Secrets Manager
+
+```shell
+# Create secrets for both daemon and agent collector configurations
+aws secretsmanager create-secret \
+  --name "/ecs/scout/otelcol-daemon-config" \
+  --description "Scout OTEL Daemon Collector Configuration for EC2" \
+  --secret-string file://scout-daemon-collector-config.yaml
+
+aws secretsmanager create-secret \
+  --name "/ecs/scout/otelcol-agent-config" \
+  --description "Scout OTEL Agent Collector Configuration for EC2" \
+  --secret-string file://scout-agent-collector-config.yaml
+```
+
+### Generate Both Task Definitions
+
+```shell
+export AWS_TASK_EXECUTION_ROLE=<ARN of the task execution Role>
+
+# Generate daemon collector task definition
+AWS_TASK_EXECUTION_ROLE=${AWS_TASK_EXECUTION_ROLE} \
+TASK_NAME='Scout_daemon_collector' \
+SERVICE_NAME='Scout_daemon_collector' \
+SECRET_NAME='/ecs/scout/otelcol-daemon-config' \
+envsubst < task-definition.json > scout-daemon-collector-task-definition.json
+
+# Generate agent collector task definition
+AWS_TASK_EXECUTION_ROLE=${AWS_TASK_EXECUTION_ROLE} \
+TASK_NAME='Scout_agent_collector' \
+SERVICE_NAME='Scout_agent_collector' \
+SECRET_NAME='/ecs/scout/otelcol-agent-config' \
+envsubst < task-definition.json > scout-agent-collector-task-definition.json
+```
+
+### Deploy Both Services
+
+```shell
+# Deploy daemon service (one per EC2 instance)
+aws ecs create-service \
+  --cluster <cluster-name> \
+  --service-name scout-daemon-collector \
+  --task-definition scout-daemon-collector-task-definition \
   --scheduling-strategy DAEMON \
   --launch-type EC2
 
+# Deploy agent service (replica for applications)
 aws ecs create-service \
   --cluster <cluster-name> \
   --service-name scout-agent-collector \
-  --task-definition scout-agent-collector-task-definiton \
+  --task-definition scout-agent-collector-task-definition \
   --scheduling-strategy REPLICA \
   --desired-count 1 \
   --launch-type EC2
+```
+
+</TabItem>
+</Tabs>
+
+### Update IAM Permissions
+
+Ensure your ECS Task Execution Role has permission to access the secrets (adjust resources based on your selected deployment mode):
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "secretsmanager:GetSecretValue"
+      ],
+      "Resource": [
+        "arn:aws:secretsmanager:<aws-region>:<aws-account-id>:secret:/ecs/scout/otelcol-daemon-config*",
+        "arn:aws:secretsmanager:<aws-region>:<aws-account-id>:secret:/ecs/scout/otelcol-agent-config*"
+      ]
+    }
+  ]
+}
 ```
 
 ```mdx-code-block
