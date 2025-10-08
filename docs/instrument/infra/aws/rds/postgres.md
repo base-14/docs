@@ -1,7 +1,7 @@
 ---
 date: 2025-04-26
 id: collecting-aws-rds-postgres-telemetry
-title: Using CloudWatch and Prometheus cloudwatch exporter
+title: Collecting AWS RDS PostgreSQL Metrics
 description: Use Scout to monitor your AWS RDS postgres instance with ease
 hide_table_of_contents: true
 ---
@@ -9,243 +9,34 @@ hide_table_of_contents: true
 ## Overview
 
 This guide will walk you through collecting rich telemetry data from your RDS
-postgres instance using cloudwatch. We'll implement the prometheus cloudwatch exporter
-to collect telemetry data from cloudwatch.
-
-## Prerequisites
-
-Before we begin, ensure you have:
-
-### 1. AWS Credentials and Permissions
-
-Required IAM permissions:
-
-- `cloudwatch:ListMetrics`
-- `cloudwatch:GetMetricStatistics`
-- `cloudwatch:GetMetricData`
-- `logs:DescribeLogGroups`
-- `logs:FilterLogEvents`
+postgres instance using CloudWatch Metrics Stream. We recommend using CloudWatch
+Metrics Stream over Prometheus exporters as it provides faster metric delivery
+(2-3 minute latency) and is more efficient for AWS services.
 
 ## Collecting RDS Postgres Metrics
 
-### Step 1. Configure the Prometheus exporter
+For collecting RDS metrics, we recommend using **CloudWatch Metrics Stream** instead of Prometheus exporters. CloudWatch Metrics Stream provides:
 
-Save the following config for collecting AWS RDS
-metrics in a file named `aws-rds-postgres-metrics.yaml`
-and update the region key with relevant value.
+- **Faster delivery**: 2-3 minute latency vs 5+ minutes with polling
+- **Lower cost**: No need to run dedicated exporters
+- **Better scalability**: Native AWS service integration
+- **Automatic metric discovery**: No need to manually configure metric lists
 
-```yaml
----
-region: us-east-1
-metrics:
-  - aws_namespace: AWS/RDS
-    aws_metric_name: BinLogDiskUsage
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average]
+### Step 1: Set up CloudWatch Metrics Stream
 
-  - aws_namespace: AWS/RDS
-    aws_metric_name: BurstBalance
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average]
+Follow our comprehensive [CloudWatch Metrics Stream guide](../cloudwatch-metrics-stream.md) to set up the infrastructure.
 
-  - aws_namespace: AWS/RDS
-    aws_metric_name: CheckpointLag
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average, Maximum]
+### Step 2: Configure RDS metrics filtering
 
-  - aws_namespace: AWS/RDS
-    aws_metric_name: ConnectionAttempts
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average, Maximum]
+When configuring your CloudWatch Metrics Stream in **Step 3** of the setup guide, make sure to:
 
-  - aws_namespace: AWS/RDS
-    aws_metric_name: CPUUtilization
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average, Maximum]
+1. **Select specific namespaces** instead of "All namespaces"
+2. **Choose only AWS/RDS** from the namespace list
+3. This ensures you only collect RDS metrics, reducing costs and data volume
 
-  - aws_namespace: AWS/RDS
-    aws_metric_name: DatabaseConnections
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average, Maximum]
+### Step 3: Create OTEL Collector config for PostgreSQL metrics
 
-  - aws_namespace: AWS/RDS
-    aws_metric_name: DiskQueueDepth
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: DiskQueueDepthLogVolume
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: EBSByteBalance
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: EBSIOBalance
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: FreeableMemory
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: FreeLocalStorage
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: FreeStorageSpace
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: FreeStorageSpaceLogVolume
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: MaximumUsedTransactionIDs
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: NetworkReceiveThroughput
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: NetworkTransmitThroughput
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: OldestReplicationSlotLag
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: ReadIOPS
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: ReadIOPSLocalStorage
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: ReadIOPSLogVolume
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: ReadLatency
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: ReadLatencyLocalStorage
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: ReadLatencyLogVolume
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: ReadThroughput
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: ReadThroughputLogVolume
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: ReplicaLag
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: ReplicationChannelLag
-    aws_dimensions: [DBInstanceIdentifier]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: ReplicationSlotDiskUsage
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: TransactionLogsDiskUsage
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: TransactionLogsGeneration
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: WriteIOPS
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: WriteLatency
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: WriteThroughput
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: SwapUsage
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: DBLoad
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: DBLoadCPU
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average, Maximum]
-
-  - aws_namespace: AWS/RDS
-    aws_metric_name: DBLoadNonCPU
-    aws_dimensions: [DBInstanceIdentifier]
-    aws_statistics: [Average, Maximum]
-```
-
-### 2. Run the below command to Start the Exporter
-
-```bash
- docker run -p 9106:9106 \
-  -v $(pwd)/aws-rds-postgres-metrics.yaml:/config/config.yml \
-  -e AWS_ACCESS_KEY_ID=<your-aws-access-key-id> \
-  -e AWS_SECRET_ACCESS_KEY=<your-aws-secret-access-key> \
-  quay.io/prometheus/cloudwatch-exporter
-```
-
-### 3. Verify the CloudWatch metrics
-
-Visit [http://localhost:9106/metrics](http://localhost:9106/metrics)
-and confirm the `aws_rds_*` metrics are avialable.
-
-### 4. Create a OTEL Collector config file
-
-create `postgres-metrics-collection-config.yaml`
+For database-specific metrics (like connection counts, query performance), create `postgres-metrics-collection-config.yaml`:
 
 ```yaml
 receivers:
@@ -265,34 +56,20 @@ receivers:
       postgresql.sequential_scans:
         enabled: true
 
-  prometheus:
-    config:
-      scrape_configs:
-        - job_name: "aws-cloudwatch-metrics"
-          scrape_timeout: 120s
-          scrape_interval: 300s
-          static_configs:
-            - targets: ["0.0.0.0:9106"]
-          metric_relabel_configs:
-            - source_labels: [__name__]
-              regex: aws_rds_.*
-              target_label: service
-              replacement: rds
-
 exporters:
   otlp:
-    endpoint: "<SCOUT_ENDPOIINT>:4317"
+    endpoint: "<SCOUT_ENDPOINT>:4317"
     tls:
       insecure: true
 
 service:
   pipelines:
     metrics/postgresql:
-      receivers: [postgresql, prometheus]
+      receivers: [postgresql]
       exporters: [otlp]
 ```
 
-> Make Sure the environment variables are set.
+> **Note**: CloudWatch Metrics Stream will automatically deliver AWS/RDS metrics (CPU, memory, disk I/O, etc.), while the PostgreSQL receiver collects database-specific metrics.
 
 ## Collecting RDS Logs
 
