@@ -233,7 +233,7 @@ func doWork(ctx context.Context, tracer trace.Tracer) {
 
 > View these spans in the base14 Scout observability platform.
 >
-> **Note**: Ensure your OpenTelemetry Collector is properly configured to
+> **Note**: Ensure your Scout Collector is properly configured to
 > receive and process the span data.
 
 #### Reference
@@ -325,7 +325,7 @@ func someOperation() error {
 
 > View these spans in the base14 Scout observability platform.
 >
-> **Note**: Ensure your OpenTelemetry Collector is properly configured to
+> **Note**: Ensure your Scout Collector is properly configured to
 > receive and process the span data.
 
 ## Metrics
@@ -387,7 +387,7 @@ func setupMetrics(ctx context.Context) (metric.Meter, error) {
 
 > View these metrics in base14 Scout observability backend.
 >
-> **Note**: Ensure your OpenTelemetry Collector is properly configured to
+> **Note**: Ensure your Scout Collector is properly configured to
 > receive and process the metric data.
 
 ### Counter

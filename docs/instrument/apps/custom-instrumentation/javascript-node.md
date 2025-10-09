@@ -11,7 +11,7 @@ This guide demonstrates how to:
 - Configure manual tracing using spans
 - Create and manage custom metrics
 - Add semantic attributes and events
-- Export telemetry data to OpenTelemetry Collector
+- Export telemetry data to Scout Collector
 
 ## Prerequisites
 

@@ -16,8 +16,8 @@ Lambda function whenever a new Flow Log file arrives in the bucket.
 ## Prerequisites
 
 * AWS VPC services (S3, Lambda, IAM).
-* base14 Scout authentication credentials
-* base14 OpenTelemetry Collector has been configured with an OTLP receiver
+* Scout authentication credentials
+* Scout Collector has been configured with an OTLP receiver
   endpoint (HTTP or gRPC) ready to accept logs.
 
 ---

@@ -37,7 +37,7 @@ Cloud-native and OpenTelemetry-native platform.
 
 Let's setup **Scout in less than 5 minutes**. We will follow the steps below:
 
-1. **Install the OpenTelemetry Collector**: The OpenTelemetry Collector is a
+1. **Install the Scout Collector**: The Scout Collector is a
    vendor-agnostic implementation of the OpenTelemetry specification. It can
    receive, process, and export telemetry data. You can install it using Docker,
    Kubernetes, or directly on your machine. The installation method will depend
@@ -46,11 +46,11 @@ Let's setup **Scout in less than 5 minutes**. We will follow the steps below:
     - [Kubernetes (EKS, GKE, AKS)](./instrument/collector-setup/kubernetes-helm-setup.md)
     - [Linux](./instrument/collector-setup/linux-setup)
     - [Using Otel Binary](./instrument/collector-setup/otel-collector-binary-example.md)
-2. **Configure the OpenTelemetry Collector**: Step 1 should help you get started
+2. **Configure the Scout Collector**: Step 1 should help you get started
    with a collector that can receive, process, and export telemetry data. For
    advanced configurations, you can refer to
-   [detailed OpenTelemetry Collector configuration guide](./instrument/collector-setup/otel-collector-config.md)
-3. **Configure the Scout Exporter**: Next, configure your otel collector to send
+   [detailed Scout Collector configuration guide](./instrument/collector-setup/otel-collector-config.md)
+3. **Configure the Scout Exporter**: Next, configure your Scout Collector to send
    data to Scout. You can find the configuration details in the
    [Scout Exporter](./instrument/collector-setup/scout-exporter.md)
    documentation. This will typically involve setting up the endpoint,

@@ -155,6 +155,6 @@ service:
 
 ## References
 
-- [Base14 OpenTelemetry Collector Setup](
+- [Scout Collector Setup](
    https://docs.base14.io/instrument/collector-setup/otel-collector-config)
 - [Redis INFO Command Documentation](https://redis.io/commands/info/)

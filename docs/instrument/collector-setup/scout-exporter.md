@@ -6,7 +6,7 @@ sidebar_position: 5
 
 # Scout Exporter
 
-The Scout exporter is a custom exporter for the OpenTelemetry Collector that
+The Scout exporter is a custom exporter for the Scout Collector that
 exports telemetry data to Scout.
 
 ## Configuration
@@ -34,7 +34,7 @@ extensions:
       audience: b14collector
     token_url: https://id.b14.dev/realms/__YOUR_TENANT__/protocol/openid-connect/token
     tls:
-      insecure_skip_verify: true # Required due to OpenTelemetry Collector bugs.
+      insecure_skip_verify: true
 
 exporters:
   otlphttp/b14:
@@ -42,5 +42,5 @@ exporters:
     auth:
       authenticator: oauth2client
     tls:
-      insecure_skip_verify: true # Required due to OpenTelemetry Collector bugs.
+      insecure_skip_verify: true
 ```

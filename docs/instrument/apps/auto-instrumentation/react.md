@@ -9,7 +9,7 @@ This guide demonstrates how to:
 
 - Set up OpenTelemetry auto instrumentation for React
 - Configure automatic request and response tracing
-- Export telemetry data to OpenTelemetry Collector
+- Export telemetry data to Scout Collector
 
 ### Prerequisites
 
