@@ -6,14 +6,14 @@ sidebar_position: 2
 
 # Kubernetes using Helm
 
-Deploy and configure the OpenTelemetry Collector on Kubernetes using Helm.
+Deploy and configure the Scout Collector on Kubernetes using Helm.
 
 ## Overview
 
 This guide covers how to collect telemetry data (logs, metrics, and traces)
 from your Kubernetes environment and send it to base14 Scout.
 
-- Install base14 Scout's OpenTelemetry Collector using Helm
+- Install base14 Scout's Scout Collector using Helm
 - Configure telemetry collection for Kubernetes pods
 - Set up multi-namespace monitoring
 - Configure custom metrics endpoints
@@ -32,7 +32,7 @@ from your Kubernetes environment and send it to base14 Scout.
 
 ## Quick Start Guide
 
-Deploy base14 Scout OpenTelemetry Collector in minutes by following these steps:
+Deploy Scout Collector in minutes by following these steps:
 
 ```mdx-code-block
 import Tabs from '@theme/Tabs';
@@ -77,7 +77,7 @@ helm install scout base14/scout-collector --version 0.5.0 \
 Following is an example of a values.yaml file that can be used to configure
 scout collector using otelcol style
 configuration. Here the configuration follows the same semantics as the
-OpenTelemetry Collector otelcol config. This
+Scout Collector config. This
 gives a greater flexibility in terms of what you can configure to be scraped,
 collected etc. Reference the [otel-collector-config](./otel-collector-config.md)
 for more details.
@@ -799,7 +799,7 @@ scout:
 </Tabs>
 ```
 
-## Scout helm chart uses the above configuration to configure the OpenTelemetry Collector
+## Scout helm chart uses the above configuration to configure the Scout Collector
 
 1. Collects logs for the current cluster(for Managed nodes only).
 2. Sends k8s events data.

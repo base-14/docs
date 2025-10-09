@@ -15,7 +15,7 @@ This guide demonstrates how to:
 - Configure automatic request and response tracing
 - Implement custom instrumentation
 - Collect HTTP metrics
-- Export telemetry data to OpenTelemetry Collector
+- Export telemetry data to Scout Collector
 
 ## Prerequisites
 
@@ -169,7 +169,7 @@ class MetricsMiddleware(BaseHTTPMiddleware):
     return response
 ```
 
-Metrics will be automatically exported to the OpenTelemetry Collector at the
+Metrics will be automatically exported to the Scout Collector at the
 configured interval. `MetricsMiddleware` captures each HTTP request, including
 the method, path, and status code, and tracks the total request count.
 

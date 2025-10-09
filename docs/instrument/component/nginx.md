@@ -250,7 +250,7 @@ http {
 
 > Note: replace `otel_service_name` and `otel_resource_attr` with actual values.
 
-Now the traces will be sent to the otel collector.
+Now the traces will be sent to the Scout Collector.
 
 ## Collecting logs
 

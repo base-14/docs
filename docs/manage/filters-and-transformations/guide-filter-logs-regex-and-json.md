@@ -20,7 +20,7 @@ on specific criteria. Common scenarios include:
 
 ## Solution
 
-The OpenTelemetry Collector's `filter` processor provides a powerful way to
+The Scout Collector's `filter` processor provides a powerful way to
 implement these filtering requirements. This guide shows how to:
 
 1. Filter logs using regular expressions
@@ -30,7 +30,7 @@ implement these filtering requirements. This guide shows how to:
 
 ### Prerequisites
 
-- An OpenTelemetry Collector configuration file
+- An Scout Collector configuration file
 
 ### Example Scenario
 

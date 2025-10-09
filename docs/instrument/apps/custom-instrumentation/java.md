@@ -339,7 +339,7 @@ public void doWork() {
 
 > View these spans in the base14 Scout observability platform.
 >
-> **Note**: Ensure your OpenTelemetry Collector is properly configured to
+> **Note**: Ensure your Scout Collector is properly configured to
 > receive and process the span data.
 
 #### Reference
@@ -449,7 +449,7 @@ private void someOperation() throws Exception {
 
 > View these spans in the base14 Scout observability platform.
 >
-> **Note**: Ensure your OpenTelemetry Collector is properly configured to
+> **Note**: Ensure your Scout Collector is properly configured to
 > receive and process the span data.
 
 ## Metrics

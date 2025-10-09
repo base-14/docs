@@ -6,12 +6,12 @@ sidebar_position: 4
 
 # OpenTelemetry Binary
 
-Set up and configure the OpenTelemetry Collector through binary downloaded from
+Set up and configure the Scout Collector through binary downloaded from
 releases page.
 
 ## Overview
 
-This guide demonstrates how to set up and configure the OpenTelemetry Collector binary
+This guide demonstrates how to set up and configure the Scout Collector binary
 for collecting and exporting telemetry data to base14 Scout.
 
 - Binary installation and configuration
@@ -97,7 +97,7 @@ service:
 ## Run a Sample Node.js Application
 
 Let's create a simple Node.js application that generates structured logs using
-the `pino` logging library. The OpenTelemetry Collector will collect these
+the `pino` logging library. The Scout Collector will collect these
 logs and forward them to Scout.
 
 ### 1. Install Dependencies
@@ -143,4 +143,4 @@ After running the application, you can view the collected logs in Scout:
    - A "hello child!" message with an additional property `{a: 'property'}`
 
 The logs will appear with timestamps and other metadata added by the
-OpenTelemetry Collector.
+Scout Collector.

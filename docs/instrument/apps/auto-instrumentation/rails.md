@@ -16,7 +16,7 @@ This guide demonstrates how to:
 - Configure automatic request and database tracing
 - Implement custom instrumentation
 - Collect HTTP metrics
-- Export telemetry data to OpenTelemetry Collector
+- Export telemetry data to Scout Collector
 
 ## Prerequisites
 

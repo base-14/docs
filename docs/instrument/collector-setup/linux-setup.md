@@ -6,18 +6,18 @@ sidebar_position: 3
 
 # Linux
 
-Install and configure the OpenTelemetry Collector on Linux systems.
+Install and configure the Scout Collector on Linux systems.
 
 Whether you're using Debian, Red Hat, or other Linux distributions,
 you'll learn how to set up telemetry collection for your observability needs.
 
 ## Overview
 
-The OpenTelemetry Collector is a vendor-agnostic agent that collects, processes,
+The Scout Collector is a vendor-agnostic agent that collects, processes,
 and exports telemetry data. This guide covers:
 
-- Installing OpenTelemetry Collector via DEB packages (Ubuntu, Debian)
-- Installing OpenTelemetry Collector via RPM packages (RHEL, CentOS, Fedora)
+- Installing Scout Collector via DEB packages (Ubuntu, Debian)
+- Installing Scout Collector via RPM packages (RHEL, CentOS, Fedora)
 - Manual installation for other Linux distributions
 - Post-installation configuration and service management
 - Troubleshooting and logging
@@ -32,7 +32,7 @@ and exports telemetry data. This guide covers:
 
 ## Package Availability
 
-Official OpenTelemetry Collector packages are available in the following formats:
+Official Scout Collector packages are available in the following formats:
 
 - DEB packages for Debian-based systems
 - RPM packages for Red Hat-based systems
@@ -42,7 +42,7 @@ Default configuration path: `/etc/otelcol/config.yaml`
 
 ## DEB Installation
 
-To install the OpenTelemetry Collector on Debian-based systems, run the
+To install the Scout Collector on Debian-based systems, run the
 following commands:
 
 ```mdx-code-block
@@ -91,7 +91,7 @@ sudo dpkg -i otelcol_0.119.0_linux_386.deb
 
 ## RPM Installation
 
-To install the OpenTelemetry Collector on Red Hat-based systems, run the
+To install the Scout Collector on Red Hat-based systems, run the
 following commands:
 
 ```mdx-code-block
@@ -187,11 +187,11 @@ tar -xvf otelcol_0.119.0_linux_ppc64le.tar.gz
 </Tabs>
 ```
 
-## Configuring the OpenTelemetry Collector Service
+## Configuring the Scout Collector Service
 
 By default, the `otelcol` systemd service starts with the
 `--config=/etc/otelcol/config.yaml` option after installation. This
-configuration follows the [OpenTelemetry Collector Configuration](https://opentelemetry.io/docs/collector/configuration/)
+configuration follows the [Scout Collector Configuration](https://opentelemetry.io/docs/collector/configuration/)
 standards.
 
 To customize the collector settings, modify the `OTELCOL_OPTIONS` variable in
@@ -213,6 +213,6 @@ To check the logs from the `otelcol` service, run:
 sudo journalctl -u otelcol
 ```
 
-For more information on configuring and using the OpenTelemetry Collector, refer
+For more information on configuring and using the Scout Collector, refer
 to
 the [official OpenTelemetry documentation](https://opentelemetry.io/docs/collector/).

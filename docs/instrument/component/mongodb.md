@@ -14,7 +14,7 @@ Collector and forward them to Scout backend.
 
 1. MongoDB instance (standalone or replica set)
 2. MongoDB user with `clusterMonitor` role
-3. OpenTelemetry Collector installed
+3. Scout Collector installed
 4. Scout access credentials
 
 ## MongoDB User Setup
@@ -98,5 +98,5 @@ service:
 
 ## References
 
-1. [Base14 OpenTelemetry Collector Setup](
+1. [Scout Collector Setup](
    https://docs.base14.io/instrument/collector-setup/otel-collector-config)

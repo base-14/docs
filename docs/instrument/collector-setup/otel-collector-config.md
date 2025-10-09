@@ -7,11 +7,11 @@ sidebar_position: 6
 # Configuration
 
 Collect, process and export telemetry data efficiently with
-the OpenTelemetry Collector (`otelcol`).
+the Scout Collector (`otelcol`).
 
 ## Overview
 
-OpenTelemetry Collector serves as a vendor-agnostic implementation for
+Scout Collector serves as a vendor-agnostic implementation for
 handling telemetry data. This guide covers:
 
 - Core configuration components (receivers, processors, exporters)
@@ -24,7 +24,7 @@ handling telemetry data. This guide covers:
 
 ## Configuration
 
-The OpenTelemetry Collector uses YAML for its configuration. The configuration
+The Scout Collector uses YAML for its configuration. The configuration
 file is structured into several sections:
 
 ### receivers
@@ -117,7 +117,7 @@ exporters:
 
 Supported export destinations:
 
-- Other OpenTelemetry Collectors e.g. OpenTelemetry protocol (OTLP) endpoints
+- Other Scout Collectors e.g. OpenTelemetry protocol (OTLP) endpoints
 - Backend observability platforms
 - Monitoring systems e.g. Prometheus systems
 - Logging platforms
@@ -129,7 +129,7 @@ Supported export destinations:
 
 ### extensions
 
-OpenTelemetry Collector extensions enhance core functionality by providing
+Scout Collector extensions enhance core functionality by providing
 operational features such as:
 
 - Health monitoring and readiness checks
@@ -162,7 +162,7 @@ Common OpenTelemetry extensions include:
 
 ### service
 
-The OpenTelemetry Collector service configuration defines pipeline architecture,
+The Scout Collector service configuration defines pipeline architecture,
 data flow, and operational settings such as:
 
 - Pipeline definitions for logs, metrics and traces
@@ -244,7 +244,7 @@ Common OpenTelemetry connector types include:
 
 ### telemetry
 
-The OpenTelemetry Collector telemetry configuration manages the collector's
+The Scout Collector telemetry configuration manages the collector's
 self-monitoring capabilities, including:
 
 - Internal metrics collection and reporting
@@ -293,9 +293,9 @@ Telemetry configuration options include:
 5. **Enable Health Checks**: Include health_check extension for monitoring
 6. **Use Batching**: Implement batching for efficient data transmission
 
-## OpenTelemetry Collector Configuration Best Practices
+## Scout Collector Configuration Best Practices
 
-Essential configuration guidelines for optimal OpenTelemetry Collector deployment:
+Essential configuration guidelines for optimal Scout Collector deployment:
 
 1. **Start Simple**:
 
@@ -438,6 +438,6 @@ service:
 
 ## Resources
 
-- [OpenTelemetry Collector Configuration Documentation](https://opentelemetry.io/docs/collector/configuration/)
-- [OpenTelemetry Collector GitHub Repository](https://github.com/open-telemetry/opentelemetry-collector)
-- [OpenTelemetry Collector Contrib Repository](https://github.com/open-telemetry/opentelemetry-collector-contrib)
+- [Scout Collector Configuration Documentation](https://opentelemetry.io/docs/collector/configuration/)
+- [Scout Collector GitHub Repository](https://github.com/open-telemetry/opentelemetry-collector)
+- [Scout Collector Contrib Repository](https://github.com/open-telemetry/opentelemetry-collector-contrib)
