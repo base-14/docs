@@ -1,9 +1,10 @@
 ---
 date: 2025-04-24
 id: send-aws-vpc-flow-logs
-keywords: [AWS, VPC, Flow Logs, S3, Lambda, OTLP, base14 Scout]
+title: AWS VPC Flow Logs to OpenTelemetry | base14 Scout
+description: Send AWS VPC Flow Logs to OpenTelemetry using S3 and Lambda. Complete guide for VPC monitoring with automated log processing and OTLP export.
+keywords: [aws vpc monitoring, vpc flow logs, aws network monitoring, lambda opentelemetry, aws observability]
 tags: [aws, vpc, s3, lambda, otlp]
-title: VPC Flow Logs
 sidebar_position: 2
 ---
 

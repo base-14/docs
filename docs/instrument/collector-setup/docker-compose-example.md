@@ -1,5 +1,7 @@
 ---
-keywords: [docker, docker-compose, opentelemetry, otel-collector, scout]
+title: Docker Compose OpenTelemetry Setup | base14 Scout
+description: Set up OpenTelemetry Collector with Docker Compose. Complete guide for container monitoring with logs, metrics, and traces collection in minutes.
+keywords: [docker monitoring, docker compose, opentelemetry setup, container monitoring, docker observability]
 tags: [docker, opentelemetry, base14 scout]
 sidebar_position: 1
 ---

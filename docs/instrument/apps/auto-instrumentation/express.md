@@ -1,3 +1,9 @@
+---
+title: Express.js OpenTelemetry Instrumentation Guide | base14 Scout
+description: Auto-instrument Express.js with OpenTelemetry for traces and metrics. Complete Node.js APM setup with distributed tracing and HTTP monitoring.
+keywords: [express monitoring, nodejs apm, express instrumentation, opentelemetry express, nodejs monitoring]
+---
+
 # Express
 
 Implement OpenTelemetry instrumentation for `Express.js` applications to collect
