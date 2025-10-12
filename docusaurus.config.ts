@@ -80,7 +80,19 @@ const config: Config = {
           routeBasePath: "/", // Serve the docs at the site's root
           sidebarPath: "./sidebars.ts",
         },
-        blog: false,
+        blog: {
+          routeBasePath: "blog",
+          showReadingTime: true,
+          feedOptions: {
+            type: ["rss", "atom"],
+            xslt: true,
+          },
+          blogTitle: "base14 Blog",
+          blogDescription: "Engineering insights, product updates, and best practices from base14",
+          blogSidebarCount: 10,
+          blogSidebarTitle: "Recent posts",
+          postsPerPage: 10,
+        },
         theme: {
           customCss: "./src/css/custom.css",
         },
@@ -129,6 +141,11 @@ const config: Config = {
           sidebarId: "tutorialSidebar",
           position: "left",
           label: "Scout",
+        },
+        {
+          to: "/blog",
+          label: "Blog",
+          position: "left",
         },
         {
           href: "https://base14.io",
