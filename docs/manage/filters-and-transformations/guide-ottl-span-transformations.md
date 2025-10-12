@@ -1,16 +1,26 @@
 ---
 date: 2025-07-17
 id: transforming-spans-with-ottl
-title: Guide – Transforming Spans Using OTTL Functions | base14 Scout
-description: Use OTTL (OpenTelemetry Transformation Language) to modify span data in the Scout Collector. Transform span names, manipulate attributes, redact sensitive data, and drop unwanted spans.
-keywords: [ottl transformations, opentelemetry transformation language, span transformations, trace data manipulation, ottl functions]
-hide_table_of_contents: true
+title: Guide – Transforming Spans Using OTTL Functions
+description:
+  Use OTTL (OpenTelemetry Transformation Language) to modify span data in the
+  Scout Collector. Transform span names, manipulate attributes, redact sensitive
+  data, and drop unwanted spans.
+keywords:
+  [
+    ottl transformations,
+    opentelemetry transformation language,
+    span transformations,
+    trace data manipulation,
+    ottl functions,
+  ]
 ---
 
 ## Introduction to OTTL
 
-OTTL (OpenTelemetry Transformation Language) is a powerful domain specific language
- that allows you to transform telemetry data(Traces, Metrics, Logs) within the Collector.
+OTTL (OpenTelemetry Transformation Language) is a powerful domain specific
+language that allows you to transform telemetry data(Traces, Metrics, Logs)
+within the Collector.
 
 ## Common OTTL use cases for spans
 
@@ -26,7 +36,8 @@ processors:
     trace_statements:
       - context: span
         statements:
-          - set(name, attributes["http.route"]) where attributes["http.route"] != nil
+          - set(name, attributes["http.route"]) where attributes["http.route"]
+            != nil
           - replace_pattern(name, "/users/.*/posts/", "/users/{userId}/posts/") #Replace with regex pattern for generalization
 ```
 
@@ -48,7 +59,8 @@ processors:
 
 ### 3. Redacting Sensitive Data
 
-**Use Case**: Masking or Redacting sensitive information before it leaves your system.
+**Use Case**: Masking or Redacting sensitive information before it leaves your
+system.
 
 **Example**:
 
@@ -59,12 +71,14 @@ processors:
       - context: span
         statements:
           - replace_pattern(attributes["http.url"], "(password=)[^&]*", "$1***")
-          - set(attributes["http.request.header.authorization"], "REDACTED") where attributes["http.request.header.authorization"] != nil
+          - set(attributes["http.request.header.authorization"], "REDACTED")
+            where attributes["http.request.header.authorization"] != nil
 ```
 
 ### 4. Dropping Unwanted Spans
 
-**Use Case**: Reducing noise and storage costs by filtering out unnecessary spans.
+**Use Case**: Reducing noise and storage costs by filtering out unnecessary
+spans.
 
 **Example**:
 
@@ -80,11 +94,12 @@ processors:
 
 ## Best Practices
 
-1. **Test Transformations**: Always test your OTTL expressions in a local environment
-with the supported Scout Collector version.
-2. **Order Matters**: The order of statements affects the transformation pipeline.
+1. **Test Transformations**: Always test your OTTL expressions in a local
+   environment with the supported Scout Collector version.
+2. **Order Matters**: The order of statements affects the transformation
+   pipeline.
 3. **Performance**: Complex transformations can impact collector performance.
- Monitor resource usage.
+   Monitor resource usage.
 
 ## Related Guides
 
@@ -92,8 +107,8 @@ with the supported Scout Collector version.
   OTTL
 - [Filter Logs with Regex and JSON](./guide-filter-logs-regex-and-json.md) -
   Advanced filtering techniques
-- [OTel Collector Configuration](../../instrument/collector-setup/otel-collector-config.md) -
-  Collector configuration basics
+- [OTel Collector Configuration](../../instrument/collector-setup/otel-collector-config.md)
+  \- Collector configuration basics
 
 ## Next Steps
 

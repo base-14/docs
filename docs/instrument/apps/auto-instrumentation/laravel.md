@@ -1,17 +1,27 @@
 ---
-title: Laravel OpenTelemetry Instrumentation | base14 Scout
-description: Auto-instrument Laravel with OpenTelemetry for traces. Complete PHP APM setup with distributed tracing and HTTP monitoring.
-keywords: [laravel monitoring, php apm, laravel instrumentation, opentelemetry laravel, php monitoring]
+title: Laravel OpenTelemetry Instrumentation
+description:
+  Auto-instrument Laravel with OpenTelemetry for traces. Complete PHP APM setup
+  with distributed tracing and HTTP monitoring.
+keywords:
+  [
+    laravel monitoring,
+    php apm,
+    laravel instrumentation,
+    opentelemetry laravel,
+    php monitoring,
+  ]
 ---
 
 # Laravel
 
-Implement OpenTelemetry instrumentation for `Laravel` applications
-to collect traces using the php OpenTelemetry SDK.
+Implement OpenTelemetry instrumentation for `Laravel` applications to collect
+traces using the php OpenTelemetry SDK.
 
 > Note: This guide provides a concise overview based on the official
-OpenTelemetry documentation. For complete information, please consult the official
-[OpenTelemetry documentation](https://opentelemetry.io/docs/zero-code/php/).
+> OpenTelemetry documentation. For complete information, please consult the
+> official
+> [OpenTelemetry documentation](https://opentelemetry.io/docs/zero-code/php/).
 
 ## overview
 
@@ -38,7 +48,8 @@ development environment and some dependencies:
 sudo apt-get install gcc make autoconf
 ```
 
-Build/install the extension. With your environment set up you can install the extension:
+Build/install the extension. With your environment set up you can install the
+extension:
 
 ```bash
 pecl install opentelemetry
@@ -67,7 +78,8 @@ Good work, Now we have installed the opentelemetry extension
 
 ## Step 2: Import the packages
 
-Navigate to the project folder and run the following to install necessary packages
+Navigate to the project folder and run the following to install necessary
+packages
 
 ```bash
 composer require \
@@ -78,15 +90,15 @@ composer require \
     open-telemetry/opentelemetry-auto-laravel
 ```
 
-> Note: If you are using any additional packages
-refer [packagist](https://packagist.org/search/?query=open-telemetry)
-and add them to the above command.
+> Note: If you are using any additional packages refer
+> [packagist](https://packagist.org/search/?query=open-telemetry) and add them
+> to the above command.
 
 ## Step 3: Configuration
 
-Now let's setup the necessary Configuration
-When used in conjunction with the OpenTelemetry SDK, you
-can use environment variables to configure auto-instrumentation.
+Now let's setup the necessary Configuration When used in conjunction with the
+OpenTelemetry SDK, you can use environment variables to configure
+auto-instrumentation.
 
 Environment configuration
 
@@ -99,12 +111,12 @@ OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
 OTEL_PROPAGATORS=baggage,tracecontext
 ```
 
-That's it, run you application and head over to Scout dashboard
-to visulize the data flowing
+That's it, run you application and head over to Scout dashboard to visulize the
+data flowing
 
 ## Related Guides
 
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set up
-  collector for local development
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
+  up collector for local development
 - [Express.js Instrumentation](./express.md) - Node.js framework alternative
 - [Spring Boot Instrumentation](./spring-boot.md) - Java framework alternative

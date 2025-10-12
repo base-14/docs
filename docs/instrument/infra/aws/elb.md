@@ -1,22 +1,32 @@
 ---
 date: 2025-04-26
 id: collecting-aws-elb-telemetry
-title: AWS Application Load Balancer Monitoring via CloudWatch Metrics Stream | base14 Scout
-description: Monitor AWS Application Load Balancer with CloudWatch Metrics Stream and OpenTelemetry. Collect request metrics, response times, target health, and logs using Scout.
-keywords: [aws alb monitoring, application load balancer monitoring, cloudwatch metrics stream, aws elb monitoring, alb observability]
-hide_table_of_contents: true
+title: AWS Application Load Balancer Monitoring via CloudWatch Metrics Stream
+description:
+  Monitor AWS Application Load Balancer with CloudWatch Metrics Stream and
+  OpenTelemetry. Collect request metrics, response times, target health, and
+  logs using Scout.
+keywords:
+  [
+    aws alb monitoring,
+    application load balancer monitoring,
+    cloudwatch metrics stream,
+    aws elb monitoring,
+    alb observability,
+  ]
 ---
 
 ## Overview
 
-This guide will walk you through collecting rich telemetry data from your Application ELB
-using CloudWatch Metrics Stream. We recommend using CloudWatch
+This guide will walk you through collecting rich telemetry data from your
+Application ELB using CloudWatch Metrics Stream. We recommend using CloudWatch
 Metrics Stream over Prometheus exporters as it provides faster metric delivery
 (2-3 minute latency) and is more efficient for AWS services.
 
 ## Collecting Application ELB Metrics
 
-For collecting Application ELB metrics, we recommend using **CloudWatch Metrics Stream** instead of Prometheus exporters. CloudWatch Metrics Stream provides:
+For collecting Application ELB metrics, we recommend using **CloudWatch Metrics
+Stream** instead of Prometheus exporters. CloudWatch Metrics Stream provides:
 
 - **Faster delivery**: 2-3 minute latency vs 5+ minutes with polling
 - **Lower cost**: No need to run dedicated exporters
@@ -25,59 +35,68 @@ For collecting Application ELB metrics, we recommend using **CloudWatch Metrics 
 
 ### Step 1: Set up CloudWatch Metrics Stream
 
-Follow our comprehensive [CloudWatch Metrics Stream guide](cloudwatch-metrics-stream.md) to set up the infrastructure.
+Follow our comprehensive
+[CloudWatch Metrics Stream guide](cloudwatch-metrics-stream.md) to set up the
+infrastructure.
 
 ### Step 2: Configure Application ELB metrics filtering
 
-When configuring your CloudWatch Metrics Stream in **Step 3** of the setup guide, make sure to:
+When configuring your CloudWatch Metrics Stream in **Step 3** of the setup
+guide, make sure to:
 
 1. **Select specific namespaces** instead of "All namespaces"
 2. **Choose only AWS/ApplicationELB** from the namespace list
-3. This ensures you only collect Application ELB metrics, reducing costs and data volume
+3. This ensures you only collect Application ELB metrics, reducing costs and
+   data volume
 
-> **Note**: CloudWatch Metrics Stream will automatically deliver all AWS/ApplicationELB metrics including request counts, response times, HTTP status codes, target health, connection counts, and more.
+> **Note**: CloudWatch Metrics Stream will automatically deliver all
+> AWS/ApplicationELB metrics including request counts, response times, HTTP
+> status codes, target health, connection counts, and more.
 
 ## Collecting Application ELB Logs
 
 ### Step 1: Creating a lambda function
 
-1. Go to your AWS console and search for AWS Lambda,
-go to Functions and click on Create Function.
-2. Choose the `Author from scratch` checkbox and proceed
-to fill in the function name.
-3. Choose `Python 3.x` as the Runtime version, `x86_64` as
-Architecture (preferably), and keep other settings as default.
-Select `Create a new role with basic Lambda permissions` for now,
-we’ll requiring more permissions down the lane. So for now, select this option.
-4. Once you are done configuring the lambda function, you Lambda function is created.
+1. Go to your AWS console and search for AWS Lambda, go to Functions and click
+   on Create Function.
+2. Choose the `Author from scratch` checkbox and proceed to fill in the function
+   name.
+3. Choose `Python 3.x` as the Runtime version, `x86_64` as Architecture
+   (preferably), and keep other settings as default. Select
+   `Create a new role with basic Lambda permissions` for now, we’ll requiring
+   more permissions down the lane. So for now, select this option.
+4. Once you are done configuring the lambda function, you Lambda function is
+   created.
 
 ### Step 2: Configuring Policies for Lambda function
 
-> As said in previous step, we need extra permissions in order to
-access the S3 Bucket for execution of our Lambda code, follow along to set it up.
+> As said in previous step, we need extra permissions in order to access the S3
+> Bucket for execution of our Lambda code, follow along to set it up.
 
-1. Scroll down from your Lambda page, you’ll see a few tabs there.
-Go to `Configurations` and select `Permissions` from the left sidebar.
-2. Click on the `Execution Role name` link just under Role name, it will
-take us to AWS IAM page. Here we will add policies to get full S3 access.
-Once here, click on the `Add permissions` button and select `Attach policies`
-from the drop down list.
+1. Scroll down from your Lambda page, you’ll see a few tabs there. Go to
+   `Configurations` and select `Permissions` from the left sidebar.
+2. Click on the `Execution Role name` link just under Role name, it will take us
+   to AWS IAM page. Here we will add policies to get full S3 access. Once here,
+   click on the `Add permissions` button and select `Attach policies` from the
+   drop down list.
 3. Search “S3” and you’ll a policy `GetObject` select that and proceed.
 
 ### Step 3: Adding Triggers
 
 1. Navigate to the lambda function that we created just now.
 2. Click on the `+ Add trigger` button from the Lambda console.
-3. Select S3 from the first drop down of AWS services list.
-Pick your S3 bucket for the second field.
-4. For the Event types field, you can select any number of options you wish.
-The trigger will occur depending upon what option(s) you choose here.
-By default, the `All object create events` will be selected.
-5. Verify the settings and click on `Add` button at bottom right to add this trigger.
+3. Select S3 from the first drop down of AWS services list. Pick your S3 bucket
+   for the second field.
+4. For the Event types field, you can select any number of options you wish. The
+   trigger will occur depending upon what option(s) you choose here. By default,
+   the `All object create events` will be selected.
+5. Verify the settings and click on `Add` button at bottom right to add this
+   trigger.
 
 ### Step 4: Adding Request Layer
 
-We will be using python's request module which is not included by default in Lambda.
+We will be using python's request module which is not included by default in
+Lambda.
 
 ```bash
 # make a new directory
@@ -88,23 +107,24 @@ cd python
 # install requests module
 pip install --target . requests
 # zip the contents under the name dependencies.zip
-zip -r dependencies.zip ../python 
+zip -r dependencies.zip ../python
 
 ```
 
-1. Run the above commands to create a zip of the request module and add it as a layer
-to make it work on AWS lambda.
-2. To upload your zip file, go to AWS Lambda > Layers and click on `Create Layer`.
-[Not inside your specific Lambda function, just the landing page of AWS Lambda].
-3. you’ll be redirected to Layer configurations page, here, give a name to your layer,
-an optional description, select `Upload a .zip file` , click on `Upload` and locate
-the requirements.zip file.
-4. Select your desired architecture and pick `Python 3.x` as your runtime. Hit `Create`.
-Your layer has now been created.
-5. Go to your Lambda function, scroll down to Layers section and on the right
-of it, you’ll find a button that says `Add a layer` to click on.
+1. Run the above commands to create a zip of the request module and add it as a
+   layer to make it work on AWS lambda.
+2. To upload your zip file, go to AWS Lambda > Layers and click on
+   `Create Layer`. [Not inside your specific Lambda function, just the landing
+   page of AWS Lambda].
+3. you’ll be redirected to Layer configurations page, here, give a name to your
+   layer, an optional description, select `Upload a .zip file` , click on
+   `Upload` and locate the requirements.zip file.
+4. Select your desired architecture and pick `Python 3.x` as your runtime. Hit
+   `Create`. Your layer has now been created.
+5. Go to your Lambda function, scroll down to Layers section and on the right of
+   it, you’ll find a button that says `Add a layer` to click on.
 6. Pick `Custom layers` from the checkbox and select your custom layer from the
-given drop down below and then click on the button `Add`.
+   given drop down below and then click on the button `Add`.
 
 ### Step 5: The Lambda Function
 
@@ -112,8 +132,8 @@ Now, we come to the pivotal section of this document: the code implementation.
 
 The Python script's primary function revolves around retrieving gzipped log
 files stored within an Amazon S3 bucket. Subsequently, it decompresses these
-files, transforms individual log entries into JSON objects, and transmits
-the resultant JSON data to a predetermined HTTP endpoint.
+files, transforms individual log entries into JSON objects, and transmits the
+resultant JSON data to a predetermined HTTP endpoint.
 
 ```python
 import json
@@ -320,8 +340,8 @@ def lambda_handler(event, context):
 
 > Set `OTEL_ENDPOINT` and `S3_BUCKET_NAME` with the correct values.
 
-After deploying these changes, generate some traffic to your ALB and
-check in Scout to see your ELB's metrics and logs.
+After deploying these changes, generate some traffic to your ALB and check in
+Scout to see your ELB's metrics and logs.
 
 ---
 
@@ -329,8 +349,8 @@ With this setup, your ALB becomes fully observable through Scout.
 
 ## Related Guides
 
-- [CloudWatch Metrics Stream Setup](./cloudwatch-metrics-stream.md) - Set up
-  AWS metrics streaming
+- [CloudWatch Metrics Stream Setup](./cloudwatch-metrics-stream.md) - Set up AWS
+  metrics streaming
 - [RDS Monitoring](./rds.md) - Monitor AWS RDS databases
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
   up collector for local development

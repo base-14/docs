@@ -1,7 +1,16 @@
 ---
-title: Kubernetes OpenTelemetry Setup with Helm | base14 Scout
-description: Deploy OpenTelemetry Collector on Kubernetes using Helm. Complete guide for EKS, GKE, AKS monitoring with traces, metrics, and logs collection.
-keywords: [kubernetes monitoring, opentelemetry kubernetes, helm setup, k8s observability, kubernetes observability]
+title: Kubernetes OpenTelemetry Setup with Helm
+description:
+  Deploy OpenTelemetry Collector on Kubernetes using Helm. Complete guide for
+  EKS, GKE, AKS monitoring with traces, metrics, and logs collection.
+keywords:
+  [
+    kubernetes monitoring,
+    opentelemetry kubernetes,
+    helm setup,
+    k8s observability,
+    kubernetes observability,
+  ]
 tags: [kubernetes, opentelemetry, base14 scout]
 sidebar_position: 2
 ---
@@ -12,8 +21,8 @@ Deploy and configure the Scout Collector on Kubernetes using Helm.
 
 ## Overview
 
-This guide covers how to collect telemetry data (logs, metrics, and traces)
-from your Kubernetes environment and send it to base14 Scout.
+This guide covers how to collect telemetry data (logs, metrics, and traces) from
+your Kubernetes environment and send it to base14 Scout.
 
 - Install base14 Scout's Scout Collector using Helm
 - Configure telemetry collection for Kubernetes pods
@@ -77,12 +86,11 @@ helm install scout base14/scout-collector --version 0.5.0 \
 ## Using Otelcol style configuration
 
 Following is an example of a values.yaml file that can be used to configure
-scout collector using otelcol style
-configuration. Here the configuration follows the same semantics as the
-Scout Collector config. This
-gives a greater flexibility in terms of what you can configure to be scraped,
-collected etc. Reference the [otel-collector-config](./otel-collector-config.md)
-for more details.
+scout collector using otelcol style configuration. Here the configuration
+follows the same semantics as the Scout Collector config. This gives a greater
+flexibility in terms of what you can configure to be scraped, collected etc.
+Reference the [otel-collector-config](./otel-collector-config.md) for more
+details.
 
 ```mdx-code-block
 <Tabs>
@@ -337,7 +345,6 @@ scout:
                    otlp:
                      protocol: http/protobuf
                      endpoint: http://0.0.0.0:4318
-
 ```
 
 ```mdx-code-block
@@ -357,110 +364,317 @@ scout:
   daemonOtelcolConfig:
     enabled: enabled
     config: |
-        extensions:
-          health_check:
-            endpoint: 0.0.0.0:13133
-          zpages:
-            endpoint: 0.0.0.0:55679
-        exporters:
-          otlp/agent:
-            endpoint: scout-agent-collector.scout.svc.cluster.local:4317
-            tls:
-              insecure: true
+      extensions:
+        health_check:
+          endpoint: 0.0.0.0:13133
+        zpages:
+          endpoint: 0.0.0.0:55679
+      exporters:
+        otlp/agent:
+          endpoint: scout-agent-collector.scout.svc.cluster.local:4317
+          tls:
+            insecure: true
 
-        processors:
-          batch:
-            timeout: 2s
-            send_batch_size: 8192
-            send_batch_max_size: 10000
-          memory_limiter:
-            check_interval: 5s
-            limit_percentage: 80
-            spike_limit_percentage: 30
-          resource:
-            attributes:
-              - key: service.name
-                value: {{ scout.appName }}
-                action: upsert
-          resource/k8s:
-            attributes:
-              - key: service.name
-                value: k8s
-                action: upsert
-          resource/env:
-            attributes:
-              - key: environment
-                value: playground
-                action: upsert
-              - key: k8s.cluster.name
-                value: <cluster-name>
-                action: upsert
-          resourcedetection/eks:
-            detectors: [env, eks]
-            override: true
-            eks:
-              resource_attributes:
-                k8s.cluster.name:
-                  enabled: true
-          k8sattributes:
-            auth_type: "serviceAccount"
-            extract:
-              metadata:
-                - k8s.namespace.name
-                - k8s.pod.name
-                - k8s.pod.hostname
-                - k8s.pod.ip
-                - k8s.pod.start_time
-                - k8s.pod.uid
-                - k8s.replicaset.uid
-                - k8s.replicaset.name
-                - k8s.deployment.uid
-                - k8s.deployment.name
-                - k8s.daemonset.uid
-                - k8s.daemonset.name
-                - k8s.statefulset.uid
-                - k8s.statefulset.name
-                - k8s.cronjob.name
-                - k8s.job.uid
-                - k8s.job.name
-                - k8s.node.name
-                - k8s.cluster.uid
-                - container.image.name
-                - container.image.tag
-                - container.id
-              annotations:
-                - tag_name: service.name
-                  key: resource.opentelemetry.io/service.name
-                  from: pod
-                - tag_name: service.namespace
-                  key: resource.opentelemetry.io/service.namespace
-                  from: pod
-                - tag_name: service.version
-                  key: resource.opentelemetry.io/service.version
-                  from: pod
-                - tag_name: service.instance.id
-                  key: resource.opentelemetry.io/service.instance.id
-                  from: pod
-              labels:
-                - tag_name: kube_app_name
-                  key: app.kubernetes.io/name
-                  from: pod
-                - tag_name: kube_app_instance
-                  key: app.kubernetes.io/instance
-                  from: pod
-                - tag_name: kube_app_version
-                  key: app.kubernetes.io/version
-                  from: pod
-                - tag_name: kube_app_component
-                  key: app.kubernetes.io/component
-                  from: pod
-                - tag_name: kube_app_part_of
-                  key: app.kubernetes.io/part-of
-                  from: pod
-                - tag_name: kube_app_managed_by
-                  key: app.kubernetes.io/managed-by
-                  from: pod
-            pod_association:
+      processors:
+        batch:
+          timeout: 2s
+          send_batch_size: 8192
+          send_batch_max_size: 10000
+        memory_limiter:
+          check_interval: 5s
+          limit_percentage: 80
+          spike_limit_percentage: 30
+        resource:
+          attributes:
+            - key: service.name
+              value: {{ scout.appName }}
+              action: upsert
+        resource/k8s:
+          attributes:
+            - key: service.name
+              value: k8s
+              action: upsert
+        resource/env:
+          attributes:
+            - key: environment
+              value: playground
+              action: upsert
+            - key: k8s.cluster.name
+              value: <cluster-name>
+              action: upsert
+        resourcedetection/eks:
+          detectors: [env, eks]
+          override: true
+          eks:
+            resource_attributes:
+              k8s.cluster.name:
+                enabled: true
+        k8sattributes:
+          auth_type: "serviceAccount"
+          extract:
+            metadata:
+              - k8s.namespace.name
+              - k8s.pod.name
+              - k8s.pod.hostname
+              - k8s.pod.ip
+              - k8s.pod.start_time
+              - k8s.pod.uid
+              - k8s.replicaset.uid
+              - k8s.replicaset.name
+              - k8s.deployment.uid
+              - k8s.deployment.name
+              - k8s.daemonset.uid
+              - k8s.daemonset.name
+              - k8s.statefulset.uid
+              - k8s.statefulset.name
+              - k8s.cronjob.name
+              - k8s.job.uid
+              - k8s.job.name
+              - k8s.node.name
+              - k8s.cluster.uid
+              - container.image.name
+              - container.image.tag
+              - container.id
+            annotations:
+              - tag_name: service.name
+                key: resource.opentelemetry.io/service.name
+                from: pod
+              - tag_name: service.namespace
+                key: resource.opentelemetry.io/service.namespace
+                from: pod
+              - tag_name: service.version
+                key: resource.opentelemetry.io/service.version
+                from: pod
+              - tag_name: service.instance.id
+                key: resource.opentelemetry.io/service.instance.id
+                from: pod
+            labels:
+              - tag_name: kube_app_name
+                key: app.kubernetes.io/name
+                from: pod
+              - tag_name: kube_app_instance
+                key: app.kubernetes.io/instance
+                from: pod
+              - tag_name: kube_app_version
+                key: app.kubernetes.io/version
+                from: pod
+              - tag_name: kube_app_component
+                key: app.kubernetes.io/component
+                from: pod
+              - tag_name: kube_app_part_of
+                key: app.kubernetes.io/part-of
+                from: pod
+              - tag_name: kube_app_managed_by
+                key: app.kubernetes.io/managed-by
+                from: pod
+          pod_association:
+            - sources:
+                - from: resource_attribute
+                  name: k8s.pod.ip
+            - sources:
+                - from: resource_attribute
+                  name: k8s.pod.uid
+            - sources:
+                - from: connection
+
+      receivers:
+        otlp:
+          protocols:
+            grpc:
+              endpoint: 0.0.0.0:4317
+            http:
+              endpoint: 0.0.0.0:4318
+        kubeletstats:
+          collection_interval: 60s
+          endpoint: https://${env:K8S_NODE_NAME}:10250
+          insecure_skip_verify: true
+          auth_type: "serviceAccount"
+          metric_groups:
+            - node
+            - pod
+            - volume
+            - container
+          extra_metadata_labels:
+            - container.id
+        filelog:
+          include:
+            - /var/log/pods/*/*/*.log
+          start_at: end
+          include_file_path: true
+          include_file_name: false
+          operators:
+            - type: container
+              id: container-parser
+      service:
+        extensions: [zpages, health_check]
+        pipelines:
+          traces:
+            receivers: [otlp]
+            processors: [batch, resource, resource/env]
+            exporters: [otlp/agent]
+          logs:
+            receivers: [otlp, filelog]
+            processors: [batch, resource/env]
+            exporters: [otlp/agent]
+          metrics:
+            receivers: [otlp]
+            processors: [memory_limiter, batch, resource/env]
+            exporters: [otlp/agent]
+          metrics/k8s:
+            receivers: [kubeletstats]
+            processors:
+              [
+                memory_limiter,
+                batch,
+                resource/k8s,
+                resourcedetection/eks,
+                resource/env,
+                k8sattributes,
+              ]
+            exporters: [otlp/agent]
+        telemetry:
+          metrics:
+            readers:
+              - periodic:
+                  exporter:
+                    otlp:
+                      protocol: http/protobuf
+                      endpoint: http://0.0.0.0:4318
+          logs:
+            level: debug
+            encoding: json
+            processors:
+              - batch:
+                  exporter:
+                    otlp:
+                      protocol: http/protobuf
+                      endpoint: http://0.0.0.0:4318
+          traces:
+            processors:
+              - batch:
+                  exporter:
+                    otlp:
+                      protocol: http/protobuf
+                      endpoint: http://0.0.0.0:4318
+
+  agentOtelcolConfig:
+    enabled: enabled
+    config: |
+      extensions:
+        health_check:
+          endpoint: 0.0.0.0:13133
+        zpages:
+          endpoint: 0.0.0.0:55679
+        oauth2client:
+          client_id: {{ scout.clientId }}
+          client_secret: {{ scout.apiKey }}
+          endpoint_params:
+            audience: b14collector
+          token_url: {{ scout.tokenUrl }}
+          tls:
+            insecure_skip_verify: true
+      exporters:
+        debug:
+          verbosity: detailed
+        otlphttp/b14:
+          endpoint: {{ scout.endpoint }}
+          auth:
+            authenticator: oauth2client
+          tls:
+            insecure_skip_verify: true
+      processors:
+        batch:
+          timeout: 2s
+          send_batch_size: 8192
+          send_batch_max_size: 10000
+        memory_limiter:
+          check_interval: 5s
+          limit_percentage: 80
+          spike_limit_percentage: 30
+        resource:
+          attributes:
+          - key: service.name
+            value: {{ scout.appName }}
+            action: upsert
+        resource/k8s:
+          attributes:
+          - key: service.name
+            value: k8s
+            action: upsert
+        resource/env:
+          attributes:
+          - key: environment
+            value: playground
+            action: upsert
+          - key: k8s.cluster.name
+            value: <cluster-name>
+            action: upsert
+        resourcedetection/eks:
+          detectors: [env,  eks]
+          override: true
+          eks:
+            resource_attributes:
+              k8s.cluster.name:
+                enabled: true
+        k8sattributes:
+          auth_type: 'serviceAccount'
+          extract:
+            metadata: 
+              - k8s.namespace.name
+              - k8s.pod.name
+              - k8s.pod.hostname
+              - k8s.pod.ip
+              - k8s.pod.start_time
+              - k8s.pod.uid
+              - k8s.replicaset.uid
+              - k8s.replicaset.name
+              - k8s.deployment.uid
+              - k8s.deployment.name
+              - k8s.daemonset.uid
+              - k8s.daemonset.name
+              - k8s.statefulset.uid
+              - k8s.statefulset.name
+              - k8s.cronjob.name
+              - k8s.job.uid
+              - k8s.job.name
+              - k8s.node.name
+              - k8s.cluster.uid
+              - container.image.name
+              - container.image.tag
+              - container.id
+            annotations:
+              - tag_name: service.name
+                key: resource.opentelemetry.io/service.name
+                from: pod
+              - tag_name: service.namespace
+                key: resource.opentelemetry.io/service.namespace
+                from: pod
+              - tag_name: service.version
+                key: resource.opentelemetry.io/service.version
+                from: pod
+              - tag_name: service.instance.id
+                key: resource.opentelemetry.io/service.instance.id
+                from: pod
+            labels:
+              - tag_name: kube_app_name
+                key: app.kubernetes.io/name
+                from: pod
+              - tag_name: kube_app_instance
+                key: app.kubernetes.io/instance
+                from: pod
+              - tag_name: kube_app_version
+                key: app.kubernetes.io/version
+                from: pod
+              - tag_name: kube_app_component
+                key: app.kubernetes.io/component
+                from: pod
+              - tag_name: kube_app_part_of
+                key: app.kubernetes.io/part-of
+                from: pod
+              - tag_name: kube_app_managed_by
+                key: app.kubernetes.io/managed-by
+                from: pod
+          pod_association:
               - sources:
                   - from: resource_attribute
                     name: k8s.pod.ip
@@ -469,331 +683,121 @@ scout:
                     name: k8s.pod.uid
               - sources:
                   - from: connection
-
-        receivers:
-          otlp:
-            protocols:
-              grpc:
-                endpoint: 0.0.0.0:4317
-              http:
-                endpoint: 0.0.0.0:4318
-          kubeletstats:
-            collection_interval: 60s
-            endpoint: https://${env:K8S_NODE_NAME}:10250
-            insecure_skip_verify: true
-            auth_type: "serviceAccount"
-            metric_groups:
-              - node
-              - pod
-              - volume
-              - container
-            extra_metadata_labels:
-              - container.id
-          filelog:
-            include:
-              - /var/log/pods/*/*/*.log
-            start_at: end
-            include_file_path: true
-            include_file_name: false
-            operators:
-              - type: container
-                id: container-parser
-        service:
-          extensions: [zpages, health_check]
-          pipelines:
-            traces:
-              receivers: [otlp]
-              processors: [batch, resource, resource/env]
-              exporters: [otlp/agent]
-            logs:
-              receivers: [otlp, filelog]
-              processors: [batch, resource/env]
-              exporters: [otlp/agent]
-            metrics:
-              receivers: [otlp]
-              processors: [memory_limiter, batch, resource/env]
-              exporters: [otlp/agent]
-            metrics/k8s:
-              receivers: [kubeletstats]
-              processors:
-                [
-                  memory_limiter,
-                  batch,
-                  resource/k8s,
-                  resourcedetection/eks,
-                  resource/env,
-                  k8sattributes,
-                ]
-              exporters: [otlp/agent]
-          telemetry:
-            metrics:
-              readers:
-                - periodic:
-                    exporter:
-                      otlp:
-                        protocol: http/protobuf
-                        endpoint: http://0.0.0.0:4318
-            logs:
-              level: debug
-              encoding: json
-              processors:
-                - batch:
-                    exporter:
-                      otlp:
-                        protocol: http/protobuf
-                        endpoint: http://0.0.0.0:4318
-            traces:
-              processors:
-                - batch:
-                    exporter:
-                      otlp:
-                        protocol: http/protobuf
-                        endpoint: http://0.0.0.0:4318
-
-
-
-  agentOtelcolConfig:
-    enabled: enabled
-    config: |
-        extensions:
-          health_check:
-            endpoint: 0.0.0.0:13133
-          zpages:
-            endpoint: 0.0.0.0:55679
-          oauth2client:
-            client_id: {{ scout.clientId }}
-            client_secret: {{ scout.apiKey }}
-            endpoint_params:
-              audience: b14collector
-            token_url: {{ scout.tokenUrl }}
-            tls:
-              insecure_skip_verify: true
-        exporters:
-          debug:
-            verbosity: detailed
-          otlphttp/b14:
-            endpoint: {{ scout.endpoint }}
-            auth:
-              authenticator: oauth2client
-            tls:
-              insecure_skip_verify: true
-        processors:
-          batch:
-            timeout: 2s
-            send_batch_size: 8192
-            send_batch_max_size: 10000
-          memory_limiter:
-            check_interval: 5s
-            limit_percentage: 80
-            spike_limit_percentage: 30
-          resource:
-            attributes:
+        resource/k8s-events:
+          attributes:
             - key: service.name
-              value: {{ scout.appName }}
+              value: "k8s-events"
               action: upsert
-          resource/k8s:
-            attributes:
-            - key: service.name
-              value: k8s
-              action: upsert
-          resource/env:
-            attributes:
-            - key: environment
-              value: playground
-              action: upsert
-            - key: k8s.cluster.name
-              value: <cluster-name>
-              action: upsert
-          resourcedetection/eks:
-            detectors: [env,  eks]
-            override: true
-            eks:
-              resource_attributes:
-                k8s.cluster.name:
-                  enabled: true
-          k8sattributes:
-            auth_type: 'serviceAccount'
-            extract:
-              metadata: 
-                - k8s.namespace.name
-                - k8s.pod.name
-                - k8s.pod.hostname
-                - k8s.pod.ip
-                - k8s.pod.start_time
-                - k8s.pod.uid
-                - k8s.replicaset.uid
-                - k8s.replicaset.name
-                - k8s.deployment.uid
-                - k8s.deployment.name
-                - k8s.daemonset.uid
-                - k8s.daemonset.name
-                - k8s.statefulset.uid
-                - k8s.statefulset.name
-                - k8s.cronjob.name
-                - k8s.job.uid
-                - k8s.job.name
-                - k8s.node.name
-                - k8s.cluster.uid
-                - container.image.name
-                - container.image.tag
-                - container.id
-              annotations:
-                - tag_name: service.name
-                  key: resource.opentelemetry.io/service.name
-                  from: pod
-                - tag_name: service.namespace
-                  key: resource.opentelemetry.io/service.namespace
-                  from: pod
-                - tag_name: service.version
-                  key: resource.opentelemetry.io/service.version
-                  from: pod
-                - tag_name: service.instance.id
-                  key: resource.opentelemetry.io/service.instance.id
-                  from: pod
-              labels:
-                - tag_name: kube_app_name
-                  key: app.kubernetes.io/name
-                  from: pod
-                - tag_name: kube_app_instance
-                  key: app.kubernetes.io/instance
-                  from: pod
-                - tag_name: kube_app_version
-                  key: app.kubernetes.io/version
-                  from: pod
-                - tag_name: kube_app_component
-                  key: app.kubernetes.io/component
-                  from: pod
-                - tag_name: kube_app_part_of
-                  key: app.kubernetes.io/part-of
-                  from: pod
-                - tag_name: kube_app_managed_by
-                  key: app.kubernetes.io/managed-by
-                  from: pod
-            pod_association:
-                - sources:
-                    - from: resource_attribute
-                      name: k8s.pod.ip
-                - sources:
-                    - from: resource_attribute
-                      name: k8s.pod.uid
-                - sources:
-                    - from: connection
-          resource/k8s-events:
-            attributes:
-              - key: service.name
-                value: "k8s-events"
-                action: upsert
-        receivers:
-          otlp:
-            protocols:
-              http:
-                endpoint: 0.0.0.0:4318
-              grpc:
-                endpoint: 0.0.0.0:4317
-          k8s_cluster:
-            auth_type: serviceaccount
-            collection_interval: 60s
-            node_conditions_to_report: [
-              ready, 
-              memorypressure, 
-              diskpressure, 
-              pidpressure, 
-              networkunavailable ]
-            resource_attributes:
-              k8s.container.status.last_terminated_reason:
-                enabled: true
-            metrics:
-              k8s.pod.status_reason:
-                enabled: true
-              k8s.node.condition:
-                enabled: true
-            allocatable_types_to_report: [ 
-              cpu, 
-              memory, 
-              ephemeral-storage, 
-              storage ]
-          k8sobjects:
-            objects:
-              - name: events
-                mode: pull
-                interval: 60s
-                group: events.k8s.io
-              - name: deployments
-                mode: pull
-                interval: 60s
-                group: deployments.k8s.io
-              - name: resourcequotas
-                mode: pull
-                interval: 60s
-                group: resourcequotas.k8s.io
-        service:
-          extensions: [ oauth2client, zpages, health_check ]
-          pipelines:
-            traces:
-              receivers: [ otlp]
-              processors: [ batch, resource, resource/env ]
-              exporters: [ otlphttp/b14 ]
-            logs:
-              receivers: [ otlp ]
-              processors: [ batch, resource/env ]
-              exporters: [ otlphttp/b14, debug ]
-            logs/k8s-events:
-              receivers: [ k8sobjects]
-              processors: [ 
-                memory_limiter, 
-                batch, 
-                resource/k8s-events, 
-                resourcedetection/eks, 
-                resource/env ]
-              exporters: [ otlphttp/b14 ]
-            logs/k8s-cluster:
-              receivers: [ k8s_cluster ]
-              processors: [ 
-                memory_limiter, 
-                batch, 
-                resource/k8s, 
-                resourcedetection/eks, 
-                resource/env ]
-              exporters: [ otlphttp/b14 ]
-            metrics:
-              receivers: [ otlp ]
-              processors: [ memory_limiter, batch, resource/env ]
-              exporters: [ otlphttp/b14 ]
-            metrics/k8s:
-              receivers: [ k8s_cluster ]
-              processors: [ 
-                memory_limiter, 
-                batch, 
-                resource/k8s, 
-                resourcedetection/eks, 
-                resource/env, 
-                k8sattributes ]
-              exporters: [ otlphttp/b14 ]
-          telemetry:
-            metrics:
-              readers:
-                - periodic:
-                   exporter:
-                     otlp:
-                       protocol: http/protobuf
-                       endpoint: http://0.0.0.0:4318
-            logs:
-              level: debug
-              encoding: json
-              processors:
-                - batch:
-                   exporter:
-                     otlp:
-                       protocol: http/protobuf
-                       endpoint: http://0.0.0.0:4318
-            traces:
-              processors:
-                - batch:
-                   exporter:
-                     otlp:
-                       protocol: http/protobuf
-                       endpoint: http://0.0.0.0:4318
-
+      receivers:
+        otlp:
+          protocols:
+            http:
+              endpoint: 0.0.0.0:4318
+            grpc:
+              endpoint: 0.0.0.0:4317
+        k8s_cluster:
+          auth_type: serviceaccount
+          collection_interval: 60s
+          node_conditions_to_report: [
+            ready, 
+            memorypressure, 
+            diskpressure, 
+            pidpressure, 
+            networkunavailable ]
+          resource_attributes:
+            k8s.container.status.last_terminated_reason:
+              enabled: true
+          metrics:
+            k8s.pod.status_reason:
+              enabled: true
+            k8s.node.condition:
+              enabled: true
+          allocatable_types_to_report: [ 
+            cpu, 
+            memory, 
+            ephemeral-storage, 
+            storage ]
+        k8sobjects:
+          objects:
+            - name: events
+              mode: pull
+              interval: 60s
+              group: events.k8s.io
+            - name: deployments
+              mode: pull
+              interval: 60s
+              group: deployments.k8s.io
+            - name: resourcequotas
+              mode: pull
+              interval: 60s
+              group: resourcequotas.k8s.io
+      service:
+        extensions: [ oauth2client, zpages, health_check ]
+        pipelines:
+          traces:
+            receivers: [ otlp]
+            processors: [ batch, resource, resource/env ]
+            exporters: [ otlphttp/b14 ]
+          logs:
+            receivers: [ otlp ]
+            processors: [ batch, resource/env ]
+            exporters: [ otlphttp/b14, debug ]
+          logs/k8s-events:
+            receivers: [ k8sobjects]
+            processors: [ 
+              memory_limiter, 
+              batch, 
+              resource/k8s-events, 
+              resourcedetection/eks, 
+              resource/env ]
+            exporters: [ otlphttp/b14 ]
+          logs/k8s-cluster:
+            receivers: [ k8s_cluster ]
+            processors: [ 
+              memory_limiter, 
+              batch, 
+              resource/k8s, 
+              resourcedetection/eks, 
+              resource/env ]
+            exporters: [ otlphttp/b14 ]
+          metrics:
+            receivers: [ otlp ]
+            processors: [ memory_limiter, batch, resource/env ]
+            exporters: [ otlphttp/b14 ]
+          metrics/k8s:
+            receivers: [ k8s_cluster ]
+            processors: [ 
+              memory_limiter, 
+              batch, 
+              resource/k8s, 
+              resourcedetection/eks, 
+              resource/env, 
+              k8sattributes ]
+            exporters: [ otlphttp/b14 ]
+        telemetry:
+          metrics:
+            readers:
+              - periodic:
+                 exporter:
+                   otlp:
+                     protocol: http/protobuf
+                     endpoint: http://0.0.0.0:4318
+          logs:
+            level: debug
+            encoding: json
+            processors:
+              - batch:
+                 exporter:
+                   otlp:
+                     protocol: http/protobuf
+                     endpoint: http://0.0.0.0:4318
+          traces:
+            processors:
+              - batch:
+                 exporter:
+                   otlp:
+                     protocol: http/protobuf
+                     endpoint: http://0.0.0.0:4318
 ```
 
 ```mdx-code-block
@@ -812,10 +816,14 @@ scout:
 
 ## Related Guides
 
-- [Scout Exporter Configuration](./scout-exporter.md) - Configure authentication to send data to Scout
-- [Advanced Collector Configuration](./otel-collector-config.md) - Customize your collector setup
-- [AWS ECS/Fargate Setup](./ecs-setup.md) - Alternative container deployment option
+- [Scout Exporter Configuration](./scout-exporter.md) - Configure authentication
+  to send data to Scout
+- [Advanced Collector Configuration](./otel-collector-config.md) - Customize
+  your collector setup
+- [AWS ECS/Fargate Setup](./ecs-setup.md) - Alternative container deployment
+  option
 
-### Learn More
+## Learn More
 
-- [Why Unified Observability Matters](/blog/unified-observability) - Benefits for growing engineering teams
+- [Why Unified Observability Matters](/blog/unified-observability) - Benefits
+  for growing engineering teams

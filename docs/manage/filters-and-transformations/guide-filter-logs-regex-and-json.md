@@ -1,17 +1,25 @@
 ---
 date: 2025-06-19
 id: filtering-logs-based-on-regex-and-attributes
-title: Guide – Filtering Logs Using Regex and Attribute-Based Conditions | base14 Scout
-description: Filter logs using regex patterns and JSON attribute conditions in OpenTelemetry pipelines. Drop or keep logs based on pattern matching and structured data fields in Scout.
-keywords: [log filtering, regex log filter, json log filtering, opentelemetry filter processor, log pattern matching]
-hide_table_of_contents: true
+title: Guide – Filtering Logs Using Regex and Attribute-Based Conditions
+description:
+  Filter logs using regex patterns and JSON attribute conditions in
+  OpenTelemetry pipelines. Drop or keep logs based on pattern matching and
+  structured data fields in Scout.
+keywords:
+  [
+    log filtering,
+    regex log filter,
+    json log filtering,
+    opentelemetry filter processor,
+    log pattern matching,
+  ]
 ---
 
 ## Problem Statement
 
 When working with OpenTelemetry log pipelines, you often need to filter logs
-based
-on specific criteria. Common scenarios include:
+based on specific criteria. Common scenarios include:
 
 1. **Pattern Matching**: Identifying logs containing specific text patterns
    (e.g., error messages, keywords)
@@ -20,8 +28,8 @@ on specific criteria. Common scenarios include:
 
 ## Solution
 
-The Scout Collector's `filter` processor provides a powerful way to
-implement these filtering requirements. This guide shows how to:
+The Scout Collector's `filter` processor provides a powerful way to implement
+these filtering requirements. This guide shows how to:
 
 1. Filter logs using regular expressions
 2. Filter based on JSON attributes
@@ -41,7 +49,7 @@ implement these filtering requirements. This guide shows how to:
 ```text
 Evaluating spans in status code filter
 
-User loged in 
+User loged in
 ```
 
 **Structured JSON log:**
@@ -103,10 +111,9 @@ service:
 
 ## How It Works
 
-- `IsMatch(body, ".*\bspans\b.*")` matches any log containing the word
-  "spans"
-- `ParseJSON(body)["path"] != nil` checks for the existence of a "path" field
-  in JSON logs
+- `IsMatch(body, ".*\bspans\b.*")` matches any log containing the word "spans"
+- `ParseJSON(body)["path"] != nil` checks for the existence of a "path" field in
+  JSON logs
 - `error_mode: ignore` ensures the pipeline continues processing even if some
   logs don't match the expected format
 

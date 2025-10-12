@@ -1,7 +1,16 @@
 ---
-title: Ruby on Rails OpenTelemetry Instrumentation | base14 Scout
-description: Auto-instrument Rails with OpenTelemetry for traces and metrics. Complete Ruby APM setup with distributed tracing and database monitoring.
-keywords: [rails monitoring, ruby apm, rails instrumentation, opentelemetry rails, ruby on rails monitoring]
+title: Ruby on Rails OpenTelemetry Instrumentation
+description:
+  Auto-instrument Rails with OpenTelemetry for traces and metrics. Complete Ruby
+  APM setup with distributed tracing and database monitoring.
+keywords:
+  [
+    rails monitoring,
+    ruby apm,
+    rails instrumentation,
+    opentelemetry rails,
+    ruby on rails monitoring,
+  ]
 ---
 
 # Rails
@@ -10,8 +19,7 @@ Implement OpenTelemetry instrumentation for `Ruby on Rails` applications to
 collect traces, metrics, and monitor HTTP requests using the Ruby OTel SDK.
 
 > **Note:** This guide provides a concise overview based on the official
-> OpenTelemetry documentation. For complete information, please consult
-> the
+> OpenTelemetry documentation. For complete information, please consult the
 > [official OpenTelemetry documentation](https://opentelemetry.io/docs/languages/ruby/instrumentation).
 
 ## Overview
@@ -34,8 +42,8 @@ Before starting, ensure you have:
 
 ## Required Packages
 
-Install the following necessary packages by `gem install` or add it to
-`Gemfile` and run `bundle install`.
+Install the following necessary packages by `gem install` or add it to `Gemfile`
+and run `bundle install`.
 
 ```ruby showLineNumbers
 gem 'opentelemetry-sdk'
@@ -46,9 +54,9 @@ gem 'opentelemetry-instrumentation-all'
 ## Traces
 
 Traces give us the big picture of what happens when a request is made to an
-application. Whether your application is a monolith with a single
-database or a sophisticated mesh of services, traces are essential to
-understanding the full “path” a request takes in your application.
+application. Whether your application is a monolith with a single database or a
+sophisticated mesh of services, traces are essential to understanding the full
+“path” a request takes in your application.
 
 ### Auto Instrumentation
 
@@ -74,19 +82,19 @@ end
 TRACER = OpenTelemetry.tracer_provider.tracer('rails-app', '0.1.0')
 ```
 
-> View your traces in the base14 Scout  platform.
+> View your traces in the base14 Scout platform.
 >
-> **Note**: Ensure your Scout Collector is properly configured to
-> receive and process the trace data.
+> **Note**: Ensure your Scout Collector is properly configured to receive and
+> process the trace data.
+
+## References
+
+[Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
 
 ## Related Guides
 
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set up
-  collector for local development
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
+  up collector for local development
 - [Custom Ruby Instrumentation](../custom-instrumentation/ruby.md) - Manual
   instrumentation for advanced use cases
 - [Spring Boot Instrumentation](./spring-boot.md) - Java framework alternative
-
-#### Reference
-
-[Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)

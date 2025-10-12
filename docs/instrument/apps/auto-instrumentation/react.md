@@ -1,7 +1,16 @@
 ---
-title: React OpenTelemetry Instrumentation | base14 Scout
-description: Auto-instrument React applications with OpenTelemetry for browser traces. Monitor user interactions, fetch requests, and Core Web Vitals.
-keywords: [react monitoring, frontend monitoring, react instrumentation, opentelemetry react, browser monitoring]
+title: React OpenTelemetry Instrumentation
+description:
+  Auto-instrument React applications with OpenTelemetry for browser traces.
+  Monitor user interactions, fetch requests, and Core Web Vitals.
+keywords:
+  [
+    react monitoring,
+    frontend monitoring,
+    react instrumentation,
+    opentelemetry react,
+    browser monitoring,
+  ]
 ---
 
 # React
@@ -52,8 +61,8 @@ npm install @opentelemetry/sdk-trace-web
 npm install @opentelemetry/auto-instrumentations-web
 npm install @opentelemetry/exporter-trace-otlp-http
 npm install @opentelemetry/resources
-npm install @opentelemetry/exporter-trace-otlp-http 
-npm install @opentelemetry/resources 
+npm install @opentelemetry/exporter-trace-otlp-http
+npm install @opentelemetry/resources
 npm install @opentelemetry/semantic-conventions
 ```
 
@@ -61,28 +70,27 @@ npm install @opentelemetry/semantic-conventions
 
 ```js
 // src/telemetry.js
-import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
-import { registerInstrumentations } from '@opentelemetry/instrumentation';
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
-import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
-import { getWebAutoInstrumentations } from '@opentelemetry/auto-instrumentations-web';
-import { Resource } from '@opentelemetry/resources';
-import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
-import { ZoneContextManager } from '@opentelemetry/context-zone';
+import { WebTracerProvider } from "@opentelemetry/sdk-trace-web";
+import { registerInstrumentations } from "@opentelemetry/instrumentation";
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
+import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
+import { getWebAutoInstrumentations } from "@opentelemetry/auto-instrumentations-web";
+import { Resource } from "@opentelemetry/resources";
+import { SemanticResourceAttributes } from "@opentelemetry/semantic-conventions";
+import { ZoneContextManager } from "@opentelemetry/context-zone";
 
 export const setupTelemetry = () => {
   const resource = new Resource({
-    [SemanticResourceAttributes.SERVICE_NAME]: 'react-service',
-    [SemanticResourceAttributes.SERVICE_VERSION]: '1.0.0',
+    [SemanticResourceAttributes.SERVICE_NAME]: "react-service",
+    [SemanticResourceAttributes.SERVICE_VERSION]: "1.0.0",
   });
 
   const traceExporter = new OTLPTraceExporter({
-    url: 'http://<scout-collector-endpoint>:4318/v1/traces'
+    url: "http://<scout-collector-endpoint>:4318/v1/traces",
   });
 
-
   const provider = new WebTracerProvider({ resource });
-  
+
   provider.addSpanProcessor(new BatchSpanProcessor(traceExporter));
 
   // Register the tracer provider with ZoneContextManager as it:
@@ -90,17 +98,16 @@ export const setupTelemetry = () => {
   // 2. Ensures proper trace context propagation in React's async rendering
 
   provider.register({
-    contextManager: new ZoneContextManager()
+    contextManager: new ZoneContextManager(),
   });
-
 
   registerInstrumentations({
     instrumentations: [
       getWebAutoInstrumentations({
-        '@opentelemetry/instrumentation-fetch': {
+        "@opentelemetry/instrumentation-fetch": {
           propagateTraceHeaderCorsUrls: [/.*/],
         },
-        '@opentelemetry/instrumentation-xml-http-request': {
+        "@opentelemetry/instrumentation-xml-http-request": {
           propagateTraceHeaderCorsUrls: [/.*/],
         },
       }),
@@ -113,10 +120,10 @@ export const setupTelemetry = () => {
 
 ```js
 // src/index.js
-import React from 'react';
-import ReactDOM from 'react-dom';
-import App from './App';
-import { setupTelemetry } from './telemetry';
+import React from "react";
+import ReactDOM from "react-dom";
+import App from "./App";
+import { setupTelemetry } from "./telemetry";
 
 setupTelemetry();
 
@@ -124,14 +131,14 @@ ReactDOM.render(
   <React.StrictMode>
     <App />
   </React.StrictMode>,
-  document.getElementById('root')
+  document.getElementById("root"),
 );
 ```
 
 ### Auto-instrumentation Capabilities
 
-OpenTelemetry's auto-instrumentation for browser applications automatically track
-everal  key interactions:
+OpenTelemetry's auto-instrumentation for browser applications automatically
+track everal key interactions:
 
 1. **User Interactions**
 
@@ -155,14 +162,6 @@ receivers:
 ```
 
 > View these traces in base14 Scout observability backend.
->
-## Related Guides
-
-- [Custom JavaScript Browser Instrumentation](../custom-instrumentation/javascript-browser.md) -
-  Manual instrumentation for logs and metrics
-- [Express.js Instrumentation](./express.md) - Backend Node.js framework
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set up
-  collector for local development
 
 ## What's Next?
 
@@ -172,3 +171,11 @@ To monitor logs and metrics, see the
 ## References
 
 [Sample react application with OTel instrumentation:](https://github.com/base14/react-auto-instrumentation)
+
+## Related Guides
+
+- [Custom JavaScript Browser Instrumentation](../custom-instrumentation/javascript-browser.md)
+  \- Manual instrumentation for logs and metrics
+- [Express.js Instrumentation](./express.md) - Backend Node.js framework
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
+  up collector for local development

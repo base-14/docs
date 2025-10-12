@@ -1,9 +1,18 @@
 ---
 date: 2025-04-24
 id: send-aws-vpc-flow-logs
-title: AWS VPC Flow Logs to OpenTelemetry | base14 Scout
-description: Send AWS VPC Flow Logs to OpenTelemetry using S3 and Lambda. Complete guide for VPC monitoring with automated log processing and OTLP export.
-keywords: [aws vpc monitoring, vpc flow logs, aws network monitoring, lambda opentelemetry, aws observability]
+title: AWS VPC Flow Logs to OpenTelemetry
+description:
+  Send AWS VPC Flow Logs to OpenTelemetry using S3 and Lambda. Complete guide
+  for VPC monitoring with automated log processing and OTLP export.
+keywords:
+  [
+    aws vpc monitoring,
+    vpc flow logs,
+    aws network monitoring,
+    lambda opentelemetry,
+    aws observability,
+  ]
 tags: [aws, vpc, s3, lambda, otlp]
 sidebar_position: 2
 ---
@@ -16,10 +25,10 @@ Lambda function whenever a new Flow Log file arrives in the bucket.
 
 ## Prerequisites
 
-* AWS VPC services (S3, Lambda, IAM).
-* Scout authentication credentials
-* Scout Collector has been configured with an OTLP receiver
-  endpoint (HTTP or gRPC) ready to accept logs.
+- AWS VPC services (S3, Lambda, IAM).
+- Scout authentication credentials
+- Scout Collector has been configured with an OTLP receiver endpoint (HTTP or
+  gRPC) ready to accept logs.
 
 ---
 
@@ -29,46 +38,49 @@ Lambda function whenever a new Flow Log file arrives in the bucket.
 1. **Select VPC:** Choose the VPC for which you want to enable Flow Logs.
 1. **Flow Logs Tab:** Go to the "Flow Logs" tab.
 1. **Create Flow Log:** Click "Create flow log".
-1. **Configure Filter:** Choose the traffic to capture (Accepted, Rejected, or All).
-1. **Maximum Aggregation Interval:** Select an interval (e.g., 1 minute, 5 minutes).
-  Shorter intervals mean more files and potentially more Lambda invocations.
+1. **Configure Filter:** Choose the traffic to capture (Accepted, Rejected, or
+   All).
+1. **Maximum Aggregation Interval:** Select an interval (e.g., 1 minute, 5
+   minutes). Shorter intervals mean more files and potentially more Lambda
+   invocations.
 1. **Destination:** Select **"Send to an S3 bucket"**.
 1. **S3 Bucket ARN:** Specify the ARN of the S3 bucket where logs should be
-  delivered (e.g., `arn:aws:s3:::your-vpc-flow-log-bucket`). Create the bucket if
-  it doesn't exist.
-  *Ensure the bucket policy grants `vpc-flow-logs.amazonaws.com` permissions to `PutObject`.*
+   delivered (e.g., `arn:aws:s3:::your-vpc-flow-log-bucket`). Create the bucket
+   if it doesn't exist. _Ensure the bucket policy grants
+   `vpc-flow-logs.amazonaws.com` permissions to `PutObject`._
 1. **Log Format:** Choose either the "AWS default format" or a "Custom format".
-  **Note down the fields and their order if using Custom format**,
-  as you'll need this for parsing in the Lambda. The default format is
-  space-delimited:
+   **Note down the fields and their order if using Custom format**, as you'll
+   need this for parsing in the Lambda. The default format is space-delimited:
 
-  ```csv
-  version account-id interface-id srcaddr dstaddr srcport
-  dstport protocol packets bytes start end action log-status
-  ```
+```csv
+version account-id interface-id srcaddr dstaddr srcport
+dstport protocol packets bytes start end action log-status
+```
 
 1. **Log file format:** Select text (default). Parquet is also an option but
-  requires different handling in Lambda.
+   requires different handling in Lambda.
 1. **Partitioning:** Decide if you want logs partitioned by time (Hourly/Daily).
-  This also affects the S3 object key structure and potentially how you
-  configure the S3 trigger.
+   This also affects the S3 object key structure and potentially how you
+   configure the S3 trigger.
 1. **Create Flow Log:** Confirm and create.
 
 ---
 
 ## Step 2: Create the Lambda Function (Python Example)
 
-1. **Create Function:** Go to the AWS Lambda console and click "Create function".
+1. **Create Function:** Go to the AWS Lambda console and click "Create
+   function".
 2. **Author from Scratch:** Choose "Author from scratch".
-3. **Function Name:** Give it a descriptive name (e.g., `vpc-flow-log-s3-to-otlp-processor`).
+3. **Function Name:** Give it a descriptive name (e.g.,
+   `vpc-flow-log-s3-to-otlp-processor`).
 4. **Runtime:** Select a runtime like **Python 3.10** (or newer).
 5. **Architecture:** Choose `x86_64` or `arm64`.
-6. **Permissions:** Choose "Create a new role with basic Lambda permissions".
-  We will modify this role later (Step 3).
+6. **Permissions:** Choose "Create a new role with basic Lambda permissions". We
+   will modify this role later (Step 3).
 7. **Create Function:** Click "Create function".
-8. **Write Lambda Code:** Replace the template code with the following
-  structure (this is a conceptual outline; you'll need to fill in the parsing
-  and OTLP details):
+8. **Write Lambda Code:** Replace the template code with the following structure
+   (this is a conceptual outline; you'll need to fill in the parsing and OTLP
+   details):
 
 ```python
 import boto3
@@ -243,110 +255,116 @@ def lambda_handler(event, context):
 ```
 
 1. **Create Deployment Package/Layer:**
-   * Create a requirements.txt file in your project directory:
+   - Create a requirements.txt file in your project directory:
 
-    ```plaintext
-    boto3 # Usually included in Lambda runtime, but good practice
-    opentelemetry-api
-    opentelemetry-sdk
-    opentelemetry-exporter-otlp-proto-http # Or -grpc if using gRPC
-    opentelemetry-semantic-conventions
-    ```
+   ```plaintext
+   boto3 # Usually included in Lambda runtime, but good practice
+   opentelemetry-api
+   opentelemetry-sdk
+   opentelemetry-exporter-otlp-proto-http # Or -grpc if using gRPC
+   opentelemetry-semantic-conventions
+   ```
 
-   * Install dependencies into a package directory:
-    `pip install -r requirements.txt -t ./package`
+   - Install dependencies into a package directory:
+     `pip install -r requirements.txt -t ./package`
 
-   * Create a zip file containing the contents of the package directory and your
-    lambda_function.py file.
+   - Create a zip file containing the contents of the package directory and your
+     lambda_function.py file.
 
-    ```bash
-    cd package && zip -r ../deployment_package.zip . && cd ..
-    zip -g deployment_package.zip lambda_function.py
-    ```
+   ```bash
+   cd package && zip -r ../deployment_package.zip . && cd ..
+   zip -g deployment_package.zip lambda_function.py
+   ```
 
-    * Alternatively, create a Lambda Layer containing the dependencies and
-    upload it separately. Then add the layer to your function.
+   - Alternatively, create a Lambda Layer containing the dependencies and upload
+     it separately. Then add the layer to your function.
 
 1. **Upload Code:** Upload the deployment_package.zip file to your Lambda
-  function via the console or AWS CLI.
+   function via the console or AWS CLI.
 1. **Configure Environment Variables:**
-    * BASE14_OTLP_ENDPOINT: Your OTLP endpoint URL (e.g. [https://otel.play.b14.dev/01jm94npk4h8ys63x1kzw2bjes/otlp](https://otel.play.b14.dev/01jm94npk4h8ys63x1kzw2bjes/otlp)).
-    * AWS_REGION: Set this to the region your function is running in (e.g., us-east-1).
+   - BASE14_OTLP_ENDPOINT: Your OTLP endpoint URL (e.g.
+     [https://otel.play.b14.dev/01jm94npk4h8ys63x1kzw2bjes/otlp](https://otel.play.b14.dev/01jm94npk4h8ys63x1kzw2bjes/otlp)).
+   - AWS_REGION: Set this to the region your function is running in (e.g.,
+     us-east-1).
 1. **Adjust Timeout and Memory:** VPC flow log files can be large. Increase the
-  function's **Timeout** (e.g., to 1-5 minutes) and
-  **Memory** (e.g., 512MB or more) under "General configuration" as needed.
+   function's **Timeout** (e.g., to 1-5 minutes) and **Memory** (e.g., 512MB or
+   more) under "General configuration" as needed.
 
 ---
 
-## Step 3: Configure IAM Role Permissions**
+## Step 3: Configure IAM Role Permissions\*\*
 
 1. **Find Role:** Go to the IAM console -> Roles. Find the role automatically
-  created for your Lambda function (e.g., `vpc-flow-log-s3-to-otlp-processor-role-xxxxxx`).
+   created for your Lambda function (e.g.,
+   `vpc-flow-log-s3-to-otlp-processor-role-xxxxxx`).
 2. **Attach Policies:**
-   * **S3 Read Access:** Click "Add permissions" -> "Attach policies".
-    Search for and attach `AmazonS3ReadOnlyAccess` OR create a more specific
-    inline policy granting `s3:GetObject` permissions only for your specific
-    VPC Flow Log bucket (`arn:aws:s3:::your-vpc-flow-log-bucket/*`).
+   - **S3 Read Access:** Click "Add permissions" -> "Attach policies". Search
+     for and attach `AmazonS3ReadOnlyAccess` OR create a more specific inline
+     policy granting `s3:GetObject` permissions only for your specific VPC Flow
+     Log bucket (`arn:aws:s3:::your-vpc-flow-log-bucket/*`).
 
-    ```JSON
-     // Example Inline Policy for S3 Read
-     {
-         "Version": "2012-10-17",
-         "Statement": [
-             {
-                 "Effect": "Allow",
-                 "Action": "s3:GetObject",
-                 "Resource": "arn:aws:s3:::your-vpc-flow-log-bucket/*"
-             }
-         ]
-     }
-    ```
+   ```JSON
+    // Example Inline Policy for S3 Read
+    {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": "s3:GetObject",
+                "Resource": "arn:aws:s3:::your-vpc-flow-log-bucket/*"
+            }
+        ]
+    }
+   ```
 
-   * **Basic Execution Role:** Ensure the AWSLambdaBasicExecutionRole policy
-    (or equivalent for CloudWatch Logs `logs:CreateLogGroup`, `logs:CreateLogStream`,
-    `logs:PutLogEvents`) is attached (usually added by default).
+   - **Basic Execution Role:** Ensure the AWSLambdaBasicExecutionRole policy (or
+     equivalent for CloudWatch Logs `logs:CreateLogGroup`,
+     `logs:CreateLogStream`, `logs:PutLogEvents`) is attached (usually added by
+     default).
 
 ---
 
-## Step 4: Configure S3 Event Notification Trigger**
+## Step 4: Configure S3 Event Notification Trigger\*\*
 
-1. **Navigate to S3 Bucket:** Go to the S3 console and select your VPC Flow Log bucket.
+1. **Navigate to S3 Bucket:** Go to the S3 console and select your VPC Flow Log
+   bucket.
 2. **Properties Tab:** Go to the "Properties" tab.
 3. **Event Notifications:** Scroll down to "Event notifications" and click
-  "Create event notification".
+   "Create event notification".
 4. **Event Name:** Give it a name (e.g., trigger-flow-log-lambda).
-5. **Prefix (Optional but Recommended):** Specify the S3 prefix where your
-  flow logs are stored (e.g., `AWSLogs/`). This prevents triggering on other
-  files. Check your S3 bucket to see the exact path structure created by Flow Logs.
-6. **Suffix (Optional but Recommended):** Specify `.gz` (or `.log` if uncompressed)
-  to only trigger on log files.
+5. **Prefix (Optional but Recommended):** Specify the S3 prefix where your flow
+   logs are stored (e.g., `AWSLogs/`). This prevents triggering on other files.
+   Check your S3 bucket to see the exact path structure created by Flow Logs.
+6. **Suffix (Optional but Recommended):** Specify `.gz` (or `.log` if
+   uncompressed) to only trigger on log files.
 7. **Event Types:** Select `s3:ObjectCreated:Put` or
-  `s3:ObjectCreated:CompleteMultipartUpload` (or just All object create events).
-  `Put` is usually sufficient for Flow Logs.
+   `s3:ObjectCreated:CompleteMultipartUpload` (or just All object create
+   events). `Put` is usually sufficient for Flow Logs.
 8. **Destination:** Choose "Lambda function".
-9. **Lambda Function:** Select the Lambda function you created (`vpc-flow-log-s3-to-otlp-processor`).
+9. **Lambda Function:** Select the Lambda function you created
+   (`vpc-flow-log-s3-to-otlp-processor`).
 10. **Save Changes:** Click "Save changes". S3 will automatically attempt to add
-  the necessary permissions to the Lambda function to allow S3 to invoke it.
+    the necessary permissions to the Lambda function to allow S3 to invoke it.
 
 ---
 
-## Step 5: Test and Monitor**
+## Step 5: Test and Monitor\*\*
 
-1. **Wait for Logs:**
-  Allow some time for VPC Flow Logs to generate new files in the S3 bucket.
-2. **Check Lambda Invocations:**
-  Monitor the Lambda function in the Base14 Dashboards under "Library" > "Logs View"
-3. **Check Lambda Logs:**
-  Examine the Log Group associated with your Lambda function for detailed
-  execution logs, including any print statements or error messages.
-  Look for lines like "Processing object..." and "Finished processing...".
+1. **Wait for Logs:** Allow some time for VPC Flow Logs to generate new files in
+   the S3 bucket.
+2. **Check Lambda Invocations:** Monitor the Lambda function in the Base14
+   Dashboards under "Library" > "Logs View"
+3. **Check Lambda Logs:** Examine the Log Group associated with your Lambda
+   function for detailed execution logs, including any print statements or error
+   messages. Look for lines like "Processing object..." and "Finished
+   processing...".
 
 ---
 
-This detailed setup provides a robust way to process VPC Flow Logs from S3
-using Lambda and forward them via OTLP. We can further adjust parsing logic,
-OTel configuration, and IAM permissions based on your specific Flow Log format
-and environment.
+This detailed setup provides a robust way to process VPC Flow Logs from S3 using
+Lambda and forward them via OTLP. We can further adjust parsing logic, OTel
+configuration, and IAM permissions based on your specific Flow Log format and
+environment.
 
 ## Related Guides
 
@@ -354,5 +372,5 @@ and environment.
   and metrics
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
   up collector for local development
-- [OTel Collector Configuration](../../collector-setup/otel-collector-config.md) -
-  Advanced collector configuration
+- [OTel Collector Configuration](../../collector-setup/otel-collector-config.md)
+  \- Advanced collector configuration

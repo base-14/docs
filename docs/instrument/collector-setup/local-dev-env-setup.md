@@ -1,18 +1,28 @@
 ---
-title: Local Development Environment Setup with OpenTelemetry | base14 Scout
-description: Set up Scout collector locally for development and testing. Run OpenTelemetry Collector with Docker for processing traces, metrics, and logs in your dev environment.
-keywords: [local development, opentelemetry dev setup, otel collector local, development environment, testing observability]
+title: Local Development Environment Setup with OpenTelemetry
+description:
+  Set up Scout collector locally for development and testing. Run OpenTelemetry
+  Collector with Docker for processing traces, metrics, and logs in your dev
+  environment.
+keywords:
+  [
+    local development,
+    opentelemetry dev setup,
+    otel collector local,
+    development environment,
+    testing observability,
+  ]
 tags: [development, local, base14 scout]
 sidebar_position: 7
 ---
 
 # Local Dev Environment
 
-Set up a Scout collector locally for development and testing purposes.
-It includes:
+Set up a Scout collector locally for development and testing purposes. It
+includes:
 
-- **Scout Collector**:
-  For collecting, processing, and exporting telemetry data to Scout Backend
+- **Scout Collector**: For collecting, processing, and exporting telemetry data
+  to Scout Backend
 
 This environment allows you to:
 
@@ -52,7 +62,7 @@ processors:
       - key: environment
         value: development
         action: upsert
-    
+
 extensions:
   oauth2client:
     client_id: ${SCOUT_CLIENT_ID}
@@ -67,23 +77,22 @@ service:
   extensions: [oauth2client]
   pipelines:
     traces:
-      receivers: [ otlp ]
-      processors: [ resource/env ]
-      exporters: [ otlphttp/b14 ]
+      receivers: [otlp]
+      processors: [resource/env]
+      exporters: [otlphttp/b14]
     metrics:
-      receivers: [ otlp ]
-      processors: [ resource/env ]
-      exporters: [ otlphttp/b14 ]
+      receivers: [otlp]
+      processors: [resource/env]
+      exporters: [otlphttp/b14]
     logs:
-      receivers: [ otlp ]
-      processors: [ resource/env ]
-      exporters: [ otlphttp/b14 ]
+      receivers: [otlp]
+      processors: [resource/env]
+      exporters: [otlphttp/b14]
 ```
 
-> Replace the placeholders with your Scout credentials.
-
-> For Adding Receiver, Processor, Exporter, and Service Extensions,
-> please refer to [Scout Collector Configuration](https://opentelemetry.io/docs/collector/configuration/)
+> Replace the placeholders with your Scout credentials. For Adding Receiver,
+> Processor, Exporter, and Service Extensions, please refer to
+> [Scout Collector Configuration](https://opentelemetry.io/docs/collector/configuration/)
 
 ## Start the Containers
 
@@ -105,7 +114,7 @@ services:
     image: otel/opentelemetry-collector-contrib:0.130.0
     container_name: otel-collector
     restart: unless-stopped
-    command: [ "--config=/etc/otelcol/config.yaml" ]
+    command: ["--config=/etc/otelcol/config.yaml"]
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol/config.yaml
     ports:
@@ -142,8 +151,7 @@ docker run -d \
 </Tabs>
 ```
 
-That's it! Navigate to Scout Grafana dashboards
-to visualize the data.
+That's it! Navigate to Scout Grafana dashboards to visualize the data.
 
 ## Related Guides
 

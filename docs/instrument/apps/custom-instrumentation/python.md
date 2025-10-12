@@ -1,7 +1,16 @@
 ---
-title: Python Custom OpenTelemetry Instrumentation | base14 Scout
-description: Custom instrumentation for Python applications with OpenTelemetry. Manual tracing, metrics, logs, spans, and telemetry export with Python OTel SDK.
-keywords: [python instrumentation, python monitoring, opentelemetry python, python custom instrumentation, python observability]
+title: Python Custom OpenTelemetry Instrumentation
+description:
+  Custom instrumentation for Python applications with OpenTelemetry. Manual
+  tracing, metrics, logs, spans, and telemetry export with Python OTel SDK.
+keywords:
+  [
+    python instrumentation,
+    python monitoring,
+    opentelemetry python,
+    python custom instrumentation,
+    python observability,
+  ]
 ---
 
 # Python
@@ -47,20 +56,20 @@ pip install opentelemetry-semantic-conventions
 ## Traces
 
 Traces give us the big picture of what happens when a request is made to an
-application. Whether your application is a monolith with a single
-database or a sophisticated mesh of services, traces are essential to
-understanding the full “path” a request takes in your application.
+application. Whether your application is a monolith with a single database or a
+sophisticated mesh of services, traces are essential to understanding the full
+“path” a request takes in your application.
 
 ### Initialization
 
-To Start tracing, first a tracer should be acquired and a TraceProvider should be
-initialized optionally we can pass a resource to TraceProvider.
+To Start tracing, first a tracer should be acquired and a TraceProvider should
+be initialized optionally we can pass a resource to TraceProvider.
 
 > A Resource is an immutable representation of the entity producing telemetry.
 > For example, a process producing telemetry that is running in a container on
 > Kubernetes has a Pod name, it is in a namespace and possibly is part of a
-> Deployment which also has a name. All three of these attributes can
-> be included in the Resource.
+> Deployment which also has a name. All three of these attributes can be
+> included in the Resource.
 
 Sample Reference code for Initialization
 
@@ -90,8 +99,8 @@ tracer = trace.get_tracer("my.tracer.name")
 
 > View your traces in the base14 Scout observability platform.
 >
-> **Note**: Ensure your Scout Collector is properly configured to
-> receive and process the trace data.
+> **Note**: Ensure your Scout Collector is properly configured to receive and
+> process the trace data.
 
 #### Reference
 
@@ -158,9 +167,8 @@ def do_work():
 #### Adding Semantic Attributes to a Span
 
 Semantic Attributes are pre-defined Attributes that are well-known naming
-conventions for common kinds of data.
-Using Semantic Attributes lets you normalize this kind of information across
-your systems.
+conventions for common kinds of data. Using Semantic Attributes lets you
+normalize this kind of information across your systems.
 
 > Ensure that you have installed `opentelemetry-semantic-conventions` package
 > for using Semantic Attributes
@@ -178,8 +186,8 @@ def do_work():
 
 > View these spans in the base14 Scout observability platform.
 >
-> **Note**: Ensure your Scout Collector is properly configured to
-> receive and process the span data.
+> **Note**: Ensure your Scout Collector is properly configured to receive and
+> process the span data.
 
 #### Reference
 
@@ -209,10 +217,10 @@ def do_work():
 ### Span Status
 
 A Status can be set on a Span, typically used to specify that a Span has not
-completed successfully - `Error`.
-By default, all spans are Unset, which means a span completed without error. The
-`Ok` status is reserved for when you need to explicitly mark a span as successful
-rather than stick with the default of `Unset` (i.e., “without error”).
+completed successfully - `Error`. By default, all spans are Unset, which means a
+span completed without error. The `Ok` status is reserved for when you need to
+explicitly mark a span as successful rather than stick with the default of
+`Unset` (i.e., “without error”).
 
 We also look at how to record an exception in the Span.
 
@@ -233,8 +241,8 @@ def do_work():
 
 > View these spans in the base14 Scout observability platform.
 >
-> **Note**: Ensure your Scout Collector is properly configured to
-> receive and process the span data.
+> **Note**: Ensure your Scout Collector is properly configured to receive and
+> process the span data.
 
 ## Metrics
 
@@ -264,8 +272,8 @@ meter = metrics.get_meter("my.meter.name")
 
 > View these metrics in base14 Scout observability backend.
 >
-> **Note**: Ensure your Scout Collector is properly configured to
-> receive and process the trace data.
+> **Note**: Ensure your Scout Collector is properly configured to receive and
+> process the trace data.
 
 ### Counter
 
@@ -334,7 +342,8 @@ http_server_duration.Record(100, http_method="GET", http_scheme="http")
 
 ## Extracting Trace and Span IDs
 
-To extract trace ID and span ID from the current context for log correlation or debugging purposes:
+To extract trace ID and span ID from the current context for log correlation or
+debugging purposes:
 
 ```python showLineNumbers
 from opentelemetry import trace
@@ -367,8 +376,8 @@ def traced_function():
 
 ## Related Guides
 
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set up
-  collector for local development
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
+  up collector for local development
 - [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
   Production deployment
 - [Fast API Auto-Instrumentation](../auto-instrumentation/fast-api.md) -

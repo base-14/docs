@@ -1,9 +1,18 @@
 ---
 date: 2025-10-08
 id: collecting-postgres-telemetry
-title: PostgreSQL Database Monitoring with OpenTelemetry | base14 Scout
-description: Monitor PostgreSQL with OpenTelemetry Collector. Collect database metrics, query performance, connections, and stats using Scout.
-keywords: [postgresql monitoring, postgres metrics, database monitoring, opentelemetry postgresql, postgres observability]
+title: PostgreSQL Database Monitoring with OpenTelemetry
+description:
+  Monitor PostgreSQL with OpenTelemetry Collector. Collect database metrics,
+  query performance, connections, and stats using Scout.
+keywords:
+  [
+    postgresql monitoring,
+    postgres metrics,
+    database monitoring,
+    opentelemetry postgresql,
+    postgres observability,
+  ]
 ---
 
 ## Overview
@@ -27,11 +36,13 @@ CREATE USER postgres_exporter WITH PASSWORD '<your_password>';
 GRANT pg_monitor TO postgres_exporter;
 ```
 
-The `pg_monitor` role provides access to all the statistics views and functions needed for monitoring without requiring superuser privileges.
+The `pg_monitor` role provides access to all the statistics views and functions
+needed for monitoring without requiring superuser privileges.
 
 ## PostgreSQL Configuration
 
-Ensure your PostgreSQL instance allows connections and has the required statistics enabled:
+Ensure your PostgreSQL instance allows connections and has the required
+statistics enabled:
 
 ```sql
 -- Verify pg_stat_statements extension (optional but recommended)
@@ -134,12 +145,12 @@ receivers:
 processors:
   resource:
     attributes:
-    - key: environment
-      value: ${ENVIRONMENT}
-      action: upsert
-    - key: service.name
-      value: ${SERVICE_NAME}
-      action: upsert
+      - key: environment
+        value: ${ENVIRONMENT}
+        action: upsert
+      - key: service.name
+        value: ${SERVICE_NAME}
+        action: upsert
 
   batch:
     timeout: 10s
@@ -184,6 +195,12 @@ service:
    SELECT * FROM pg_stat_user_indexes LIMIT 5;
    ```
 
+## References
+
+- [Scout Collector Setup](https://docs.base14.io/instrument/collector-setup/otel-collector-config)
+- [PostgreSQL Monitoring Views](https://www.postgresql.org/docs/current/monitoring-stats.html)
+- [pg_monitor Role Documentation](https://www.postgresql.org/docs/current/default-roles.html)
+
 ## Related Guides
 
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md) -
@@ -191,10 +208,3 @@ service:
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) - Set up
   collector for local development
 - [MongoDB Monitoring](./mongodb.md) - Alternative database monitoring guide
-
-## References
-
-- [Scout Collector Setup](
-  https://docs.base14.io/instrument/collector-setup/otel-collector-config)
-- [PostgreSQL Monitoring Views](https://www.postgresql.org/docs/current/monitoring-stats.html)
-- [pg_monitor Role Documentation](https://www.postgresql.org/docs/current/default-roles.html)

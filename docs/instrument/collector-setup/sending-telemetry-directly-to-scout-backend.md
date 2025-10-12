@@ -1,32 +1,43 @@
 ---
-title: Send OpenTelemetry Signals Directly to Scout Backend | base14 Scout
-description: Configure applications to send OpenTelemetry traces, logs, and metrics directly to Scout backend without collectors. Complete guide for direct OTLP export with OIDC authentication.
-keywords: [opentelemetry direct export, otlp exporter, send telemetry directly, opentelemetry without collector, direct instrumentation]
+title: Send OpenTelemetry Signals Directly to Scout Backend
+description:
+  Configure applications to send OpenTelemetry traces, logs, and metrics
+  directly to Scout backend without collectors. Complete guide for direct OTLP
+  export with OIDC authentication.
+keywords:
+  [
+    opentelemetry direct export,
+    otlp exporter,
+    send telemetry directly,
+    opentelemetry without collector,
+    direct instrumentation,
+  ]
 ---
 
 # Sending OpenTelemetry Signals Directly to Scout Backend
 
 This guide explains how to configure applications to send OpenTelemetry traces,
-logs, and metrics directly to the Scout backend,
-without using intermediate collectors or agents.
+logs, and metrics directly to the Scout backend, without using intermediate
+collectors or agents.
 
 ## Data Flow
 
-``` markdown
+```markdown
 Application → OpenTelemetry SDK → OTLP Exporter → Scout Backend
 ```
 
 The direct export flow consists of:
 
 1. **Application generates telemetry**: The application is instrumented with an
-OpenTelemetry SDK that exports telemetry signals (traces, metrics, logs)directly
-into the Scout backend.
+   OpenTelemetry SDK that exports telemetry signals (traces, metrics,
+   logs)directly into the Scout backend.
 2. **OpenTelemetry SDK**: The SDK batches and processes telemetry data
-3. **OTLP Exporter**: Data is exported via OTLP (OpenTelemetry Protocol) over HTTP/gRPC
+3. **OTLP Exporter**: Data is exported via OTLP (OpenTelemetry Protocol) over
+   HTTP/gRPC
 4. **Authentication**: OIDC token-based authentication secures the connection
-5. **Scout Backend**: The scout backend receives and processes the telemetry
- and send them for visualization in the Scout UI.
-Refer [this](https://docs.base14.io/) for more details.
+5. **Scout Backend**: The scout backend receives and processes the telemetry and
+   send them for visualization in the Scout UI. Refer
+   [this](https://docs.base14.io/) for more details.
 
 ## Tradeoffs
 
@@ -47,8 +58,8 @@ All applications need these core components:
 
 1. **OpenTelemetry SDK**: Core functionality for generating telemetry
 2. **OTLP Exporter**: For sending data via OpenTelemetry Protocol over HTTP/gRPC
-3. **Auto-instrumentation libraries**: Framework-specific instrumentation
-(e.g., Rails instrumentation)
+3. **Auto-instrumentation libraries**: Framework-specific instrumentation (e.g.,
+   Rails instrumentation)
 4. **HTTP client**: For fetching OIDC tokens
 
 ## Example: Rails Application
@@ -58,7 +69,7 @@ All applications need these core components:
 When sending telemetry directly to Scout backend, your application needs the
 following changes:
 
-### 1.  Environment Variables
+### 1. Environment Variables
 
 Set these environment variables for your application:
 
@@ -119,7 +130,7 @@ OpenTelemetry::SDK.configure do |c|
     {
       'service.name' => ENV.fetch("OTEL_SERVICE_NAME", "default-service"),
       'deployment.environment' => ENV.fetch("RAILS_ENV", "development")
-    }   
+    }
   )
   c.resource = resource
 
@@ -151,8 +162,8 @@ configured for direct export.
 
 ### Essential Configuration Requirements
 
-1. Service Name and Environment (Critical)
-Always ensure these attributes are properly set.
+1. Service Name and Environment (Critical) Always ensure these attributes are
+   properly set.
 
 ```ruby
 # In your OpenTelemetry configuration
@@ -195,6 +206,11 @@ end
 2. **Network connectivity**: Verify endpoint accessibility
 3. **Performance impact**: Monitor application overhead
 
+## References
+
+- [Rails instrumentation doc](https://docs.base14.io/instrument/apps/auto-instrumentation/rails)
+- [Rails instrumentaion code](https://github.com/base-14/examples/tree/main/rails)
+
 ## Related Guides
 
 - [Scout Exporter Configuration](./scout-exporter.md) - Use collector for
@@ -203,8 +219,3 @@ end
   framework instrumentation guide
 - [Docker Compose Setup](./docker-compose-example.md) - Set up collector for
   local development
-
-## References
-
-- [Rails instrumentation doc](https://docs.base14.io/instrument/apps/auto-instrumentation/rails)
-- [Rails instrumentaion code](https://github.com/base-14/examples/tree/main/rails)

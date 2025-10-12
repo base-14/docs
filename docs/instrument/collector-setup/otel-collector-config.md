@@ -1,20 +1,29 @@
 ---
-title: OpenTelemetry Collector Configuration Guide | base14 Scout
-description: Complete OpenTelemetry Collector configuration guide. Learn receivers, processors, exporters setup with examples for traces, metrics, and logs.
-keywords: [opentelemetry collector, otel collector config, opentelemetry setup, telemetry configuration, otel configuration]
+title: OpenTelemetry Collector Configuration Guide
+description:
+  Complete OpenTelemetry Collector configuration guide. Learn receivers,
+  processors, exporters setup with examples for traces, metrics, and logs.
+keywords:
+  [
+    opentelemetry collector,
+    otel collector config,
+    opentelemetry setup,
+    telemetry configuration,
+    otel configuration,
+  ]
 tags: [opentelemetry, base14 scout]
 sidebar_position: 6
 ---
 
 # Configuration
 
-Collect, process and export telemetry data efficiently with
-the Scout Collector (`otelcol`).
+Collect, process and export telemetry data efficiently with the Scout Collector
+(`otelcol`).
 
 ## Overview
 
-Scout Collector serves as a vendor-agnostic implementation for
-handling telemetry data. This guide covers:
+Scout Collector serves as a vendor-agnostic implementation for handling
+telemetry data. This guide covers:
 
 - Core configuration components (receivers, processors, exporters)
 - Advanced configuration options
@@ -26,8 +35,8 @@ handling telemetry data. This guide covers:
 
 ## Configuration
 
-The Scout Collector uses YAML for its configuration. The configuration
-file is structured into several sections:
+The Scout Collector uses YAML for its configuration. The configuration file is
+structured into several sections:
 
 ### receivers
 
@@ -46,10 +55,10 @@ receivers:
   prometheus:
     config:
       scrape_configs:
-        - job_name: 'otel-collector'
+        - job_name: "otel-collector"
           scrape_interval: 10s
           static_configs:
-            - targets: [ '0.0.0.0:8888' ]
+            - targets: ["0.0.0.0:8888"]
 ```
 
 Key features of receivers:
@@ -77,7 +86,7 @@ processors:
     check_interval: 1s
     limit_mib: 4000
   resourcedetection:
-    detectors: [ env, system ]
+    detectors: [env, system]
     timeout: 5s
   attributes:
     actions:
@@ -100,8 +109,8 @@ Common processors include:
 ### exporters
 
 OpenTelemetry exporters transmit telemetry data to destination backends. They
-handle the delivery of logs, metrics and traces to various
-observability platforms and monitoring systems.
+handle the delivery of logs, metrics and traces to various observability
+platforms and monitoring systems.
 
 ```yaml showLineNumbers
 exporters:
@@ -131,8 +140,8 @@ Supported export destinations:
 
 ### extensions
 
-Scout Collector extensions enhance core functionality by providing
-operational features such as:
+Scout Collector extensions enhance core functionality by providing operational
+features such as:
 
 - Health monitoring and readiness checks
 - Performance profiling and debugging
@@ -151,12 +160,10 @@ extensions:
 
 Common OpenTelemetry extensions include:
 
-- `health_check`:
-  HTTP endpoint for monitoring collector health and readiness status
-- `pprof`:
-  Performance profiling endpoints for debugging and optimization
-- `zpages`:
-  Zero-configuration diagnostic web pages for troubleshooting
+- `health_check`: HTTP endpoint for monitoring collector health and readiness
+  status
+- `pprof`: Performance profiling endpoints for debugging and optimization
+- `zpages`: Zero-configuration diagnostic web pages for troubleshooting
 
 #### Reference
 
@@ -164,8 +171,8 @@ Common OpenTelemetry extensions include:
 
 ### service
 
-The Scout Collector service configuration defines pipeline architecture,
-data flow, and operational settings such as:
+The Scout Collector service configuration defines pipeline architecture, data
+flow, and operational settings such as:
 
 - Pipeline definitions for logs, metrics and traces
 - Component enablement and connections
@@ -173,20 +180,20 @@ data flow, and operational settings such as:
 
 ```yaml showLineNumbers
 service:
-  extensions: [ health_check, pprof, zpages ]
+  extensions: [health_check, pprof, zpages]
   pipelines:
     traces:
-      receivers: [ otlp ]
-      processors: [ batch, memory_limiter ]
-      exporters: [ otlp, zipkin ]
+      receivers: [otlp]
+      processors: [batch, memory_limiter]
+      exporters: [otlp, zipkin]
     metrics:
-      receivers: [ otlp, prometheus ]
-      processors: [ batch, memory_limiter ]
-      exporters: [ otlp, prometheus ]
+      receivers: [otlp, prometheus]
+      processors: [batch, memory_limiter]
+      exporters: [otlp, prometheus]
     logs:
-      receivers: [ otlp ]
-      processors: [ batch ]
-      exporters: [ otlp, logging ]
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp, logging]
   telemetry:
     logs:
       level: info
@@ -196,13 +203,10 @@ service:
 
 Key components:
 
-- `extensions`:
-  Configure and enable operational extensions like health checks, profiling,
-  and diagnostics
-- `pipelines`:
-  Define data processing workflows for different telemetry types
-- `telemetry`:
-  Configuration for the collector's self-monitoring capabilities
+- `extensions`: Configure and enable operational extensions like health checks,
+  profiling, and diagnostics
+- `pipelines`: Define data processing workflows for different telemetry types
+- `telemetry`: Configuration for the collector's self-monitoring capabilities
 
 #### Reference
 
@@ -231,14 +235,12 @@ connectors:
 
 Common OpenTelemetry connector types include:
 
-- `forward`:
-  Internal pipeline connector for routing telemetry data between processing chains
-- `spanmetrics`:
-  Generates performance metrics from trace spans for latency analysis
-- `count`:
-  Creates count metrics from spans or logs
-- `servicegraph`:
-  Builds service dependency graphs from trace data
+- `forward`: Internal pipeline connector for routing telemetry data between
+  processing chains
+- `spanmetrics`: Generates performance metrics from trace spans for latency
+  analysis
+- `count`: Creates count metrics from spans or logs
+- `servicegraph`: Builds service dependency graphs from trace data
 
 #### Reference
 
@@ -373,17 +375,17 @@ exporters:
 service:
   pipelines:
     traces:
-      receivers: [ otlp ]
-      processors: [ batch ]
-      exporters: [ otlp ]
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp]
     metrics:
-      receivers: [ otlp ]
-      processors: [ batch ]
-      exporters: [ otlp ]
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp]
     logs:
-      receivers: [ otlp ]
-      processors: [ batch ]
-      exporters: [ otlp ]
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp]
 ```
 
 ### Advanced Configuration with Multiple Pipelines
@@ -397,10 +399,10 @@ receivers:
   prometheus:
     config:
       scrape_configs:
-        - job_name: 'app-metrics'
+        - job_name: "app-metrics"
           scrape_interval: 10s
           static_configs:
-            - targets: [ 'app:8080' ]
+            - targets: ["app:8080"]
 
 processors:
   batch:
@@ -411,7 +413,7 @@ processors:
         value: production
         action: insert
   resourcedetection:
-    detectors: [ env, system ]
+    detectors: [env, system]
 
 exporters:
   otlp/traces:
@@ -426,23 +428,26 @@ extensions:
     endpoint: 0.0.0.0:13133
 
 service:
-  extensions: [ health_check ]
+  extensions: [health_check]
   pipelines:
     traces:
-      receivers: [ otlp ]
-      processors: [ batch, attributes, resourcedetection ]
-      exporters: [ otlp/traces ]
+      receivers: [otlp]
+      processors: [batch, attributes, resourcedetection]
+      exporters: [otlp/traces]
     metrics:
-      receivers: [ otlp, prometheus ]
-      processors: [ batch, resourcedetection ]
-      exporters: [ otlp/metrics, prometheus ]
+      receivers: [otlp, prometheus]
+      processors: [batch, resourcedetection]
+      exporters: [otlp/metrics, prometheus]
 ```
 
 ## Related Guides
 
-- [Scout Exporter Configuration](./scout-exporter.md) - Configure data export to Scout
-- [Extract Log Level from Body](../../manage/filters-and-transformations/guide-extract-log-level-from-body.md) - Parse and categorize log severity
-- [Transform and Filter Logs](../../manage/filters-and-transformations/guide-transform-logs.md) - Advanced log processing techniques
+- [Scout Exporter Configuration](./scout-exporter.md) - Configure data export to
+  Scout
+- [Extract Log Level from Body](../../manage/filters-and-transformations/guide-extract-log-level-from-body.md)
+  \- Parse and categorize log severity
+- [Transform and Filter Logs](../../manage/filters-and-transformations/guide-transform-logs.md)
+  \- Advanced log processing techniques
 
 ## Resources
 

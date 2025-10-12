@@ -1,10 +1,18 @@
 ---
 date: 2025-04-26
 id: collecting-aws-rds-postgres-telemetry
-title: AWS RDS PostgreSQL Monitoring via CloudWatch Metrics Stream | base14 Scout
-description: Monitor AWS RDS PostgreSQL with CloudWatch Metrics Stream and OpenTelemetry. Collect AWS/RDS metrics, database stats, and logs using Scout.
-keywords: [aws rds monitoring, rds postgresql monitoring, cloudwatch metrics stream, aws database monitoring, rds observability]
-hide_table_of_contents: true
+title: AWS RDS PostgreSQL Monitoring via CloudWatch Metrics Stream
+description:
+  Monitor AWS RDS PostgreSQL with CloudWatch Metrics Stream and OpenTelemetry.
+  Collect AWS/RDS metrics, database stats, and logs using Scout.
+keywords:
+  [
+    aws rds monitoring,
+    rds postgresql monitoring,
+    cloudwatch metrics stream,
+    aws database monitoring,
+    rds observability,
+  ]
 ---
 
 ## Overview
@@ -16,7 +24,8 @@ Metrics Stream over Prometheus exporters as it provides faster metric delivery
 
 ## Collecting RDS Postgres Metrics
 
-For collecting RDS metrics, we recommend using **CloudWatch Metrics Stream** instead of Prometheus exporters. CloudWatch Metrics Stream provides:
+For collecting RDS metrics, we recommend using **CloudWatch Metrics Stream**
+instead of Prometheus exporters. CloudWatch Metrics Stream provides:
 
 - **Faster delivery**: 2-3 minute latency vs 5+ minutes with polling
 - **Lower cost**: No need to run dedicated exporters
@@ -25,11 +34,14 @@ For collecting RDS metrics, we recommend using **CloudWatch Metrics Stream** ins
 
 ### Step 1: Set up CloudWatch Metrics Stream
 
-Follow our comprehensive [CloudWatch Metrics Stream guide](cloudwatch-metrics-stream.md) to set up the infrastructure.
+Follow our comprehensive
+[CloudWatch Metrics Stream guide](cloudwatch-metrics-stream.md) to set up the
+infrastructure.
 
 ### Step 2: Configure RDS metrics filtering
 
-When configuring your CloudWatch Metrics Stream in **Step 3** of the setup guide, make sure to:
+When configuring your CloudWatch Metrics Stream in **Step 3** of the setup
+guide, make sure to:
 
 1. **Select specific namespaces** instead of "All namespaces"
 2. **Choose only AWS/RDS** from the namespace list
@@ -37,7 +49,8 @@ When configuring your CloudWatch Metrics Stream in **Step 3** of the setup guide
 
 ### Step 3: Create OTEL Collector config for PostgreSQL metrics
 
-For database-specific metrics (like connection counts, query performance), create `postgres-metrics-collection-config.yaml`:
+For database-specific metrics (like connection counts, query performance),
+create `postgres-metrics-collection-config.yaml`:
 
 ```yaml
 receivers:
@@ -70,12 +83,15 @@ service:
       exporters: [otlp]
 ```
 
-> **Note**: CloudWatch Metrics Stream will automatically deliver AWS/RDS metrics (CPU, memory, disk I/O, etc.), while the PostgreSQL receiver collects database-specific metrics.
+> **Note**: CloudWatch Metrics Stream will automatically deliver AWS/RDS metrics
+> (CPU, memory, disk I/O, etc.), while the PostgreSQL receiver collects
+> database-specific metrics.
 
 ## Collecting RDS Logs
 
-The log collection of RDS instance requires specifying the list of log group names.
-From the AWS CloudWatch console, please find the log group(s) relevant to the integration.
+The log collection of RDS instance requires specifying the list of log group
+names. From the AWS CloudWatch console, please find the log group(s) relevant to
+the integration.
 
 ### Create the Collector config file
 
@@ -115,17 +131,20 @@ service:
       exporters: [otlp]
 ```
 
-After deploying these changes, generate some traffic to your database and
-check the Postgres section in Scout to see your databases's metrics and logs.
+After deploying these changes, generate some traffic to your database and check
+the Postgres section in Scout to see your databases's metrics and logs.
 
 ---
 
 With this setup, your RDS instance becomes fully observable through Scout.
-You'll gain real-time visibility into performance metrics and logs without
-any changes to your application code.
+You'll gain real-time visibility into performance metrics and logs without any
+changes to your application code.
 
 ## Related Guides
 
-- [CloudWatch Metrics Stream Setup](./cloudwatch-metrics-stream.md) - Configure AWS metrics streaming
-- [AWS ECS/Fargate Setup](../../collector-setup/ecs-setup.md) - Deploy Scout Collector on AWS ECS
-- [Monitor PostgreSQL Component](../../component/postgres.md) - Direct PostgreSQL monitoring
+- [CloudWatch Metrics Stream Setup](./cloudwatch-metrics-stream.md) - Configure
+  AWS metrics streaming
+- [AWS ECS/Fargate Setup](../../collector-setup/ecs-setup.md) - Deploy Scout
+  Collector on AWS ECS
+- [Monitor PostgreSQL Component](../../component/postgres.md) - Direct
+  PostgreSQL monitoring

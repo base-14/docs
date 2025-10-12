@@ -1,20 +1,29 @@
 ---
-title: Docker Compose OpenTelemetry Setup | base14 Scout
-description: Set up OpenTelemetry Collector with Docker Compose. Complete guide for container monitoring with traces, metrics, and logs collection in minutes.
-keywords: [docker monitoring, docker compose, opentelemetry setup, container monitoring, docker observability]
+title: Docker Compose OpenTelemetry Setup
+description:
+  Set up OpenTelemetry Collector with Docker Compose. Complete guide for
+  container monitoring with traces, metrics, and logs collection in minutes.
+keywords:
+  [
+    docker monitoring,
+    docker compose,
+    opentelemetry setup,
+    container monitoring,
+    docker observability,
+  ]
 tags: [docker, opentelemetry, base14 scout]
 sidebar_position: 1
 ---
 
 # Docker Compose
 
-Collect and monitor Docker container logs using Scout Collector and
-base14 Scout with a complete `Docker Compose` setup.
+Collect and monitor Docker container logs using Scout Collector and base14 Scout
+with a complete `Docker Compose` setup.
 
 ## Overview
 
-This guide provides a comprehensive setup for collecting Docker container
-logs and metrics using Scout Collector and forwarding them to base14 Scout.
+This guide provides a comprehensive setup for collecting Docker container logs
+and metrics using Scout Collector and forwarding them to base14 Scout.
 
 - Set up a complete logging pipeline using `Docker Compose`
 - Configure Scout Collector for container log and metrics collection
@@ -44,7 +53,7 @@ The following `docker-compose.yml` configuration creates a three-service stack:
 3. Scout Collector for telemetry processing
 
 ```yaml showLineNumbers title="docker-compose.yml"
-version: '3.8'
+version: "3.8"
 
 x-default-logging: &logging
   driver: "json-file"
@@ -56,7 +65,8 @@ x-default-logging: &logging
 services:
   web:
     build: .
-    command: poetry run uvicorn demo.main:app --host 0.0.0.0 --port 8000 --reload
+    command:
+      poetry run uvicorn demo.main:app --host 0.0.0.0 --port 8000 --reload
     volumes:
       - .:/demo
     ports:
@@ -68,7 +78,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "localhost:8000/ping" ]
+      test: ["CMD", "curl", "-f", "localhost:8000/ping"]
     logging: *logging
 
   redis:
@@ -77,8 +87,7 @@ services:
       - "6379:6379"
     logging: *logging
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
-
+      test: ["CMD", "redis-cli", "ping"]
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.119.0
@@ -88,7 +97,7 @@ services:
         limits:
           memory: 200M
     restart: unless-stopped
-    command: [ "--config=/etc/otelcol-config.yaml" ]
+    command: ["--config=/etc/otelcol-config.yaml"]
     user: 0:0
     volumes:
       - /:/hostfs:ro
@@ -98,7 +107,7 @@ services:
     ports:
       - "4319:4319"
       - "4318:4318"
-      - "55679:55679"  # zpages: http://localhost:55679/debug/tracez
+      - "55679:55679" # zpages: http://localhost:55679/debug/tracez
     logging: *logging
 volumes:
   postgres_data:
@@ -173,7 +182,7 @@ receivers:
     operators:
       - id: parser-docker
         timestamp:
-          layout: '%Y-%m-%dT%H:%M:%S.%LZ'
+          layout: "%Y-%m-%dT%H:%M:%S.%LZ"
           parse_from: attributes.time
         type: json_parser
       - field: attributes.time
@@ -182,23 +191,22 @@ receivers:
         parse_from: attributes.attrs.tag
         regex: ^(?P<name>[^\|]+)\|(?P<image_name>[^\|]+)\|(?P<id>[^$]+)$
         type: regex_parser
-        if: 'attributes?.attrs?.tag != nil'
+        if: "attributes?.attrs?.tag != nil"
       - from: attributes.name
         to: resource["docker.container.name"]
         type: move
-        if: 'attributes?.name != nil'
+        if: "attributes?.name != nil"
       - from: attributes.image_name
         to: resource["docker.image.name"]
         type: move
-        if: 'attributes?.image_name != nil'
+        if: "attributes?.image_name != nil"
       - from: attributes.id
         to: resource["docker.container.id"]
         type: move
-        if: 'attributes?.id != nil'
+        if: "attributes?.id != nil"
       - from: attributes.log
         to: body
         type: move
-
 
   docker_stats:
     endpoint: unix:///var/run/docker.sock
@@ -209,20 +217,20 @@ receivers:
     collection_interval: 20s
 
 service:
-  extensions: [ oauth2client, zpages ]
+  extensions: [oauth2client, zpages]
   pipelines:
     traces:
-      receivers: [ otlp ]
-      processors: [ batch ]
-      exporters: [ otlphttp/b14, debug ]
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/b14, debug]
     metrics:
-      receivers: [ otlp, postgresql, redis, rabbitmq, docker_stats ]
-      processors: [ batch ]
-      exporters: [ otlphttp/b14, debug ]
+      receivers: [otlp, postgresql, redis, rabbitmq, docker_stats]
+      processors: [batch]
+      exporters: [otlphttp/b14, debug]
     logs:
-      receivers: [ otlp, filelog ]
-      processors: [ batch ]
-      exporters: [ otlphttp/b14, debug ]
+      receivers: [otlp, filelog]
+      processors: [batch]
+      exporters: [otlphttp/b14, debug]
   telemetry:
     logs:
       level: info
@@ -234,5 +242,5 @@ service:
   to send data to Scout
 - [Instrument Express.js Apps](../apps/auto-instrumentation/express.md) -
   Auto-instrument Node.js applications
-- [Advanced Collector Configuration](./otel-collector-config.md) - Deep dive into
-  collector configuration
+- [Advanced Collector Configuration](./otel-collector-config.md) - Deep dive
+  into collector configuration

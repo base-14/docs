@@ -1,7 +1,16 @@
 ---
-title: Grafana Dashboards and Alerts as Code with Grizzly | base14 Scout
-description: Manage Grafana dashboards and alerts as code using Grizzly. Automate deployment, version control, and CI/CD integration for observability configs.
-keywords: [grafana dashboards, grafana alerts, dashboards as code, grizzly grafana, observability automation]
+title: Grafana Dashboards and Alerts as Code with Grizzly
+description:
+  Manage Grafana dashboards and alerts as code using Grizzly. Automate
+  deployment, version control, and CI/CD integration for observability configs.
+keywords:
+  [
+    grafana dashboards,
+    grafana alerts,
+    dashboards as code,
+    grizzly grafana,
+    observability automation,
+  ]
 ---
 
 # Leveraging Grizzly with Base14 Scout Observability Platform
@@ -13,44 +22,46 @@ define and deploy your observability configurations as code.
 
 ## Why Grizzly?
 
-Grizzly provides a declarative approach to managing Grafana resources. Instead of
-manually configuring dashboards, alerts, and other elements through the Grafana UI,
-you define them in human-readable YAML files. This offers several advantages:
+Grizzly provides a declarative approach to managing Grafana resources. Instead
+of manually configuring dashboards, alerts, and other elements through the
+Grafana UI, you define them in human-readable YAML files. This offers several
+advantages:
 
-* **Version Control:** Store your entire observability setup in Git, enabling
+- **Version Control:** Store your entire observability setup in Git, enabling
   collaboration, tracking changes, and easy rollbacks.
-* **Automation:** Integrate Grizzly into your CI/CD pipelines for automated
+- **Automation:** Integrate Grizzly into your CI/CD pipelines for automated
   deployment of your Grafana configurations.
-* **Reproducibility:** Ensure consistent environments across different stages
+- **Reproducibility:** Ensure consistent environments across different stages
   (development, staging, production).
-* **Efficiency:** Define and deploy multiple resources quickly and consistently.
+- **Efficiency:** Define and deploy multiple resources quickly and consistently.
 
 ## Getting Started with Grizzly
 
-To begin using Grizzly with the Base14 Observability Platform, you need to configure
-it to connect to your Grafana instance hosted by Base14. This involves setting the
-Grafana URL and API token.
+To begin using Grizzly with the Base14 Observability Platform, you need to
+configure it to connect to your Grafana instance hosted by Base14. This involves
+setting the Grafana URL and API token.
 
 ### 1. Setting the Grafana URL
 
 The Grafana URL for your Base14 Observability Platform instance will be provided
-to you during the service setup. Use the following Grizzly command to configure it:
+to you during the service setup. Use the following Grizzly command to configure
+it:
 
 ```bash
 grr config set grafana.url <your_base14_grafana_url>
 grr config set grafana.token <your_base14_grafana_api_token>
 ```
 
-Replace `<your_base14_grafana_url>` with the actual URL of your Grafana instance.
+Replace `<your_base14_grafana_url>` with the actual URL of your Grafana
+instance.
 
 ## Defining Grafana Resources with YAML
 
-Grizzly allows you to define various Grafana resources using YAML. Here's how you
-can define folders, dashboards, alerts, and contact points:
+Grizzly allows you to define various Grafana resources using YAML. Here's how
+you can define folders, dashboards, alerts, and contact points:
 
-1. Folders
-Folders help organize your dashboards. Here's an example of a YAML definition for
-a folder:
+1. Folders Folders help organize your dashboards. Here's an example of a YAML
+   definition for a folder:
 
 ```yaml showLineNumbers
 apiVersion: grizzly.grafana.com/v1alpha1
@@ -62,8 +73,8 @@ spec:
 ```
 
 You can create multiple folder definition files (e.g., folders/production.yaml,
-folders/staging.yaml, etc.). You can also use hierarchical folder structure by using
-the `folder` field in the dashboard definition.
+folders/staging.yaml, etc.). You can also use hierarchical folder structure by
+using the `folder` field in the dashboard definition.
 
 1. Dashboards
 
@@ -71,15 +82,15 @@ the `folder` field in the dashboard definition.
 apiVersion: grizzly.grafana.com/v1alpha1
 kind: Dashboard
 metadata:
-    folder: sample
-    name: prod-overview
+  folder: sample
+  name: prod-overview
 spec:
-    schemaVersion: 17
-    tags:
-        - templated
-    timezone: browser
-    title: Production Overview
-    uid: prod-overview
+  schemaVersion: 17
+  tags:
+    - templated
+  timezone: browser
+  title: Production Overview
+  uid: prod-overview
 ```
 
 You can create multiple dashboard definition files in a `dashboards` directory
@@ -87,15 +98,16 @@ You can create multiple dashboard definition files in a `dashboards` directory
 
 Grizzly configurations allow you the following resources:
 
-* DashboardFolder
-* Dashboard
-* LibraryElement
-* AlertRuleGroup
-* AlertContactPoint
-* AlertNotificationPolicy
-* AlertNotificationTemplate
+- DashboardFolder
+- Dashboard
+- LibraryElement
+- AlertRuleGroup
+- AlertContactPoint
+- AlertNotificationPolicy
+- AlertNotificationTemplate
 
-For more details, see the [Grizzly documentation](https://grafana.github.io/grizzly/grafana/).
+For more details, see the
+[Grizzly documentation](https://grafana.github.io/grizzly/grafana/).
 
 ## Applying Your Configurations with Grizzly
 
@@ -104,8 +116,8 @@ them to your Base14 Grafana instance.
 
 ### Applying All Resources in a Directory
 
-To apply all YAML files in a specific directory (e.g., dashboards), use the apply
-command:
+To apply all YAML files in a specific directory (e.g., dashboards), use the
+apply command:
 
 ```bash
 grr apply -f dashboards/
@@ -127,8 +139,8 @@ grr apply -f dashboards/application-metrics.yaml
 
 ### Diffing Resources
 
-Before applying changes, it's often useful to see the differences between your local
-definitions and the resources in Grafana:
+Before applying changes, it's often useful to see the differences between your
+local definitions and the resources in Grafana:
 
 ```bash
 grr diff -f dashboards/application-metrics.yaml
@@ -140,31 +152,33 @@ resource in your Base14 Grafana instance.
 ## Working with Jsonnet (Brief Overview)
 
 Jsonnet is a data templating language that can be used to generate Grafana JSON,
-which Grizzly can then manage. Jsonnet offers more advanced features like variables,
-functions, and imports, making it powerful for creating complex and reusable
-dashboard definitions.
+which Grizzly can then manage. Jsonnet offers more advanced features like
+variables, functions, and imports, making it powerful for creating complex and
+reusable dashboard definitions.
 
-While YAML is generally easier to read and write for simple configurations, Jsonnet
-can be beneficial for:
+While YAML is generally easier to read and write for simple configurations,
+Jsonnet can be beneficial for:
 
-* Dynamic Dashboards: Generating dashboards based on variables or external data.
-* Reusability: Defining dashboard components as functions and reusing them across
-  multiple dashboards.
-* Complex Logic: Implementing conditional logic within your dashboard definitions.
+- Dynamic Dashboards: Generating dashboards based on variables or external data.
+- Reusability: Defining dashboard components as functions and reusing them
+  across multiple dashboards.
+- Complex Logic: Implementing conditional logic within your dashboard
+  definitions.
 
 To use Jsonnet with Grizzly, you would typically:
 
-* Write your dashboard definitions in .jsonnet files.
-* Use the jsonnet command-line tool to compile these files into .json files.
-* Use Grizzly to apply the generated .json files.
+- Write your dashboard definitions in .jsonnet files.
+- Use the jsonnet command-line tool to compile these files into .json files.
+- Use Grizzly to apply the generated .json files.
 
-For detailed information and examples of using Jsonnet with Grafana, please refer
-to the official [Jsonnet documentation](https://jsonnet.org/): and Grafana's
-documentation on using Jsonnet for dashboards.
+For detailed information and examples of using Jsonnet with Grafana, please
+refer to the official [Jsonnet documentation](https://jsonnet.org/): and
+Grafana's documentation on using Jsonnet for dashboards.
 
 ## Automation Examples
 
-Here are examples of how you can integrate Grizzly into your automation workflows:
+Here are examples of how you can integrate Grizzly into your automation
+workflows:
 
 ### Sample Makefile
 
@@ -230,29 +244,29 @@ grizzly_linux_amd64 -o grizzly
 
 ### In this workflow
 
-* We trigger the workflow on pushes to the main branch if any YAML files in the
+- We trigger the workflow on pushes to the main branch if any YAML files in the
   specified directories are changed.
-* We check out the code.
-* We download and install Grizzly.
-* We configure Grizzly using GitHub secrets (GRAFANA_URL and GRAFANA_TOKEN) for
+- We check out the code.
+- We download and install Grizzly.
+- We configure Grizzly using GitHub secrets (GRAFANA_URL and GRAFANA_TOKEN) for
   security. You'll need to define these secrets in your repository settings.
 
 Finally, we apply all the Grafana resources defined in the repository.
 
 ## Conclusion
 
-Grizzly provides a powerful and efficient way to manage your Grafana resources on
-the Base14 Observability Platform. By defining your configurations as code in YAML
-(or using Jsonnet for more advanced scenarios), you can streamline your observability
-workflows, improve consistency, and integrate seamlessly with your existing
-development practices. Start leveraging Grizzly today to take full control of your
-Grafana environment on Base14!
+Grizzly provides a powerful and efficient way to manage your Grafana resources
+on the Base14 Observability Platform. By defining your configurations as code in
+YAML (or using Jsonnet for more advanced scenarios), you can streamline your
+observability workflows, improve consistency, and integrate seamlessly with your
+existing development practices. Start leveraging Grizzly today to take full
+control of your Grafana environment on Base14!
 
 ## Related Guides
 
 - [Getting Started Guide](../introduction.md) - Overview of Scout observability
   platform
-- [Docker Compose Setup](../instrument/collector-setup/docker-compose-example.md) -
-  Local development with Grafana
-- [OTel Collector Configuration](../instrument/collector-setup/otel-collector-config.md) -
-  Configure data pipelines
+- [Docker Compose Setup](../instrument/collector-setup/docker-compose-example.md)
+  \- Local development with Grafana
+- [OTel Collector Configuration](../instrument/collector-setup/otel-collector-config.md)
+  \- Configure data pipelines

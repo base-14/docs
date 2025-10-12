@@ -1,7 +1,17 @@
 ---
-title: Linux OpenTelemetry Collector Installation | base14 Scout
-description: Install OpenTelemetry Collector on Linux using DEB or RPM packages. Complete guide for Ubuntu, Debian, RHEL, CentOS, and Fedora with systemd service management.
-keywords: [linux opentelemetry, otel collector linux, linux installation, debian opentelemetry, rhel opentelemetry]
+title: Linux OpenTelemetry Collector Installation
+description:
+  Install OpenTelemetry Collector on Linux using DEB or RPM packages. Complete
+  guide for Ubuntu, Debian, RHEL, CentOS, and Fedora with systemd service
+  management.
+keywords:
+  [
+    linux opentelemetry,
+    otel collector linux,
+    linux installation,
+    debian opentelemetry,
+    rhel opentelemetry,
+  ]
 tags: [linux, opentelemetry, base14 scout]
 sidebar_position: 3
 ---
@@ -10,13 +20,13 @@ sidebar_position: 3
 
 Install and configure the Scout Collector on Linux systems.
 
-Whether you're using Debian, Red Hat, or other Linux distributions,
-you'll learn how to set up telemetry collection for your observability needs.
+Whether you're using Debian, Red Hat, or other Linux distributions, you'll learn
+how to set up telemetry collection for your observability needs.
 
 ## Overview
 
-The Scout Collector is a vendor-agnostic agent that collects, processes,
-and exports telemetry data. This guide covers:
+The Scout Collector is a vendor-agnostic agent that collects, processes, and
+exports telemetry data. This guide covers:
 
 - Installing Scout Collector via DEB packages (Ubuntu, Debian)
 - Installing Scout Collector via RPM packages (RHEL, CentOS, Fedora)
@@ -44,8 +54,8 @@ Default configuration path: `/etc/otelcol/config.yaml`
 
 ## DEB Installation
 
-To install the Scout Collector on Debian-based systems, run the
-following commands:
+To install the Scout Collector on Debian-based systems, run the following
+commands:
 
 ```mdx-code-block
 import Tabs from '@theme/Tabs';
@@ -93,8 +103,8 @@ sudo dpkg -i otelcol_0.119.0_linux_386.deb
 
 ## RPM Installation
 
-To install the Scout Collector on Red Hat-based systems, run the
-following commands:
+To install the Scout Collector on Red Hat-based systems, run the following
+commands:
 
 ```mdx-code-block
 <Tabs>
@@ -139,8 +149,8 @@ sudo rpm -ivh otelcol_0.119.0_linux_386.rpm
 
 ## Manual Linux Installation
 
-The OpenTelemetry
-Collector [releases](https://github.com/open-telemetry/opentelemetry-collector-releases/releases)
+The OpenTelemetry Collector
+[releases](https://github.com/open-telemetry/opentelemetry-collector-releases/releases)
 are available for various architectures. You can download the binary and install
 it manually:
 
@@ -193,7 +203,8 @@ tar -xvf otelcol_0.119.0_linux_ppc64le.tar.gz
 
 By default, the `otelcol` systemd service starts with the
 `--config=/etc/otelcol/config.yaml` option after installation. This
-configuration follows the [Scout Collector Configuration](https://opentelemetry.io/docs/collector/configuration/)
+configuration follows the
+[Scout Collector Configuration](https://opentelemetry.io/docs/collector/configuration/)
 standards.
 
 To customize the collector settings, modify the `OTELCOL_OPTIONS` variable in
@@ -215,9 +226,8 @@ To check the logs from the `otelcol` service, run:
 sudo journalctl -u otelcol
 ```
 
-For more information on configuring and using the Scout Collector, refer
-to
-the [official OpenTelemetry documentation](https://opentelemetry.io/docs/collector/).
+For more information on configuring and using the Scout Collector, refer to the
+[official OpenTelemetry documentation](https://opentelemetry.io/docs/collector/).
 
 ## Related Guides
 

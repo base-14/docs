@@ -1,15 +1,24 @@
 ---
 date: 2025-10-08
 id: collecting-redis-telemetry
-title: Redis Cache Monitoring with OpenTelemetry | base14 Scout
-description: Monitor Redis with OpenTelemetry Collector. Collect cache metrics, memory usage, connections, and performance data using Scout.
-keywords: [redis monitoring, redis metrics, cache monitoring, opentelemetry redis, redis observability]
+title: Redis Cache Monitoring with OpenTelemetry
+description:
+  Monitor Redis with OpenTelemetry Collector. Collect cache metrics, memory
+  usage, connections, and performance data using Scout.
+keywords:
+  [
+    redis monitoring,
+    redis metrics,
+    cache monitoring,
+    opentelemetry redis,
+    redis observability,
+  ]
 ---
 
 ## Overview
 
-This guide explains how to set up Redis metrics collection using Scout
-Collector and forward them to Scout backend.
+This guide explains how to set up Redis metrics collection using Scout Collector
+and forward them to Scout backend.
 
 ## Prerequisites
 
@@ -19,8 +28,8 @@ Collector and forward them to Scout backend.
 
 ## Redis Configuration
 
-Ensure your Redis instance is accessible and if authentication is enabled,
-you have the appropriate credentials.
+Ensure your Redis instance is accessible and if authentication is enabled, you
+have the appropriate credentials.
 
 For Redis with authentication:
 
@@ -120,12 +129,12 @@ receivers:
 processors:
   resource:
     attributes:
-    - key: environment
-      value: ${ENVIRONMENT}
-      action: upsert
-    - key: service.name
-      value: ${SERVICE_NAME}
-      action: upsert
+      - key: environment
+        value: ${ENVIRONMENT}
+        action: upsert
+      - key: service.name
+        value: ${SERVICE_NAME}
+        action: upsert
 
   batch:
     timeout: 10s
@@ -156,17 +165,16 @@ service:
    redis-cli -h ${REDIS_HOST} -p ${REDIS_PORT} info
    ```
 
+## References
+
+- [Scout Collector Setup](https://docs.base14.io/instrument/collector-setup/otel-collector-config)
+- [Redis INFO Command Documentation](https://redis.io/commands/info/)
+
 ## Related Guides
 
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md) -
   Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) - Set up
   collector for local development
-- [RabbitMQ Monitoring](./rabbitmq.md) - Alternative messaging service monitoring
-  guide
-
-## References
-
-- [Scout Collector Setup](
-   https://docs.base14.io/instrument/collector-setup/otel-collector-config)
-- [Redis INFO Command Documentation](https://redis.io/commands/info/)
+- [RabbitMQ Monitoring](./rabbitmq.md) - Alternative messaging service
+  monitoring guide
