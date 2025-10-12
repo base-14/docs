@@ -6,7 +6,11 @@ tags: [observability, engineering, best-practices]
 image: ./cover.png
 ---
 
-![Observability Theatre](./cover.png)
+<!-- markdownlint-disable MD033 -->
+<div className="blog-cover">
+  <img src={require('./cover.png').default} alt="Observability Theatre" />
+</div>
+<!-- markdownlint-enable MD033 -->
 
 **the·a·tre** (also the·a·ter) _/ˈθiːətər/_ _noun_
 
