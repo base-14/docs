@@ -1,5 +1,7 @@
 ---
-keywords: [opentelemetry, otel-collector, configuration, vendor-agnostic, scout]
+title: OpenTelemetry Collector Configuration Guide | base14 Scout
+description: Complete OpenTelemetry Collector configuration guide. Learn receivers, processors, exporters setup with examples for traces, metrics, and logs.
+keywords: [opentelemetry collector, otel collector config, opentelemetry setup, telemetry configuration, otel configuration]
 tags: [opentelemetry, base14 scout]
 sidebar_position: 6
 ---

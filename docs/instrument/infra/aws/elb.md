@@ -1,8 +1,9 @@
 ---
 date: 2025-04-26
 id: collecting-aws-elb-telemetry
-title: Application ELB
-description: Use Scout to monitor your AWS ELB with ease
+title: AWS Application Load Balancer Monitoring via CloudWatch Metrics Stream | base14 Scout
+description: Monitor AWS Application Load Balancer with CloudWatch Metrics Stream and OpenTelemetry. Collect request metrics, response times, target health, and logs using Scout.
+keywords: [aws alb monitoring, application load balancer monitoring, cloudwatch metrics stream, aws elb monitoring, alb observability]
 hide_table_of_contents: true
 ---
 

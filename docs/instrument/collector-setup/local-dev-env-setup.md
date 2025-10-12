@@ -1,5 +1,7 @@
 ---
-keywords: [opentelemetry, otel-collector, scout]
+title: Local Development Environment Setup with OpenTelemetry | base14 Scout
+description: Set up Scout collector locally for development and testing. Run OpenTelemetry Collector with Docker for processing traces, metrics, and logs in your dev environment.
+keywords: [local development, opentelemetry dev setup, otel collector local, development environment, testing observability]
 tags: [development, local, base14 scout]
 sidebar_position: 7
 ---

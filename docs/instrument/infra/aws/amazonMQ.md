@@ -1,8 +1,9 @@
 ---
 date: 2025-04-27
 id: collecting-aws-amazon-mq-telemetry
-title: Amazon MQ
-description: Use Scout to monitor your AWS Amazon MQ with ease
+title: AWS Amazon MQ Monitoring via CloudWatch Metrics Stream | base14 Scout
+description: Monitor AWS Amazon MQ RabbitMQ and ActiveMQ with CloudWatch Metrics Stream and OpenTelemetry. Collect message queue metrics, broker stats, and logs using Scout.
+keywords: [aws amazon mq monitoring, amazon mq rabbitmq monitoring, cloudwatch metrics stream, aws message queue monitoring, amazon mq observability]
 hide_table_of_contents: true
 ---
 

@@ -815,3 +815,24 @@ nav[aria-label="Breadcrumbs"] li:last-child span {
     var(--base14-orange-glass-light)) !important;
   transform: translateY(-1px);
 }
+
+/* Blog */
+article .blog-cover,
+.markdown .blog-cover {
+  text-align: center;
+  margin: 2rem 0;
+  padding: 1rem 0;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+article .blog-cover img,
+.markdown .blog-cover img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--base14-radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}

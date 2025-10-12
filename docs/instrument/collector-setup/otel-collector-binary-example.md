@@ -1,5 +1,7 @@
 ---
-keywords: [download, binary, open-telemetry, otel-collector, scout]
+title: OpenTelemetry Collector Binary Installation Guide | base14 Scout
+description: Install and configure OpenTelemetry Collector binary. Download from releases, set up log collection, and export telemetry data to Scout with OAuth2 authentication.
+keywords: [opentelemetry binary, otel collector download, binary installation, collector setup, opentelemetry releases]
 tags: [open-telemetry, base14 scout]
 sidebar_position: 4
 ---

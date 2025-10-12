@@ -1,3 +1,9 @@
+---
+title: Go Custom OpenTelemetry Instrumentation | base14 Scout
+description: Custom instrumentation for Go applications with OpenTelemetry. Manual tracing, metrics, spans, and telemetry export with Go OTel SDK.
+keywords: [go instrumentation, golang monitoring, opentelemetry go, go custom instrumentation, golang observability]
+---
+
 # Go
 
 Implement OpenTelemetry custom instrumentation for `Go` applications to

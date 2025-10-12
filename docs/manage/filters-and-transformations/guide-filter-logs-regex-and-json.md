@@ -1,9 +1,9 @@
 ---
 date: 2025-06-19
 id: filtering-logs-based-on-regex-and-attributes
-title: Guide – Filtering Logs Using Regex and Attribute-Based Conditions
-description: Filter logs using regex patterns and JSON attribute conditions in
-  OpenTelemetry pipelines
+title: Guide – Filtering Logs Using Regex and Attribute-Based Conditions | base14 Scout
+description: Filter logs using regex patterns and JSON attribute conditions in OpenTelemetry pipelines. Drop or keep logs based on pattern matching and structured data fields in Scout.
+keywords: [log filtering, regex log filter, json log filtering, opentelemetry filter processor, log pattern matching]
 hide_table_of_contents: true
 ---
 

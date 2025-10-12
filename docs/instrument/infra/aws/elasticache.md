@@ -1,8 +1,9 @@
 ---
 date: 2025-04-28
 id: collecting-aws-elasticache-telemetry
-title: ElastiCache
-description: Use Scout to monitor your AWS ElastiCache instance with ease
+title: AWS ElastiCache Monitoring via CloudWatch Metrics Stream | base14 Scout
+description: Monitor AWS ElastiCache Redis and Memcached with CloudWatch Metrics Stream and OpenTelemetry. Collect cache metrics, performance data, and logs using Scout.
+keywords: [aws elasticache monitoring, elasticache redis monitoring, cloudwatch metrics stream, aws cache monitoring, elasticache observability]
 hide_table_of_contents: true
 ---
 

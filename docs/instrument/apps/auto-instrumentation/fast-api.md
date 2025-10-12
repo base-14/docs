@@ -1,3 +1,9 @@
+---
+title: FastAPI OpenTelemetry Instrumentation Guide | base14 Scout
+description: Auto-instrument FastAPI with OpenTelemetry for traces and metrics. Complete Python monitoring setup with distributed tracing and HTTP observability.
+keywords: [fastapi observability, python monitoring, opentelemetry python, fastapi instrumentation, python apm]
+---
+
 # Fast API
 
 Implement OpenTelemetry instrumentation for `FastAPI` applications to collect

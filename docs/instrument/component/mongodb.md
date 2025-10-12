@@ -1,8 +1,9 @@
 ---
 date: 2025-06-25
 id: collecting-mongodb-telemetry
-title: MongoDB
-description: Use Scout to monitor your MongoDB instance with ease
+title: MongoDB Database Monitoring with OpenTelemetry | base14 Scout
+description: Monitor MongoDB with OpenTelemetry Collector. Collect database metrics, replica set stats, and performance data using Scout.
+keywords: [mongodb monitoring, mongodb metrics, database monitoring, opentelemetry mongodb, mongodb observability]
 ---
 
 ## Overview

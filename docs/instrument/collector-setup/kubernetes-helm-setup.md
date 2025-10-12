@@ -1,5 +1,7 @@
 ---
-keywords: [kubernetes, helm, opentelemetry, otel-collector, scout]
+title: Kubernetes OpenTelemetry Setup with Helm | base14 Scout
+description: Deploy OpenTelemetry Collector on Kubernetes using Helm. Complete guide for EKS, GKE, AKS monitoring with traces, metrics, and logs collection.
+keywords: [kubernetes monitoring, opentelemetry kubernetes, helm setup, k8s observability, kubernetes observability]
 tags: [kubernetes, opentelemetry, base14 scout]
 sidebar_position: 2
 ---

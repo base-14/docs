@@ -1,3 +1,9 @@
+---
+title: Laravel OpenTelemetry Instrumentation | base14 Scout
+description: Auto-instrument Laravel with OpenTelemetry for traces. Complete PHP APM setup with distributed tracing and HTTP monitoring.
+keywords: [laravel monitoring, php apm, laravel instrumentation, opentelemetry laravel, php monitoring]
+---
+
 # Laravel
 
 Implement OpenTelemetry instrumentation for `Laravel` applications

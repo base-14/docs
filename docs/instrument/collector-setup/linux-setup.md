@@ -1,5 +1,7 @@
 ---
-keywords: [linux, opentelemetry, otel-collector, scout]
+title: Linux OpenTelemetry Collector Installation | base14 Scout
+description: Install OpenTelemetry Collector on Linux using DEB or RPM packages. Complete guide for Ubuntu, Debian, RHEL, CentOS, and Fedora with systemd service management.
+keywords: [linux opentelemetry, otel collector linux, linux installation, debian opentelemetry, rhel opentelemetry]
 tags: [linux, opentelemetry, base14 scout]
 sidebar_position: 3
 ---
