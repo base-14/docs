@@ -9,14 +9,14 @@ hide_table_of_contents: true
 
 # AWS ECS
 
-Deploy and configure the OpenTelemetry Collector on ECS.
+Deploy and configure the Scout Collector on ECS.
 
 ## Overview
 
 This guide covers how to collect telemetry data (logs, metrics, and traces)
 from your ECS environment and send it to base14 Scout.
 
-- Install base14 Scout's OpenTelemetry Collector using Task Defintions.
+- Install base14 Scout's Scout Collector using Task Defintions.
 - Configure telemetry collection for ECS Nodes.
 - Configure custom metrics endpoints
 - Implement trace collection
@@ -33,7 +33,7 @@ from your ECS environment and send it to base14 Scout.
 
 ## Quick Start Guide
 
-Deploy base14 Scout OpenTelemetry Collectorin minutes by following these
+Deploy Scout Collector in minutes by following these
 steps:
 
 ## Task Defintions

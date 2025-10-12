@@ -8,16 +8,16 @@ sidebar_position: 1
 
 # Docker Compose
 
-Collect and monitor Docker container logs using OpenTelemetry Collector and
+Collect and monitor Docker container logs using Scout Collector and
 base14 Scout with a complete `Docker Compose` setup.
 
 ## Overview
 
 This guide provides a comprehensive setup for collecting Docker container
-logs and metrics using OpenTelemetry Collector and forwarding them to base14 Scout.
+logs and metrics using Scout Collector and forwarding them to base14 Scout.
 
 - Set up a complete logging pipeline using `Docker Compose`
-- Configure OpenTelemetry Collector for container log and metrics collection
+- Configure Scout Collector for container log and metrics collection
 - Transform and process logs with custom operators
 - Forward telemetry data to Scout platform
 
@@ -33,7 +33,7 @@ This section demonstrates how to set up a complete observability pipeline using
 Docker Compose. The setup includes:
 
 - A sample web application with Redis backend
-- OpenTelemetry Collector for telemetry collection
+- Scout Collector for telemetry collection
 
 ### Docker Compose Configuration
 
@@ -41,7 +41,7 @@ The following `docker-compose.yml` configuration creates a three-service stack:
 
 1. A web service running a Python application
 2. A Redis instance for data storage
-3. OpenTelemetry Collector for telemetry processing
+3. Scout Collector for telemetry processing
 
 ```yaml showLineNumbers title="docker-compose.yml"
 version: '3.8'
@@ -106,7 +106,7 @@ volumes:
 
 ### Collector Configuration
 
-The OpenTelemetry Collector is configured with multiple components to provide
+The Scout Collector is configured with multiple components to provide
 comprehensive observability:
 
 #### Key Features

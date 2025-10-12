@@ -21,7 +21,7 @@ This guide demonstrates how to:
 - Configure manual tracing using spans
 - Create and manage custom metrics
 - Add semantic attributes and events
-- Export telemetry data to OpenTelemetry Collector
+- Export telemetry data to Scout Collector
 
 ## Prerequisites
 
@@ -90,7 +90,7 @@ tracer = trace.get_tracer("my.tracer.name")
 
 > View your traces in the base14 Scout observability platform.
 >
-> **Note**: Ensure your OpenTelemetry Collector is properly configured to
+> **Note**: Ensure your Scout Collector is properly configured to
 > receive and process the trace data.
 
 #### Reference
@@ -178,7 +178,7 @@ def do_work():
 
 > View these spans in the base14 Scout observability platform.
 >
-> **Note**: Ensure your OpenTelemetry Collector is properly configured to
+> **Note**: Ensure your Scout Collector is properly configured to
 > receive and process the span data.
 
 #### Reference
@@ -233,7 +233,7 @@ def do_work():
 
 > View these spans in the base14 Scout observability platform.
 >
-> **Note**: Ensure your OpenTelemetry Collector is properly configured to
+> **Note**: Ensure your Scout Collector is properly configured to
 > receive and process the span data.
 
 ## Metrics
@@ -264,7 +264,7 @@ meter = metrics.get_meter("my.meter.name")
 
 > View these metrics in base14 Scout observability backend.
 >
-> **Note**: Ensure your OpenTelemetry Collector is properly configured to
+> **Note**: Ensure your Scout Collector is properly configured to
 > receive and process the trace data.
 
 ### Counter

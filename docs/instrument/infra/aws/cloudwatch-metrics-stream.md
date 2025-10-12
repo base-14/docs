@@ -83,7 +83,7 @@ firehose stream to stream metrics to S3
 ## Step 4: Creating a lambda function
 
 Now, let's create a lambda function to read from the s3 and
-send it to otel collector
+send it to Scout Collector
 
 ### 1. Create a layer with all the necessary packages
 

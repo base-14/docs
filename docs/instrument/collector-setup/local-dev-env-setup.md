@@ -16,14 +16,14 @@ It includes:
 
 This environment allows you to:
 
-- Process logs, metrics, and traces through the OpenTelemetry Collector
+- Process logs, metrics, and traces through the Scout Collector
 - Test your instrumentation code locally before deploying to production
 
 ## Requirements
 
 - [Docker](https://www.docker.com/) Installed.
 
-## OpenTelemetry Collector config
+## Scout Collector config
 
 Copy the below content to `otel-collector-config.yaml`
 
@@ -83,7 +83,7 @@ service:
 > Replace the placeholders with your Scout credentials.
 
 > For Adding Receiver, Processor, Exporter, and Service Extensions,
-> please refer to [OpenTelemetry Collector Configuration](https://opentelemetry.io/docs/collector/configuration/)
+> please refer to [Scout Collector Configuration](https://opentelemetry.io/docs/collector/configuration/)
 
 
 ## Start the Containers

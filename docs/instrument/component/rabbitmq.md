@@ -258,7 +258,7 @@ service:
 
 ## References
 
-- [Base14 OpenTelemetry Collector Setup](
+- [Scout Collector Setup](
   https://docs.base14.io/instrument/collector-setup/otel-collector-config)
 - [RabbitMQ Management Plugin](https://www.rabbitmq.com/management.html)
 - [RabbitMQ Monitoring Guide](https://www.rabbitmq.com/monitoring.html)

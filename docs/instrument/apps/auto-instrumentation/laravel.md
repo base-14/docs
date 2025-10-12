@@ -20,7 +20,7 @@ This guide demostrates how to:
 - Install opentelemetry extension for php.
 - Set up OpenTelemetry instrumentation for Laravel.
 - Configure OpenTelemetry instrumentation using environment variables.
-- Export telemetry data to OpenTelemetry Collector
+- Export telemetry data to Scout Collector
 
 ## Prerequisites
 

@@ -182,7 +182,7 @@ service:
 
 ## References
 
-- [Base14 OpenTelemetry Collector Setup](
+- [Scout Collector Setup](
   https://docs.base14.io/instrument/collector-setup/otel-collector-config)
 - [PostgreSQL Monitoring Views](https://www.postgresql.org/docs/current/monitoring-stats.html)
 - [pg_monitor Role Documentation](https://www.postgresql.org/docs/current/default-roles.html)
