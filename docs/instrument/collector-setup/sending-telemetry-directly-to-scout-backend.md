@@ -195,6 +195,15 @@ end
 2. **Network connectivity**: Verify endpoint accessibility
 3. **Performance impact**: Monitor application overhead
 
+## Related Guides
+
+- [Scout Exporter Configuration](./scout-exporter.md) - Use collector for
+  centralized authentication
+- [Rails Auto-Instrumentation](../apps/auto-instrumentation/rails.md) - Rails
+  framework instrumentation guide
+- [Docker Compose Setup](./docker-compose-example.md) - Set up collector for
+  local development
+
 ## References
 
 - [Rails instrumentation doc](https://docs.base14.io/instrument/apps/auto-instrumentation/rails)

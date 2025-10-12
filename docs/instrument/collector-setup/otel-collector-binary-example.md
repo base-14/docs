@@ -146,3 +146,11 @@ After running the application, you can view the collected logs in Scout:
 
 The logs will appear with timestamps and other metadata added by the
 Scout Collector.
+
+## Related Guides
+
+- [OTel Collector Configuration](./otel-collector-config.md) - Advanced
+  configuration examples
+- [Scout Exporter Configuration](./scout-exporter.md) - Detailed authentication
+  setup
+- [Linux Installation](./linux-setup.md) - Production deployment with systemd

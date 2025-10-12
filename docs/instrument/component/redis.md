@@ -23,12 +23,14 @@ Ensure your Redis instance is accessible and if authentication is enabled,
 you have the appropriate credentials.
 
 For Redis with authentication:
+
 ```bash
 # Test Redis connectivity
 redis-cli -h <redis-host> -p <redis-port> -a <password> ping
 ```
 
 For Redis without authentication:
+
 ```bash
 # Test Redis connectivity
 redis-cli -h <redis-host> -p <redis-port> ping
@@ -149,10 +151,19 @@ service:
 1. Check collector logs for errors
 2. Verify metrics in the Scout dashboard
 3. Monitor Redis INFO command output:
+
    ```bash
    redis-cli -h ${REDIS_HOST} -p ${REDIS_PORT} info
    ```
 
+## Related Guides
+
+- [OTel Collector Configuration](../collector-setup/otel-collector-config.md) -
+  Advanced collector configuration
+- [Docker Compose Setup](../collector-setup/docker-compose-example.md) - Set up
+  collector for local development
+- [RabbitMQ Monitoring](./rabbitmq.md) - Alternative messaging service monitoring
+  guide
 
 ## References
 

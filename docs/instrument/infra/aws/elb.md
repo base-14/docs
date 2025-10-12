@@ -326,3 +326,11 @@ check in Scout to see your ELB's metrics and logs.
 ---
 
 With this setup, your ALB becomes fully observable through Scout.
+
+## Related Guides
+
+- [CloudWatch Metrics Stream Setup](./cloudwatch-metrics-stream.md) - Set up
+  AWS metrics streaming
+- [RDS Monitoring](./rds.md) - Monitor AWS RDS databases
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
+  up collector for local development

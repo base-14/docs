@@ -275,6 +275,15 @@ def traced_function
 end
 ```
 
+## Related Guides
+
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set up
+  collector for local development
+- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
+  Production deployment
+- [Rails Auto-Instrumentation](../auto-instrumentation/rails.md) -
+  Auto-instrumentation for Ruby on Rails applications
+
 ## References
 
 - [Official OpenTelemetry Ruby Documentation](https://opentelemetry.io/docs/languages/ruby/getting-started/)

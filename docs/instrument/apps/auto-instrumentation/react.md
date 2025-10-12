@@ -140,7 +140,9 @@ everal  key interactions:
 3. **Document Loading**
 
 ## CORS Setup for Otel Collector
+
 Add the following CORS headers to the Otel Collector configuration:
+
 ```yaml
 receivers:
   otlp:
@@ -154,6 +156,14 @@ receivers:
 
 > View these traces in base14 Scout observability backend.
 >
+## Related Guides
+
+- [Custom JavaScript Browser Instrumentation](../custom-instrumentation/javascript-browser.md) -
+  Manual instrumentation for logs and metrics
+- [Express.js Instrumentation](./express.md) - Backend Node.js framework
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set up
+  collector for local development
+
 ## What's Next?
 
 To monitor logs and metrics, see the

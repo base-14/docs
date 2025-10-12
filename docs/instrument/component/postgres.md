@@ -42,6 +42,7 @@ SELECT count(*) FROM pg_stat_activity;
 ```
 
 Test connectivity with the monitoring user:
+
 ```bash
 # Test PostgreSQL connectivity
 psql -h <postgres-host> -p <port> -U postgres_exporter -d <database-name> -c "SELECT version();"
@@ -164,11 +165,14 @@ service:
 1. Check collector logs for errors:
 2. Verify metrics in Scout dashboard
 3. Verify PostgreSQL connectivity:
+
    ```bash
    # Test PostgreSQL connection
    psql -h ${POSTGRES_HOST} -p <port> -U postgres_exporter -d ${DATABASE_NAME} -c "SELECT version();"
    ```
+
 4. Check PostgreSQL statistics:
+
    ```sql
    -- Check database statistics
    SELECT * FROM pg_stat_database WHERE datname = '<your-database>';
@@ -179,6 +183,14 @@ service:
    -- Check index usage
    SELECT * FROM pg_stat_user_indexes LIMIT 5;
    ```
+
+## Related Guides
+
+- [OTel Collector Configuration](../collector-setup/otel-collector-config.md) -
+  Advanced collector configuration
+- [Docker Compose Setup](../collector-setup/docker-compose-example.md) - Set up
+  collector for local development
+- [MongoDB Monitoring](./mongodb.md) - Alternative database monitoring guide
 
 ## References
 

@@ -218,3 +218,12 @@ sudo journalctl -u otelcol
 For more information on configuring and using the Scout Collector, refer
 to
 the [official OpenTelemetry documentation](https://opentelemetry.io/docs/collector/).
+
+## Related Guides
+
+- [OTel Collector Configuration](./otel-collector-config.md) - Configure your
+  installed collector
+- [Scout Exporter Configuration](./scout-exporter.md) - Set up authentication
+  and endpoints
+- [Docker Compose Setup](./docker-compose-example.md) - Alternative deployment
+  method

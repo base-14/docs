@@ -588,10 +588,19 @@ func doWork(ctx context.Context, tracer trace.Tracer) {
 ```
 
 This is particularly useful for:
+
 - Correlating application logs with traces
 - Adding trace context to error messages
 - Integrating with external monitoring systems
 - Creating custom dashboards with trace correlation
+
+## Related Guides
+
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set up
+  collector for local development
+- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
+  Production deployment
+- [Custom Java Instrumentation](./java.md) - Alternative language guide
 
 ## References
 

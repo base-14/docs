@@ -227,3 +227,12 @@ service:
     logs:
       level: info
 ```
+
+## Related Guides
+
+- [Scout Exporter Configuration](./scout-exporter.md) - Configure authentication
+  to send data to Scout
+- [Instrument Express.js Apps](../apps/auto-instrumentation/express.md) -
+  Auto-instrument Node.js applications
+- [Advanced Collector Configuration](./otel-collector-config.md) - Deep dive into
+  collector configuration

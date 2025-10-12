@@ -82,3 +82,12 @@ when a log entry doesn't contain the expected fields
 available at the top level of the JSON structure
 - The example uses the debug exporter, but you should replace
 it with your actual exporters and recievers.
+
+## Related Guides
+
+- [Extract Log Level from Body](./guide-extract-log-level-from-body.md) - Parse
+  log severity levels
+- [OTTL Span Transformations](./guide-ottl-span-transformations.md) - Transform
+  trace spans
+- [OTel Collector Configuration](../../instrument/collector-setup/otel-collector-config.md) -
+  Collector configuration basics

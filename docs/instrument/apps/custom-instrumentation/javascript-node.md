@@ -335,6 +335,15 @@ router.get('/ping', async (req, res) => {
 >View your complete telemetry data in the base14 Scout observability platform.
 [Click to know more](https://docs.base14.io/)
 
+## Related Guides
+
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set up
+  collector for local development
+- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
+  Production deployment
+- [Express.js Auto-Instrumentation](../auto-instrumentation/express.md) -
+  Auto-instrumentation for Express.js applications
+
 ## References
 
 - For complete setup example refer to [sample-full-stack application](https://opentelemetry.io/docs/instrumentation/js/)

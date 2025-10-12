@@ -438,6 +438,12 @@ service:
       exporters: [ otlp/metrics, prometheus ]
 ```
 
+## Related Guides
+
+- [Scout Exporter Configuration](./scout-exporter.md) - Configure data export to Scout
+- [Extract Log Level from Body](../../manage/filters-and-transformations/guide-extract-log-level-from-body.md) - Parse and categorize log severity
+- [Transform and Filter Logs](../../manage/filters-and-transformations/guide-transform-logs.md) - Advanced log processing techniques
+
 ## Resources
 
 - [Scout Collector Configuration Documentation](https://opentelemetry.io/docs/collector/configuration/)

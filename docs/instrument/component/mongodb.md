@@ -97,6 +97,14 @@ service:
      "admin?authSource=admin" --eval "db.serverStatus().ok"
    ```
 
+## Related Guides
+
+- [OTel Collector Configuration](../collector-setup/otel-collector-config.md) -
+  Advanced collector configuration
+- [Docker Compose Setup](../collector-setup/docker-compose-example.md) - Set up
+  collector for local development
+- [PostgreSQL Monitoring](./postgres.md) - Alternative database monitoring guide
+
 ## References
 
 1. [Scout Collector Setup](

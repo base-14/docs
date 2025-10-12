@@ -224,6 +224,7 @@ sudo apt install nginx-module-otel
 </TabItem>
 </Tabs>
 ```
+
 :::warning
 
 Take a backup of your nginx config before installing the module.  
@@ -269,3 +270,11 @@ receivers:
 update the `include` block with the correct path.
 
 Great work. Now we have successfully implemented nginx with OpenTelemetry instrumentation
+
+## Related Guides
+
+- [OTel Collector Configuration](../collector-setup/otel-collector-config.md) -
+  Advanced collector configuration
+- [Docker Compose Setup](../collector-setup/docker-compose-example.md) - Set up
+  collector for local development
+- [RabbitMQ Monitoring](./rabbitmq.md) - Alternative service monitoring guide

@@ -159,6 +159,7 @@ function TrackedComponent() {
 ### CORS Headers for Otel Collector
 
 Add the following CORS headers to the Otel Collector configuration:
+
 ```yaml
 receivers:
   otlp:
@@ -172,6 +173,15 @@ receivers:
 
 > View these traces in Scout Grafana dashboards.
 >
+
+## Related Guides
+
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set up
+  collector for local development
+- [React Auto-Instrumentation](../auto-instrumentation/react.md) -
+  Auto-instrumentation for React applications
+- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
+  Production deployment
 
 ## References
 

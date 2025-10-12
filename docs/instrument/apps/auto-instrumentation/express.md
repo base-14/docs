@@ -181,6 +181,14 @@ app.use(telemetryMiddleware);
 > This will capture the request and response information and construct traces
 > out of it.
 
+## Related Guides
+
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set up
+  collector for local development
+- [Custom Node.js Instrumentation](../custom-instrumentation/javascript-node.md) -
+  Manual instrumentation for advanced use cases
+- [Fast API Instrumentation](./fast-api.md) - Python web framework alternative
+
 ## Reference
 
 [Official Metrics Documentation](https://opentelemetry.io/docs/concepts/signals/metrics/)

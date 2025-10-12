@@ -86,6 +86,15 @@ with the supported Scout Collector version.
 3. **Performance**: Complex transformations can impact collector performance.
  Monitor resource usage.
 
+## Related Guides
+
+- [Transform Logs Guide](./guide-transform-logs.md) - Transform log data with
+  OTTL
+- [Filter Logs with Regex and JSON](./guide-filter-logs-regex-and-json.md) -
+  Advanced filtering techniques
+- [OTel Collector Configuration](../../instrument/collector-setup/otel-collector-config.md) -
+  Collector configuration basics
+
 ## Next Steps
 
 - [Transform and Filters Processor Reference](https://docs.base14.io/category/filters-and-transformations)

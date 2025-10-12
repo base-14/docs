@@ -238,6 +238,7 @@ service:
 1. Check collector logs for errors
 2. Verify metrics in Scout dashboard
 3. Test RabbitMQ connectivity:
+
    ```bash
    # Test RabbitMQ management API
    curl -u ${RABBITMQ_USERNAME}:${RABBITMQ_PASSWORD} \
@@ -245,6 +246,7 @@ service:
    ```
 
 4. Check RabbitMQ node status:
+
    ```bash
    # Check node status
    rabbitmqctl node_health_check
@@ -255,6 +257,14 @@ service:
    # Check cluster status (if clustered)
    rabbitmqctl cluster_status
    ```
+
+## Related Guides
+
+- [OTel Collector Configuration](../collector-setup/otel-collector-config.md) -
+  Advanced collector configuration
+- [Docker Compose Setup](../collector-setup/docker-compose-example.md) - Set up
+  collector for local development
+- [Redis Monitoring](./redis.md) - Alternative caching service monitoring guide
 
 ## References
 

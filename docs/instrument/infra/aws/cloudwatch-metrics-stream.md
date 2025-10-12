@@ -226,3 +226,11 @@ def lambda_handler(event, context):
 ## That's it, you're done
 
 Head back to the Scout dashboards to view all your AWS Services metrics.
+
+## Related Guides
+
+- [Application Load Balancer Monitoring](./elb.md) - Monitor AWS ALB with
+  CloudWatch Metrics Stream
+- [RDS Monitoring](./rds.md) - Monitor AWS RDS databases
+- [Scout Exporter Configuration](../../collector-setup/scout-exporter.md) -
+  Configure authentication and endpoints

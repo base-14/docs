@@ -146,5 +146,14 @@ check in Scout to see your Amazon MQ's metrics and logs.
 ---
 
 With this setup, your Amazon MQ broker becomes fully observable through Scout.
-You’ll gain real-time visibility into performance metrics and logs without
+You'll gain real-time visibility into performance metrics and logs without
 any changes to your application code.
+
+## Related Guides
+
+- [CloudWatch Metrics Stream Setup](./cloudwatch-metrics-stream.md) - Set up
+  AWS metrics streaming
+- [RabbitMQ Monitoring](../../component/rabbitmq.md) - Self-hosted RabbitMQ
+  monitoring guide
+- [OTel Collector Configuration](../../collector-setup/otel-collector-config.md) -
+  Advanced collector configuration

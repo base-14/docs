@@ -121,5 +121,11 @@ check the Postgres section in Scout to see your databases's metrics and logs.
 ---
 
 With this setup, your RDS instance becomes fully observable through Scout.
-You’ll gain real-time visibility into performance metrics and logs without
+You'll gain real-time visibility into performance metrics and logs without
 any changes to your application code.
+
+## Related Guides
+
+- [CloudWatch Metrics Stream Setup](./cloudwatch-metrics-stream.md) - Configure AWS metrics streaming
+- [AWS ECS/Fargate Setup](../../collector-setup/ecs-setup.md) - Deploy Scout Collector on AWS ECS
+- [Monitor PostgreSQL Component](../../component/postgres.md) - Direct PostgreSQL monitoring
