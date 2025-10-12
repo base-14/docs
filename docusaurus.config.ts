@@ -88,7 +88,8 @@ const config: Config = {
             xslt: true,
           },
           blogTitle: "base14 Blog",
-          blogDescription: "Engineering insights, product updates, and best practices from base14",
+          blogDescription:
+            "Engineering insights, product updates, and best practices from base14",
           blogSidebarCount: 10,
           blogSidebarTitle: "Recent posts",
           postsPerPage: 10,
@@ -112,7 +113,7 @@ const config: Config = {
     announcementBar: {
       id: "announcement-bar",
       content:
-        '🚀 Welcome to base14 Scout documentation! Check out the latest updates on our <a href="https://base14.io/changelog" target="_blank" rel="noopener noreferrer" style="color: #FFFFFF; text-decoration: underline;">changelog</a>.',
+        '🚀 Welcome to base14 Scout documentation! Check out the latest articles on our <a href="https://docs.base14.io/blog" target="_blank" rel="noopener noreferrer" style="color: #FFFFFF; text-decoration: underline;">Blog</a>.',
       backgroundColor: "#047857",
       textColor: "#FFFFFF",
       isCloseable: true,
