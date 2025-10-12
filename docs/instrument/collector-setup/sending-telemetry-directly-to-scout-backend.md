@@ -1,3 +1,9 @@
+---
+title: Send OpenTelemetry Signals Directly to Scout Backend | base14 Scout
+description: Configure applications to send OpenTelemetry traces, logs, and metrics directly to Scout backend without collectors. Complete guide for direct OTLP export with OIDC authentication.
+keywords: [opentelemetry direct export, otlp exporter, send telemetry directly, opentelemetry without collector, direct instrumentation]
+---
+
 # Sending OpenTelemetry Signals Directly to Scout Backend
 
 This guide explains how to configure applications to send OpenTelemetry traces,

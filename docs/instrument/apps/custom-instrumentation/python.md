@@ -1,3 +1,9 @@
+---
+title: Python Custom OpenTelemetry Instrumentation | base14 Scout
+description: Custom instrumentation for Python applications with OpenTelemetry. Manual tracing, metrics, logs, spans, and telemetry export with Python OTel SDK.
+keywords: [python instrumentation, python monitoring, opentelemetry python, python custom instrumentation, python observability]
+---
+
 # Python
 
 Implement OpenTelemetry custom instrumentation for `Python` applications to

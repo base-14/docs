@@ -1,8 +1,9 @@
 ---
 date: 2025-10-08
 id: collecting-postgres-telemetry
-title: Postgres
-description: Use Scout to monitor your Postgres instance with ease
+title: PostgreSQL Database Monitoring with OpenTelemetry | base14 Scout
+description: Monitor PostgreSQL with OpenTelemetry Collector. Collect database metrics, query performance, connections, and stats using Scout.
+keywords: [postgresql monitoring, postgres metrics, database monitoring, opentelemetry postgresql, postgres observability]
 ---
 
 ## Overview

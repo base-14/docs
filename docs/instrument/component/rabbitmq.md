@@ -1,8 +1,9 @@
 ---
 date: 2025-10-08
 id: collecting-rabbitmq-telemetry
-title: RabbitMQ
-description: Use Scout to monitor your RabbitMQ instance with ease
+title: RabbitMQ Message Queue Monitoring with OpenTelemetry | base14 Scout
+description: Monitor RabbitMQ with OpenTelemetry Collector. Collect queue metrics, message stats, connections, and performance data using Scout.
+keywords: [rabbitmq monitoring, rabbitmq metrics, message queue monitoring, opentelemetry rabbitmq, rabbitmq observability]
 ---
 
 ## Overview

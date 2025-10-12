@@ -2,7 +2,7 @@
 slug: /
 sidebar_position: 1
 title: OpenTelemetry-Native Observability Platform | base14 Scout
-description: Cloud-native observability with OpenTelemetry. Collect logs, metrics, and traces with automated instrumentation. Get started in 5 minutes with Scout.
+description: Cloud-native observability with OpenTelemetry. Collect traces, metrics, and logs with automated instrumentation. Get started in 5 minutes with Scout.
 keywords: [opentelemetry platform, observability platform, distributed tracing, opentelemetry collector, cloud native monitoring]
 ---
 

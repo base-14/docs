@@ -1,3 +1,9 @@
+---
+title: Celery OpenTelemetry Instrumentation | base14 Scout
+description: Auto-instrument Celery task queue with OpenTelemetry for traces, metrics, and logs. Complete Python Celery monitoring with distributed tracing.
+keywords: [celery monitoring, python celery, celery instrumentation, opentelemetry celery, task queue monitoring]
+---
+
 # Celery
 
 This guide demonstrates how to Auto instrument tracing, metrics and logs using

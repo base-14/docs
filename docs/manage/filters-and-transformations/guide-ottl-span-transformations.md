@@ -1,8 +1,9 @@
 ---
 date: 2025-07-17
 id: transforming-spans-with-ottl
-title: Guide – Transforming Spans Using OTTL Functions
-description: Learn how to use OTTL (OpenTelemetry Transformation Language) to modify span data in the OpenTelemetry Collector
+title: Guide – Transforming Spans Using OTTL Functions | base14 Scout
+description: Use OTTL (OpenTelemetry Transformation Language) to modify span data in the Collector. Transform span names, manipulate attributes, redact sensitive data, and drop unwanted spans.
+keywords: [ottl transformations, opentelemetry transformation language, span transformations, trace data manipulation, ottl functions]
 hide_table_of_contents: true
 ---
 

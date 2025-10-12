@@ -1,8 +1,9 @@
 ---
 date: 2025-10-09
 id: extracting-log-level-from-body
-title: Guide - Extracting Log Level from Log Body
-description: Comprehensive guide to extract log severity levels from log body using transform processor
+title: Guide - Extracting Log Level from Log Body | base14 Scout
+description: Extract log severity levels from log body using OpenTelemetry transform processor. Parse and categorize DEBUG, INFO, WARN, ERROR, and FATAL levels in Scout.
+keywords: [log level extraction, log severity parsing, opentelemetry transform processor, log categorization, severity extraction]
 hide_table_of_contents: true
 ---
 

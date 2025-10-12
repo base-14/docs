@@ -1,3 +1,9 @@
+---
+title: Spring Boot OpenTelemetry Instrumentation | base14 Scout
+description: Auto-instrument Spring Boot with OpenTelemetry for traces and metrics. Complete Java APM setup with distributed tracing and HTTP monitoring.
+keywords: [spring boot monitoring, java apm, spring boot instrumentation, opentelemetry spring boot, java monitoring]
+---
+
 # Spring Boot
 
 Implement OpenTelemetry instrumentation for `Spring Boot` applications to

@@ -1,6 +1,6 @@
 ---
 title: AWS ECS OpenTelemetry Collector Setup | base14 Scout
-description: Deploy OpenTelemetry on AWS ECS Fargate and EC2. Complete guide for ECS monitoring with logs, metrics, and traces using service, daemon, and sidecar modes.
+description: Deploy OpenTelemetry on AWS ECS Fargate and EC2. Complete guide for ECS monitoring with traces, metrics, and logs using service, daemon, and sidecar modes.
 keywords: [aws ecs monitoring, ecs fargate monitoring, ecs observability, opentelemetry ecs, aws fargate monitoring]
 tags: [ecs, opentelemetry, base14 scout]
 sidebar_position: 7

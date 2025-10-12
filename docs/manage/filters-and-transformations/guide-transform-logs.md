@@ -1,8 +1,9 @@
 ---
 date: 2025-04-29
 id: extracting-trace-id-and-span-id-from-log-body
-title: Guide -  Extracting TraceId and SpanId from JSON Log body
-description: Comprehesive guide to extract trace and span id from log body
+title: Guide - Extracting TraceId and SpanId from JSON Log Body | base14 Scout
+description: Extract trace and span IDs from JSON log body using OpenTelemetry transform processor. Enable distributed tracing correlation in Scout with log-to-trace linking.
+keywords: [trace id extraction, span id extraction, log trace correlation, distributed tracing logs, json log parsing]
 hide_table_of_contents: true
 ---
 

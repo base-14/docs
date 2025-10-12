@@ -1,3 +1,9 @@
+---
+title: React OpenTelemetry Instrumentation | base14 Scout
+description: Auto-instrument React applications with OpenTelemetry for browser traces. Monitor user interactions, fetch requests, and Core Web Vitals.
+keywords: [react monitoring, frontend monitoring, react instrumentation, opentelemetry react, browser monitoring]
+---
+
 # React
 
 Implement OpenTelemetry auto instrumentation for `React` applications to collect

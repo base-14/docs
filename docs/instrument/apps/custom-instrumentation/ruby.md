@@ -1,3 +1,9 @@
+---
+title: Ruby Custom OpenTelemetry Instrumentation | base14 Scout
+description: Custom instrumentation for Ruby applications with OpenTelemetry. Manual tracing, metrics, logs, spans, and telemetry export with Ruby OTel SDK.
+keywords: [ruby instrumentation, ruby monitoring, opentelemetry ruby, ruby custom instrumentation, ruby observability]
+---
+
 # Ruby
 
 Implement OpenTelemetry custom instrumentation for `Ruby` applications to
