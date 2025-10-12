@@ -1,8 +1,9 @@
 ---
 date: 2025-04-29
 id: collecting-aws-cloudwatch-metrics-using-kinesis-streams
-title: AWS CloudWatch Metric Streams to Scout Backend
-description: Use Scout to monitor your AWS Components
+title: AWS CloudWatch Metrics Stream Setup Guide | base14 Scout
+description: Set up CloudWatch Metrics Stream with Kinesis Firehose and Lambda to stream AWS metrics to Scout. Complete guide for fast metrics delivery with OpenTelemetry.
+keywords: [cloudwatch metrics stream, aws metrics streaming, kinesis firehose, aws monitoring setup, cloudwatch observability]
 hide_table_of_contents: true
 ---
 

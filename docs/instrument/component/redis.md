@@ -1,8 +1,9 @@
 ---
 date: 2025-10-08
 id: collecting-redis-telemetry
-title: Redis
-description: Use Scout to monitor your Redis instance with ease
+title: Redis Cache Monitoring with OpenTelemetry | base14 Scout
+description: Monitor Redis with OpenTelemetry Collector. Collect cache metrics, memory usage, connections, and performance data using Scout.
+keywords: [redis monitoring, redis metrics, cache monitoring, opentelemetry redis, redis observability]
 ---
 
 ## Overview

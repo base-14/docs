@@ -1,3 +1,9 @@
+---
+title: Browser JavaScript Custom OpenTelemetry Instrumentation | base14 Scout
+description: Custom instrumentation for browser JavaScript with OpenTelemetry. Manual tracing, metrics, logs for web applications with browser OTel SDK.
+keywords: [browser monitoring, javascript instrumentation, frontend monitoring, opentelemetry browser, web application monitoring]
+---
+
 # JavaScript Browser
 
 This guide provides instructions for setting up **custom instrumentation**

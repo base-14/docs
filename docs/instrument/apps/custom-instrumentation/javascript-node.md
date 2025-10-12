@@ -1,3 +1,9 @@
+---
+title: Node.js Custom OpenTelemetry Instrumentation | base14 Scout
+description: Custom instrumentation for Node.js applications with OpenTelemetry. Manual tracing, metrics, logs, spans, and telemetry export with Node.js OTel SDK.
+keywords: [nodejs instrumentation, nodejs monitoring, opentelemetry nodejs, node custom instrumentation, nodejs observability]
+---
+
 # Javascript Node
 
 Implement OpenTelemetry custom instrumentation for Node.js applications to collect

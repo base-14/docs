@@ -1,3 +1,9 @@
+---
+title: Java Custom OpenTelemetry Instrumentation | base14 Scout
+description: Custom instrumentation for Java applications with OpenTelemetry. Manual tracing, metrics, spans, and telemetry export with Java OTel SDK.
+keywords: [java instrumentation, java monitoring, opentelemetry java, java custom instrumentation, java observability]
+---
+
 # Java
 
 Implement OpenTelemetry custom instrumentation for `Java` applications to

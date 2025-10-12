@@ -1,3 +1,9 @@
+---
+title: Ruby on Rails OpenTelemetry Instrumentation | base14 Scout
+description: Auto-instrument Rails with OpenTelemetry for traces and metrics. Complete Ruby APM setup with distributed tracing and database monitoring.
+keywords: [rails monitoring, ruby apm, rails instrumentation, opentelemetry rails, ruby on rails monitoring]
+---
+
 # Rails
 
 Implement OpenTelemetry instrumentation for `Ruby on Rails` applications to

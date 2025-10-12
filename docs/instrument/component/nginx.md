@@ -1,9 +1,10 @@
 ---
 date: 2025-06-24
 id: nginx
-keywords: [NGINX, OTLP, base14 Scout]
+title: NGINX Web Server Monitoring with OpenTelemetry | base14 Scout
+description: Monitor NGINX with OpenTelemetry. Collect traces, metrics, and logs from NGINX web server with OTel module and Prometheus exporter using Scout.
+keywords: [nginx monitoring, nginx metrics, nginx traces, opentelemetry nginx, nginx observability]
 tags: [nginx]
-title: NGINX
 sidebar_position: 2
 ---
 
