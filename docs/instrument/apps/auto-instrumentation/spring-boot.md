@@ -1,7 +1,16 @@
 ---
-title: Spring Boot OpenTelemetry Instrumentation | base14 Scout
-description: Auto-instrument Spring Boot with OpenTelemetry for traces and metrics. Complete Java APM setup with distributed tracing and HTTP monitoring.
-keywords: [spring boot monitoring, java apm, spring boot instrumentation, opentelemetry spring boot, java monitoring]
+title: Spring Boot OpenTelemetry Instrumentation
+description:
+  Auto-instrument Spring Boot with OpenTelemetry for traces and metrics.
+  Complete Java APM setup with distributed tracing and HTTP monitoring.
+keywords:
+  [
+    spring boot monitoring,
+    java apm,
+    spring boot instrumentation,
+    opentelemetry spring boot,
+    java monitoring,
+  ]
 ---
 
 # Spring Boot
@@ -159,17 +168,19 @@ management.endpoints.web.exposure.include=health,info,metrics,prometheus
 management.tracing.sampling.probability=1.0
 ```
 
-> Logs, traces and metrics are exported to the base14 Scout observability backend.
+> Logs, traces and metrics are exported to the base14 Scout observability
+> backend.
+
+## References
+
+- [OpenTelemetry Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
+- Sample application:
+  [Spring Boot Otel Instrumentation](https://github.com/base-14/examples/tree/main/spring-boot)
 
 ## Related Guides
 
-- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) - Deploy
-  collector on Kubernetes
+- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
+  Deploy collector on Kubernetes
 - [Custom Java Instrumentation](../custom-instrumentation/java.md) - Manual
   instrumentation for advanced use cases
 - [Express.js Instrumentation](./express.md) - Node.js framework alternative
-
-### References
-
-- [OpenTelemetry Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
-- Sample application: [Spring Boot Otel Instrumentation](https://github.com/base-14/examples/tree/main/spring-boot)

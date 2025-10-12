@@ -1,7 +1,16 @@
 ---
-title: FastAPI OpenTelemetry Instrumentation Guide | base14 Scout
-description: Auto-instrument FastAPI with OpenTelemetry for traces and metrics. Complete Python monitoring setup with distributed tracing and HTTP observability.
-keywords: [fastapi observability, python monitoring, opentelemetry python, fastapi instrumentation, python apm]
+title: FastAPI OpenTelemetry Instrumentation Guide
+description:
+  Auto-instrument FastAPI with OpenTelemetry for traces and metrics. Complete
+  Python monitoring setup with distributed tracing and HTTP observability.
+keywords:
+  [
+    fastapi observability,
+    python monitoring,
+    opentelemetry python,
+    fastapi instrumentation,
+    python apm,
+  ]
 ---
 
 # Fast API
@@ -106,7 +115,7 @@ Key tracing features:
 
 [Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
 
-### Metrics
+## Metrics
 
 OpenTelemetry metrics capture runtime measurements of your FastAPI application,
 including:
@@ -116,7 +125,7 @@ including:
 - Resource utilization
 - Custom business metrics
 
-#### Auto Instrumentation of Metrics
+### Auto Instrumentation of Metrics
 
 ```python title="main.py" showLineNumbers
 
@@ -175,23 +184,23 @@ class MetricsMiddleware(BaseHTTPMiddleware):
     return response
 ```
 
-Metrics will be automatically exported to the Scout Collector at the
-configured interval. `MetricsMiddleware` captures each HTTP request, including
-the method, path, and status code, and tracks the total request count.
+Metrics will be automatically exported to the Scout Collector at the configured
+interval. `MetricsMiddleware` captures each HTTP request, including the method,
+path, and status code, and tracks the total request count.
 
 > View these metrics in base14 Scout observability backend.
 
+## References
+
+[Official Metrics Documentation](https://opentelemetry.io/docs/concepts/signals/metrics/)
+
 ## Related Guides
 
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set up
-  collector for local development
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
+  up collector for local development
 - [Custom Python Instrumentation](../custom-instrumentation/python.md) - Manual
   instrumentation for advanced use cases
 - [Express.js Instrumentation](./express.md) - Node.js framework alternative
-
-##### Reference
-
-[Official Metrics Documentation](https://opentelemetry.io/docs/concepts/signals/metrics/)
 
 ## Sample Application
 

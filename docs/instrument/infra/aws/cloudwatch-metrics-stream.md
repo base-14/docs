@@ -1,15 +1,24 @@
 ---
 date: 2025-04-29
 id: collecting-aws-cloudwatch-metrics-using-kinesis-streams
-title: AWS CloudWatch Metrics Stream Setup Guide | base14 Scout
-description: Set up CloudWatch Metrics Stream with Kinesis Firehose and Lambda to stream AWS metrics to Scout. Complete guide for fast metrics delivery with OpenTelemetry.
-keywords: [cloudwatch metrics stream, aws metrics streaming, kinesis firehose, aws monitoring setup, cloudwatch observability]
-hide_table_of_contents: true
+title: AWS CloudWatch Metrics Stream Setup Guide
+description:
+  Set up CloudWatch Metrics Stream with Kinesis Firehose and Lambda to stream
+  AWS metrics to Scout. Complete guide for fast metrics delivery with
+  OpenTelemetry.
+keywords:
+  [
+    cloudwatch metrics stream,
+    aws metrics streaming,
+    kinesis firehose,
+    aws monitoring setup,
+    cloudwatch observability,
+  ]
 ---
 
-Using Amazon CloudWatch Metric Streams and Amazon Data Firehose,
-you can get CloudWatch metrics into Scout Backend with only a two to
-three minute latency. This is significantly faster than polling approach
+Using Amazon CloudWatch Metric Streams and Amazon Data Firehose, you can get
+CloudWatch metrics into Scout Backend with only a two to three minute latency.
+This is significantly faster than polling approach
 
 ## Step 1: Creating a S3 Bucket
 
@@ -48,17 +57,16 @@ Now, we'll create a kinesis stream which cloudwatch can use to stream metrics
 - Select `Direct PUT` as the input source and `S3` as the output.
 - Select the S3 bucket name we created.
 
-> Format is
-`s3://<your-bucket-name>`
+> Format is `s3://<your-bucket-name>`
 
 - Enable `New Line Delimiter` and leave everything else as default settings.
 - Scroll down and click on `Create Firehose Stream`.
-![Firehose source config](/img/cloudwatch-kinesis-stream/configure-source-in-kinesis.png)
+  ![Firehose source config](/img/cloudwatch-kinesis-stream/configure-source-in-kinesis.png)
 
 ## Step 3: Creating a Metrics Stream pipeline
 
-Now, we'll configure cloudwatch to use the kinesis
-firehose stream to stream metrics to S3
+Now, we'll configure cloudwatch to use the kinesis firehose stream to stream
+metrics to S3
 
 ### 1. Navigate to Cloudwatch dashboard and
 
@@ -75,20 +83,19 @@ firehose stream to stream metrics to S3
 - Select `Custom Setup with Firehose`.
 - Change output format to `opentelemetry 1.0`
 - Select the required metrics.
-- Give a name to the pipeline.
-` Click on `Create Metrics Stream`.
+- Give a name to the pipeline. `Click on`Create Metrics Stream`.
 
 > Good Job, Now the Cloudwatch metrics are streaming to a S3 bucket.
 
 ## Step 4: Creating a lambda function
 
-Now, let's create a lambda function to read from the s3 and
-send it to Scout Collector
+Now, let's create a lambda function to read from the s3 and send it to Scout
+Collector
 
 ### 1. Create a layer with all the necessary packages
 
 ```shell
-mkdir python 
+mkdir python
 # move into that directory
 cd python
 
@@ -120,9 +127,7 @@ zip -r dependencies.zip ../python
 - Once the function is created, follow the below steps to configure it,
 
 - Click on the `Configuration` tab and then click on `permissions`.
-- Click on the Role name and give S3 Full access
-for the above created
-bucket.
+- Click on the Role name and give S3 Full access for the above created bucket.
 - Click on `Code` and scroll to add a new layer.
 - Click on `Add Layer`.
 - Select `Custom Layer` and choose the layer that we created.
@@ -131,10 +136,10 @@ bucket.
 - Click on `Add`.
 - Navigate to `Configuration` and then to `Environment variables`.
 - Click on `edit` and these two environment variables with correct values.
-(`OTEL_COLLECTOR_URL`, `S3_BUCKET_NAME`, `OTEL_SERVICE_NAME`).
+  (`OTEL_COLLECTOR_URL`, `S3_BUCKET_NAME`, `OTEL_SERVICE_NAME`).
 
-Now the actual part, copy the below code into the `code source`
-in your lambda function.
+Now the actual part, copy the below code into the `code source` in your lambda
+function.
 
 ```python
 import boto3

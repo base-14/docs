@@ -1,9 +1,18 @@
 ---
 date: 2025-10-08
 id: collecting-rabbitmq-telemetry
-title: RabbitMQ Message Queue Monitoring with OpenTelemetry | base14 Scout
-description: Monitor RabbitMQ with OpenTelemetry Collector. Collect queue metrics, message stats, connections, and performance data using Scout.
-keywords: [rabbitmq monitoring, rabbitmq metrics, message queue monitoring, opentelemetry rabbitmq, rabbitmq observability]
+title: RabbitMQ Message Queue Monitoring with OpenTelemetry
+description:
+  Monitor RabbitMQ with OpenTelemetry Collector. Collect queue metrics, message
+  stats, connections, and performance data using Scout.
+keywords:
+  [
+    rabbitmq monitoring,
+    rabbitmq metrics,
+    message queue monitoring,
+    opentelemetry rabbitmq,
+    rabbitmq observability,
+  ]
 ---
 
 ## Overview
@@ -207,12 +216,12 @@ receivers:
 processors:
   resource:
     attributes:
-    - key: environment
-      value: ${ENVIRONMENT}
-      action: upsert
-    - key: service.name
-      value: ${SERVICE_NAME}
-      action: upsert
+      - key: environment
+        value: ${ENVIRONMENT}
+        action: upsert
+      - key: service.name
+        value: ${SERVICE_NAME}
+        action: upsert
 
   batch:
     timeout: 10s
@@ -258,6 +267,12 @@ service:
    rabbitmqctl cluster_status
    ```
 
+## References
+
+- [Scout Collector Setup](https://docs.base14.io/instrument/collector-setup/otel-collector-config)
+- [RabbitMQ Management Plugin](https://www.rabbitmq.com/management.html)
+- [RabbitMQ Monitoring Guide](https://www.rabbitmq.com/monitoring.html)
+
 ## Related Guides
 
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md) -
@@ -265,10 +280,3 @@ service:
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) - Set up
   collector for local development
 - [Redis Monitoring](./redis.md) - Alternative caching service monitoring guide
-
-## References
-
-- [Scout Collector Setup](
-  https://docs.base14.io/instrument/collector-setup/otel-collector-config)
-- [RabbitMQ Management Plugin](https://www.rabbitmq.com/management.html)
-- [RabbitMQ Monitoring Guide](https://www.rabbitmq.com/monitoring.html)

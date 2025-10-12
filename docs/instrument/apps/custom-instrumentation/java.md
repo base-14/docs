@@ -1,7 +1,16 @@
 ---
-title: Java Custom OpenTelemetry Instrumentation | base14 Scout
-description: Custom instrumentation for Java applications with OpenTelemetry. Manual tracing, metrics, spans, and telemetry export with Java OTel SDK.
-keywords: [java instrumentation, java monitoring, opentelemetry java, java custom instrumentation, java observability]
+title: Java Custom OpenTelemetry Instrumentation
+description:
+  Custom instrumentation for Java applications with OpenTelemetry. Manual
+  tracing, metrics, spans, and telemetry export with Java OTel SDK.
+keywords:
+  [
+    java instrumentation,
+    java monitoring,
+    opentelemetry java,
+    java custom instrumentation,
+    java observability,
+  ]
 ---
 
 # Java
@@ -32,8 +41,7 @@ Before starting, ensure you have:
 
 ## Required Dependencies
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
+import Tabs from '@theme/Tabs'; import TabItem from '@theme/TabItem';
 
 <Tabs groupId="build-tool">
 <TabItem value="maven" label="Maven">
@@ -91,13 +99,14 @@ dependencies {
 
 ## Initialization
 
-To start collecting telemetry data, you need to initialize OpenTelemetry with both tracing and metrics capabilities in a single setup.
+To start collecting telemetry data, you need to initialize OpenTelemetry with
+both tracing and metrics capabilities in a single setup.
 
 > A Resource is an immutable representation of the entity producing telemetry.
 > For example, a process producing telemetry that is running in a container on
 > Kubernetes has a Pod name, it is in a namespace and possibly is part of a
-> Deployment which also has a name. All three of these attributes can
-> be included in the Resource.
+> Deployment which also has a name. All three of these attributes can be
+> included in the Resource.
 
 Sample Reference code for OpenTelemetry Initialization
 
@@ -171,17 +180,17 @@ public class OpenTelemetrySetup {
 }
 ```
 
-> Ensure OpenTelemetrySetup.setupOpenTelemetry() is called before using
-> these helper classes, as they access the global OpenTelemetry instance during class
+> Ensure OpenTelemetrySetup.setupOpenTelemetry() is called before using these
+> helper classes, as they access the global OpenTelemetry instance during class
 
 ## Traces
 
 Traces give us the big picture of what happens when a request is made to an
-application. Whether your application is a monolith with a single
-database or a sophisticated mesh of services, traces are essential to
-understanding the full "path" a request takes in your application.
+application. Whether your application is a monolith with a single database or a
+sophisticated mesh of services, traces are essential to understanding the full
+"path" a request takes in your application.
 
-#### Reference
+### Reference
 
 [Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
 
@@ -314,9 +323,8 @@ public void doWork() {
 #### Adding Semantic Attributes to a Span
 
 Semantic Attributes are pre-defined Attributes that are well-known naming
-conventions for common kinds of data.
-Using Semantic Attributes lets you normalize this kind of information across
-your systems.
+conventions for common kinds of data. Using Semantic Attributes lets you
+normalize this kind of information across your systems.
 
 ```java showLineNumbers
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
@@ -344,8 +352,8 @@ public void doWork() {
 
 > View these spans in the base14 Scout observability platform.
 >
-> **Note**: Ensure your Scout Collector is properly configured to
-> receive and process the span data.
+> **Note**: Ensure your Scout Collector is properly configured to receive and
+> process the span data.
 
 #### Reference
 
@@ -410,10 +418,10 @@ public void doWork() {
 ### Span Status
 
 A Status can be set on a Span, typically used to specify that a Span has not
-completed successfully - `Error`.
-By default, all spans are Unset, which means a span completed without error. The
-`Ok` status is reserved for when you need to explicitly mark a span as successful
-rather than stick with the default of `Unset` (i.e., "without error").
+completed successfully - `Error`. By default, all spans are Unset, which means a
+span completed without error. The `Ok` status is reserved for when you need to
+explicitly mark a span as successful rather than stick with the default of
+`Unset` (i.e., "without error").
 
 We also look at how to record an exception in the Span.
 
@@ -454,12 +462,13 @@ private void someOperation() throws Exception {
 
 > View these spans in the base14 Scout observability platform.
 >
-> **Note**: Ensure your Scout Collector is properly configured to
-> receive and process the span data.
+> **Note**: Ensure your Scout Collector is properly configured to receive and
+> process the span data.
 
 ## Metrics
 
-Metrics are essential for monitoring the performance and health of your application over time.
+Metrics are essential for monitoring the performance and health of your
+application over time.
 
 ### Counter
 
@@ -578,8 +587,8 @@ public class HistogramExample {
 
 ### Gauge
 
-Gauge is an asynchronous Instrument that reports non-additive values
-that can increase and decrease over time.
+Gauge is an asynchronous Instrument that reports non-additive values that can
+increase and decrease over time.
 
 #### Creating an Observable Gauge
 
@@ -617,7 +626,8 @@ public class GaugeExample {
 
 ## Extracting Trace and Span IDs
 
-You can extract trace and span IDs from the current context for correlation with logs or external systems:
+You can extract trace and span IDs from the current context for correlation with
+logs or external systems:
 
 ```java showLineNumbers
 import io.opentelemetry.api.trace.Span;
@@ -671,17 +681,17 @@ This is particularly useful for:
 - Integrating with external monitoring systems
 - Creating custom dashboards with trace correlation
 
-## Related Guides
-
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set up
-  collector for local development
-- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
-  Production deployment
-- [Spring Boot Auto-Instrumentation](../auto-instrumentation/spring-boot.md) -
-  Auto-instrumentation for Java Spring Boot applications
-
 ## References
 
 - [Official OpenTelemetry Java Documentation](https://opentelemetry.io/docs/languages/java/instrumentation/)
 - [OpenTelemetry API Documentation](https://opentelemetry.io/docs/reference/specification/)
 - [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/reference/specification/semantic-conventions/)
+
+## Related Guides
+
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
+  up collector for local development
+- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
+  Production deployment
+- [Spring Boot Auto-Instrumentation](../auto-instrumentation/spring-boot.md) -
+  Auto-instrumentation for Java Spring Boot applications

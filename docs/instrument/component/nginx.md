@@ -1,18 +1,27 @@
 ---
 date: 2025-06-24
 id: nginx
-title: NGINX Web Server Monitoring with OpenTelemetry | base14 Scout
-description: Monitor NGINX with OpenTelemetry. Collect traces, metrics, and logs from NGINX web server with OTel module and Prometheus exporter using Scout.
-keywords: [nginx monitoring, nginx metrics, nginx traces, opentelemetry nginx, nginx observability]
+title: NGINX Web Server Monitoring with OpenTelemetry
+description:
+  Monitor NGINX with OpenTelemetry. Collect traces, metrics, and logs from NGINX
+  web server with OTel module and Prometheus exporter using Scout.
+keywords:
+  [
+    nginx monitoring,
+    nginx metrics,
+    nginx traces,
+    opentelemetry nginx,
+    nginx observability,
+  ]
 tags: [nginx]
 sidebar_position: 2
 ---
 
 ## Overview
 
-This guide will walk you through collecting rich telemetry data from your nginx server
-using `nginx-module-otel` module and we'll use prometheus nginx
-exporter to collect metrics.
+This guide will walk you through collecting rich telemetry data from your nginx
+server using `nginx-module-otel` module and we'll use prometheus nginx exporter
+to collect metrics.
 
 ## Prerequisties
 
@@ -47,14 +56,14 @@ docker run --network=host nginx/nginx-prometheus-exporter:1.4.2 \
 ### Step 3: Add the following receiver in your Scout collect
 
 ```yaml
- prometheus/nginx:
+prometheus/nginx:
   config:
     scrape_configs:
-    - job_name: nginx
-      scrape_interval: 5s
-      metrics_path: /metrics
-      static_configs:
-      - targets: ['0.0.0.0:9113']
+      - job_name: nginx
+        scrape_interval: 5s
+        metrics_path: /metrics
+        static_configs:
+          - targets: ["0.0.0.0:9113"]
 ```
 
 > Note: Make sure you use in the pipelines as well.
@@ -93,7 +102,8 @@ Verify that the downloaded file contains the proper key:
 gpg --dry-run --quiet --no-keyring --import --import-options import-show /usr/share/keyrings/nginx-archive-keyring.gpg
 ```
 
-To set up the apt repository for stable nginx packages, run the following command:
+To set up the apt repository for stable nginx packages, run the following
+command:
 
 ```bash
 echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
@@ -126,7 +136,8 @@ Verify that the downloaded file contains the proper key:
 gpg --dry-run --quiet --no-keyring --import --import-options import-show /usr/share/keyrings/nginx-archive-keyring.gpg
 ```
 
-To set up the apt repository for stable nginx packages, run the following command:
+To set up the apt repository for stable nginx packages, run the following
+command:
 
 ```bash
 echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
@@ -145,7 +156,8 @@ Install the prerequisites:
 sudo apk add openssl curl ca-certificates
 ```
 
-To set up the apk repository for stable nginx packages, run the following command:
+To set up the apk repository for stable nginx packages, run the following
+command:
 
 ```bash
 printf "%s%s%s%s\n" \
@@ -167,8 +179,8 @@ Install the prerequisites:
 sudo yum install yum-utils
 ```
 
-To set up the yum repository for Amazon Linux 2, create the
-file named `/etc/yum.repos.d/nginx.repo` with the following contents:
+To set up the yum repository for Amazon Linux 2, create the file named
+`/etc/yum.repos.d/nginx.repo` with the following contents:
 
 ```text
 [nginx-stable]
@@ -181,8 +193,8 @@ module_hotfixes=true
 priority=9
 ```
 
-To set up the yum repository for Amazon Linux 2023, create the
-file named `/etc/yum.repos.d/nginx.repo` with the following contents:
+To set up the yum repository for Amazon Linux 2023, create the file named
+`/etc/yum.repos.d/nginx.repo` with the following contents:
 
 ```text
 [nginx-stable]
@@ -267,9 +279,10 @@ receivers:
 ```
 
 > Note: If you have configure log collection location to custom directory,
-update the `include` block with the correct path.
+> update the `include` block with the correct path.
 
-Great work. Now we have successfully implemented nginx with OpenTelemetry instrumentation
+Great work. Now we have successfully implemented nginx with OpenTelemetry
+instrumentation
 
 ## Related Guides
 

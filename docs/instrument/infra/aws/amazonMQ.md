@@ -1,22 +1,32 @@
 ---
 date: 2025-04-27
 id: collecting-aws-amazon-mq-telemetry
-title: AWS Amazon MQ Monitoring via CloudWatch Metrics Stream | base14 Scout
-description: Monitor AWS Amazon MQ RabbitMQ and ActiveMQ with CloudWatch Metrics Stream and OpenTelemetry. Collect message queue metrics, broker stats, and logs using Scout.
-keywords: [aws amazon mq monitoring, amazon mq rabbitmq monitoring, cloudwatch metrics stream, aws message queue monitoring, amazon mq observability]
-hide_table_of_contents: true
+title: AWS Amazon MQ Monitoring via CloudWatch Metrics Stream
+description:
+  Monitor AWS Amazon MQ RabbitMQ and ActiveMQ with CloudWatch Metrics Stream and
+  OpenTelemetry. Collect message queue metrics, broker stats, and logs using
+  Scout.
+keywords:
+  [
+    aws amazon mq monitoring,
+    amazon mq rabbitmq monitoring,
+    cloudwatch metrics stream,
+    aws message queue monitoring,
+    amazon mq observability,
+  ]
 ---
 
 ## Overview
 
-This guide will walk you through collecting rich telemetry data from your
-Amazon MQ using CloudWatch Metrics Stream. We recommend using CloudWatch
-Metrics Stream over Prometheus exporters as it provides faster metric delivery
-(2-3 minute latency) and is more efficient for AWS services.
+This guide will walk you through collecting rich telemetry data from your Amazon
+MQ using CloudWatch Metrics Stream. We recommend using CloudWatch Metrics Stream
+over Prometheus exporters as it provides faster metric delivery (2-3 minute
+latency) and is more efficient for AWS services.
 
 ## Collecting Amazon MQ Metrics
 
-For collecting Amazon MQ metrics, we recommend using **CloudWatch Metrics Stream** instead of Prometheus exporters. CloudWatch Metrics Stream provides:
+For collecting Amazon MQ metrics, we recommend using **CloudWatch Metrics
+Stream** instead of Prometheus exporters. CloudWatch Metrics Stream provides:
 
 - **Faster delivery**: 2-3 minute latency vs 5+ minutes with polling
 - **Lower cost**: No need to run dedicated exporters
@@ -25,19 +35,24 @@ For collecting Amazon MQ metrics, we recommend using **CloudWatch Metrics Stream
 
 ### Step 1: Set up CloudWatch Metrics Stream
 
-Follow our comprehensive [CloudWatch Metrics Stream guide](cloudwatch-metrics-stream.md) to set up the infrastructure.
+Follow our comprehensive
+[CloudWatch Metrics Stream guide](cloudwatch-metrics-stream.md) to set up the
+infrastructure.
 
 ### Step 2: Configure Amazon MQ metrics filtering
 
-When configuring your CloudWatch Metrics Stream in **Step 3** of the setup guide, make sure to:
+When configuring your CloudWatch Metrics Stream in **Step 3** of the setup
+guide, make sure to:
 
 1. **Select specific namespaces** instead of "All namespaces"
 2. **Choose only AWS/AmazonMQ** from the namespace list
-3. This ensures you only collect Amazon MQ metrics, reducing costs and data volume
+3. This ensures you only collect Amazon MQ metrics, reducing costs and data
+   volume
 
 ### Step 3: Create OTEL Collector config for RabbitMQ metrics (Optional)
 
-If you're using RabbitMQ as your broker engine and need detailed broker-specific metrics, create `amazon-mq-metrics-collection-config.yaml`:
+If you're using RabbitMQ as your broker engine and need detailed broker-specific
+metrics, create `amazon-mq-metrics-collection-config.yaml`:
 
 ```yaml
 receivers:
@@ -95,12 +110,15 @@ service:
       exporters: [otlp]
 ```
 
-> **Note**: CloudWatch Metrics Stream will automatically deliver AWS/AmazonMQ metrics (CPU utilization, connection counts, message counts, etc.), while the RabbitMQ receiver collects detailed broker-specific metrics if needed.
+> **Note**: CloudWatch Metrics Stream will automatically deliver AWS/AmazonMQ
+> metrics (CPU utilization, connection counts, message counts, etc.), while the
+> RabbitMQ receiver collects detailed broker-specific metrics if needed.
 
 ## Collecting Amazon MQ Logs
 
 The log collection of Amazon MQ requires specifying the list of log group names.
-From the AWS CloudWatch console, please find the log group(s) relevant to the integration.
+From the AWS CloudWatch console, please find the log group(s) relevant to the
+integration.
 
 ### Create the Collector config file
 
@@ -140,20 +158,20 @@ service:
       exporters: [otlp]
 ```
 
-After deploying these changes, generate some traffic to your Amazon MQ and
-check in Scout to see your Amazon MQ's metrics and logs.
+After deploying these changes, generate some traffic to your Amazon MQ and check
+in Scout to see your Amazon MQ's metrics and logs.
 
 ---
 
 With this setup, your Amazon MQ broker becomes fully observable through Scout.
-You'll gain real-time visibility into performance metrics and logs without
-any changes to your application code.
+You'll gain real-time visibility into performance metrics and logs without any
+changes to your application code.
 
 ## Related Guides
 
-- [CloudWatch Metrics Stream Setup](./cloudwatch-metrics-stream.md) - Set up
-  AWS metrics streaming
+- [CloudWatch Metrics Stream Setup](./cloudwatch-metrics-stream.md) - Set up AWS
+  metrics streaming
 - [RabbitMQ Monitoring](../../component/rabbitmq.md) - Self-hosted RabbitMQ
   monitoring guide
-- [OTel Collector Configuration](../../collector-setup/otel-collector-config.md) -
-  Advanced collector configuration
+- [OTel Collector Configuration](../../collector-setup/otel-collector-config.md)
+  \- Advanced collector configuration

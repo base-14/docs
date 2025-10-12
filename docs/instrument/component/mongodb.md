@@ -1,9 +1,18 @@
 ---
 date: 2025-06-25
 id: collecting-mongodb-telemetry
-title: MongoDB Database Monitoring with OpenTelemetry | base14 Scout
-description: Monitor MongoDB with OpenTelemetry Collector. Collect database metrics, replica set stats, and performance data using Scout.
-keywords: [mongodb monitoring, mongodb metrics, database monitoring, opentelemetry mongodb, mongodb observability]
+title: MongoDB Database Monitoring with OpenTelemetry
+description:
+  Monitor MongoDB with OpenTelemetry Collector. Collect database metrics,
+  replica set stats, and performance data using Scout.
+keywords:
+  [
+    mongodb monitoring,
+    mongodb metrics,
+    database monitoring,
+    opentelemetry mongodb,
+    mongodb observability,
+  ]
 ---
 
 ## Overview
@@ -39,34 +48,33 @@ db.createUser({
 receivers:
   mongodb:
     hosts:
-      - endpoint: localhost:27017  # Update with your MongoDB host
+      - endpoint: localhost:27017 # Update with your MongoDB host
     username: ${MONGO_USER}
     password: ${MONGO_PASSWORD}
     collection_interval: 60s
     timeout: 10s
-    
-    # TLS Configuration
-    tls:  
-      insecure: true
-      insecure_skip_verify: true    
 
-    direct_connection: true  # false for replica sets
-    
+    # TLS Configuration
+    tls:
+      insecure: true
+      insecure_skip_verify: true
+
+    direct_connection: true # false for replica sets
+
     metrics:
       mongodb.uptime:
         enabled: true
 
-
 processors:
   resource:
     attributes:
-    - key: environment
-      value: ${ENVIRONMENT}
-      action: upsert
-    - key: service.name
-      value: ${SERVICE_NAME}
-      action: upsert
-    
+      - key: environment
+        value: ${ENVIRONMENT}
+        action: upsert
+      - key: service.name
+        value: ${SERVICE_NAME}
+        action: upsert
+
   batch:
     timeout: 10s
     send_batch_size: 1024
@@ -97,6 +105,10 @@ service:
      "admin?authSource=admin" --eval "db.serverStatus().ok"
    ```
 
+## References
+
+1. [Scout Collector Setup](https://docs.base14.io/instrument/collector-setup/otel-collector-config)
+
 ## Related Guides
 
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md) -
@@ -104,8 +116,3 @@ service:
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) - Set up
   collector for local development
 - [PostgreSQL Monitoring](./postgres.md) - Alternative database monitoring guide
-
-## References
-
-1. [Scout Collector Setup](
-   https://docs.base14.io/instrument/collector-setup/otel-collector-config)

@@ -1,22 +1,31 @@
 ---
 date: 2025-04-28
 id: collecting-aws-elasticache-telemetry
-title: AWS ElastiCache Monitoring via CloudWatch Metrics Stream | base14 Scout
-description: Monitor AWS ElastiCache Redis and Memcached with CloudWatch Metrics Stream and OpenTelemetry. Collect cache metrics, performance data, and logs using Scout.
-keywords: [aws elasticache monitoring, elasticache redis monitoring, cloudwatch metrics stream, aws cache monitoring, elasticache observability]
-hide_table_of_contents: true
+title: AWS ElastiCache Monitoring via CloudWatch Metrics Stream
+description:
+  Monitor AWS ElastiCache Redis and Memcached with CloudWatch Metrics Stream and
+  OpenTelemetry. Collect cache metrics, performance data, and logs using Scout.
+keywords:
+  [
+    aws elasticache monitoring,
+    elasticache redis monitoring,
+    cloudwatch metrics stream,
+    aws cache monitoring,
+    elasticache observability,
+  ]
 ---
 
 ## Overview
 
 This guide will walk you through collecting rich telemetry data from your
-ElastiCache caches using CloudWatch Metrics Stream. We recommend using CloudWatch
-Metrics Stream over Prometheus exporters as it provides faster metric delivery
-(2-3 minute latency) and is more efficient for AWS services.
+ElastiCache caches using CloudWatch Metrics Stream. We recommend using
+CloudWatch Metrics Stream over Prometheus exporters as it provides faster metric
+delivery (2-3 minute latency) and is more efficient for AWS services.
 
 ## Collecting ElastiCache Metrics
 
-For collecting ElastiCache metrics, we recommend using **CloudWatch Metrics Stream** instead of Prometheus exporters. CloudWatch Metrics Stream provides:
+For collecting ElastiCache metrics, we recommend using **CloudWatch Metrics
+Stream** instead of Prometheus exporters. CloudWatch Metrics Stream provides:
 
 - **Faster delivery**: 2-3 minute latency vs 5+ minutes with polling
 - **Lower cost**: No need to run dedicated exporters
@@ -25,19 +34,24 @@ For collecting ElastiCache metrics, we recommend using **CloudWatch Metrics Stre
 
 ### Step 1: Set up CloudWatch Metrics Stream
 
-Follow our comprehensive [CloudWatch Metrics Stream guide](cloudwatch-metrics-stream.md) to set up the infrastructure.
+Follow our comprehensive
+[CloudWatch Metrics Stream guide](cloudwatch-metrics-stream.md) to set up the
+infrastructure.
 
 ### Step 2: Configure ElastiCache metrics filtering
 
-When configuring your CloudWatch Metrics Stream in **Step 3** of the setup guide, make sure to:
+When configuring your CloudWatch Metrics Stream in **Step 3** of the setup
+guide, make sure to:
 
 1. **Select specific namespaces** instead of "All namespaces"
 2. **Choose only AWS/ElastiCache** from the namespace list
-3. This ensures you only collect ElastiCache metrics, reducing costs and data volume
+3. This ensures you only collect ElastiCache metrics, reducing costs and data
+   volume
 
 ### Step 3: Create OTEL Collector config for Redis metrics (Optional)
 
-If you're using Redis and need detailed cache-specific metrics, create `elasticache-metrics-collection-config.yaml`:
+If you're using Redis and need detailed cache-specific metrics, create
+`elasticache-metrics-collection-config.yaml`:
 
 ```yaml
 receivers:
@@ -82,13 +96,15 @@ service:
       exporters: [otlp]
 ```
 
-> **Note**: CloudWatch Metrics Stream will automatically deliver AWS/ElastiCache metrics (CPU utilization, memory usage, cache hits/misses, network I/O, etc.), while the Redis receiver collects detailed cache-specific metrics if needed.
+> **Note**: CloudWatch Metrics Stream will automatically deliver AWS/ElastiCache
+> metrics (CPU utilization, memory usage, cache hits/misses, network I/O, etc.),
+> while the Redis receiver collects detailed cache-specific metrics if needed.
 
 ## Collecting Elasticache Logs
 
-The log collection of Elasticache Cluster requires specifying
-the list of log group names.From the AWS CloudWatch console
-, please find the log group(s) relevant to the integration.
+The log collection of Elasticache Cluster requires specifying the list of log
+group names.From the AWS CloudWatch console , please find the log group(s)
+relevant to the integration.
 
 ### Create the Collector config file
 
@@ -133,15 +149,15 @@ and check in Scout to see your elasticache's metrics and logs.
 
 ---
 
-With this setup, your AWS Elasticache cluster becomes fully observable through Scout.
-You'll gain real-time visibility into performance metrics and logs without
-any changes to your application code.
+With this setup, your AWS Elasticache cluster becomes fully observable through
+Scout. You'll gain real-time visibility into performance metrics and logs
+without any changes to your application code.
 
 ## Related Guides
 
-- [CloudWatch Metrics Stream Setup](./cloudwatch-metrics-stream.md) - Set up
-  AWS metrics streaming
+- [CloudWatch Metrics Stream Setup](./cloudwatch-metrics-stream.md) - Set up AWS
+  metrics streaming
 - [Redis Monitoring](../../component/redis.md) - Self-hosted Redis monitoring
   guide
-- [OTel Collector Configuration](../../collector-setup/otel-collector-config.md) -
-  Advanced collector configuration
+- [OTel Collector Configuration](../../collector-setup/otel-collector-config.md)
+  \- Advanced collector configuration

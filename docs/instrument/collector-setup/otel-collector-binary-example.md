@@ -1,15 +1,25 @@
 ---
-title: OpenTelemetry Collector Binary Installation Guide | base14 Scout
-description: Install and configure OpenTelemetry Collector binary. Download from releases, set up log collection, and export telemetry data to Scout with OAuth2 authentication.
-keywords: [opentelemetry binary, otel collector download, binary installation, collector setup, opentelemetry releases]
+title: OpenTelemetry Collector Binary Installation Guide
+description:
+  Install and configure OpenTelemetry Collector binary. Download from releases,
+  set up log collection, and export telemetry data to Scout with OAuth2
+  authentication.
+keywords:
+  [
+    opentelemetry binary,
+    otel collector download,
+    binary installation,
+    collector setup,
+    opentelemetry releases,
+  ]
 tags: [open-telemetry, base14 scout]
 sidebar_position: 4
 ---
 
 # OpenTelemetry Binary
 
-Set up and configure the Scout Collector through binary downloaded from
-releases page.
+Set up and configure the Scout Collector through binary downloaded from releases
+page.
 
 ## Overview
 
@@ -37,8 +47,8 @@ for collecting and exporting telemetry data to base14 Scout.
 
 ## Install the collector binary
 
-The collector binary can be downloaded from
-the [releases page](https://github.com/open-telemetry/opentelemetry-collector-releases/releases).
+The collector binary can be downloaded from the
+[releases page](https://github.com/open-telemetry/opentelemetry-collector-releases/releases).
 
 An example of how to download and extract the collector binary is shown below
 for macos arm64.
@@ -99,8 +109,8 @@ service:
 ## Run a Sample Node.js Application
 
 Let's create a simple Node.js application that generates structured logs using
-the `pino` logging library. The Scout Collector will collect these
-logs and forward them to Scout.
+the `pino` logging library. The Scout Collector will collect these logs and
+forward them to Scout.
 
 ### 1. Install Dependencies
 
@@ -117,12 +127,12 @@ Create a new file called `main.js` with the following code that demonstrates
 basic logging functionality:
 
 ```js title="main.js"
-const logger = require('pino')()
+const logger = require("pino")();
 
-logger.info('hello world')
+logger.info("hello world");
 
-const child = logger.child({ a: 'property' })
-child.info('hello child!')
+const child = logger.child({ a: "property" });
+child.info("hello child!");
 ```
 
 ### 3. Run the Application
@@ -144,8 +154,8 @@ After running the application, you can view the collected logs in Scout:
    - A "hello world" message from the root logger
    - A "hello child!" message with an additional property `{a: 'property'}`
 
-The logs will appear with timestamps and other metadata added by the
-Scout Collector.
+The logs will appear with timestamps and other metadata added by the Scout
+Collector.
 
 ## Related Guides
 

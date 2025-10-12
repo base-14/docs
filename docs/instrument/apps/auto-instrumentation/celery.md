@@ -1,7 +1,16 @@
 ---
-title: Celery OpenTelemetry Instrumentation | base14 Scout
-description: Auto-instrument Celery task queue with OpenTelemetry for traces, metrics, and logs. Complete Python Celery monitoring with distributed tracing.
-keywords: [celery monitoring, python celery, celery instrumentation, opentelemetry celery, task queue monitoring]
+title: Celery OpenTelemetry Instrumentation
+description:
+  Auto-instrument Celery task queue with OpenTelemetry for traces, metrics, and
+  logs. Complete Python Celery monitoring with distributed tracing.
+keywords:
+  [
+    celery monitoring,
+    python celery,
+    celery instrumentation,
+    opentelemetry celery,
+    task queue monitoring,
+  ]
 ---
 
 # Celery
@@ -10,16 +19,14 @@ This guide demonstrates how to Auto instrument tracing, metrics and logs using
 OpenTelemetry for Celery and export them to a collector using python OTEL sdk.
 
 > **Note:** This guide provides a concise overview based on the official
-> OpenTelemetry documentation. For complete information, please consult
-> the
+> OpenTelemetry documentation. For complete information, please consult the
 > [official OpenTelemetry documentation](https://opentelemetry-python-contrib.readthedocs.io/en/latest/instrumentation/celery/celery.html).
 
 ## Setup
 
 opentelemetry-api defines the API interfaces for tracing, metrics, and logging
-and opentelemetry-sdk provides the implementation for these APIs.
-Install the following necessary packages or add it to
-`requirements.txt` and install it.
+and opentelemetry-sdk provides the implementation for these APIs. Install the
+following necessary packages or add it to `requirements.txt` and install it.
 
 ```plaintext
 opentelemetry-api
@@ -31,9 +38,9 @@ opentelemetry-instrumentation-celery
 ## Traces
 
 Traces give us the big picture of what happens when a request is made to an
-application. Whether your application is a monolith with a single
-database or a sophisticated mesh of services, traces are essential to
-understanding the full “path” a request takes in your application.
+application. Whether your application is a monolith with a single database or a
+sophisticated mesh of services, traces are essential to understanding the full
+“path” a request takes in your application.
 
 ### Auto Instrumentation of Traces
 
@@ -201,8 +208,8 @@ add.delay(42, 50)
 
 ## Related Guides
 
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set up
-  collector for local development
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
+  up collector for local development
 - [Custom Python Instrumentation](../custom-instrumentation/python.md) - Manual
   instrumentation for advanced use cases
 - [Fast API Instrumentation](./fast-api.md) - Python web framework alternative

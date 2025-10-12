@@ -1,9 +1,18 @@
 ---
 slug: /
 sidebar_position: 1
-title: OpenTelemetry-Native Observability Platform | base14 Scout
-description: Cloud-native observability with OpenTelemetry. Collect traces, metrics, and logs with automated instrumentation. Get started in 5 minutes with Scout.
-keywords: [opentelemetry platform, observability platform, distributed tracing, opentelemetry collector, cloud native monitoring]
+title: OpenTelemetry-Native Observability Platform
+description:
+  Cloud-native observability with OpenTelemetry. Collect traces, metrics, and
+  logs with automated instrumentation. Get started in 5 minutes with Scout.
+keywords:
+  [
+    opentelemetry platform,
+    observability platform,
+    distributed tracing,
+    opentelemetry collector,
+    cloud native monitoring,
+  ]
 ---
 
 # Introduction
@@ -14,17 +23,17 @@ Cloud-native and OpenTelemetry-native platform.
 ## Key Features
 
 - **Unified Data Collection**: Collect all telemetry signals (logs, metrics,
-    traces) through a single OpenTelemetry pipeline
+  traces) through a single OpenTelemetry pipeline
 - **Real-time Monitoring**: Monitor your applications and infrastructure with
-    near real-time visibility
+  near real-time visibility
 - **Distributed Tracing**: Track requests across service boundaries with
-    detailed trace visualization
+  detailed trace visualization
 - **Metrics Analysis**: Analyze system and application metrics with powerful
-    querying and visualization
-- **Automated Instrumentation**: Leverage OpenTelemetry auto-instrumentation
-    for popular frameworks and libraries
+  querying and visualization
+- **Automated Instrumentation**: Leverage OpenTelemetry auto-instrumentation for
+  popular frameworks and libraries
 - **Custom Instrumentation**: Flexibility to add custom instrumentation for
-    business-specific telemetry
+  business-specific telemetry
 
 ## Architecture Benefits
 
@@ -40,21 +49,21 @@ Cloud-native and OpenTelemetry-native platform.
 
 Let's setup **Scout in less than 5 minutes**. We will follow the steps below:
 
-1. **Install the Scout Collector**: The Scout Collector is a
-   vendor-agnostic implementation of the OpenTelemetry specification. It can
-   receive, process, and export telemetry data. You can install it using Docker,
-   Kubernetes, or directly on your machine. The installation method will depend
-   on your environment and preferences.
-    - [Docker Compose](./instrument/collector-setup/docker-compose-example)
-    - [Kubernetes (EKS, GKE, AKS)](./instrument/collector-setup/kubernetes-helm-setup.md)
-    - [Linux](./instrument/collector-setup/linux-setup)
-    - [Using Otel Binary](./instrument/collector-setup/otel-collector-binary-example.md)
-2. **Configure the Scout Collector**: Step 1 should help you get started
-   with a collector that can receive, process, and export telemetry data. For
-   advanced configurations, you can refer to
+1. **Install the Scout Collector**: The Scout Collector is a vendor-agnostic
+   implementation of the OpenTelemetry specification. It can receive, process,
+   and export telemetry data. You can install it using Docker, Kubernetes, or
+   directly on your machine. The installation method will depend on your
+   environment and preferences.
+   - [Docker Compose](./instrument/collector-setup/docker-compose-example)
+   - [Kubernetes (EKS, GKE, AKS)](./instrument/collector-setup/kubernetes-helm-setup.md)
+   - [Linux](./instrument/collector-setup/linux-setup)
+   - [Using Otel Binary](./instrument/collector-setup/otel-collector-binary-example.md)
+2. **Configure the Scout Collector**: Step 1 should help you get started with a
+   collector that can receive, process, and export telemetry data. For advanced
+   configurations, you can refer to
    [detailed Scout Collector configuration guide](./instrument/collector-setup/otel-collector-config.md)
-3. **Configure the Scout Exporter**: Next, configure your Scout Collector to send
-   data to Scout. You can find the configuration details in the
+3. **Configure the Scout Exporter**: Next, configure your Scout Collector to
+   send data to Scout. You can find the configuration details in the
    [Scout Exporter](./instrument/collector-setup/scout-exporter.md)
    documentation. This will typically involve setting up the endpoint,
    authentication, and any other required parameters. Scout exporter is
@@ -68,8 +77,8 @@ Let's setup **Scout in less than 5 minutes**. We will follow the steps below:
 5. **Instrument your infrastructure**: Use OpenTelemetry to collect telemetry
    data from your infrastructure components. This can include servers,
    databases, and other services. For example, for AWS ECS Fargate, please read
-   [AWS ECS Instrumentation](./instrument/collector-setup/ecs-setup.md) to collect
-   telemetry data from your Fargate services.
+   [AWS ECS Instrumentation](./instrument/collector-setup/ecs-setup.md) to
+   collect telemetry data from your Fargate services.
 6. **Observe your telemetry data**: Access the Scout UI to view and analyze your
    telemetry data. You can explore logs, metrics, and traces to gain insights
    into your applications and infrastructure. The UI provides powerful querying
@@ -81,10 +90,14 @@ Let's setup **Scout in less than 5 minutes**. We will follow the steps below:
 
 ## Related Guides
 
-- [Docker Compose Setup](./instrument/collector-setup/docker-compose-example.md) - Quick start in under 5 minutes
-- [Kubernetes Helm Setup](./instrument/collector-setup/kubernetes-helm-setup.md) - Production deployment guide
-- [Scout Exporter Configuration](./instrument/collector-setup/scout-exporter.md) - Configure authentication and endpoints
+- [Docker Compose Setup](./instrument/collector-setup/docker-compose-example.md)
+  \- Quick start in under 5 minutes
+- [Kubernetes Helm Setup](./instrument/collector-setup/kubernetes-helm-setup.md)
+  \- Production deployment guide
+- [Scout Exporter Configuration](./instrument/collector-setup/scout-exporter.md)
+  \- Configure authentication and endpoints
 
-### Learn More
+## Learn More
 
-- [Observability Theatre](/blog/observability-theatre) - Avoid common observability anti-patterns
+- [Observability Theatre](/blog/observability-theatre) - Avoid common
+  observability anti-patterns

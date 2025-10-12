@@ -1,7 +1,16 @@
 ---
-title: Ruby Custom OpenTelemetry Instrumentation | base14 Scout
-description: Custom instrumentation for Ruby applications with OpenTelemetry. Manual tracing, metrics, logs, spans, and telemetry export with Ruby OTel SDK.
-keywords: [ruby instrumentation, ruby monitoring, opentelemetry ruby, ruby custom instrumentation, ruby observability]
+title: Ruby Custom OpenTelemetry Instrumentation
+description:
+  Custom instrumentation for Ruby applications with OpenTelemetry. Manual
+  tracing, metrics, logs, spans, and telemetry export with Ruby OTel SDK.
+keywords:
+  [
+    ruby instrumentation,
+    ruby monitoring,
+    opentelemetry ruby,
+    ruby custom instrumentation,
+    ruby observability,
+  ]
 ---
 
 # Ruby
@@ -42,20 +51,20 @@ gem install opentelemetry-semantic_conventions
 ## Traces
 
 Traces give us the big picture of what happens when a request is made to an
-application. Whether your application is a monolith with a single
-database or a sophisticated mesh of services, traces are essential to
-understanding the full “path” a request takes in your application.
+application. Whether your application is a monolith with a single database or a
+sophisticated mesh of services, traces are essential to understanding the full
+“path” a request takes in your application.
 
 ### Initialization
 
-To Start tracing, first a tracer should be acquired and a TraceProvider should be
-initialized optionally we can pass a resource to TraceProvider.
+To Start tracing, first a tracer should be acquired and a TraceProvider should
+be initialized optionally we can pass a resource to TraceProvider.
 
 > A Resource is an immutable representation of the entity producing telemetry.
 > For example, a process producing telemetry that is running in a container on
 > Kubernetes has a Pod name, it is in a namespace and possibly is part of a
-> Deployment which also has a name. All three of these attributes can
-> be included in the Resource.
+> Deployment which also has a name. All three of these attributes can be
+> included in the Resource.
 
 Sample Reference code for Initialization
 
@@ -78,9 +87,8 @@ end
 MyAppTracer = OpenTelemetry.tracer_provider.tracer('my.tracer.name')
 ```
 
->
-> **Note**: Ensure your Scout Collector is properly configured to
-> receive and process the trace data.
+> **Note**: Ensure your Scout Collector is properly configured to receive and
+> process the trace data.
 
 #### Reference
 
@@ -142,31 +150,29 @@ end
 #### Adding Semantic Attributes to a Span
 
 Semantic Attributes are pre-defined Attributes that are well-known naming
-conventions for common kinds of data.
-Using Semantic Attributes lets you normalize this kind of information across
-your systems.
+conventions for common kinds of data. Using Semantic Attributes lets you
+normalize this kind of information across your systems.
 
-> Ensure that you have installed `opentelemetry-semantic_conventions` gem
-> for using Semantic Attributes
+> Ensure that you have installed `opentelemetry-semantic_conventions` gem for
+> using Semantic Attributes
 
 ```ruby showLineNumbers
 require 'opentelemetry/sdk'
 require 'opentelemetry/semantic_conventions'
 def do_work
   current_span = OpenTelemetry::Trace.current_span
-  
+
   current_span.add_attributes({
     OpenTelemetry::SemanticConventions::Trace::HTTP_METHOD => "GET",
     OpenTelemetry::SemanticConventions::Trace::HTTP_URL => "https://base14.io/",
   })
-  
+
   puts "Doing some work..."
 end
 ```
 
->
-> **Note**: Ensure your Scout Collector is properly configured to
-> receive and process the span data.
+> **Note**: Ensure your Scout Collector is properly configured to receive and
+> process the span data.
 
 #### Reference
 
@@ -184,7 +190,7 @@ You can think of it as a primitive log.
 ```ryby showLineNumbers
 def do_work
   span = OpenTelemetry::Trace.current_span
-  
+
   span.add_event("Acquiring lock")
   if mutex.try_lock
     span.add_event("Got lock, doing work...")
@@ -203,10 +209,10 @@ end
 ### Span Status
 
 A Status can be set on a Span, typically used to specify that a Span has not
-completed successfully - `Error`.
-By default, all spans are Unset, which means a span completed without error. The
-`Ok` status is reserved for when you need to explicitly mark a span as successful
-rather than stick with the default of `Unset` (i.e., “without error”).
+completed successfully - `Error`. By default, all spans are Unset, which means a
+span completed without error. The `Ok` status is reserved for when you need to
+explicitly mark a span as successful rather than stick with the default of
+`Unset` (i.e., “without error”).
 
 We also look at how to record an exception in the Span.
 
@@ -217,7 +223,7 @@ require "opentelemetry/sdk"
 
 def do_work():
   current_span = OpenTelemetry::Trace.current_span
-  
+
   begin
     1/0 # something that obviously fails
   rescue Exception => e
@@ -227,9 +233,8 @@ def do_work():
 end
 ```
 
->
-> **Note**: Ensure your Scout Collector is properly configured to
-> receive and process the span data.
+> **Note**: Ensure your Scout Collector is properly configured to receive and
+> process the span data.
 
 ## Metrics
 
@@ -241,7 +246,8 @@ The logs API & SDK are currently under development.
 
 ## Extracting Trace and Span IDs
 
-To extract trace ID and span ID from the current context for log correlation or debugging purposes:
+To extract trace ID and span ID from the current context for log correlation or
+debugging purposes:
 
 ```ruby showLineNumbers
 require 'opentelemetry/trace'
@@ -275,17 +281,17 @@ def traced_function
 end
 ```
 
-## Related Guides
-
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set up
-  collector for local development
-- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
-  Production deployment
-- [Rails Auto-Instrumentation](../auto-instrumentation/rails.md) -
-  Auto-instrumentation for Ruby on Rails applications
-
 ## References
 
 - [Official OpenTelemetry Ruby Documentation](https://opentelemetry.io/docs/languages/ruby/getting-started/)
 - [OpenTelemetry API Documentation](https://opentelemetry.io/docs/reference/specification/)
 - [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/reference/specification/semantic-conventions/)
+
+## Related Guides
+
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
+  up collector for local development
+- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
+  Production deployment
+- [Rails Auto-Instrumentation](../auto-instrumentation/rails.md) -
+  Auto-instrumentation for Ruby on Rails applications

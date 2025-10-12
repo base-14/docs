@@ -1,15 +1,25 @@
 ---
-title: Scout Exporter Configuration | base14 Scout
-description: Configure Scout exporter for OpenTelemetry Collector. Set up OAuth2 authentication and OTLP export to send telemetry data to base14 Scout platform.
-keywords: [scout exporter, opentelemetry exporter, otlp exporter, telemetry export, opentelemetry configuration]
+title: Scout Exporter Configuration
+description:
+  Configure Scout exporter for OpenTelemetry Collector. Set up OAuth2
+  authentication and OTLP export to send telemetry data to base14 Scout
+  platform.
+keywords:
+  [
+    scout exporter,
+    opentelemetry exporter,
+    otlp exporter,
+    telemetry export,
+    opentelemetry configuration,
+  ]
 tags: [opentelemetry, base14 scout]
 sidebar_position: 5
 ---
 
 # Scout Exporter
 
-The Scout exporter is a custom exporter for the Scout Collector that
-exports telemetry data to Scout.
+The Scout exporter is a custom exporter for the Scout Collector that exports
+telemetry data to Scout.
 
 ## Configuration
 
@@ -49,6 +59,9 @@ exporters:
 
 ## Related Guides
 
-- [Docker Compose Setup](./docker-compose-example.md) - Quick local development setup
-- [Kubernetes Helm Setup](./kubernetes-helm-setup.md) - Production Kubernetes deployment
-- [Advanced Collector Configuration](./otel-collector-config.md) - Full collector configuration reference
+- [Docker Compose Setup](./docker-compose-example.md) - Quick local development
+  setup
+- [Kubernetes Helm Setup](./kubernetes-helm-setup.md) - Production Kubernetes
+  deployment
+- [Advanced Collector Configuration](./otel-collector-config.md) - Full
+  collector configuration reference
