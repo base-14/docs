@@ -347,3 +347,12 @@ This detailed setup provides a robust way to process VPC Flow Logs from S3
 using Lambda and forward them via OTLP. We can further adjust parsing logic,
 OTel configuration, and IAM permissions based on your specific Flow Log format
 and environment.
+
+## Related Guides
+
+- [Application Load Balancer Monitoring](./elb.md) - Monitor AWS ALB with logs
+  and metrics
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
+  up collector for local development
+- [OTel Collector Configuration](../../collector-setup/otel-collector-config.md) -
+  Advanced collector configuration

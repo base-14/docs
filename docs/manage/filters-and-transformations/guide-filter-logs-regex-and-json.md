@@ -115,3 +115,12 @@ service:
 1. Test your regex patterns thoroughly
 2. Use `error_mode: ignore` to prevent pipeline failures from malformed logs
 3. Consider performance impact when processing large log volumes
+
+## Related Guides
+
+- [Extract Log Level from Body](./guide-extract-log-level-from-body.md) - Parse
+  log severity with regex
+- [Transform Logs Guide](./guide-transform-logs.md) - Extract trace and span IDs
+  from logs
+- [OTTL Span Transformations](./guide-ottl-span-transformations.md) - Filter and
+  transform spans

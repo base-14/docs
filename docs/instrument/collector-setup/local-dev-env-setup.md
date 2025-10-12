@@ -85,7 +85,6 @@ service:
 > For Adding Receiver, Processor, Exporter, and Service Extensions,
 > please refer to [Scout Collector Configuration](https://opentelemetry.io/docs/collector/configuration/)
 
-
 ## Start the Containers
 
 ```mdx-code-block
@@ -120,7 +119,6 @@ Run the below command to start the local development setup
 docker-compose up -d
 ```
 
-
 ```mdx-code-block
 </TabItem>
 <TabItem value="docker-run" label="Using Docker Run">
@@ -138,11 +136,20 @@ docker run -d \
   otel/opentelemetry-collector-contrib:0.130.0 \
   --config=/etc/otelcol/config.yaml
 ```
+
 ```mdx-code-block
 </TabItem>
 </Tabs>
 ```
 
-
-That's it! Navigate to Scout Grafana dashboards 
+That's it! Navigate to Scout Grafana dashboards
 to visualize the data.
+
+## Related Guides
+
+- [Docker Compose Setup](./docker-compose-example.md) - Complete Docker Compose
+  example with Grafana
+- [Scout Exporter Configuration](./scout-exporter.md) - Authentication and
+  endpoint configuration
+- [Express.js Instrumentation](../apps/auto-instrumentation/express.md) - Test
+  with a sample application

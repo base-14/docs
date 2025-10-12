@@ -108,3 +108,12 @@ transform/advanced-severity:
 - More specific patterns should be placed before general ones
 - The `IsMatch` function uses regex patterns for flexible matching
 - Consider using multiple transform processors for complex parsing logic
+
+## Related Guides
+
+- [Filter Logs with Regex and JSON](./guide-filter-logs-regex-and-json.md) -
+  Advanced log filtering techniques
+- [Transform Logs Guide](./guide-transform-logs.md) - General log transformation
+  patterns
+- [OTel Collector Configuration](../../instrument/collector-setup/otel-collector-config.md) -
+  Collector configuration basics

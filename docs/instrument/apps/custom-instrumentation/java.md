@@ -23,7 +23,6 @@ This guide demonstrates how to:
 - Add semantic attributes and events
 - Export telemetry data to Scout Collector
 
-
 ## Prerequisites
 
 Before starting, ensure you have:
@@ -172,7 +171,7 @@ public class OpenTelemetrySetup {
 }
 ```
 
-> Ensure OpenTelemetrySetup.setupOpenTelemetry() is called before using 
+> Ensure OpenTelemetrySetup.setupOpenTelemetry() is called before using
 > these helper classes, as they access the global OpenTelemetry instance during class
 
 ## Traces
@@ -666,10 +665,20 @@ public class TraceContextExtractor {
 ```
 
 This is particularly useful for:
+
 - Correlating application logs with traces
 - Adding trace context to error messages
 - Integrating with external monitoring systems
 - Creating custom dashboards with trace correlation
+
+## Related Guides
+
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set up
+  collector for local development
+- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
+  Production deployment
+- [Spring Boot Auto-Instrumentation](../auto-instrumentation/spring-boot.md) -
+  Auto-instrumentation for Java Spring Boot applications
 
 ## References
 

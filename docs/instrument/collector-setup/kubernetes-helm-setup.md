@@ -809,3 +809,13 @@ scout:
 4. Sends apps metrics data for the configured app endpoints.
 5. Sets up a local otlp endpoint for apps to send traces which are then
    forwarded to Scout.
+
+## Related Guides
+
+- [Scout Exporter Configuration](./scout-exporter.md) - Configure authentication to send data to Scout
+- [Advanced Collector Configuration](./otel-collector-config.md) - Customize your collector setup
+- [AWS ECS/Fargate Setup](./ecs-setup.md) - Alternative container deployment option
+
+### Learn More
+
+- [Why Unified Observability Matters](/blog/unified-observability) - Benefits for growing engineering teams

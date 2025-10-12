@@ -52,6 +52,7 @@ For Fargate, you can deploy the Scout collector in different modes:
 <TabItem value="service" label="Service Mode" default>
 
 **Best for**: Centralized telemetry collection and processing
+
 - Runs as a standalone REPLICA service
 - Collects telemetry from multiple applications and AWS services
 - Ideal for collecting metrics from RDS, ElastiCache, Amazon MQ, and application traces
@@ -118,6 +119,7 @@ aws ecs create-service \
 <TabItem value="sidecar" label="Sidecar Mode">
 
 **Best for**: Application-specific telemetry collection
+
 - Runs alongside your application containers in the same task
 - Dedicated collector per application task
 - Ideal for collecting application traces, logs, and custom metrics
@@ -234,6 +236,7 @@ For managed nodes (EC2), you can deploy the Scout collector in different modes:
 <TabItem value="service" label="Service Mode" default>
 
 **Best for**: Application-specific telemetry collection and custom instrumentation
+
 - Runs as a REPLICA service alongside your applications
 - Ideal for collecting traces, application logs, and database metrics
 
@@ -301,6 +304,7 @@ aws ecs create-service \
 <TabItem value="daemon" label="Daemon Mode">
 
 **Best for**: Infrastructure monitoring and system-level metrics
+
 - Runs one collector per EC2 instance using DAEMON strategy
 - Ideal for collecting ECS container metrics, host metrics, and system logs
 
@@ -366,6 +370,7 @@ aws ecs create-service \
 <TabItem value="hybrid" label="Hybrid Mode">
 
 **Best for**: Complete observability with both infrastructure and application telemetry
+
 - Combines both daemon and service deployments
 - Daemon collector handles infrastructure metrics
 - Service collector handles application telemetry
@@ -479,3 +484,9 @@ Ensure your ECS Task Execution Role has permission to access the secrets (adjust
 ```
 
 That's it you are done, Go to the Scout Grafana Dashboards to see the data flowing
+
+## Related Guides
+
+- [Scout Exporter Configuration](./scout-exporter.md) - Configure authentication to send data to Scout
+- [AWS RDS Monitoring](../infra/aws/rds.md) - Monitor your RDS databases
+- [Kubernetes Helm Setup](./kubernetes-helm-setup.md) - Alternative container orchestration platform

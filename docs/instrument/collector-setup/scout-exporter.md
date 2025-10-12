@@ -46,3 +46,9 @@ exporters:
     tls:
       insecure_skip_verify: true
 ```
+
+## Related Guides
+
+- [Docker Compose Setup](./docker-compose-example.md) - Quick local development setup
+- [Kubernetes Helm Setup](./kubernetes-helm-setup.md) - Production Kubernetes deployment
+- [Advanced Collector Configuration](./otel-collector-config.md) - Full collector configuration reference

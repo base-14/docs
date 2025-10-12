@@ -199,4 +199,12 @@ add.delay(42, 50)
 
 > Logs will now be exported to OTEL Collector.
 
+## Related Guides
+
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set up
+  collector for local development
+- [Custom Python Instrumentation](../custom-instrumentation/python.md) - Manual
+  instrumentation for advanced use cases
+- [Fast API Instrumentation](./fast-api.md) - Python web framework alternative
+
 [Official Logs Documentation](https://opentelemetry.io/docs/concepts/signals/logs/)

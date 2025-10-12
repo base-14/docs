@@ -247,3 +247,12 @@ the Base14 Observability Platform. By defining your configurations as code in YA
 workflows, improve consistency, and integrate seamlessly with your existing
 development practices. Start leveraging Grizzly today to take full control of your
 Grafana environment on Base14!
+
+## Related Guides
+
+- [Getting Started Guide](../introduction.md) - Overview of Scout observability
+  platform
+- [Docker Compose Setup](../instrument/collector-setup/docker-compose-example.md) -
+  Local development with Grafana
+- [OTel Collector Configuration](../instrument/collector-setup/otel-collector-config.md) -
+  Configure data pipelines

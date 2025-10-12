@@ -181,6 +181,14 @@ the method, path, and status code, and tracks the total request count.
 
 > View these metrics in base14 Scout observability backend.
 
+## Related Guides
+
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set up
+  collector for local development
+- [Custom Python Instrumentation](../custom-instrumentation/python.md) - Manual
+  instrumentation for advanced use cases
+- [Express.js Instrumentation](./express.md) - Node.js framework alternative
+
 ##### Reference
 
 [Official Metrics Documentation](https://opentelemetry.io/docs/concepts/signals/metrics/)

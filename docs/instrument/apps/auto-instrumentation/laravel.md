@@ -101,3 +101,10 @@ OTEL_PROPAGATORS=baggage,tracecontext
 
 That's it, run you application and head over to Scout dashboard
 to visulize the data flowing
+
+## Related Guides
+
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set up
+  collector for local development
+- [Express.js Instrumentation](./express.md) - Node.js framework alternative
+- [Spring Boot Instrumentation](./spring-boot.md) - Java framework alternative

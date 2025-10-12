@@ -79,6 +79,14 @@ TRACER = OpenTelemetry.tracer_provider.tracer('rails-app', '0.1.0')
 > **Note**: Ensure your Scout Collector is properly configured to
 > receive and process the trace data.
 
+## Related Guides
+
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set up
+  collector for local development
+- [Custom Ruby Instrumentation](../custom-instrumentation/ruby.md) - Manual
+  instrumentation for advanced use cases
+- [Spring Boot Instrumentation](./spring-boot.md) - Java framework alternative
+
 #### Reference
 
 [Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)

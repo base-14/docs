@@ -78,3 +78,13 @@ Let's setup **Scout in less than 5 minutes**. We will follow the steps below:
    quickly. You can also create custom dashboards to suit your needs.
 7. **Feedback and Support**: If you encounter any issues or have questions,
    reach out to the Scout support team for assistance.
+
+## Related Guides
+
+- [Docker Compose Setup](./instrument/collector-setup/docker-compose-example.md) - Quick start in under 5 minutes
+- [Kubernetes Helm Setup](./instrument/collector-setup/kubernetes-helm-setup.md) - Production deployment guide
+- [Scout Exporter Configuration](./instrument/collector-setup/scout-exporter.md) - Configure authentication and endpoints
+
+### Learn More
+
+- [Observability Theatre](/blog/observability-theatre) - Avoid common observability anti-patterns

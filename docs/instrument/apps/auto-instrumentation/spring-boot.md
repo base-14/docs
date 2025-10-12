@@ -45,6 +45,7 @@ import TabItem from '@theme/TabItem';
 <Tabs>
 <TabItem value="maven" label="Maven">
 ```
+
 pom.xml
 
 ```xml
@@ -95,6 +96,7 @@ pom.xml
 ```
 
 build.gradle`
+
 ```groovy
 plugins {
     id 'java'
@@ -158,6 +160,14 @@ management.tracing.sampling.probability=1.0
 ```
 
 > Logs, traces and metrics are exported to the base14 Scout observability backend.
+
+## Related Guides
+
+- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) - Deploy
+  collector on Kubernetes
+- [Custom Java Instrumentation](../custom-instrumentation/java.md) - Manual
+  instrumentation for advanced use cases
+- [Express.js Instrumentation](./express.md) - Node.js framework alternative
 
 ### References
 

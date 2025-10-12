@@ -364,3 +364,12 @@ def traced_function():
         # Use these IDs for log correlation or debugging
         print(f"Processing operation with trace: {trace_id}, span: {span_id}")
 ```
+
+## Related Guides
+
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set up
+  collector for local development
+- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
+  Production deployment
+- [Fast API Auto-Instrumentation](../auto-instrumentation/fast-api.md) -
+  Auto-instrumentation for Python FastAPI applications
