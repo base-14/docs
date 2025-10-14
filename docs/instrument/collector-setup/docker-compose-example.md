@@ -91,7 +91,7 @@ services:
       test: ["CMD", "redis-cli", "ping"]
 
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.119.0
+    image: otel/opentelemetry-collector-contrib:0.127.0
     container_name: otel-collector
     deploy:
       resources:
