@@ -2,6 +2,7 @@
 date: 2025-04-26
 id: collecting-aws-elb-telemetry
 title: AWS Application Load Balancer Monitoring via CloudWatch Metrics Stream
+sidebar_label: AWS ALB
 description:
   Monitor AWS Application Load Balancer with CloudWatch Metrics Stream and
   OpenTelemetry. Collect request metrics, response times, target health, and

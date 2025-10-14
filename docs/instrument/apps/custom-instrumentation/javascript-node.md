@@ -1,5 +1,6 @@
 ---
 title: Node.js Custom OpenTelemetry Instrumentation
+sidebar_label: Node.js
 description:
   Custom instrumentation for Node.js applications with OpenTelemetry. Manual
   tracing, metrics, logs, spans, and telemetry export with Node.js OTel SDK.

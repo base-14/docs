@@ -1,5 +1,6 @@
 ---
 title: Ruby Custom OpenTelemetry Instrumentation
+sidebar_label: Ruby
 description:
   Custom instrumentation for Ruby applications with OpenTelemetry. Manual
   tracing, metrics, logs, spans, and telemetry export with Ruby OTel SDK.

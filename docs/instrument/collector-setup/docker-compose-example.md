@@ -1,5 +1,6 @@
 ---
 title: Docker Compose OpenTelemetry Setup
+sidebar_label: Docker Compose Setup
 description:
   Set up OpenTelemetry Collector with Docker Compose. Complete guide for
   container monitoring with traces, metrics, and logs collection in minutes.

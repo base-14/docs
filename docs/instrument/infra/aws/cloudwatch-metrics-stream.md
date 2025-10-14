@@ -2,6 +2,7 @@
 date: 2025-04-29
 id: collecting-aws-cloudwatch-metrics-using-kinesis-streams
 title: AWS CloudWatch Metrics Stream Setup Guide
+sidebar_label: CloudWatch Metrics Stream
 description:
   Set up CloudWatch Metrics Stream with Kinesis Firehose and Lambda to stream
   AWS metrics to Scout. Complete guide for fast metrics delivery with

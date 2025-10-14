@@ -1,5 +1,6 @@
 ---
 title: Java Custom OpenTelemetry Instrumentation
+sidebar_label: Java
 description:
   Custom instrumentation for Java applications with OpenTelemetry. Manual
   tracing, metrics, spans, and telemetry export with Java OTel SDK.

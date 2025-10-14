@@ -2,6 +2,7 @@
 date: 2025-06-25
 id: collecting-mongodb-telemetry
 title: MongoDB Database Monitoring with OpenTelemetry
+sidebar_label: MongoDB
 description:
   Monitor MongoDB with OpenTelemetry Collector. Collect database metrics,
   replica set stats, and performance data using Scout.

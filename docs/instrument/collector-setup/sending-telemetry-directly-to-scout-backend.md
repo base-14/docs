@@ -1,5 +1,6 @@
 ---
 title: Send OpenTelemetry Signals Directly to Scout Backend
+sidebar_label: Direct to Scout Backend
 description:
   Configure applications to send OpenTelemetry traces, logs, and metrics
   directly to Scout backend without collectors. Complete guide for direct OTLP
@@ -208,7 +209,6 @@ end
 
 ## References
 
-- [Rails instrumentation doc](https://docs.base14.io/instrument/apps/auto-instrumentation/rails)
 - [Rails instrumentaion code](https://github.com/base-14/examples/tree/main/rails)
 
 ## Related Guides

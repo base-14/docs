@@ -1,5 +1,6 @@
 ---
 title: React OpenTelemetry Instrumentation
+sidebar_label: React
 description:
   Auto-instrument React applications with OpenTelemetry for browser traces.
   Monitor user interactions, fetch requests, and Core Web Vitals.

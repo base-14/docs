@@ -1,5 +1,6 @@
 ---
 title: OpenTelemetry Collector Binary Installation Guide
+sidebar_label: Binary Installation
 description:
   Install and configure OpenTelemetry Collector binary. Download from releases,
   set up log collection, and export telemetry data to Scout with OAuth2

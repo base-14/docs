@@ -2,6 +2,7 @@
 date: 2025-04-28
 id: collecting-aws-elasticache-telemetry
 title: AWS ElastiCache Monitoring via CloudWatch Metrics Stream
+sidebar_label: AWS ElastiCache
 description:
   Monitor AWS ElastiCache Redis and Memcached with CloudWatch Metrics Stream and
   OpenTelemetry. Collect cache metrics, performance data, and logs using Scout.

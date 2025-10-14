@@ -1,5 +1,6 @@
 ---
 title: Spring Boot OpenTelemetry Instrumentation
+sidebar_label: Spring Boot
 description:
   Auto-instrument Spring Boot with OpenTelemetry for traces and metrics.
   Complete Java APM setup with distributed tracing and HTTP monitoring.

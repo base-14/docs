@@ -1,5 +1,6 @@
 ---
 title: Celery OpenTelemetry Instrumentation
+sidebar_label: Celery
 description:
   Auto-instrument Celery task queue with OpenTelemetry for traces, metrics, and
   logs. Complete Python Celery monitoring with distributed tracing.

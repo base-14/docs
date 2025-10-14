@@ -2,6 +2,7 @@
 date: 2025-10-08
 id: collecting-redis-telemetry
 title: Redis Cache Monitoring with OpenTelemetry
+sidebar_label: Redis
 description:
   Monitor Redis with OpenTelemetry Collector. Collect cache metrics, memory
   usage, connections, and performance data using Scout.
