@@ -2,6 +2,7 @@
 date: 2025-06-24
 id: nginx
 title: NGINX Web Server Monitoring with OpenTelemetry
+sidebar_label: NGINX
 description:
   Monitor NGINX with OpenTelemetry. Collect traces, metrics, and logs from NGINX
   web server with OTel module and Prometheus exporter using Scout.

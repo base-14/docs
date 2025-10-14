@@ -2,6 +2,7 @@
 date: 2025-10-08
 id: collecting-rabbitmq-telemetry
 title: RabbitMQ Message Queue Monitoring with OpenTelemetry
+sidebar_label: RabbitMQ
 description:
   Monitor RabbitMQ with OpenTelemetry Collector. Collect queue metrics, message
   stats, connections, and performance data using Scout.

@@ -1,5 +1,6 @@
 ---
 title: Ruby on Rails OpenTelemetry Instrumentation
+sidebar_label: Ruby on Rails
 description:
   Auto-instrument Rails with OpenTelemetry for traces and metrics. Complete Ruby
   APM setup with distributed tracing and database monitoring.

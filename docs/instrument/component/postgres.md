@@ -2,6 +2,7 @@
 date: 2025-10-08
 id: collecting-postgres-telemetry
 title: PostgreSQL Database Monitoring with OpenTelemetry
+sidebar_label: PostgreSQL
 description:
   Monitor PostgreSQL with OpenTelemetry Collector. Collect database metrics,
   query performance, connections, and stats using Scout.

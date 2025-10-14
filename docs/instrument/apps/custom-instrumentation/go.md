@@ -1,5 +1,6 @@
 ---
 title: Go Custom OpenTelemetry Instrumentation
+sidebar_label: Go
 description:
   Custom instrumentation for Go applications with OpenTelemetry. Manual tracing,
   metrics, spans, and telemetry export with Go OTel SDK.

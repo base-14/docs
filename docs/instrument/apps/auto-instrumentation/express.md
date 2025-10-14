@@ -1,5 +1,6 @@
 ---
 title: Express.js OpenTelemetry Instrumentation Guide
+sidebar_label: Express.js
 description:
   Auto-instrument Express.js with OpenTelemetry for traces and metrics. Complete
   Node.js APM setup with distributed tracing and HTTP monitoring.

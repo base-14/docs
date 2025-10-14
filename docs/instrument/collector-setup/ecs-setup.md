@@ -1,5 +1,6 @@
 ---
 title: AWS ECS OpenTelemetry Collector Setup
+sidebar_label: AWS ECS Setup
 description:
   Deploy OpenTelemetry on AWS ECS Fargate and EC2. Complete guide for ECS
   monitoring with traces, metrics, and logs using service, daemon, and sidecar

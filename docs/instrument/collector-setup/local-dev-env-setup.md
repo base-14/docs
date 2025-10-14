@@ -1,5 +1,6 @@
 ---
 title: Local Development Environment Setup with OpenTelemetry
+sidebar_label: Local Dev Setup
 description:
   Set up Scout collector locally for development and testing. Run OpenTelemetry
   Collector with Docker for processing traces, metrics, and logs in your dev

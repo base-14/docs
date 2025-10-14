@@ -2,6 +2,7 @@
 date: 2025-04-24
 id: send-aws-vpc-flow-logs
 title: AWS VPC Flow Logs to OpenTelemetry
+sidebar_label: AWS VPC Flow Logs
 description:
   Send AWS VPC Flow Logs to OpenTelemetry using S3 and Lambda. Complete guide
   for VPC monitoring with automated log processing and OTLP export.

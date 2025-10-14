@@ -1,5 +1,6 @@
 ---
 title: Browser JavaScript Custom OpenTelemetry Instrumentation
+sidebar_label: Browser JavaScript
 description:
   Custom instrumentation for browser JavaScript with OpenTelemetry. Manual
   tracing, metrics, logs for web applications with browser OTel SDK.

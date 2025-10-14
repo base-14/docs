@@ -1,5 +1,6 @@
 ---
 title: Kubernetes OpenTelemetry Setup with Helm
+sidebar_label: Kubernetes Helm Setup
 description:
   Deploy OpenTelemetry Collector on Kubernetes using Helm. Complete guide for
   EKS, GKE, AKS monitoring with traces, metrics, and logs collection.

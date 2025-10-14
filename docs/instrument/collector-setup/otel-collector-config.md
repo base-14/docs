@@ -1,5 +1,6 @@
 ---
 title: OpenTelemetry Collector Configuration Guide
+sidebar_label: Collector Configuration
 description:
   Complete OpenTelemetry Collector configuration guide. Learn receivers,
   processors, exporters setup with examples for traces, metrics, and logs.

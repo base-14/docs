@@ -1,5 +1,6 @@
 ---
 title: Python Custom OpenTelemetry Instrumentation
+sidebar_label: Python
 description:
   Custom instrumentation for Python applications with OpenTelemetry. Manual
   tracing, metrics, logs, spans, and telemetry export with Python OTel SDK.

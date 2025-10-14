@@ -1,5 +1,6 @@
 ---
 title: Scout Exporter Configuration
+sidebar_label: Scout Exporter
 description:
   Configure Scout exporter for OpenTelemetry Collector. Set up OAuth2
   authentication and OTLP export to send telemetry data to base14 Scout
