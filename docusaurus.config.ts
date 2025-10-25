@@ -120,8 +120,8 @@ const config: Config = {
     },
     colorMode: {
       defaultMode: "light",
-      disableSwitch: true,
-      respectPrefersColorScheme: false,
+      disableSwitch: false,
+      respectPrefersColorScheme: true,
     },
     docs: {
       sidebar: {
@@ -208,6 +208,7 @@ const config: Config = {
     prism: {
       additionalLanguages: ["ruby", "bash"],
       theme: prismThemes.oneLight,
+      darkTheme: prismThemes.oneDark,
     },
     // Only enable Algolia if ENABLE_ALGOLIA_CRAWLER is set to 'true'
     ...(process.env.ENABLE_ALGOLIA_CRAWLER === "true" &&

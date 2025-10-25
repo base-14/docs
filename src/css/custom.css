@@ -7,14 +7,18 @@
 
 /* You can override the default Infima variables here. */
 :root {
+  /* ========================================
+     Light Mode Colors - Base14 Design System
+     ======================================== */
+
   /* Base14 Emerald Primary Colors */
-  --ifm-color-primary: #059669;
-  --ifm-color-primary-dark: #047857;
-  --ifm-color-primary-darker: #065f46;
-  --ifm-color-primary-darkest: #064e3b;
-  --ifm-color-primary-light: #10b981;
-  --ifm-color-primary-lighter: #34d399;
-  --ifm-color-primary-lightest: #6ee7b7;
+  --ifm-color-primary: #10b981;
+  --ifm-color-primary-dark: #059669;
+  --ifm-color-primary-darker: #047857;
+  --ifm-color-primary-darkest: #065f46;
+  --ifm-color-primary-light: #34d399;
+  --ifm-color-primary-lighter: #6ee7b7;
+  --ifm-color-primary-lightest: #a7f3d0;
 
   /* Base14 Color Palette - Orange */
   --base14-orange-dark: #f97316;
@@ -23,6 +27,15 @@
   --base14-orange-lighter: #fed7aa;
   --base14-orange-lightest: #fff7ed;
   --base14-amber-lightest: #fffbeb;
+
+  /* Base14 Dark Mode Colors */
+  --base14-dark-bg: #0f1115;
+  --base14-dark-surface: #1c1e24;
+  --base14-dark-border: #2a2c33;
+  --base14-dark-footer: #050507;
+  --base14-dark-text: #e0e0e0;
+  --base14-dark-text-secondary: #9ca3af;
+  --base14-dark-text-heading: #f3f4f6;
 
   /* Glass Effects */
   --base14-glass-blur: 16px;
@@ -76,6 +89,84 @@
   --ifm-code-font-size: 95%;
   --ifm-code-background: rgba(255, 255, 255, 0.5);
   --ifm-code-border-radius: 0.5rem;
+}
+
+/* ========================================
+   Dark Mode Color Scheme
+   ======================================== */
+[data-theme='dark']:root {
+  /* Base14 Dark Mode Semantic Colors */
+  --ifm-background-color: var(--base14-dark-bg);
+  --ifm-background-surface-color: var(--base14-dark-surface);
+  --ifm-color-emphasis-0: #0f1115;
+  --ifm-color-emphasis-100: #1c1e24;
+  --ifm-color-emphasis-200: #2a2c33;
+  --ifm-color-emphasis-300: #3f4147;
+  --ifm-color-emphasis-400: #565961;
+  --ifm-color-emphasis-600: #9ca3af;
+  --ifm-color-emphasis-700: #d1d5db;
+  --ifm-color-emphasis-800: #e0e0e0;
+
+  /* Text Colors */
+  --ifm-font-color-base: var(--base14-dark-text);
+  --ifm-font-color-secondary: var(--base14-dark-text-secondary);
+  --ifm-heading-color: var(--base14-dark-text-heading);
+
+  /* Backgrounds */
+  --ifm-navbar-background-color: var(--base14-dark-bg);
+  --ifm-footer-background-color: var(--base14-dark-footer);
+  --ifm-toc-border-color: var(--base14-dark-border);
+
+  /* Borders */
+  --ifm-color-border: var(--base14-dark-border);
+  --ifm-hr-border-color: var(--base14-dark-border);
+
+  /* Links */
+  --ifm-link-color: var(--ifm-color-primary);
+  --ifm-link-hover-color: var(--ifm-color-primary-light);
+
+  /* Code Blocks */
+  --ifm-code-background: var(--ifm-color-emphasis-100);
+  --ifm-pre-background: var(--ifm-color-emphasis-100);
+  --ifm-code-border: var(--ifm-color-emphasis-200);
+
+  /* Menu & Navigation */
+  --ifm-menu-color: var(--ifm-color-emphasis-800);
+  --ifm-menu-color-active: var(--ifm-color-primary);
+  --ifm-menu-color-background-hover: var(--base14-emerald-glass);
+  --ifm-menu-color-background-active: var(--base14-emerald-glass-hover);
+
+  /* Mobile Navbar Sidebar */
+  --ifm-navbar-sidebar-background: var(--base14-dark-surface);
+
+  /* Glass Effects - Dark Mode */
+  --base14-glass-bg: rgba(28, 30, 36, 0.8);
+  --base14-glass-border: rgba(42, 44, 51, 0.5);
+  --base14-glass-subtle: rgba(28, 30, 36, 0.3);
+
+  /* White Glass Effects */
+  --base14-white-glass-strong: rgba(28, 30, 36, 0.95);
+  --base14-white-glass-medium: rgba(28, 30, 36, 0.85);
+
+  /* Emerald Glass Effects */
+  --base14-emerald-glass: rgba(16, 185, 129, 0.1);
+  --base14-emerald-glass-hover: rgba(16, 185, 129, 0.15);
+  --base14-emerald-shadow-light: rgba(16, 185, 129, 0.2);
+
+  /* Orange Glass Effects */
+  --base14-orange-glass: rgba(249, 115, 22, 0.1);
+  --base14-orange-glass-light: rgba(249, 115, 22, 0.15);
+  --base14-orange-glass-hover: rgba(249, 115, 22, 0.2);
+  --base14-orange-glass-subtle: rgba(249, 115, 22, 0.05);
+  --base14-orange-glass-border: rgba(249, 115, 22, 0.3);
+  --base14-orange-glass-border-light: rgba(249, 115, 22, 0.2);
+
+  /* Shadows */
+  --base14-shadow-emerald: 0 2px 6px var(--base14-emerald-shadow-light);
+
+  /* Cards */
+  --ifm-card-background-color: var(--ifm-color-emphasis-100);
+  --ifm-card-border-color: var(--ifm-color-emphasis-200);
 }
 
 .example-dialog::part(control) {
@@ -382,6 +473,10 @@ html {
   min-height: 100vh;
 }
 
+html[data-theme='dark'] {
+  background: var(--ifm-background-surface-color);
+}
+
 body {
   background: transparent;
 }
@@ -400,11 +495,31 @@ article,
   overflow: hidden;
 }
 
+/* Dark mode adjustments for glass components */
+[data-theme='dark'] .footer,
+[data-theme='dark'] .theme-doc-sidebar-container,
+[data-theme='dark'] article,
+[data-theme='dark'] .markdown > div {
+  background: var(--ifm-background-surface-color) !important;
+  border-color: var(--ifm-color-border);
+}
+
+[data-theme='dark'] article {
+  border: 0 !important;
+}
+
 nav.navbar {
   background: linear-gradient(135deg,
     rgba(255, 247, 237, 0.95),
     rgba(255, 251, 235, 0.95)) !important;
   border-bottom: 1px solid var(--base14-glass-border);
+}
+
+[data-theme='dark'] nav.navbar {
+  background: var(--ifm-navbar-background-color) !important;
+  backdrop-filter: blur(var(--base14-glass-blur));
+  -webkit-backdrop-filter: blur(var(--base14-glass-blur));
+  border-bottom: 1px solid var(--ifm-color-border);
 }
 
 .footer {
@@ -435,6 +550,11 @@ nav.navbar {
 
 .footer__copyright {
   color: #9ca3af !important; /* gray-400 */
+}
+
+[data-theme='dark'] .footer {
+  background: var(--ifm-footer-background-color) !important;
+  border-top-color: var(--ifm-color-border);
 }
 
 .theme-doc-sidebar-container {
@@ -523,6 +643,21 @@ nav.navbar {
   background: var(--base14-glass-subtle);
 }
 
+/* Dark mode navbar links */
+[data-theme='dark'] .navbar__link {
+  color: var(--ifm-font-color-base) !important;
+}
+
+[data-theme='dark'] .navbar__link:hover {
+  color: var(--ifm-link-color) !important;
+  background: var(--ifm-menu-color-background-hover) !important;
+}
+
+[data-theme='dark'] .navbar__link--active {
+  color: var(--ifm-menu-color-active) !important;
+  background: var(--ifm-menu-color-background-active) !important;
+}
+
 .menu__link {
   border-left: 3px solid transparent;
   transition: var(--base14-transition-fast);
@@ -554,6 +689,24 @@ article .card:hover,
   border: 1px solid var(--ifm-color-primary-lighter) !important;
   transform: translate3d(1px, 0, 0);
   box-shadow: var(--base14-shadow-emerald);
+}
+
+/* Dark mode cards */
+[data-theme='dark'] .card,
+[data-theme='dark'] article .card,
+[data-theme='dark'] [class*="cardContainer"],
+[data-theme='dark'] [class*="docCardList"] .card {
+  background: var(--ifm-card-background-color) !important;
+  border: 1px solid var(--ifm-card-border-color) !important;
+}
+
+[data-theme='dark'] .card:hover,
+[data-theme='dark'] article .card:hover,
+[data-theme='dark'] [class*="cardContainer"]:hover,
+[data-theme='dark'] [class*="docCardList"] .card:hover {
+  background: var(--ifm-card-background-color) !important;
+  border: 1px solid var(--ifm-link-color) !important;
+  box-shadow: 0 4px 12px var(--base14-emerald-shadow-light);
 }
 
 .pagination-nav__link {
@@ -611,6 +764,19 @@ article .card:hover,
   contain: layout style paint;
 }
 
+/* Dark mode code blocks */
+[data-theme='dark'] .theme-code-block {
+  border: 1px solid var(--ifm-color-emphasis-400) !important;
+}
+
+/* Dark mode code block title bar */
+[data-theme='dark'] .theme-code-block [class*="codeBlockTitle"],
+[data-theme='dark'] .theme-code-block [class*="codeBlockHeader"],
+[data-theme='dark'] div[class*="codeBlockTitle"],
+[data-theme='dark'] div[class*="codeBlockHeader"] {
+  border-bottom: 1px solid var(--ifm-color-emphasis-400) !important;
+}
+
 .theme-code-block [class*="codeBlockTitle"],
 .theme-code-block [class*="codeBlockHeader"],
 div[class*="codeBlockTitle"],
@@ -632,6 +798,12 @@ div[class*="codeBlockHeader"] {
 .theme-code-block [class*="codeLineNumber"],
 .theme-code-block [class*="codeLineNumber"] {
   border-right: 1px solid var(--base14-orange-lighter) !important;
+}
+
+/* Dark mode line number borders */
+[data-theme='dark'] .theme-code-block .codeLineNumber,
+[data-theme='dark'] .theme-code-block [class*="codeLineNumber"] {
+  border-right: 1px solid var(--ifm-color-emphasis-400) !important;
 }
 
 .theme-code-block [class*="codeLineContent"] {
@@ -666,6 +838,21 @@ a[class*="tag_"][class*="tagRegular"]:hover,
       var(--base14-orange-glass-light)) !important;
   transform: translate3d(0, -1px, 0);
   color: var(--base14-orange-darkest) !important;
+}
+
+[data-theme='dark'] a[class*="tag_"][class*="tagRegular"],
+[data-theme='dark'] [class*="tag_"] a {
+  background: var(--base14-orange-glass) !important;
+  border: 1px solid var(--base14-dark-border) !important;
+  color: var(--ifm-color-primary) !important;
+}
+
+[data-theme='dark'] [class*="tag_"] a:hover {
+  background: linear-gradient(135deg,
+      var(--base14-orange-glass-hover),
+      var(--base14-orange-glass-light)) !important;
+  color: var(--base14-orange-darkest) !important;
+  border-color: var(--base14-dark-border) !important;
 }
 
 .breadcrumbs__item,
@@ -814,6 +1001,39 @@ nav[aria-label="Breadcrumbs"] li:last-child span {
     var(--base14-orange-glass-hover),
     var(--base14-orange-glass-light)) !important;
   transform: translateY(-1px);
+}
+
+[data-theme='dark'] .DocSearch {
+  --docsearch-container-background: rgba(15, 17, 21, 0.9);
+  --docsearch-modal-background: var(--base14-dark-surface);
+  --docsearch-searchbox-background: var(--base14-dark-bg);
+  --docsearch-searchbox-focus-background: var(--base14-dark-bg);
+  --docsearch-hit-background: var(--base14-emerald-glass);
+  --docsearch-hit-highlight-color: var(--base14-emerald-glass-hover);
+  --docsearch-footer-background: var(--base14-dark-bg);
+  --docsearch-key-background: var(--base14-orange-glass-light);
+  --docsearch-key-color: var(--ifm-color-primary);
+  --docsearch-muted-color: var(--base14-dark-text-secondary);
+  --docsearch-text-color: var(--base14-dark-text);
+  --docsearch-icon-color: var(--ifm-color-primary);
+  --docsearch-logo-color: var(--ifm-color-primary);
+  --docsearch-highlight-color: var(--ifm-color-primary);
+  --docsearch-subtle-color: var(--base14-dark-border);
+}
+
+[data-theme='dark'] .DocSearch-Dropdown {
+  background: linear-gradient(135deg,
+    var(--base14-dark-surface),
+    var(--base14-dark-bg)) !important;
+}
+
+[data-theme='dark'] .DocSearch-Hit a {
+  border: 1px solid var(--base14-dark-border);
+}
+
+[data-theme='dark'] .DocSearch-Hit:hover a,
+[data-theme='dark'] .DocSearch-Hit[aria-selected="true"] a {
+  border: 2px solid var(--ifm-color-primary) !important;
 }
 
 /* Blog */
