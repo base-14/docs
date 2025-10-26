@@ -76,6 +76,18 @@ Serve the build locally:
 npm run serve
 ```
 
+## Contributing
+
+### Adding Documentation
+
+See [DOCS_GUIDELINES.md](./DOCS_GUIDELINES.md) for comprehensive guidelines on
+adding documentation articles.
+
+### Adding Blog Posts
+
+See [BLOG_GUIDELINES.md](./BLOG_GUIDELINES.md) for guidelines on adding blog
+posts.
+
 ## Deployment
 
 Deployment is handled automatically via GitHub Actions when you push to the

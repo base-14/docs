@@ -1,14 +1,33 @@
-# Creating Alerts with LogX
+---
+title: Creating Alerts with LogX
+description:
+  Create alerts from LogX log queries. Export ClickHouse queries to Grafana
+  dashboards and configure alert rules with thresholds and notifications.
+keywords:
+  [
+    logx alerts,
+    grafana alerting,
+    log-based alerts,
+    clickhouse queries,
+    scout alerting,
+  ]
+---
 
-LogX provides a streamlined workflow for creating alerts based on your log queries. This guide walks you through the process of exporting an alert query from LogX and setting it up in Grafana's alerting system.
+LogX provides a streamlined workflow for creating alerts based on your log
+queries. This guide walks you through the process of exporting an alert query
+from LogX and setting it up in Grafana's alerting system.
 
 ## Overview
 
 The alert creation process involves three main steps:
 
-1. **Explore Alert Query from LogX**: Use the "Explore Alert Query" button to generate a ClickHouse query based on your current filters and search criteria
-2. **Add Query to Dashboard**: Create or add the query to a Grafana dashboard with the correct datasource configuration
-3. **Create Alert Rule**: Configure the alert rule from the dashboard panel with thresholds and notification settings
+1. **Explore Alert Query from LogX**: Use the "Explore Alert Query" button to
+   generate a ClickHouse query based on your current filters and search
+   criteria.
+2. **Add Query to Dashboard**: Create or add the query to a Grafana dashboard
+   with the correct datasource configuration.
+3. **Create Alert Rule**: Configure the alert rule from the dashboard panel
+   with thresholds and notification settings.
 
 ## Step 1: Explore Alert Query from LogX
 
@@ -17,7 +36,8 @@ The alert creation process involves three main steps:
 1. Open the **LogX** application in Scout
 2. Configure your log filters:
    - Select the service you want to monitor
-   - Add resource attribute filters (e.g., `host.name`, `deployment.environment`)
+   - Add resource attribute filters (e.g., `host.name`,
+     `deployment.environment`)
    - Add log attribute filters as needed
    - Apply body search terms or regex patterns
 3. Verify your filters are showing the logs you want to alert on
@@ -26,11 +46,14 @@ The alert creation process involves three main steps:
 ### Understanding the Generated Query
 
 The exported query is a ClickHouse SQL statement that:
+
 - Counts log entries matching your filters
-- Includes all active filters (resource attributes, log attributes, body search)
+- Includes all active filters (resource attributes, log attributes, body
+  search)
 - Returns a single numeric value (count of matching logs)
 
 Example query structure:
+
 ```sql
 SELECT count(*) as value
 FROM $table
@@ -64,7 +87,8 @@ WHERE $timeFilter
 
 In the query editor:
 
-1. **Datasource**: Select `DS_ScoutAltCH` (Scout Altinity ClickHouse datasource)
+1. **Datasource**: Select `DS_ScoutAltCH` (Scout Altinity ClickHouse
+   datasource)
 2. Click on the **Query Options** or **Settings** (gear icon)
 3. Configure the following settings:
    - **Database**: Enter your organization name (e.g., `acme-corp`)
@@ -92,16 +116,20 @@ In the query editor:
 
 ## Step 3: Create Alert Rule
 
-Now that you have a dashboard panel with your log query, you're ready to create the alert rule.
+Now that you have a dashboard panel with your log query, you're ready to
+create the alert rule.
 
 1. On your dashboard, locate the panel you just created
 2. Click the **panel title** or **three dots (⋮)** menu
 3. Select **"More..."** → **"New alert rule"**
 
-That's it! Now you can follow the comprehensive [Creating Alerts in Grafana](https://grafana.com/docs/grafana/latest/alerting/alerting-rules/create-grafana-managed-rule/) 
-guide to configure your alert rule, set thresholds, configure notifications, and test your alert.
+That's it! Now you can follow the comprehensive
+[Creating Alerts in Grafana](https://grafana.com/docs/grafana/latest/alerting/alerting-rules/create-grafana-managed-rule/)
+guide to configure your alert rule, set thresholds, configure notifications, and
+test your alert.
 
 The general alerting guide covers:
+
 - Setting alert rule names and descriptions
 - Defining query conditions and thresholds
 - Configuring evaluation behavior and timing
@@ -123,6 +151,9 @@ The general alerting guide covers:
    - Good: `ServiceName = 'api-service'`
    - Avoid: `ServiceName LIKE '%api%'`
 
-## References
+## Related Guides
 
+- [Dashboards and Alerts](./dashboards-and-alerts.md) - General dashboard and
+  alerting overview
 - [Grafana Alerting Documentation](https://grafana.com/docs/grafana/latest/alerting/)
+  \- Official Grafana alerting guide
