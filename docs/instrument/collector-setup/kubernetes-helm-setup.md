@@ -59,7 +59,7 @@ helm repo add base14 https://charts.base14.io/
 ```
 
 ```bash
-helm install scout base14/scout-collector --version 0.1.27 \
+helm install scout base14/scout-collector --version 0.5.5 \
 --namespace scout --create-namespace -f values.yaml
 ```
 
@@ -73,7 +73,7 @@ helm repo add base14 https://charts.base14.io/
 ```
 
 ```bash
-helm install scout base14/scout-collector --version 0.5.0 \
+helm install scout base14/scout-collector --version 0.5.5 \
 --namespace scout --create-namespace -f values.yaml
 ```
 
@@ -105,21 +105,25 @@ scout:
   appName: __YOUR_APP_NAME__
   apiKey: __YOUR_API_KEY__
   clientId: __YOUR_CLIENT_ID__
+  clientSecret: __YOUR_CLIENT_SECRET__
   distribution: microk8s
 
-  otelcolConfig:
-    enabled: enabled
+  
+  daemon:
+    enabled: false
+  agent:
+    enabled: true
     config: |
       receivers:
         otlp:
           protocols:
             grpc:
-              endpoint: 0.0.0.0:4317
+              endpoint: ${env:MY_POD_IP}:4317
             http:
-              endpoint: 0.0.0.0:4318
+              endpoint: ${env:MY_POD_IP}:4318
          
         k8s_cluster:
-           auth_type: serviceaccount
+           auth_type: 'serviceAccount'
            collection_interval: 60s
            node_conditions_to_report: [
              ready, 
@@ -167,17 +171,22 @@ scout:
         resource:
           attributes:
             - key: service.name
-              value: {{ scout.appName }}
+              value: {{ .Values.scout.appName }}
               action: upsert
         resource/k8s:
           attributes:
             - key: service.name
               value: k8s
               action: upsert
+        resource/k8s-events:
+          attributes:
+            - key: service.name
+              value: k8s-events
+              action: upsert
         resource/env:
           attributes:
             - key: environment
-              value: playground
+              value: <environment>
               action: upsert
             - key: k8s.cluster.name
               value: <cluster-name>
@@ -190,7 +199,7 @@ scout:
               k8s.cluster.name:
                 enabled: true
         k8sattributes:
-          auth_type: "serviceAccount"
+          auth_type: 'serviceAccount'
           extract:
             metadata:
               - k8s.namespace.name
@@ -260,7 +269,7 @@ scout:
 
       exporters:
         otlphttp/base14:
-          endpoint: {{scout.endpoint}}
+          endpoint: {{ .Values.scout.endpoint }}
           auth:
             authenticator: oauth2client
           tls:
@@ -271,11 +280,11 @@ scout:
         pprof:
         zpages:
         oauth2client:
-          client_id: {{scout.clientId}}
-          client_secret: {{scout.clientSecret}}
+          client_id: {{ .Values.scout.clientId }}
+          client_secret: {{ .Values.scout.clientSecret }}
           endpoint_params:
             audience: b14collector
-          token_url: {{scout.tokenUrl}}
+          token_url: {{ .Values.scout.tokenUrl }}
           tls:
             insecure_skip_verify: true
 
@@ -298,7 +307,7 @@ scout:
               resource/k8s-events, 
               resourcedetection/eks, 
               resource/env ]
-            exporters: [ otlphttp/b14 ]
+            exporters: [ otlphttp/base14 ]
           logs/k8s-cluster:
             receivers: [ k8s_cluster ]
             processors: [ 
@@ -307,11 +316,11 @@ scout:
               resource/k8s, 
               resourcedetection/eks, 
               resource/env ]
-            exporters: [ otlphttp/b14 ]
+            exporters: [ otlphttp/base14 ]
           metrics:
             receivers: [ otlp ]
             processors: [ memory_limiter, batch, resource/env ]
-            exporters: [ otlphttp/b14 ]
+            exporters: [ otlphttp/base14 ]
           metrics/k8s:
             receivers: [ k8s_cluster ]
             processors: [ 
@@ -321,31 +330,12 @@ scout:
               resourcedetection/eks, 
               resource/env, 
               k8sattributes ]
-            exporters: [ otlphttp/b14 ]
+            exporters: [ otlphttp/base14 ]
         telemetry:
-          metrics:
-            readers:
-              - periodic:
-                 exporter:
-                   otlp:
-                     protocol: http/protobuf
-                     endpoint: http://0.0.0.0:4318
           logs:
-            level: debug
+            level: warn
             encoding: json
-            processors:
-              - batch:
-                 exporter:
-                   otlp:
-                     protocol: http/protobuf
-                     endpoint: http://0.0.0.0:4318
-          traces:
-            processors:
-              - batch:
-                 exporter:
-                   otlp:
-                     protocol: http/protobuf
-                     endpoint: http://0.0.0.0:4318
+
 ```
 
 ```mdx-code-block
@@ -360,16 +350,18 @@ scout:
   appName: __YOUR_APP_NAME__
   apiKey: __YOUR_API_KEY__
   clientId: __YOUR_CLIENT_ID__
+  clientSecret: __YOUR_CLIENT_SECRET__  
   distribution: eks
 
-  daemonOtelcolConfig:
-    enabled: enabled
+
+  daemon:
+    enabled: true
     config: |
       extensions:
         health_check:
-          endpoint: 0.0.0.0:13133
+          endpoint: ${env:MY_POD_IP}:13133
         zpages:
-          endpoint: 0.0.0.0:55679
+          endpoint: ${env:MY_POD_IP}:55679
       exporters:
         otlp/agent:
           endpoint: scout-agent-collector.scout.svc.cluster.local:4317
@@ -388,7 +380,7 @@ scout:
         resource:
           attributes:
             - key: service.name
-              value: {{ scout.appName }}
+              value: {{ .Values.scout.appName }}
               action: upsert
         resource/k8s:
           attributes:
@@ -398,7 +390,7 @@ scout:
         resource/env:
           attributes:
             - key: environment
-              value: playground
+              value: <environment>
               action: upsert
             - key: k8s.cluster.name
               value: <cluster-name>
@@ -411,7 +403,7 @@ scout:
               k8s.cluster.name:
                 enabled: true
         k8sattributes:
-          auth_type: "serviceAccount"
+          auth_type: 'serviceAccount'
           extract:
             metadata:
               - k8s.namespace.name
@@ -482,14 +474,14 @@ scout:
         otlp:
           protocols:
             grpc:
-              endpoint: 0.0.0.0:4317
+              endpoint: ${env:MY_POD_IP}:4317
             http:
-              endpoint: 0.0.0.0:4318
+              endpoint: ${env:MY_POD_IP}:4318
         kubeletstats:
           collection_interval: 60s
           endpoint: https://${env:K8S_NODE_NAME}:10250
           insecure_skip_verify: true
-          auth_type: "serviceAccount"
+          auth_type: 'serviceAccount'
           metric_groups:
             - node
             - pod
@@ -534,51 +526,31 @@ scout:
               ]
             exporters: [otlp/agent]
         telemetry:
-          metrics:
-            readers:
-              - periodic:
-                  exporter:
-                    otlp:
-                      protocol: http/protobuf
-                      endpoint: http://0.0.0.0:4318
           logs:
-            level: debug
+            level: warn
             encoding: json
-            processors:
-              - batch:
-                  exporter:
-                    otlp:
-                      protocol: http/protobuf
-                      endpoint: http://0.0.0.0:4318
-          traces:
-            processors:
-              - batch:
-                  exporter:
-                    otlp:
-                      protocol: http/protobuf
-                      endpoint: http://0.0.0.0:4318
 
-  agentOtelcolConfig:
-    enabled: enabled
+  agent:
+    enabled: true
     config: |
       extensions:
         health_check:
-          endpoint: 0.0.0.0:13133
+          endpoint: ${env:MY_POD_IP}:13133
         zpages:
-          endpoint: 0.0.0.0:55679
+          endpoint: ${env:MY_POD_IP}:55679
         oauth2client:
-          client_id: {{ scout.clientId }}
-          client_secret: {{ scout.apiKey }}
+          client_id: {{ .Values.scout.clientId }}
+          client_secret: {{ .Values.scout.clientSecret }}
           endpoint_params:
             audience: b14collector
-          token_url: {{ scout.tokenUrl }}
+          token_url: {{ .Values.scout.tokenUrl }}
           tls:
             insecure_skip_verify: true
       exporters:
         debug:
           verbosity: detailed
-        otlphttp/b14:
-          endpoint: {{ scout.endpoint }}
+        otlphttp/base14:
+          endpoint: {{ .Values.scout.endpoint }}
           auth:
             authenticator: oauth2client
           tls:
@@ -595,7 +567,7 @@ scout:
         resource:
           attributes:
           - key: service.name
-            value: {{ scout.appName }}
+            value: {{ .Values.scout.appName }}
             action: upsert
         resource/k8s:
           attributes:
@@ -605,7 +577,7 @@ scout:
         resource/env:
           attributes:
           - key: environment
-            value: playground
+            value: <environment>
             action: upsert
           - key: k8s.cluster.name
             value: <cluster-name>
@@ -645,7 +617,6 @@ scout:
               - container.id
             annotations:
               - tag_name: service.name
-                key: resource.opentelemetry.io/service.name
                 from: pod
               - tag_name: service.namespace
                 key: resource.opentelemetry.io/service.namespace
@@ -693,9 +664,9 @@ scout:
         otlp:
           protocols:
             http:
-              endpoint: 0.0.0.0:4318
+              endpoint: ${env:MY_POD_IP}:4318
             grpc:
-              endpoint: 0.0.0.0:4317
+              endpoint: ${env:MY_POD_IP}:4317
         k8s_cluster:
           auth_type: serviceaccount
           collection_interval: 60s
@@ -738,11 +709,11 @@ scout:
           traces:
             receivers: [ otlp]
             processors: [ batch, resource, resource/env ]
-            exporters: [ otlphttp/b14 ]
+            exporters: [ otlphttp/base14 ]
           logs:
             receivers: [ otlp ]
             processors: [ batch, resource/env ]
-            exporters: [ otlphttp/b14, debug ]
+            exporters: [ otlphttp/base14, debug ]
           logs/k8s-events:
             receivers: [ k8sobjects]
             processors: [ 
@@ -751,7 +722,7 @@ scout:
               resource/k8s-events, 
               resourcedetection/eks, 
               resource/env ]
-            exporters: [ otlphttp/b14 ]
+            exporters: [ otlphttp/base14 ]
           logs/k8s-cluster:
             receivers: [ k8s_cluster ]
             processors: [ 
@@ -760,11 +731,11 @@ scout:
               resource/k8s, 
               resourcedetection/eks, 
               resource/env ]
-            exporters: [ otlphttp/b14 ]
+            exporters: [ otlphttp/base14 ]
           metrics:
             receivers: [ otlp ]
             processors: [ memory_limiter, batch, resource/env ]
-            exporters: [ otlphttp/b14 ]
+            exporters: [ otlphttp/base14 ]
           metrics/k8s:
             receivers: [ k8s_cluster ]
             processors: [ 
@@ -774,31 +745,11 @@ scout:
               resourcedetection/eks, 
               resource/env, 
               k8sattributes ]
-            exporters: [ otlphttp/b14 ]
+            exporters: [ otlphttp/base14 ]
         telemetry:
-          metrics:
-            readers:
-              - periodic:
-                 exporter:
-                   otlp:
-                     protocol: http/protobuf
-                     endpoint: http://0.0.0.0:4318
           logs:
-            level: debug
+            level: warn
             encoding: json
-            processors:
-              - batch:
-                 exporter:
-                   otlp:
-                     protocol: http/protobuf
-                     endpoint: http://0.0.0.0:4318
-          traces:
-            processors:
-              - batch:
-                 exporter:
-                   otlp:
-                     protocol: http/protobuf
-                     endpoint: http://0.0.0.0:4318
 ```
 
 ```mdx-code-block
