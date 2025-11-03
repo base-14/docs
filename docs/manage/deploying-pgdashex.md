@@ -296,7 +296,7 @@ Check OTel Collector logs and pgdashex logs for errors.
 ## What's Next?
 
 - **Create Dashboards**: Explore pre-built dashboards or build your own. See [Create Your First Dashboard](./create-your-first-dashboard.md)
-- **Monitor More Components**: Add other infrastructure components. See [Component Monitoring](/category/component)
+- **Monitor More Components**: Add monitoring for [Redis](../instrument/component/redis.md), [MongoDB](../instrument/component/mongodb.md), [RabbitMQ](../instrument/component/rabbitmq.md), and other components
 - **Fine-tune Collection**: Optimize metric groups based on your needs
 
 ## Related Guides
