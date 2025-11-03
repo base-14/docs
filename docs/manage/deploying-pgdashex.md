@@ -22,7 +22,7 @@ Pgdashex is a postgres monitoring agent that collects comprehensive database met
 
 ## Overview
 
-Pgdashex collects 350+ PostgreSQL metrics including server information, database statistics, table and index metrics, replication status, WAL and archiving statistics, background writer statistics, connection and backend information, query statistics, lock information, vacuum and analyze progress, and PostgreSQL configuration settings.
+Pgdashex collects PostgreSQL metrics including server information, database statistics, table and index metrics, replication status, WAL and archiving statistics, background writer statistics, connection and backend information, query statistics, lock information, vacuum and analyze progress, and PostgreSQL configuration settings.
 
 ## Prerequisites
 
