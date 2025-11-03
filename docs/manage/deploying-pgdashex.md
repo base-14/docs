@@ -55,8 +55,10 @@ GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO pgdashex_monitor;
 -- Enable query statistics per database
 CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 ```
-> Learn more about these predefined roles: https://www.postgresql.org/docs/current/predefined-roles.html
 
+> **Note**: Learn more about these predefined roles: https://www.postgresql.org/docs/current/predefined-roles.html
+
+> **Note**: The `pg_stat_statements` extension tracks query execution statistics and helps identify slow-running queries. Learn how to configure it: https://www.postgresql.org/docs/current/pgstatstatements.html
 
 Test the connection:
 
