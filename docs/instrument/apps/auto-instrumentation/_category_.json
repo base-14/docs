@@ -1,6 +1,7 @@
 {
   "label": "Auto Instrumentation",
   "position": 3,
+  "collapsed": false,
   "link": {
     "type": "generated-index",
     "description": "Learn how to implement OpenTelemetry auto-instrumentation for popular frameworks including `Express.js`, `FastAPI`, `Ruby on Rails`, and `Celery`. These guides cover setting up traces, metrics, and logs collection, configuring exporters, and implementing custom instrumentation with detailed examples and best practices."

@@ -1,6 +1,7 @@
 {
     "label": "Filters and Transformations",
     "position": 1,
+    "collapsed": false,
     "link": {
       "type": "generated-index",
       "description": "Add filters and Transformations during data collection"

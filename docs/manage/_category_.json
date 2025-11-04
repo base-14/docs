@@ -1,6 +1,7 @@
 {
     "label": "Manage",
     "position": 4,
+    "collapsed": false,
     "link": {
       "type": "generated-index",
       "description": "Manage your Scout's data collection and dashboard configuration"
