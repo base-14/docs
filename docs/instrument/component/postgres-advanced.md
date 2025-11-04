@@ -1,24 +1,23 @@
 ---
-title: Deploying Pgdashex Agent
-sidebar_label: Deploy Pgdashex Agent
-sidebar_position: 5
+title: PostgreSQL Advanced Monitoring with Pgdashex
+sidebar_label: PostgreSQL Advanced
 description:
-  Deploy pgdashex PostgreSQL metrics exporter to collect and export PostgreSQL metrics
-  to Scout using Docker containers.
+  Advanced PostgreSQL monitoring with pgdashex. Collect comprehensive database
+  metrics including query statistics, table/index metrics, and replication status.
 keywords:
   [
     pgdashex,
     postgresql exporter,
     postgres metrics,
-    prometheus exporter,
+    advanced postgresql monitoring,
     database monitoring,
-    deployment guide,
+    postgres observability,
   ]
 ---
 
-# Deploying Pgdashex Agent
+# PostgreSQL Advanced Monitoring with Pgdashex
 
-Pgdashex is a postgres monitoring agent that collects comprehensive database metrics and exposes them in Prometheus format. This guide covers deploying pgdashex to monitor your PostgreSQL databases and send metrics to Scout.
+Pgdashex is a PostgreSQL monitoring agent that collects comprehensive database metrics and exposes them in Prometheus format. This guide covers deploying pgdashex to monitor your PostgreSQL databases and send metrics to Scout.
 
 ## Overview
 
@@ -28,7 +27,7 @@ Pgdashex collects PostgreSQL metrics including server information, database stat
 
 - PostgreSQL instance
 - Scout account and API credentials
-- Scout Collector installed and configured (see [Quick Start](./quick-start.md))
+- Scout Collector installed and configured (see [Quick Start](../../manage/quick-start.md))
 
 ## PostgreSQL User Setup
 
@@ -297,13 +296,13 @@ Check OTel Collector logs and pgdashex logs for errors.
 
 ## What's Next?
 
-- **Create Dashboards**: Explore pre-built dashboards or build your own. See [Create Your First Dashboard](./create-your-first-dashboard.md)
-- **Monitor More Components**: Add monitoring for [Redis](../instrument/component/redis.md), [MongoDB](../instrument/component/mongodb.md), [RabbitMQ](../instrument/component/rabbitmq.md), and other components
+- **Create Dashboards**: Explore pre-built dashboards or build your own. See [Create Your First Dashboard](../../manage/create-your-first-dashboard.md)
+- **Monitor More Components**: Add monitoring for [Redis](./redis.md), [MongoDB](./mongodb.md), [RabbitMQ](./rabbitmq.md), and other components
 - **Fine-tune Collection**: Optimize metric groups based on your needs
 
 ## Related Guides
 
-- [Quick Start](./quick-start.md) - Scout setup guide
-- [PostgreSQL Monitoring](../instrument/component/postgres.md) - Alternative PostgreSQL monitoring setup
-- [OTel Collector Configuration](../instrument/collector-setup/otel-collector-config.md) - Advanced collector configuration
-- [Docker Compose Setup](../instrument/collector-setup/docker-compose-example.md) - Collector setup with Docker Compose
+- [PostgreSQL Basic Monitoring](./postgres.md) - Basic PostgreSQL monitoring setup
+- [Quick Start](../../manage/quick-start.md) - Scout setup guide
+- [OTel Collector Configuration](../collector-setup/otel-collector-config.md) - Advanced collector configuration
+- [Docker Compose Setup](../collector-setup/docker-compose-example.md) - Collector setup with Docker Compose
