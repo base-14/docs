@@ -27,7 +27,7 @@ Pgdashex collects PostgreSQL metrics including server information, database stat
 
 - PostgreSQL instance
 - Scout account and API credentials
-- Scout Collector installed and configured (see [Quick Start](./quick-start.md))
+- Scout Collector installed and configured (see [Quick Start](../../manage/quick-start.md))
 
 ## PostgreSQL User Setup
 
