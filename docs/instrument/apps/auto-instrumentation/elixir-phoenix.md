@@ -132,6 +132,7 @@ That's it! Head over to Scout Grafana to visualize the traces.
 
 - [OpenTelemetry Erlang Documentation](https://opentelemetry.io/docs/languages/erlang/)
 - [Phoenix Framework Documentation](https://hexdocs.pm/phoenix/telemetry.html)
+- [Sample Phoenix application with OpenTelemetry instrumentation](https://github.com/base-14/examples/tree/main/elixir-phoenix-otel)
 
 ## Related Guides
 
@@ -139,8 +140,3 @@ That's it! Head over to Scout Grafana to visualize the traces.
   up collector for local development
 - [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
   Deploy collector on Kubernetes
-
-## Sample Application
-
-> A sample Phoenix LiveView chat application with comprehensive OpenTelemetry instrumentation can be found at this
-> [GitHub repository](https://github.com/base-14/examples/tree/main/elixir-phoenix-otel)
