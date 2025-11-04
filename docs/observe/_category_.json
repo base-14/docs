@@ -1,6 +1,7 @@
 {
   "label": "Observe",
   "position": 2,
+  "collapsed": false,
   "link": {
     "type": "generated-index",
     "description": "10 minutes guide on instrumenting tracing with OpenTelemetry."
