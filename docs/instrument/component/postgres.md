@@ -21,6 +21,10 @@ keywords:
 This guide explains how to set up PostgreSQL metrics collection using Scout
 Collector and forward them to Scout backend.
 
+> **Note**: For advanced PostgreSQL monitoring with comprehensive metrics
+> including query statistics, table/index metrics, replication status, and more,
+> see [Deploying Pgdashex Agent](../../manage/deploying-pgdashex.md).
+
 ## Prerequisites
 
 1. PostgreSQL instance (standalone or cluster)
@@ -204,6 +208,8 @@ service:
 
 ## Related Guides
 
+- [Deploying Pgdashex Agent](../../manage/deploying-pgdashex.md) - Advanced
+  PostgreSQL monitoring with comprehensive metrics
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md) -
   Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) - Set up
