@@ -64,8 +64,8 @@ guide, make sure to:
    name.
 3. Choose `Python 3.x` as the Runtime version, `x86_64` as Architecture
    (preferably), and keep other settings as default. Select
-   `Create a new role with basic Lambda permissions` for now, we’ll requiring
-   more permissions down the lane. So for now, select this option.
+   `Create a new role with basic Lambda permissions` for now, we'll require
+   more permissions down the road. So for now, select this option.
 4. Once you are done configuring the lambda function, you Lambda function is
    created.
 
@@ -80,7 +80,7 @@ guide, make sure to:
    to AWS IAM page. Here we will add policies to get full S3 access. Once here,
    click on the `Add permissions` button and select `Attach policies` from the
    drop down list.
-3. Search “S3” and you’ll a policy `GetObject` select that and proceed.
+3. Search "S3" and you'll see a policy `GetObject` select that and proceed.
 
 ### Step 3: Adding Triggers
 

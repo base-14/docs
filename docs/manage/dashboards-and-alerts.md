@@ -60,7 +60,7 @@ instance.
 Grizzly allows you to define various Grafana resources using YAML. Here's how
 you can define folders, dashboards, alerts, and contact points:
 
-1. Folders Folders help organize your dashboards. Here's an example of a YAML
+1. **Folders** - Folders help organize your dashboards. Here's an example of a YAML
    definition for a folder:
 
 ```yaml showLineNumbers
@@ -172,7 +172,7 @@ To use Jsonnet with Grizzly, you would typically:
 - Use Grizzly to apply the generated .json files.
 
 For detailed information and examples of using Jsonnet with Grafana, please
-refer to the official [Jsonnet documentation](https://jsonnet.org/): and
+refer to the official [Jsonnet documentation](https://jsonnet.org/) and
 Grafana's documentation on using Jsonnet for dashboards.
 
 ## Automation Examples

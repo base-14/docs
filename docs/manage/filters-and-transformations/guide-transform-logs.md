@@ -91,7 +91,7 @@ logs/otlp:
 - This configuration assumes the trace and span IDs are directly available at
   the top level of the JSON structure
 - The example uses the debug exporter, but you should replace it with your
-  actual exporters and recievers.
+  actual exporters and receivers.
 
 ## Related Guides
 

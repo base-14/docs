@@ -24,9 +24,9 @@ traces using the php OpenTelemetry SDK.
 > official
 > [OpenTelemetry documentation](https://opentelemetry.io/docs/zero-code/php/).
 
-## overview
+## Overview
 
-This guide demostrates how to:
+This guide demonstrates how to:
 
 - Install opentelemetry extension for php.
 - Set up OpenTelemetry instrumentation for Laravel.
@@ -38,7 +38,7 @@ This guide demostrates how to:
 Before starting, ensure you have:
 
 - Laravel version 8.1
-- Working Laravel applciation.
+- Working Laravel application.
 
 ## Step 1: Install opentelemetry extension for php
 
@@ -69,13 +69,13 @@ Verify that the extension is installed and enabled:
 php -m | grep opentelemetry
 ```
 
-Output should look similar to
+The output should look similar to this:
 
 ```bash
 opentelemetry
 ```
 
-Good work, Now we have installed the opentelemetry extension
+Good work, now we have installed the opentelemetry extension
 
 ## Step 2: Import the packages
 

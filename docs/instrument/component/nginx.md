@@ -24,7 +24,7 @@ This guide will walk you through collecting rich telemetry data from your nginx
 server using `nginx-module-otel` module and we'll use prometheus nginx exporter
 to collect metrics.
 
-## Prerequisties
+## Prerequisites
 
 - NGINX Server installed.
 
@@ -54,7 +54,7 @@ docker run --network=host nginx/nginx-prometheus-exporter:1.4.2 \
   --nginx.scrape-uri=http://localhost/status
 ```
 
-### Step 3: Add the following receiver in your Scout collect
+### Step 3: Add the following receiver in your Scout Collector configuration:
 
 ```yaml
 prometheus/nginx:
@@ -69,11 +69,11 @@ prometheus/nginx:
 
 > Note: Make sure you use in the pipelines as well.
 
-Great work, Now the metrics are scraped from the nginx
+Great work, now the metrics are scraped from nginx
 
 ## Collecting traces
 
-### Step 1: Add the nginx repositoring
+### Step 1: Add the nginx repository
 
 ```mdx-code-block
 import Tabs from '@theme/Tabs';

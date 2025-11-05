@@ -94,7 +94,7 @@ def do_work():
     carrier = {}
     inject(carrier)
     add.delay(1, 2, carrier)
-     tracer = get_tracer(__name__)
+    tracer = get_tracer(__name__)
 
     # Extract the context from the incoming carrier
     if context:

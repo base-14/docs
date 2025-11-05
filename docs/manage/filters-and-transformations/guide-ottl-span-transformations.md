@@ -18,7 +18,7 @@ keywords:
 
 ## Introduction to OTTL
 
-OTTL (OpenTelemetry Transformation Language) is a powerful domain specific
+OTTL (OpenTelemetry Transformation Language) is a powerful domain-specific
 language that allows you to transform telemetry data(Traces, Metrics, Logs)
 within the Collector.
 
@@ -38,7 +38,7 @@ processors:
         statements:
           - set(name, attributes["http.route"]) where attributes["http.route"]
             != nil
-          - replace_pattern(name, "/users/.*/posts/", "/users/{userId}/posts/") #Replace with regex pattern for generalization
+          - replace_pattern(name, "/users/.*/posts/", "/users/{userId}/posts/") # Replace with regex pattern for generalization
 ```
 
 ### 2. Attribute Manipulation

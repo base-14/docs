@@ -18,7 +18,7 @@ keywords:
 # Elixir Phoenix
 
 Implement OpenTelemetry instrumentation for `Phoenix` applications to collect
-traces; monitor HTTP requestsand database queries using the Elixir OTel SDK.
+traces; monitor HTTP requests and database queries using the Elixir OTel SDK.
 
 > **Note:** This guide provides a concise overview based on the official
 > OpenTelemetry documentation. For complete information, please consult the

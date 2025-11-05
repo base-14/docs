@@ -26,7 +26,7 @@ Deploy and configure the Scout Collector on ECS.
 This guide covers how to collect telemetry data (logs, metrics, and traces) from
 your ECS environment and send it to base14 Scout.
 
-- Install base14 Scout's Scout Collector using Task Defintions.
+- Install base14 Scout's Scout Collector using Task Definitions.
 - Configure telemetry collection for ECS Nodes.
 - Configure custom metrics endpoints
 - Implement trace collection
@@ -34,7 +34,7 @@ your ECS environment and send it to base14 Scout.
 ## Prerequisites
 
 - A ECS cluster
-- Aws cli setup with permissions `ecs:*` permissions.
+- AWS CLI setup with `ecs:*` permissions.
 - Scout account credentials
   - Endpoint URL
   - API Key

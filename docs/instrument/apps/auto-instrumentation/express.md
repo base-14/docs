@@ -94,7 +94,7 @@ sdk.start();
 
 ```typescript title="src/index.ts" showLineNumbers
 // ( Main Entry Point )
-// Before importing Anything importing this would initilize the sdk
+// Before importing anything, importing this would initialize the SDK
 
 import "../src/utils/telemetry";
 ```

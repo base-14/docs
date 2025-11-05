@@ -18,7 +18,7 @@ keywords:
 # Introduction
 
 Scout provides comprehensive observability capabilities through a fully
-Cloud-native and OpenTelemetry-native platform.
+cloud-native and OpenTelemetry-native platform.
 
 ## Key Features
 
@@ -71,7 +71,7 @@ Let's setup **Scout in less than 5 minutes**. We will follow the steps below:
    send data to Scout.
 4. **Instrument your application**: Use OpenTelemetry SDKs to instrument your
    application code and send telemetry data to the collector. Depending on your
-   setup, please follow [Auto-instrumentation](/category/auto-instrumentation))
+   setup, please follow [Auto-instrumentation](/category/auto-instrumentation)
    or [Manual-instrumentation](/category/custom-instrumentation) guides to
    instrument your application.
 5. **Instrument your infrastructure**: Use OpenTelemetry to collect telemetry
