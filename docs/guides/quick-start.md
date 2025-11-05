@@ -203,7 +203,7 @@ Now that you have Scout running, explore these topics:
   to optimize your collector setup
 - **Create dashboards**: Build custom visualizations for your metrics
 - **Set up alerts**: Configure alerts to get notified about issues. See
-  [Creating Alerts with LogX](./creating-alerts-with-logx.md)
+  [Creating Alerts with LogX](creating-alerts-with-logx.md)
 - **Transform data**: Apply filters and transformations to your telemetry. See
   [Filters and Transformations](/category/filters-and-transformations)
 
@@ -226,5 +226,5 @@ If you're not seeing data in Scout:
   Advanced collector configuration
 - [Scout Exporter](../instrument/collector-setup/scout-exporter.md) - Exporter
   configuration details
-- [Dashboards and Alerts](./dashboards-and-alerts.md) - Create visualizations
+- [Dashboards and Alerts](../operate/dashboards-and-alerts.md) - Create visualizations
   and alerts

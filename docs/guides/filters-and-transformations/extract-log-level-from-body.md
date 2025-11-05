@@ -1,7 +1,7 @@
 ---
 date: 2025-10-09
 id: extracting-log-level-from-body
-title: Guide - Extracting Log Level from Log Body
+title: Extracting Log Level from Log Body
 description:
   Extract log severity levels from log body using OpenTelemetry transform
   processor. Parse and categorize DEBUG, INFO, WARN, ERROR, and FATAL levels in
@@ -122,9 +122,9 @@ transform/advanced-severity:
 
 ## Related Guides
 
-- [Filter Logs with Regex and JSON](./guide-filter-logs-regex-and-json.md) -
+- [Filter Logs with Regex and JSON](filter-logs-regex-and-json.md) -
   Advanced log filtering techniques
-- [Transform Logs Guide](./guide-transform-logs.md) - General log transformation
+- [Transform Logs Guide](transform-logs.md) - General log transformation
   patterns
 - [OTel Collector Configuration](../../instrument/collector-setup/otel-collector-config.md)
   \- Collector configuration basics

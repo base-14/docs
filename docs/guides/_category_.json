@@ -1,0 +1,10 @@
+{
+    "label": "Guides",
+    "position": 4,
+    "collapsed": false,
+    "link": {
+      "type": "generated-index",
+      "description": "Step-by-step guides and tutorials for setting up Scout, creating dashboards, configuring alerts, and transforming telemetry data"
+    }
+  }
+  
