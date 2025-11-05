@@ -192,9 +192,9 @@ Before finalizing your dashboard, verify:
 
 ## Related Guides
 
-- [Creating Alerts with LogX](./creating-alerts-with-logx.md) - Set up alerts
+- [Creating Alerts with LogX](creating-alerts-with-logx.md) - Set up alerts
   based on your dashboard queries
-- [Quick Start](./quick-start.md) - Get Scout set up and sending data
+- [Quick Start](quick-start.md) - Get Scout set up and sending data
 
 ## References
 

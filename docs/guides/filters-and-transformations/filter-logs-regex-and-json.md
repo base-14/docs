@@ -1,7 +1,7 @@
 ---
 date: 2025-06-19
 id: filtering-logs-based-on-regex-and-attributes
-title: Guide – Filtering Logs Using Regex and Attribute-Based Conditions
+title: Filtering Logs Using Regex and Attribute-Based Conditions
 description:
   Filter logs using regex patterns and JSON attribute conditions in
   OpenTelemetry pipelines. Drop or keep logs based on pattern matching and
@@ -125,9 +125,9 @@ service:
 
 ## Related Guides
 
-- [Extract Log Level from Body](./guide-extract-log-level-from-body.md) - Parse
+- [Extract Log Level from Body](extract-log-level-from-body.md) - Parse
   log severity with regex
-- [Transform Logs Guide](./guide-transform-logs.md) - Extract trace and span IDs
+- [Transform Logs Guide](transform-logs.md) - Extract trace and span IDs
   from logs
-- [OTTL Span Transformations](./guide-ottl-span-transformations.md) - Filter and
+- [OTTL Span Transformations](ottl-span-transformations.md) - Filter and
   transform spans

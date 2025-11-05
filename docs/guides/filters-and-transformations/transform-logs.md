@@ -1,7 +1,7 @@
 ---
 date: 2025-04-29
 id: extracting-trace-id-and-span-id-from-log-body
-title: Guide - Extracting TraceId and SpanId from JSON Log Body
+title: Extracting TraceId and SpanId from JSON Log Body
 description:
   Extract trace and span IDs from JSON log body using OpenTelemetry transform
   processor. Enable distributed tracing correlation in Scout with log-to-trace
@@ -95,9 +95,9 @@ logs/otlp:
 
 ## Related Guides
 
-- [Extract Log Level from Body](./guide-extract-log-level-from-body.md) - Parse
+- [Extract Log Level from Body](extract-log-level-from-body.md) - Parse
   log severity levels
-- [OTTL Span Transformations](./guide-ottl-span-transformations.md) - Transform
+- [OTTL Span Transformations](ottl-span-transformations.md) - Transform
   trace spans
 - [OTel Collector Configuration](../../instrument/collector-setup/otel-collector-config.md)
   \- Collector configuration basics
