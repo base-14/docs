@@ -1,8 +1,8 @@
 ---
 date: 2025-10-08
 id: collecting-postgres-telemetry
-title: PostgreSQL Database Monitoring with OpenTelemetry
-sidebar_label: PostgreSQL
+title: PostgreSQL Database Basic Monitoring with OpenTelemetry
+sidebar_label: PostgreSQL Basic
 description:
   Monitor PostgreSQL with OpenTelemetry Collector. Collect database metrics,
   query performance, connections, and stats using Scout.
@@ -20,6 +20,10 @@ keywords:
 
 This guide explains how to set up PostgreSQL metrics collection using Scout
 Collector and forward them to Scout backend.
+
+> **Note**: For advanced PostgreSQL monitoring with comprehensive metrics
+> including query statistics, table/index metrics, replication status, and more,
+> see [PostgreSQL Advanced Monitoring](./postgres-advanced.md).
 
 ## Prerequisites
 
@@ -204,6 +208,8 @@ service:
 
 ## Related Guides
 
+- [PostgreSQL Advanced Monitoring](./postgres-advanced.md) - Advanced PostgreSQL
+  monitoring with comprehensive metrics using pgdashex
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md) -
   Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) - Set up

@@ -1,6 +1,7 @@
 {
   "label": "Custom Instrumentation",
   "position": 3,
+  "collapsed": false,
   "link": {
     "type": "generated-index",
     "description": "10 minutes guide on instrumenting custom tracing with OpenTelemetry."

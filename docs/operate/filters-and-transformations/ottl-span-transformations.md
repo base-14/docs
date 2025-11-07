@@ -1,7 +1,7 @@
 ---
 date: 2025-07-17
 id: transforming-spans-with-ottl
-title: Guide – Transforming Spans Using OTTL Functions
+title: Transforming Spans Using OTTL Functions
 description:
   Use OTTL (OpenTelemetry Transformation Language) to modify span data in the
   Scout Collector. Transform span names, manipulate attributes, redact sensitive
@@ -103,9 +103,9 @@ processors:
 
 ## Related Guides
 
-- [Transform Logs Guide](./guide-transform-logs.md) - Transform log data with
+- [Transform Logs Guide](transform-logs.md) - Transform log data with
   OTTL
-- [Filter Logs with Regex and JSON](./guide-filter-logs-regex-and-json.md) -
+- [Filter Logs with Regex and JSON](filter-logs-regex-and-json.md) -
   Advanced filtering techniques
 - [OTel Collector Configuration](../../instrument/collector-setup/otel-collector-config.md)
   \- Collector configuration basics

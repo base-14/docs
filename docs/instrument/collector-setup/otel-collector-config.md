@@ -445,9 +445,9 @@ service:
 
 - [Scout Exporter Configuration](./scout-exporter.md) - Configure data export to
   Scout
-- [Extract Log Level from Body](../../manage/filters-and-transformations/guide-extract-log-level-from-body.md)
+- [Extract Log Level from Body](../../operate/filters-and-transformations/extract-log-level-from-body.md)
   \- Parse and categorize log severity
-- [Transform and Filter Logs](../../manage/filters-and-transformations/guide-transform-logs.md)
+- [Transform and Filter Logs](../../operate/filters-and-transformations/transform-logs.md)
   \- Advanced log processing techniques
 
 ## Resources

@@ -169,10 +169,6 @@ receivers:
 To monitor logs and metrics, see the
 [custom instrumentation guide for JavaScript browser applications](https://github.com/base-14/docs/tree/main/docs/instrument/apps/custom-instrumentation/javascript-browser.md)
 
-## References
-
-[Sample react application with OTel instrumentation:](https://github.com/base14/react-auto-instrumentation)
-
 ## Related Guides
 
 - [Custom JavaScript Browser Instrumentation](../custom-instrumentation/javascript-browser.md)
