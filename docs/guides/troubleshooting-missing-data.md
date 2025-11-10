@@ -52,27 +52,27 @@ sudo journalctl -u otel-collector -n 100
 
 **Successful startup:**
 
-```
+```text
 Everything is ready. Begin running and processing data.
 ```
 
 **Configuration errors:**
 
-```
+```text
 error decoding config
 invalid configuration
 ```
 
 **Authentication errors:**
 
-```
+```text
 rpc error: code = Unauthenticated
 401 Unauthorized
 ```
 
 **Connection errors:**
 
-```
+```text
 connection refused
 failed to connect
 ```
@@ -124,9 +124,9 @@ collector pipeline (see Step 1).
 
 ## Related Guides
 
-- [OTel Collector Configuration](../instrument/collector-setup/otel-collector-config.md) -
+- [Collector Configuration](../instrument/collector-setup/otel-collector-config.md)
   Detailed collector configuration guide
-- [Auto Instrumentation](../instrument/apps/auto-instrumentation/express.md) -
+- [Auto Instrumentation](../instrument/apps/auto-instrumentation/express.md)
   Automatic application instrumentation
-- [Custom Instrumentation](../instrument/apps/custom-instrumentation/python.md) -
+- [Custom Instrumentation](../instrument/apps/custom-instrumentation/python.md)
   Manual application instrumentation
