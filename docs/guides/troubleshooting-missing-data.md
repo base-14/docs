@@ -28,6 +28,55 @@ Start by checking the **OTel Collector Data Flow** dashboard in Grafana.
 
 There's an issue in the pipeline. Check the collector logs.
 
+#### Viewing Collector Logs
+
+**Docker:**
+
+```bash
+docker logs otel-collector --tail=100
+```
+
+**Kubernetes:**
+
+```bash
+kubectl logs <otel-collector-pod-name> -n <namespace> --tail=100
+```
+
+**Linux Service:**
+
+```bash
+sudo journalctl -u otel-collector -n 100
+```
+
+#### What to Look For in Logs
+
+**Successful startup:**
+
+```
+Everything is ready. Begin running and processing data.
+```
+
+**Configuration errors:**
+
+```
+error decoding config
+invalid configuration
+```
+
+**Authentication errors:**
+
+```
+rpc error: code = Unauthenticated
+401 Unauthorized
+```
+
+**Connection errors:**
+
+```
+connection refused
+failed to connect
+```
+
 **If logs show errors:** Validate your collector configuration using:
 
 ```bash
