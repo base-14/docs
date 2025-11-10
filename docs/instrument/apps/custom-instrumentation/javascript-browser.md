@@ -152,7 +152,7 @@ async function checkServiceHealth() {
     const data = await res.json();
     return data;
   } catch (error) {
-    //handle error
+    // handle error
     throw error;
   } finally {
     span.end();
@@ -164,7 +164,7 @@ async function checkServiceHealth() {
 
 ```javascript
 import { metrics } from "@opentelemetry/api";
-//Gets the meter from the global meter provider set in the setupTelemetry function
+// Gets the meter from the global meter provider set in the setupTelemetry function
 const meter = metrics.getMeter("react-app");
 const renderCount = meter.createCounter("component.render.count");
 

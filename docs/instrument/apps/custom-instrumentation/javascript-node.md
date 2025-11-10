@@ -136,9 +136,9 @@ router.get('/ping', async (req, res) => {
   const ctx = trace.setSpan(context.active(), span);
 
   try {
-    await context.with(ctx, ()) => {
+    await context.with(ctx, () => {
       // Your route logic here
-      //Your logs passed with trace context
+      // Your logs passed with trace context
       res.json({ message: 'pong' });
     });
   } finally {

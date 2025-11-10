@@ -198,7 +198,7 @@ Before finalizing your dashboard, verify:
 
 ## References
 
-- [Grafana Dashboard Documentation](https://grafana.com/docs/grafana/latest/dashboards/) -
-  Learn about dashboard basics and panel types
-- [Time Series Panel](https://grafana.com/docs/grafana/latest/panels-visualizations/visualizations/time-series/) -
-  Understanding time series visualizations in Grafana
+- [Grafana Dashboard Documentation](https://grafana.com/docs/grafana/latest/dashboards/)
+  \- Learn about dashboard basics and panel types
+- [Time Series Panel](https://grafana.com/docs/grafana/latest/panels-visualizations/visualizations/time-series/)
+  \- Understanding time series visualizations in Grafana

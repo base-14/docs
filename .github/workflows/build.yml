@@ -26,7 +26,7 @@ jobs:
       - uses: DavidAnson/markdownlint-cli2-action@v19
         with:
           globs: "**/*.md"
-        continue-on-error: true
+        continue-on-error: false
 
   build:
     if: ${{ github.event_name == 'pull_request' }}

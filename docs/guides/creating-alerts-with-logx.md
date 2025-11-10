@@ -153,7 +153,7 @@ The general alerting guide covers:
 
 ## Related Guides
 
-- [Dashboards and Alerts](../operate/dashboards-and-alerts.md) - General dashboard and
-  alerting overview
+- [Dashboards and Alerts](../operate/dashboards-and-alerts.md) - General
+  dashboard and alerting overview
 - [Grafana Alerting Documentation](https://grafana.com/docs/grafana/latest/alerting/)
   \- Official Grafana alerting guide
