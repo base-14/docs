@@ -304,49 +304,50 @@ Essential configuration guidelines for optimal Scout Collector deployment:
 
 1. **Start Simple**:
 
-- Begin with basic OpenTelemetry configuration
-- Add components incrementally
-- Test each configuration change
-- Validate telemetry flow
+   - Begin with basic OpenTelemetry configuration
+   - Add components incrementally
+   - Test each configuration change
+   - Validate telemetry flow
 
-1. **Use Environment Variables**:
+2. **Use Environment Variables**:
 
-- Implement dynamic configuration
-- Secure sensitive information
-- Enable deployment flexibility
+   - Implement dynamic configuration
+   - Secure sensitive information
+   - Enable deployment flexibility
 
-  ```yaml showLineNumbers
-  exporters:
-    otlp:
-      endpoint: ${OTLP_ENDPOINT}
-  ```
+   ```yaml showLineNumbers
+   exporters:
+     otlp:
+       endpoint: ${OTLP_ENDPOINT}
+   ```
 
-1. **Implement Memory Protection**:
+3. **Implement Memory Protection**:
 
-- Configure `memory_limiter` processor
-- Prevent out-of-memory (OOM) crashes
-- Set appropriate memory thresholds
-- Monitor memory usage
+   - Configure `memory_limiter` processor
+   - Prevent out-of-memory (OOM) crashes
+   - Set appropriate memory thresholds
+   - Monitor memory usage
 
-1. **Resource Management**:
+4. **Resource Management**:
 
-- Configure CPU limits
-- Set memory boundaries
-- Adjust based on telemetry volume
-- Monitor resource utilization
+   - Configure CPU limits
+   - Set memory boundaries
+   - Adjust based on telemetry volume
+   - Monitor resource utilization
 
-1. **Health Monitoring**:
+5. **Health Monitoring**:
 
-- Enable `health_check` extension
-- Configure monitoring endpoints
-- Set up alerting
-- Monitor collector status
+   - Enable `health_check` extension
+   - Configure monitoring endpoints
+   - Set up alerting
+   - Monitor collector status
 
-1. **Performance Optimization**:
+6. **Performance Optimization**:
 
-- Enable batch processing
-- Configure optimal batch sizes
-- Set appropriate timeouts
+   - Enable batch processing
+   - Configure optimal batch sizes
+   - Set appropriate timeouts
+
 - Monitor throughput metrics
 
 ## Configuration Examples
