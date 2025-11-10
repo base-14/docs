@@ -62,11 +62,11 @@ CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 ```
 
 > **Note**: Learn more about these predefined roles:
-> <https://www.postgresql.org/docs/current/predefined-roles.html>
+> [PostgreSQL Predefined Roles Documentation](https://www.postgresql.org/docs/current/predefined-roles.html)
 >
 > **Note**: The `pg_stat_statements` extension tracks query execution
 > statistics and helps identify slow-running queries. Learn how to configure it:
-> <https://www.postgresql.org/docs/current/pgstatstatements.html>
+> [pg_stat_statements Documentation](https://www.postgresql.org/docs/current/pgstatstatements.html)
 
 Test the connection:
 
