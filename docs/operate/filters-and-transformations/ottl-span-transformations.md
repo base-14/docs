@@ -38,7 +38,7 @@ processors:
         statements:
           - set(name, attributes["http.route"]) where attributes["http.route"]
             != nil
-          - replace_pattern(name, "/users/.*/posts/", "/users/{userId}/posts/") #Replace with regex pattern for generalization
+          - replace_pattern(name, "/users/.*/posts/", "/users/{userId}/posts/") # Replace with regex pattern for generalization
 ```
 
 ### 2. Attribute Manipulation

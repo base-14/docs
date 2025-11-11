@@ -221,9 +221,9 @@ If you're not seeing data in Scout:
 
 - [Introduction](../introduction.md) - Complete overview of Scout's capabilities
 - [Docker Compose Setup](../instrument/collector-setup/docker-compose-example.md)
-  Detailed Docker setup
+  \- Detailed Docker setup
 - [OTel Collector Configuration](../instrument/collector-setup/otel-collector-config.md)
-  Advanced collector configuration
+  \- Advanced collector configuration
 - [Scout Exporter](../instrument/collector-setup/scout-exporter.md) - Exporter
   configuration details
 - [Dashboards and Alerts](../operate/dashboards-and-alerts.md) - Create visualizations

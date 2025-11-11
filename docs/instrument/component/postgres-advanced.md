@@ -17,16 +17,17 @@ keywords:
 
 # PostgreSQL Advanced Monitoring with Pgdashex
 
-Pgdashex is a PostgreSQL monitoring agent that collects comprehensive database metrics
-and exposes them in Prometheus format. This guide covers deploying pgdashex to monitor
-your PostgreSQL databases and send metrics to Scout.
+Pgdashex is a PostgreSQL monitoring agent that collects comprehensive database
+metrics and exposes them in Prometheus format. This guide covers deploying
+pgdashex to monitor your PostgreSQL databases and send metrics to Scout.
 
 ## Overview
 
-Pgdashex collects PostgreSQL metrics including server information, database statistics,
-table and index metrics, replication status, WAL and archiving statistics, background
-writer statistics, connection and backend information, query statistics, lock information,
-vacuum and analyze progress, and PostgreSQL configuration settings.
+Pgdashex collects PostgreSQL metrics including server information, database
+statistics, table and index metrics, replication status, WAL and archiving
+statistics, background writer statistics, connection and backend information,
+query statistics, lock information, vacuum and analyze progress, and PostgreSQL
+configuration settings.
 
 ## Prerequisites
 
@@ -60,11 +61,12 @@ GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO pgdashex_monitor;
 CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 ```
 
-> **Note**: Learn more about these predefined
-  roles: [Postgres Predefined Docs](https://www.postgresql.org/docs/current/predefined-roles.html).
-  The `pg_stat_statements` extension tracks query execution statistics
-> and helps identify slow-running queries. Learn how to configure
-> it: [pgstatements](https://www.postgresql.org/docs/current/pgstatstatements.html)
+> **Note**: Learn more about these predefined roles:
+> [PostgreSQL Predefined Roles Documentation](https://www.postgresql.org/docs/current/predefined-roles.html)
+>
+> **Note**: The `pg_stat_statements` extension tracks query execution
+> statistics and helps identify slow-running queries. Learn how to configure it:
+> [pg_stat_statements Documentation](https://www.postgresql.org/docs/current/pgstatstatements.html)
 
 Test the connection:
 
@@ -104,9 +106,8 @@ docker run -d \
   base14/pgdashex:v0.5.1
 ```
 
-**Note**: If PostgreSQL is on the host machine,
-use `host.docker.internal` as PG_HOST (Docker Desktop)
-or `--network host` (Linux).
+**Note**: If PostgreSQL is on the host machine, use `host.docker.internal` as
+PG_HOST (Docker Desktop) or `--network host` (Linux).
 
 ### Example Docker Compose
 
@@ -142,9 +143,9 @@ services:
 
 ## Integrating with Scout
 
-pgdashex exposes metrics in Prometheus format on port 9187.
-To send these metrics to Scout, configure your OpenTelemetry
-Collector to scrape pgdashex and forward to Scout.
+pgdashex exposes metrics in Prometheus format on port 9187. To send these
+metrics to Scout, configure your OpenTelemetry Collector to scrape pgdashex and
+forward to Scout.
 
 ### Configure OpenTelemetry Collector
 
@@ -220,9 +221,9 @@ pgdashex is configured using environment variables:
 | `PG_HOST` | `localhost` | PostgreSQL server hostname |
 | `PG_PORT` | `5432` | PostgreSQL server port |
 | `PG_USER` | `postgres` | PostgreSQL username |
-| `PG_PASSWORD` | - | PostgreSQL password (special characters are auto-encoded) |
+| `PG_PASSWORD` | - | PostgreSQL password (special characters are<br/>auto-encoded) |
 | `PG_DATABASE` | `postgres` | PostgreSQL database name |
-| `PG_SSLMODE` | `disable` | SSL mode (`disable`, `require`, `verify-ca`, `verify-full`) |
+| `PG_SSLMODE` | `disable` | SSL mode (`disable`, `require`, `verify-ca`,<br/>`verify-full`) |
 | `LISTEN_ADDRESS` | `:9187` | Address to expose metrics |
 | `METRICS_PATH` | `/metrics` | Path to expose metrics |
 | `SCRAPE_TIMEOUT` | `10` | Timeout in seconds for metrics collection |
@@ -238,8 +239,8 @@ pgdashex is configured using environment variables:
 
 ### Metric Groups
 
-Control which metrics are collected
-using the `PGDASHEX_COLLECT_METRICS` environment variable:
+Control which metrics are collected using the `PGDASHEX_COLLECT_METRICS`
+environment variable:
 
 **Predefined Values:**
 
@@ -312,20 +313,18 @@ Check OTel Collector logs and pgdashex logs for errors.
 
 ## What's Next?
 
-- **Create Dashboards**: Explore pre-built dashboards or build your own.
-  See [Create Your First Dashboard](../../guides/create-your-first-dashboard.md)
-- **Monitor More Components**: Add monitoring for
-  [Redis](./redis.md), [MongoDB](./mongodb.md),
-  [RabbitMQ](./rabbitmq.md), and other components
+- **Create Dashboards**: Explore pre-built dashboards or build your own. See
+  [Create Your First Dashboard](../../guides/create-your-first-dashboard.md)
+- **Monitor More Components**: Add monitoring for [Redis](./redis.md),
+  [MongoDB](./mongodb.md), [RabbitMQ](./rabbitmq.md), and other components
 - **Fine-tune Collection**: Optimize metric groups based on your needs
 
 ## Related Guides
 
-- [PostgreSQL Basic Monitoring](./postgres.md)
-  Basic PostgreSQL monitoring setup
-- [Quick Start](../../guides/quick-start.md)
-  Scout setup guide
-- [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
+- [PostgreSQL Basic Monitoring](./postgres.md) - Basic PostgreSQL monitoring
+  setup
+- [Quick Start](../../guides/quick-start.md) - Scout setup guide
+- [OTel Collector Configuration](../collector-setup/otel-collector-config.md) -
   Advanced collector configuration
-- [Docker Compose Setup](../collector-setup/docker-compose-example.md)
+- [Docker Compose Setup](../collector-setup/docker-compose-example.md) -
   Collector setup with Docker Compose

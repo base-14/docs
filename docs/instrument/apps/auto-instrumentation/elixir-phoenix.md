@@ -28,8 +28,8 @@ traces; monitor HTTP requestsand database queries using the Elixir OTel SDK.
 
 This guide walks through setting up automatic OpenTelemetry instrumentation for
 Phoenix applications, including HTTP request tracing, database query monitoring
-with Ecto, and log correlation. The instrumentation automatically exports telemetry
-data to Scout Collector for visualization.
+with Ecto, and log correlation. The instrumentation automatically exports
+telemetry data to Scout Collector for visualization.
 
 ## Prerequisites
 
@@ -42,8 +42,8 @@ Before starting, ensure you have:
 
 ## Required Packages
 
-Install the following necessary packages by adding them to `mix.exs` and running
-`mix deps.get`.
+Install the following necessary packages by adding them to `mix.exs` and
+running `mix deps.get`.
 
 ```elixir title="mix.exs" showLineNumbers
 defp deps do
