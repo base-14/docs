@@ -23,7 +23,7 @@ processors:
   memory_limiter:
     check_interval: 5s
     limit_percentage: 80
-    spike_limit_percentage: 30
+    spike_limit_percentage: 20
   resource:
     attributes:
       - key: service.name
@@ -42,7 +42,7 @@ processors:
   resource/env:
     attributes:
       - key: environment
-        value: staging
+        value: <environment>
         action: upsert
   resourcedetection:
     detectors: [ecs, system]
@@ -85,8 +85,15 @@ exporters:
       authenticator: oauth2client
     tls:
       insecure_skip_verify: true
+    compression: gzip
+    retry_on_failure:
+      enabled: true
+      initial_interval: 2s
+      max_interval: 10s
+      max_elapsed_time: 60s
   debug:
     verbosity: detailed
+
 extensions:
   health_check:
     endpoint: 0.0.0.0:13133
