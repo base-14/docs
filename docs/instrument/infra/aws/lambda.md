@@ -44,16 +44,20 @@ instruments your code and exports traces to the Scout collector.
 OpenTelemetry Lambda layers are available in all AWS regions. Use the following
 ARN format:
 
-```
+```text
 arn:aws:lambda:<region>:184161586896:layer:opentelemetry-<runtime>-<version>:1
 ```
 
 **Example for `ap-south-1` (Mumbai):**
 
-- Python: `arn:aws:lambda:ap-south-1:184161586896:layer:opentelemetry-python-0_17_0:1`
-- Node.js: `arn:aws:lambda:ap-south-1:184161586896:layer:opentelemetry-nodejs-0_17_0:1`
-- Java Agent: `arn:aws:lambda:ap-south-1:184161586896:layer:opentelemetry-javaagent-0_16_0:1`
-- Ruby: `arn:aws:lambda:ap-south-1:184161586896:layer:opentelemetry-ruby-0_10_0:1`
+- Python:
+  `arn:aws:lambda:ap-south-1:184161586896:layer:opentelemetry-python-0_17_0:1`
+- Node.js:
+  `arn:aws:lambda:ap-south-1:184161586896:layer:opentelemetry-nodejs-0_17_0:1`
+- Java Agent:
+  `arn:aws:lambda:ap-south-1:184161586896:layer:opentelemetry-javaagent-0_16_0:1`
+- Ruby:
+  `arn:aws:lambda:ap-south-1:184161586896:layer:opentelemetry-ruby-0_10_0:1`
 
 Replace `<region>` with your AWS region and check
 [OpenTelemetry Lambda releases](https://github.com/open-telemetry/opentelemetry-lambda/releases)
@@ -132,15 +136,19 @@ layer ARN.
 
 ## Step 2: Understanding the Collector Layer and TelemetryAPI
 
-The OpenTelemetry Collector layer serves as a sidecar process that collects and exports telemetry data from your Lambda function. It subscribes to the **AWS Lambda Telemetry API** to automatically capture platform-level telemetry.
+The OpenTelemetry Collector layer serves as a sidecar process that collects and
+exports telemetry data from your Lambda function. It subscribes to the
+**AWS Lambda Telemetry API** to automatically capture platform-level telemetry.
 
 ### What the Collector Layer Collects
 
 The collector layer collects three types of telemetry:
 
-**1. Traces (from instrumentation layer)** - Application spans, HTTP/HTTPS requests, database queries, external service calls, and custom spans
+**1. Traces (from instrumentation layer)** - Application spans, HTTP/HTTPS
+requests, database queries, external service calls, and custom spans
 
-**2. Logs (via TelemetryAPI)** - Function logs (stdout/stderr), platform logs (START, END, REPORT), runtime errors, and structured logs
+**2. Logs (via TelemetryAPI)** - Function logs (stdout/stderr), platform logs
+(START, END, REPORT), runtime errors, and structured logs
 
 ### Resource Requirements
 
@@ -239,11 +247,13 @@ aws lambda update-function-configuration \
 </Tabs>
 ```
 
-**Note**: The `OTEL_EXPORTER_OTLP_ENDPOINT` is set to `http://localhost:4318`, which points to the OTel Collector layer running alongside your Lambda function.
+**Note**: The `OTEL_EXPORTER_OTLP_ENDPOINT` is set to `http://localhost:4318`,
+which points to the OTel Collector layer running alongside your Lambda function.
 
 ## Step 4: Create Collector Configuration
 
-Create a `collector.yaml` file in your Lambda function package to configure how the collector exports telemetry to Scout:
+Create a `collector.yaml` file in your Lambda function package to configure how
+the collector exports telemetry to Scout:
 
 ```yaml title="collector.yaml"
 receivers:
@@ -287,7 +297,8 @@ aws lambda update-function-code \
 
 ## Step 5: Test Your Instrumentation
 
-Invoke your Lambda function to generate traces. You can use the AWS CLI, AWS Console, or any trigger configured for your function.
+Invoke your Lambda function to generate traces. You can use the AWS CLI,
+AWS Console, or any trigger configured for your function.
 
 View traces in Scout Grafana dashboard
 
@@ -301,16 +312,16 @@ OTEL_RESOURCE_ATTRIBUTES=environment=production,team=backend
 
 ## Related Guides
 
-- [OTel Collector Configuration](../../collector-setup/otel-collector-config.md) -
-  Detailed collector setup
+- [OTel Collector Configuration](../../collector-setup/otel-collector-config.md)
+  \- Detailed collector setup
 - [AWS ECS OTel Setup](../../collector-setup/ecs-setup.md) - Container-based
   deployments
-- [Python Custom Instrumentation](../../apps/custom-instrumentation/python.md) -
-  Manual Python tracing
-- [Node.js Custom Instrumentation](../../apps/custom-instrumentation/javascript-node.md) -
-  Manual Node.js tracing
-- [Java Custom Instrumentation](../../apps/custom-instrumentation/java.md) -
-  Manual Java tracing
+- [Python Custom Instrumentation](../../apps/custom-instrumentation/python.md)
+  \- Manual Python tracing
+- [Node.js Custom Instrumentation](../../apps/custom-instrumentation/javascript-node.md)
+  \- Manual Node.js tracing
+- [Java Custom Instrumentation](../../apps/custom-instrumentation/java.md)
+  \- Manual Java tracing
 
 ## References
 
