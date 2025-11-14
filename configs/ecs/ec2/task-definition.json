@@ -29,7 +29,38 @@
       "command": [
         "--config=env:SCOUT_CONFIG_CONTENT"
       ],
-      "mountPoints": [],
+      "mountPoints": [
+        {
+          "sourceVolume": "docker_sock",
+          "containerPath": "/var/run/docker.sock",
+          "readOnly": true
+        },
+        {
+          "sourceVolume": "proc",
+          "containerPath": "/rootfs/proc",
+          "readOnly": true
+        },
+        {
+          "sourceVolume": "dev",
+          "containerPath": "/rootfs/dev",
+          "readOnly": true
+        },
+        {
+          "sourceVolume": "al2_cgroup",
+          "containerPath": "/rootfs/sys/fs/cgroup",
+          "readOnly": true
+        },
+        {
+          "sourceVolume": "tmpfs",
+          "containerPath": "/rootfs/tmp",
+          "readOnly": false
+        },
+        {
+          "sourceVolume": "al1_cgroup",
+          "containerPath": "/rootfs/cgroup",
+          "readOnly": true
+        }
+      ],
       "volumesFrom": [],
       "name": "${TASK_NAME}",
       "secrets": [
@@ -46,5 +77,42 @@
     "EC2"
   ],
   "networkMode": "bridge",
-  "volumes": [],
+  "volumes": [
+    {
+      "name": "docker_sock",
+      "host": {
+        "sourcePath": "/var/run/docker.sock"
+      }
+    },
+    {
+      "name": "proc",
+      "host": {
+        "sourcePath": "/proc"
+      }
+    },
+    {
+      "name": "dev",
+      "host": {
+        "sourcePath": "/dev"
+      }
+    },
+    {
+      "name": "al2_cgroup",
+      "host": {
+        "sourcePath": "/sys/fs/cgroup"
+      }
+    },
+    {
+      "name": "tmpfs",
+      "host": {
+        "sourcePath": "/tmp"
+      }
+    },
+    {
+      "name": "al1_cgroup",
+      "host": {
+        "sourcePath": "/cgroup"
+      }
+    }
+  ],
 }
