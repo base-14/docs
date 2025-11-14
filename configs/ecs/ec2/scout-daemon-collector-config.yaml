@@ -1,8 +1,41 @@
 receivers:
-  fluentforward:
-    endpoint: 0.0.0.0:24224
   awsecscontainermetrics:
     collection_interval: 10s
+    
+  awscontainerinsightreceiver:
+    collection_interval: 10s
+    container_orchestrator: ecs
+
+  docker_stats:
+    endpoint: unix:///var/run/docker.sock
+    collection_interval: 10s
+    metrics:
+      container.cpu.usage.system:
+        enabled: true
+      container.cpu.usage.percpu:
+        enabled: true
+      container.cpu.limit:
+        enabled: true
+      container.memory.usage.max:
+        enabled: true
+      container.memory.cache:
+        enabled: true
+      container.memory.rss:
+        enabled: true
+      container.memory.pgfault:
+        enabled: true
+      container.memory.fails:
+        enabled: true
+      container.network.io.usage.rx_errors:
+        enabled: true
+      container.network.io.usage.tx_errors:
+        enabled: true
+      container.network.io.usage.rx_packets:
+        enabled: true
+      container.network.io.usage.tx_packets:
+        enabled: true
+      container.restarts:
+        enabled: true
 
   hostmetrics:
     collection_interval: 10s
@@ -31,7 +64,7 @@ processors:
   memory_limiter:
     check_interval: 5s
     limit_percentage: 80
-    spike_limit_percentage: 30
+    spike_limit_percentage: 20
   resource:
     attributes:
       - key: service.name
@@ -45,7 +78,7 @@ processors:
   resource/env:
     attributes:
       - key: environment
-        value: staging
+        value: <environment>
         action: upsert
   resourcedetection:
     detectors: [ecs, system]
@@ -88,6 +121,12 @@ exporters:
       authenticator: oauth2client
     tls:
       insecure_skip_verify: true
+    compression: gzip
+    retry_on_failure:
+      enabled: true
+      initial_interval: 2s
+      max_interval: 10s
+      max_elapsed_time: 60s
   debug:
     verbosity: detailed
 extensions:
@@ -103,15 +142,16 @@ extensions:
     token_url: ${SCOUT_TOKEN_URL}
     tls:
       insecure_skip_verify: true
+
 service:
   extensions: [oauth2client, zpages, health_check]
   pipelines:
     logs:
-      receivers: [otlp, fluentforward]
+      receivers: [otlp]
       processors: [resourcedetection, resource/env, resource]
       exporters: [otlphttp/b14]
     metrics/ecs:
-      receivers: [awsecscontainermetrics, hostmetrics]
+      receivers: [awsecscontainermetrics, hostmetrics, docker_stats, awscontainerinsightreceiver]
       processors: [resourcedetection, resource/env, resource/ecs]
       exporters: [otlphttp/b14]
     metrics:
