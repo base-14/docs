@@ -290,7 +290,6 @@ curl -o scout-agent-collector-config.yaml \
 
 :::
 
-
 #### Generate Configuration
 
 ```shell
@@ -471,11 +470,7 @@ curl -o scout-agent-collector-config.yaml \
 
 :::
 
-
-
 #### Generate Configuration
-
-
 
 ```shell
 export SERVICE_NAME=<service name>
