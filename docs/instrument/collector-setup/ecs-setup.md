@@ -290,6 +290,20 @@ curl -o scout-agent-collector-config.yaml \
 
 :::
 
+
+#### Generate Configuration
+
+```shell
+export SERVICE_NAME=<service name>
+
+ENVIRONMENT=${development|staging|production}}} \
+SCOUT_ENDPOINT='<scout backend endpoint>' \
+SCOUT_CLIENT_ID='<client id>' \
+SCOUT_CLIENT_SECRET='<client secret>' \
+SCOUT_TOKEN_URL='<token url>' \
+envsubst < scout-agent-collector-config.yaml > scout-agent-collector-config.yaml
+```
+
 #### Store Configuration in AWS Secrets Manager
 
 ```shell
@@ -362,6 +376,19 @@ curl -o scout-daemon-collector-config.yaml \
   for more details on the configuration.
 
 :::
+
+#### Generate Configuration
+
+```shell
+export SERVICE_NAME=<service name>
+
+ENVIRONMENT=${development|staging|production}}} \
+SCOUT_ENDPOINT='<scout backend endpoint>' \
+SCOUT_CLIENT_ID='<client id>' \
+SCOUT_CLIENT_SECRET='<client secret>' \
+SCOUT_TOKEN_URL='<token url>' \
+envsubst < scout-daemon-collector-config.yaml > scout-daemon-collector-config.yaml
+```
 
 #### Store Configuration in AWS Secrets Manager
 
@@ -443,6 +470,30 @@ curl -o scout-agent-collector-config.yaml \
   for more details on the configuration.
 
 :::
+
+
+
+#### Generate Configuration
+
+
+
+```shell
+export SERVICE_NAME=<service name>
+ENVIRONMENT=${development|staging|production}}} \
+SCOUT_ENDPOINT='<scout backend endpoint>' \
+SCOUT_CLIENT_ID='<client id>' \
+SCOUT_CLIENT_SECRET='<client secret>' \
+SCOUT_TOKEN_URL='<token url>' \
+envsubst < scout-agent-collector-config.yaml > scout-agent-collector-config.yaml
+
+export SERVICE_NAME=<service name>
+ENVIRONMENT=${development|staging|production}}} \
+SCOUT_ENDPOINT='<scout backend endpoint>' \
+SCOUT_CLIENT_ID='<client id>' \
+SCOUT_CLIENT_SECRET='<client secret>' \
+SCOUT_TOKEN_URL='<token url>' \
+envsubst < scout-daemon-collector-config.yaml > scout-daemon-collector-config.yaml
+```
 
 #### Store Configurations in AWS Secrets Manager
 
