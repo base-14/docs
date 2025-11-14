@@ -27,7 +27,7 @@ processors:
   resource:
     attributes:
       - key: service.name
-        value: zinc
+        value: <service.name>
         action: upsert
   resource/ecs:
     attributes:
