@@ -38,6 +38,7 @@ receivers:
         enabled: true
 
   hostmetrics:
+    root_path: /rootfs
     collection_interval: 10s
     scrapers:
       cpu: {}
