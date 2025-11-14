@@ -27,7 +27,7 @@ processors:
   resource:
     attributes:
       - key: service.name
-        value: zinc
+        value: ${SERVICE_NAME}
         action: upsert
   resource/ecs:
     attributes:
@@ -42,7 +42,7 @@ processors:
   resource/env:
     attributes:
       - key: environment
-        value: <environment>
+        value: ${ENVIRONMENT}
         action: upsert
   resourcedetection:
     detectors: [ecs, system]
