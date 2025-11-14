@@ -14,13 +14,7 @@
           "containerPort": 4318,
           "hostPort": 4318,
           "protocol": "tcp",
-        },
-        {
-          "name": "fluentforward-port",
-          "containerPort": 24224,
-          "hostPort": 24224,
-          "protocol": "tcp",
-        },
+        }
       ],
       "cpu": 256,
       "memory": 512,
