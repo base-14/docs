@@ -122,10 +122,11 @@ Boot versions:
 | **Java** | Java 8 | Java 17 or 21 LTS | Java 8-24 fully supported |
 | **Java 25** | Java 25 | - | ⚠️ Experimental support - see [Java 25 Compatibility](#java-25-compatibility-status) |
 | **Spring Boot** | 2.7.0 | 3.5.7+ | Spring Boot 2.x requires different dependency versions |
+| **Spring Boot 4.0** | 4.0.0 | - | ⚠️ Preview (Not GA) - Native OpenTelemetry starter available |
 | **Maven** | 3.6.0 | 3.9.11+ | Required for dependency management |
 | **Gradle** | 7.6 | 9.2+ | Required for dependency management |
 | **OpenTelemetry Java** | 1.32.0 | 1.56.0+ | Latest stable release |
-| **Spring Boot Starter** | 2.1.0 | 2.21.0 | Stable release (no longer alpha) |
+| **Spring Boot Starter** | 2.1.0 | 2.21.0 | Community starter (stable release) |
 
 #### Java 25 Compatibility Status
 
@@ -146,7 +147,135 @@ Java 25 support is fully stable. Monitor the
 [OpenTelemetry Java instrumentation releases](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases)
 for updates.
 
+## Choosing Your Approach
+
+Spring Boot offers two distinct approaches for OpenTelemetry integration. This
+section helps you choose the right one for your project and understand the
+trade-offs.
+
+### Spring Boot 4.0 Native Starter vs Community Starter
+
+#### Spring Boot 4.0 Native Starter (Preview)
+
+Spring Boot 4.0 (currently in preview, not yet GA) introduces native
+OpenTelemetry support with `spring-boot-starter-opentelemetry`, available
+directly from start.spring.io.
+
+**Architecture:**
+
+- Uses **Micrometer** as the abstraction layer for metrics and traces
+- OpenTelemetry serves as the export mechanism (OTLP protocol)
+- Micrometer Tracing with OpenTelemetry bridge for distributed tracing
+- Spring Boot auto-configuration handles SDK initialization
+- Automatic OtlpHttpSpanExporter or OtlpGrpcSpanExporter setup
+
+**Best for:**
+
+- New Spring Boot 4.0+ projects (when GA)
+- Teams standardizing on Micrometer abstractions across the stack
+- Projects prioritizing Spring-native conventions and patterns
+- Simpler setup with minimal configuration needs
+- Organizations wanting vendor-neutral instrumentation API (Micrometer)
+
+**Limitations:**
+
+- **Not GA yet**: Spring Boot 4.0 is still in preview (as of November 2025)
+- Only available in Spring Boot 4.0+ (not backported to 3.x or 2.x)
+- Less granular control over OpenTelemetry SDK internals
+- Abstraction layer may add slight overhead
+- Smaller community and fewer examples currently available
+
+#### OpenTelemetry Community Starter (This Guide)
+
+The community-maintained `opentelemetry-spring-boot-starter` provides direct
+OpenTelemetry SDK integration with full control and broad version support.
+
+**Architecture:**
+
+- Direct OpenTelemetry API usage (no abstraction layer)
+- Full access to OpenTelemetry SDK configuration
+- Explicit dependency management via BOM
+- Works with Spring Boot 2.7+ through 4.0
+- Production-proven across thousands of deployments
+
+**Best for:**
+
+- **Current recommendation for production** (Spring Boot 2.7, 3.x, 4.0)
+- Projects requiring fine-grained control over SDK behavior
+- Teams using OpenTelemetry across multiple frameworks (not just Spring)
+- Organizations standardizing on OpenTelemetry APIs
+- Advanced use cases (custom span processors, exporters, samplers)
+- Maximum flexibility and customization needs
+
+**Trade-offs:**
+
+- More complex initial setup (requires BOM and explicit dependencies)
+- Requires understanding OpenTelemetry concepts (spans, traces, exporters)
+- Manual configuration for advanced scenarios
+- More verbose code for custom instrumentation
+
+### Comparison Table
+
+| Feature | Spring Boot 4.0 Native | Community Starter (This Guide) |
+|---------|------------------------|--------------------------------|
+| **Maturity** | Preview (Not GA) | Production stable |
+| **Minimum Spring Boot** | 4.0 | 2.7+ |
+| **Dependency Setup** | Single starter | Starter + BOM |
+| **Instrumentation API** | Micrometer | OpenTelemetry API |
+| **Auto-configuration** | Spring Boot native | OpenTelemetry SDK |
+| **SDK Control** | Limited (via Spring properties) | Full programmatic control |
+| **Custom Instrumentation** | Micrometer API | OpenTelemetry API |
+| **Exporters** | OTLP (HTTP/gRPC) | OTLP + others |
+| **Learning Curve** | Easy (Spring-native) | Moderate (OTEL concepts) |
+| **Community Support** | Growing | Extensive |
+| **Multi-framework** | Spring-specific | Cross-framework |
+| **Production Ready** | Not yet | Yes |
+
+### Decision Guide
+
+**Choose Spring Boot 4.0 Native Starter when:**
+
+- Using Spring Boot 4.0+ after GA release
+- Team already standardized on Micrometer
+- Want minimal setup and Spring conventions
+- Don't need advanced SDK customization
+- Prefer vendor-neutral API (Micrometer can export to multiple backends)
+
+**Choose Community Starter (Recommended Now) when:**
+
+- Running Spring Boot 2.7, 3.x, or need production stability
+- Require fine-grained control over SDK configuration
+- Using OpenTelemetry across multiple frameworks (Node.js, Go, Python)
+- Need custom span processors, samplers, or exporters
+- Want direct access to latest OpenTelemetry features
+- Building observability platform with advanced requirements
+
+### This Guide's Focus
+
+This guide focuses on the **OpenTelemetry community starter** because:
+
+1. **Production Ready**: Stable, well-tested, and widely deployed
+2. **Broad Compatibility**: Works with Spring Boot 2.7, 3.x, and 4.0
+3. **Maximum Flexibility**: Full SDK control for complex scenarios
+4. **Industry Standard**: Direct OpenTelemetry APIs used across all languages
+5. **Current Recommendation**: Spring Boot 4.0 is not GA yet
+
+Once Spring Boot 4.0 reaches General Availability and the native starter is
+production-proven, we'll evaluate adding parallel documentation or migration
+guides. For now, the community starter is the recommended production approach.
+
+> 💡 **For Spring Boot 4.0 Users**: The community starter works perfectly with
+> Spring Boot 4.0. You can start with it now and migrate to the native starter
+> later if needed. See the [Migration Guide](#migrating-to-spring-boot-40-native-starter)
+> section for details.
+
 ## Required Dependencies
+
+This guide uses the **OpenTelemetry community starter** (recommended for
+production). If you want to try Spring Boot 4.0's native starter, see the
+alternative dependencies at the end of this section.
+
+### Community Starter Dependencies (Recommended)
 
 ```mdx-code-block
 import Tabs from '@theme/Tabs';
@@ -238,6 +367,74 @@ dependencies {
 </TabItem>
 </Tabs>
 ```
+
+### Spring Boot 4.0 Native Starter (Alternative)
+
+If you're using Spring Boot 4.0 (preview) and want to try the native
+OpenTelemetry starter instead of the community starter:
+
+```mdx-code-block
+<Tabs>
+<TabItem value="maven-native" label="Maven (Spring Boot 4.0)">
+```
+
+```xml title="pom.xml" showLineNumbers
+<properties>
+    <!-- Spring Boot 4.0 manages OpenTelemetry versions -->
+    <!-- No need to specify versions manually -->
+</properties>
+
+<!-- No dependencyManagement needed - Spring Boot 4.0 manages this -->
+
+<dependencies>
+    <!-- Spring Boot Starters -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <!-- Spring Boot 4.0 Native OpenTelemetry Starter -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-opentelemetry</artifactId>
+    </dependency>
+</dependencies>
+```
+
+```mdx-code-block
+</TabItem>
+<TabItem value="gradle-native" label="Gradle (Spring Boot 4.0)">
+```
+
+```groovy title="build.gradle" showLineNumbers
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '4.0.0'
+    id 'io.spring.dependency-management' version '1.1.4'
+}
+
+// No need to specify OpenTelemetry versions
+// Spring Boot 4.0 manages all OpenTelemetry dependencies
+
+dependencies {
+    // Spring Boot Starters
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // Spring Boot 4.0 Native OpenTelemetry Starter
+    implementation 'org.springframework.boot:spring-boot-starter-opentelemetry'
+}
+```
+
+```mdx-code-block
+</TabItem>
+</Tabs>
+```
+
+> ℹ️ **Note**: Spring Boot 4.0 is currently in preview and not recommended for
+> production use. The native starter uses Micrometer APIs instead of direct
+> OpenTelemetry APIs for custom instrumentation. See the
+> [Migration Guide](#migrating-to-spring-boot-40-native-starter) for API
+> differences.
 
 ## Configuration
 
@@ -703,6 +900,12 @@ management.metrics.export.otlp.enabled=true
 While auto-instrumentation covers most use cases, custom instrumentation allows
 fine-grained control over spans and attributes.
 
+> 💡 **Spring Boot 4.0 Users**: If using the native starter, you'll use
+> Micrometer APIs (`io.micrometer.tracing.*`) instead of OpenTelemetry APIs
+> (`io.opentelemetry.api.*`). See the
+> [Migration Guide](#migrating-to-spring-boot-40-native-starter) for API
+> comparisons.
+
 ### Manual Span Creation
 
 Create custom spans for business logic:
@@ -876,6 +1079,11 @@ public class AsyncService {
 ### Custom Metrics
 
 Create custom business metrics:
+
+> 💡 **Spring Boot 4.0 Native Starter**: Use Micrometer's `MeterRegistry` for
+> metrics instead of OpenTelemetry's `Meter`. Example:
+> `meterRegistry.counter("orders.created").increment()`. The metrics are
+> automatically exported via OTLP.
 
 ```java title="src/main/java/com/example/metrics/BusinessMetrics.java" showLineNumbers
 package com.example.metrics;
@@ -1347,6 +1555,29 @@ otel.instrumentation.annotations.enabled=false
 
 ## Frequently Asked Questions
 
+### Choosing Between Starters
+
+**Q: Should I use the community starter or Spring Boot 4.0's native starter?**
+
+For production systems, use the **community starter** (`opentelemetry-spring-boot-starter`)
+because it's stable, production-proven, and works with Spring Boot 2.7-4.0.
+Spring Boot 4.0's native starter is currently in preview and not recommended
+for production until GA. See the [Choosing Your Approach](#choosing-your-approach)
+section for detailed comparison.
+
+**Q: Will the community starter continue to be supported after Spring Boot 4.0?**
+
+Yes. The OpenTelemetry community starter is independently maintained and will
+continue to support current and future Spring Boot versions. It provides more
+flexibility and direct OpenTelemetry API access compared to the native starter.
+
+**Q: Can I use both starters in the same application?**
+
+No, you should use only one starter. They provide overlapping functionality and
+using both will cause conflicts. Choose based on your needs: community starter
+for production stability and flexibility, native starter for Spring-native
+conventions (after GA).
+
 ### General Questions
 
 **Q: What is the minimum Spring Boot version required for OpenTelemetry?**
@@ -1459,6 +1690,265 @@ Span.current().setAttribute("tenant.id", SecurityContextHolder.getContext().getT
 ```
 
 Configure tenant-based filtering as needed.
+
+## Migrating to Spring Boot 4.0 Native Starter
+
+If you're currently using the community starter and want to migrate to Spring
+Boot 4.0's native starter once it reaches GA, follow this migration guide.
+
+> ⚠️ **Timing**: Spring Boot 4.0 is currently in preview. Wait for GA release
+> before migrating production systems.
+
+### Why Migrate?
+
+**Consider migrating when:**
+
+- Spring Boot 4.0 reaches General Availability
+- You want simpler dependency management
+- Your team is standardizing on Micrometer abstractions
+- You don't need advanced OpenTelemetry SDK features
+
+**Stay with community starter if:**
+
+- You need fine-grained SDK control
+- You use OpenTelemetry across multiple frameworks
+- You require custom span processors or exporters
+- You want the latest OpenTelemetry features immediately
+
+### Migration Steps
+
+#### Step 1: Update Spring Boot Version
+
+```xml title="pom.xml" showLineNumbers
+<parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <!-- <version>3.5.7</version> -->
+    <version>4.0.0</version>
+    <relativePath/>
+</parent>
+```
+
+#### Step 2: Replace Dependencies
+
+**Remove community starter:**
+
+```xml
+<!-- Remove these -->
+<dependency>
+    <groupId>io.opentelemetry.instrumentation</groupId>
+    <artifactId>opentelemetry-spring-boot-starter</artifactId>
+</dependency>
+<dependency>
+    <groupId>io.micrometer</groupId>
+    <artifactId>micrometer-registry-otlp</artifactId>
+</dependency>
+```
+
+**Add native starter:**
+
+```xml
+<!-- Add this -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-opentelemetry</artifactId>
+</dependency>
+```
+
+#### Step 3: Remove BOM (Optional)
+
+Spring Boot 4.0 manages OpenTelemetry versions:
+
+```xml
+<!-- Can remove this from dependencyManagement -->
+<!--
+<dependency>
+    <groupId>io.opentelemetry.instrumentation</groupId>
+    <artifactId>opentelemetry-instrumentation-bom</artifactId>
+    <version>2.21.0</version>
+    <type>pom</type>
+    <scope>import</scope>
+</dependency>
+-->
+```
+
+#### Step 4: Update Configuration Properties
+
+Configuration properties are largely compatible. Update prefixes if needed:
+
+```properties
+# Community Starter (old)
+otel.service.name=my-service
+otel.exporter.otlp.endpoint=http://localhost:4318
+
+# Spring Boot 4.0 Native (same - no changes needed)
+otel.service.name=my-service
+otel.exporter.otlp.endpoint=http://localhost:4318
+```
+
+#### Step 5: Migrate Custom Instrumentation Code
+
+Replace OpenTelemetry API with Micrometer API:
+
+**Community Starter (OpenTelemetry API):**
+
+```java
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.context.Scope;
+
+@Service
+public class PaymentService {
+    private final Tracer tracer;
+
+    public PaymentService(OpenTelemetry openTelemetry) {
+        this.tracer = openTelemetry.getTracer("payment-service");
+    }
+
+    public void processPayment(PaymentRequest request) {
+        Span span = tracer.spanBuilder("process_payment")
+            .setAttribute("payment.amount", request.getAmount())
+            .startSpan();
+
+        try (Scope scope = span.makeCurrent()) {
+            // Business logic
+            chargeCustomer(request);
+            span.setStatus(StatusCode.OK);
+        } catch (Exception e) {
+            span.recordException(e);
+            span.setStatus(StatusCode.ERROR, "Payment failed");
+            throw e;
+        } finally {
+            span.end();
+        }
+    }
+}
+```
+
+**Spring Boot 4.0 Native (Micrometer API):**
+
+```java
+import io.micrometer.tracing.Tracer;
+import io.micrometer.tracing.Span;
+
+@Service
+public class PaymentService {
+    private final Tracer tracer;
+
+    public PaymentService(Tracer tracer) {
+        this.tracer = tracer;
+    }
+
+    public void processPayment(PaymentRequest request) {
+        Span span = tracer.nextSpan().name("process_payment").start();
+
+        try (Tracer.SpanInScope ws = tracer.withSpan(span)) {
+            // Business logic
+            span.tag("payment.amount", String.valueOf(request.getAmount()));
+            chargeCustomer(request);
+        } catch (Exception e) {
+            span.error(e);
+            throw e;
+        } finally {
+            span.end();
+        }
+    }
+}
+```
+
+#### Step 6: Update Custom Metrics
+
+**Community Starter (OpenTelemetry Metrics):**
+
+```java
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.Meter;
+
+@Component
+public class BusinessMetrics {
+    private final LongCounter orderCounter;
+
+    public BusinessMetrics(OpenTelemetry openTelemetry) {
+        Meter meter = openTelemetry.getMeter("business-metrics");
+        this.orderCounter = meter.counterBuilder("orders.created")
+            .setDescription("Total orders created")
+            .build();
+    }
+
+    public void recordOrder() {
+        orderCounter.add(1);
+    }
+}
+```
+
+**Spring Boot 4.0 Native (Micrometer Metrics):**
+
+```java
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Counter;
+
+@Component
+public class BusinessMetrics {
+    private final Counter orderCounter;
+
+    public BusinessMetrics(MeterRegistry meterRegistry) {
+        this.orderCounter = meterRegistry.counter("orders.created",
+            "description", "Total orders created");
+    }
+
+    public void recordOrder() {
+        orderCounter.increment();
+    }
+}
+```
+
+### API Comparison Cheat Sheet
+
+| Task | Community Starter (OTEL API) | Spring Boot 4.0 (Micrometer) |
+|------|------------------------------|------------------------------|
+| **Create span** | `tracer.spanBuilder("name").startSpan()` | `tracer.nextSpan().name("name").start()` |
+| **Set attribute** | `span.setAttribute("key", "value")` | `span.tag("key", "value")` |
+| **Record exception** | `span.recordException(e)` | `span.error(e)` |
+| **Create scope** | `try (Scope scope = span.makeCurrent())` | `try (Tracer.SpanInScope ws = tracer.withSpan(span))` |
+| **Set status** | `span.setStatus(StatusCode.OK)` | Auto-managed by Micrometer |
+| **Create counter** | `meter.counterBuilder("name").build()` | `meterRegistry.counter("name")` |
+| **Increment counter** | `counter.add(1)` | `counter.increment()` |
+
+### Testing the Migration
+
+1. **Build the application**: Ensure no compilation errors
+2. **Run locally**: Test with local collector
+3. **Verify traces**: Check that spans appear in Scout
+4. **Check metrics**: Ensure metrics are exported
+5. **Test custom instrumentation**: Verify custom spans and attributes
+6. **Performance test**: Compare overhead with community starter
+
+### Rollback Plan
+
+If you encounter issues:
+
+1. Revert to Spring Boot 3.x in `pom.xml`
+2. Restore community starter dependencies
+3. Restore OpenTelemetry API imports
+4. Rebuild and redeploy
+
+### When to Migrate
+
+**Recommended timeline:**
+
+- **Now**: Experiment in development environments
+- **After GA**: Evaluate in staging environments
+- **6 months post-GA**: Consider production migration after community adoption
+
+**Key indicators for migration:**
+
+- Spring Boot 4.0 GA released
+- Positive community feedback
+- Your use case doesn't require advanced SDK features
+- Team comfortable with Micrometer APIs
 
 ## What's Next
 
