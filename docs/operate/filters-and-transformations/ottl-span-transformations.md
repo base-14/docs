@@ -1,5 +1,5 @@
 ---
-date: 2025-07-17
+date: 2025-11-19
 id: transforming-spans-with-ottl
 title: Transforming Spans Using OTTL Functions
 description:
@@ -19,7 +19,7 @@ keywords:
 ## Introduction to OTTL
 
 OTTL (OpenTelemetry Transformation Language) is a powerful domain specific
-language that allows you to transform telemetry data(Traces, Metrics, Logs)
+language that allows you to transform telemetry data (Traces, Metrics, Logs)
 within the Collector.
 
 ## Common OTTL use cases for spans
@@ -59,7 +59,7 @@ processors:
 
 ### 3. Redacting Sensitive Data
 
-**Use Case**: Masking or Redacting sensitive information before it leaves your
+**Use Case**: Masking or redacting sensitive information before it leaves your
 system.
 
 **Example**:

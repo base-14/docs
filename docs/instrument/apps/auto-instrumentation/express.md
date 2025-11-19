@@ -1,4 +1,5 @@
 ---
+date: 2025-11-19
 title: Express.js OpenTelemetry Instrumentation Guide
 sidebar_label: Express.js
 description:
@@ -23,27 +24,12 @@ traces, metrics and monitor HTTP requests using the `Node.js` OTel SDK.
 > OpenTelemetry documentation. For complete information, please consult the
 > [official OpenTelemetry documentation](https://opentelemetry.io/docs/languages/js/instrumentation/).
 
-## Setup
-
-opentelemetry-api defines the API interfaces for tracing, metrics, and logging
-and opentelemetry-sdk provides the implementation for these APIs. Run the
-following commands to install the necessary packages or add it to `package.json`
-and install it.
-
-```plaintext
-'@opentelemetry/api'
-'@opentelemetry/resources'
-'@opentelemetry/sdk-node'
-'@opentelemetry/semantic-conventions'
-```
-
 ## Required Packages
 
-`opentelemetry-api` defines the API interfaces for tracing, metrics and logging;
+`opentelemetry-api` defines the API interfaces for tracing, metrics, and logging;
 `opentelemetry-sdk` provides the implementation for these APIs.
 
-Install the following necessary packages or add it to `package.json` and install
-it.
+Install the following necessary packages or add them to `package.json` and install:
 
 ```plaintext
 @opentelemetry/api
@@ -93,8 +79,8 @@ sdk.start();
 ```
 
 ```typescript title="src/index.ts" showLineNumbers
-// ( Main Entry Point )
-// Before importing Anything importing this would initilize the sdk
+// Main Entry Point
+// Before importing anything, import this to initialize the SDK
 
 import "../src/utils/telemetry";
 ```

@@ -1,5 +1,5 @@
 ---
-date: 2025-04-24
+date: 2025-11-19
 id: send-aws-vpc-flow-logs
 title: AWS VPC Flow Logs to OpenTelemetry
 sidebar_label: AWS VPC Flow Logs
@@ -169,8 +169,7 @@ def parse_flow_log_line(line, fields=DEFAULT_FIELDS, types=FIELD_TYPES):
             else:
                 log_data[field] = value
         except ValueError:
-            logger.warning(f"Skipping field '{field}' due to type conversion
-                              error: {value}")
+            logger.warning(f"Skipping field '{field}' due to type conversion error: {value}")
             log_data[field] = value # Keep as string if conversion fails
     return log_data
 
@@ -208,8 +207,7 @@ def lambda_handler(event, context):
             # Simple check if header matches expected default fields
             # (customize if needed)
             if header != ' '.join(DEFAULT_FIELDS):
-                logger.warning(f"Log header '{header}' does not match
-                  expected default fields. Parsing might be incorrect.")
+                logger.warning(f"Log header '{header}' does not match expected default fields. Parsing might be incorrect.")
                 # Potentially parse the header here to dynamically
                 # determine fields if needed
 
@@ -233,17 +231,14 @@ def lambda_handler(event, context):
                         observed_timestamp=timestamp_ns,
                         severity_text=parsed_log.get('log_status'),
                         severity_number=logs.SeverityNumber.INFO,
-                        body=f"VPC Flow Log: {parsed_log.get('srcaddr')}:{parsed_log.get('srcport')}
-                        -> {parsed_log.get('dstaddr')}:{parsed_log.get('dstport')}",
+                        body=f"VPC Flow Log: {parsed_log.get('srcaddr')}:{parsed_log.get('srcport')} -> {parsed_log.get('dstaddr')}:{parsed_log.get('dstport')}",
                         attributes=parsed_log
                     ))
 
-            logger.info(f"Finished processing {object_key}.
-                        Logs submitted to OTLP exporter.")
+            logger.info(f"Finished processing {object_key}. Logs submitted to OTLP exporter.")
 
         except Exception as e:
-            logger.error(f"Error processing object {object_key}
-                          from bucket {bucket_name}: {e}")
+            logger.error(f"Error processing object {object_key} from bucket {bucket_name}: {e}")
             # Consider adding to a Dead Letter Queue (DLQ)
             # or raising exception for Lambda retry
             # Raising an exception might re-process the entire file

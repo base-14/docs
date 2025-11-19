@@ -1,4 +1,5 @@
 ---
+date: 2025-11-19
 title: Celery OpenTelemetry Instrumentation
 sidebar_label: Celery
 description:
@@ -94,7 +95,7 @@ def do_work():
     carrier = {}
     inject(carrier)
     add.delay(1, 2, carrier)
-     tracer = get_tracer(__name__)
+    tracer = get_tracer(__name__)
 
     # Extract the context from the incoming carrier
     if context:

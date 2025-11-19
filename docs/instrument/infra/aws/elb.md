@@ -1,5 +1,5 @@
 ---
-date: 2025-04-26
+date: 2025-11-19
 id: collecting-aws-elb-telemetry
 title: AWS Application Load Balancer Monitoring via CloudWatch Metrics Stream
 sidebar_label: AWS ALB
@@ -64,9 +64,9 @@ guide, make sure to:
    name.
 3. Choose `Python 3.x` as the Runtime version, `x86_64` as Architecture
    (preferably), and keep other settings as default. Select
-   `Create a new role with basic Lambda permissions` for now, we’ll requiring
-   more permissions down the lane. So for now, select this option.
-4. Once you are done configuring the lambda function, you Lambda function is
+   `Create a new role with basic Lambda permissions` for now, we'll require
+   more permissions later. So for now, select this option.
+4. Once you are done configuring the lambda function, your Lambda function is
    created.
 
 ### Step 2: Configuring Policies for Lambda function
@@ -80,7 +80,7 @@ guide, make sure to:
    to AWS IAM page. Here we will add policies to get full S3 access. Once here,
    click on the `Add permissions` button and select `Attach policies` from the
    drop down list.
-3. Search “S3” and you’ll a policy `GetObject` select that and proceed.
+3. Search "S3" and you'll see a policy `GetObject`, select that and proceed.
 
 ### Step 3: Adding Triggers
 
@@ -117,8 +117,8 @@ zip -r dependencies.zip ../python
 2. To upload your zip file, go to AWS Lambda > Layers and click on
    `Create Layer`. [Not inside your specific Lambda function, just the landing
    page of AWS Lambda].
-3. you’ll be redirected to Layer configurations page, here, give a name to your
-   layer, an optional description, select `Upload a .zip file` , click on
+3. You'll be redirected to Layer configurations page. Here, give a name to your
+   layer, an optional description, select `Upload a .zip file`, click on
    `Upload` and locate the requirements.zip file.
 4. Select your desired architecture and pick `Python 3.x` as your runtime. Hit
    `Create`. Your layer has now been created.

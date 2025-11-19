@@ -1,4 +1,5 @@
 ---
+date: 2025-11-19
 title: AWS ECS OpenTelemetry Collector Setup
 sidebar_label: AWS ECS Setup
 description:
@@ -26,15 +27,15 @@ Deploy and configure the Scout Collector on ECS.
 This guide covers how to collect telemetry data (logs, metrics, and traces) from
 your ECS environment and send it to base14 Scout.
 
-- Install base14 Scout's Scout Collector using Task Defintions.
+- Install base14 Scout's Scout Collector using Task Definitions.
 - Configure telemetry collection for ECS Nodes.
 - Configure custom metrics endpoints
 - Implement trace collection
 
 ## Prerequisites
 
-- A ECS cluster
-- Aws cli setup with permissions `ecs:*` permissions.
+- An ECS cluster
+- AWS CLI setup with `ecs:*` permissions.
 - Scout account credentials
   - Endpoint URL
   - API Key
@@ -295,7 +296,7 @@ curl -o scout-agent-collector-config.yaml \
 ```shell
 export SERVICE_NAME=<service name>
 
-ENVIRONMENT=${development|staging|production}}} \
+ENVIRONMENT=development \
 SCOUT_ENDPOINT='<scout backend endpoint>' \
 SCOUT_CLIENT_ID='<client id>' \
 SCOUT_CLIENT_SECRET='<client secret>' \
@@ -381,7 +382,7 @@ curl -o scout-daemon-collector-config.yaml \
 ```shell
 export SERVICE_NAME=<service name>
 
-ENVIRONMENT=${development|staging|production}}} \
+ENVIRONMENT=development \
 SCOUT_ENDPOINT='<scout backend endpoint>' \
 SCOUT_CLIENT_ID='<client id>' \
 SCOUT_CLIENT_SECRET='<client secret>' \
@@ -474,7 +475,7 @@ curl -o scout-agent-collector-config.yaml \
 
 ```shell
 export SERVICE_NAME=<service name>
-ENVIRONMENT=${development|staging|production}}} \
+ENVIRONMENT=development \
 SCOUT_ENDPOINT='<scout backend endpoint>' \
 SCOUT_CLIENT_ID='<client id>' \
 SCOUT_CLIENT_SECRET='<client secret>' \
@@ -482,7 +483,7 @@ SCOUT_TOKEN_URL='<token url>' \
 envsubst < scout-agent-collector-config.yaml > scout-agent-collector-config.yaml
 
 export SERVICE_NAME=<service name>
-ENVIRONMENT=${development|staging|production}}} \
+ENVIRONMENT=development \
 SCOUT_ENDPOINT='<scout backend endpoint>' \
 SCOUT_CLIENT_ID='<client id>' \
 SCOUT_CLIENT_SECRET='<client secret>' \
@@ -575,8 +576,7 @@ resources based on your selected deployment mode):
 </Tabs>
 ```
 
-That's it you are done, Go to the Scout Grafana Dashboards to see the data
-flowing
+That's it, you're done! Go to the Scout Dashboards to see the data flowing.
 
 ## Related Guides
 

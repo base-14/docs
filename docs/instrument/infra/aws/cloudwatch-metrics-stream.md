@@ -1,5 +1,5 @@
 ---
-date: 2025-04-29
+date: 2025-11-19
 id: collecting-aws-cloudwatch-metrics-using-kinesis-streams
 title: AWS CloudWatch Metrics Stream Setup Guide
 sidebar_label: CloudWatch Metrics Stream
@@ -23,7 +23,7 @@ This is significantly faster than polling approach
 
 ## Step 1: Creating a S3 Bucket
 
-First, We'll create a s3 to bucket to store the metrics
+First, we'll create an S3 bucket to store the metrics
 
 ### 1. Go to [S3 Dashboard](https://ap-south-1.console.aws.amazon.com/s3)
 
@@ -112,7 +112,7 @@ zip -r dependencies.zip ../python
 
 - Click on `Create layer` button
 
-### 3. Fill the necessary detials and update the zip file
+### 3. Fill the necessary details and upload the zip file
 
 ![create lambda page](/img/cloudwatch-kinesis-stream/create-lambda-layer-page.png)
 
@@ -121,7 +121,7 @@ zip -r dependencies.zip ../python
 ![lambda functions page](/img/cloudwatch-kinesis-stream/lambda-functions-page.png)
 
 - Select `Author from scratch`.
-- Give a funciton name.
+- Give a function name.
 - Choose `python x.x` as the runtime.
 - Select `x86_64` as the Architecture.
 

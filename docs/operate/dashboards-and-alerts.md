@@ -1,4 +1,5 @@
 ---
+date: 2025-11-19
 title: Grafana Dashboards and Alerts as Code with Grizzly
 description:
   Manage Grafana dashboards and alerts as code using Grizzly. Automate
@@ -60,7 +61,7 @@ instance.
 Grizzly allows you to define various Grafana resources using YAML. Here's how
 you can define folders, dashboards, alerts, and contact points:
 
-1. Folders Folders help organize your dashboards. Here's an example of a YAML
+1. **Folders** - Folders help organize your dashboards. Here's an example of a YAML
    definition for a folder:
 
 ```yaml showLineNumbers
@@ -76,7 +77,7 @@ You can create multiple folder definition files (e.g., folders/production.yaml,
 folders/staging.yaml, etc.). You can also use hierarchical folder structure by
 using the `folder` field in the dashboard definition.
 
-1. Dashboards
+1. **Dashboards**
 
 ```yaml showLineNumbers
 apiVersion: grizzly.grafana.com/v1alpha1
@@ -96,7 +97,7 @@ spec:
 You can create multiple dashboard definition files in a `dashboards` directory
 (e.g., dashboards/kong.yaml, dashboards/postgres.yaml, etc.)
 
-Grizzly configurations allow you the following resources:
+Grizzly supports the following resources:
 
 - DashboardFolder
 - Dashboard
@@ -172,7 +173,7 @@ To use Jsonnet with Grizzly, you would typically:
 - Use Grizzly to apply the generated .json files.
 
 For detailed information and examples of using Jsonnet with Grafana, please
-refer to the official [Jsonnet documentation](https://jsonnet.org/): and
+refer to the official [Jsonnet documentation](https://jsonnet.org/) and
 Grafana's documentation on using Jsonnet for dashboards.
 
 ## Automation Examples
@@ -183,8 +184,6 @@ workflows:
 ### Sample Makefile
 
 ```makefile
-Makefile
-
 GRAFANA_URL := <your_base14_grafana_url>
 GRAFANA_TOKEN := <your_grafana_api_token>
 
@@ -242,7 +241,7 @@ grizzly_linux_amd64 -o grizzly
         run: grr apply -f .
 ```
 
-### In this workflow
+**In this workflow:**
 
 - We trigger the workflow on pushes to the main branch if any YAML files in the
   specified directories are changed.
@@ -250,8 +249,7 @@ grizzly_linux_amd64 -o grizzly
 - We download and install Grizzly.
 - We configure Grizzly using GitHub secrets (GRAFANA_URL and GRAFANA_TOKEN) for
   security. You'll need to define these secrets in your repository settings.
-
-Finally, we apply all the Grafana resources defined in the repository.
+- Finally, we apply all the Grafana resources defined in the repository.
 
 ## Conclusion
 

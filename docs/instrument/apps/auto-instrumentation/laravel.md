@@ -1,4 +1,5 @@
 ---
+date: 2025-11-19
 title: Laravel OpenTelemetry Instrumentation
 sidebar_label: Laravel
 description:
@@ -24,11 +25,11 @@ traces using the php OpenTelemetry SDK.
 > official
 > [OpenTelemetry documentation](https://opentelemetry.io/docs/zero-code/php/).
 
-## overview
+## Overview
 
-This guide demostrates how to:
+This guide demonstrates how to:
 
-- Install opentelemetry extension for php.
+- Install OpenTelemetry extension for PHP.
 - Set up OpenTelemetry instrumentation for Laravel.
 - Configure OpenTelemetry instrumentation using environment variables.
 - Export telemetry data to Scout Collector
@@ -38,9 +39,9 @@ This guide demostrates how to:
 Before starting, ensure you have:
 
 - Laravel version 8.1
-- Working Laravel applciation.
+- Working Laravel application.
 
-## Step 1: Install opentelemetry extension for php
+## Step 1: Install OpenTelemetry extension for PHP
 
 Setup development environment. Installing from source requires proper
 development environment and some dependencies:
@@ -75,7 +76,7 @@ Output should look similar to
 opentelemetry
 ```
 
-Good work, Now we have installed the opentelemetry extension
+Good work! Now we have installed the OpenTelemetry extension.
 
 ## Step 2: Import the packages
 
@@ -97,23 +98,23 @@ composer require \
 
 ## Step 3: Configuration
 
-Now let's setup the necessary Configuration When used in conjunction with the
+Now let's set up the necessary configuration. When used in conjunction with the
 OpenTelemetry SDK, you can use environment variables to configure
 auto-instrumentation.
 
-Environment configuration
+Environment configuration:
 
 ```text
 OTEL_PHP_AUTOLOAD_ENABLED=true
-OTEL_SERVICE_NAME=<larvel-application-name>
+OTEL_SERVICE_NAME=<laravel-application-name>
 OTEL_TRACES_EXPORTER=otlp
 OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
 OTEL_PROPAGATORS=baggage,tracecontext
 ```
 
-That's it, run you application and head over to Scout dashboard to visulize the
-data flowing
+That's it! Run your application and head over to Scout dashboard to visualize the
+data flowing.
 
 ## Related Guides
 

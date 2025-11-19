@@ -1,5 +1,5 @@
 ---
-date: 2025-06-24
+date: 2025-11-19
 id: nginx
 title: NGINX Web Server Monitoring with OpenTelemetry
 sidebar_label: NGINX
@@ -24,7 +24,7 @@ This guide will walk you through collecting rich telemetry data from your nginx
 server using `nginx-module-otel` module and we'll use prometheus nginx exporter
 to collect metrics.
 
-## Prerequisties
+## Prerequisites
 
 - NGINX Server installed.
 
@@ -54,7 +54,7 @@ docker run --network=host nginx/nginx-prometheus-exporter:1.4.2 \
   --nginx.scrape-uri=http://localhost/status
 ```
 
-### Step 3: Add the following receiver in your Scout collect
+### Step 3: Add the following receiver in your Scout collector
 
 ```yaml
 prometheus/nginx:
@@ -69,11 +69,11 @@ prometheus/nginx:
 
 > Note: Make sure you use in the pipelines as well.
 
-Great work, Now the metrics are scraped from the nginx
+Great work! Now the metrics are scraped from nginx.
 
 ## Collecting traces
 
-### Step 1: Add the nginx repositoring
+### Step 1: Add the nginx repository
 
 ```mdx-code-block
 import Tabs from '@theme/Tabs';
@@ -148,7 +148,7 @@ http://nginx.org/packages/ubuntu `lsb_release -cs` nginx" \
 
 ```mdx-code-block
 </TabItem>
-<TabItem value="alphine" label="Alphine">
+<TabItem value="alpine" label="Alpine">
 ```
 
 Install the prerequisites:
@@ -240,7 +240,7 @@ sudo apt install nginx-module-otel
 
 :::warning
 
-Take a backup of your nginx config before installing the module.  
+Take a backup of your nginx config before installing the module.
 It might be overwritten by the module installation.
 
 :::
@@ -279,11 +279,11 @@ receivers:
     start_at: beginning
 ```
 
-> Note: If you have configure log collection location to custom directory,
+> Note: If you have configured log collection location to a custom directory,
 > update the `include` block with the correct path.
 
-Great work. Now we have successfully implemented nginx with OpenTelemetry
-instrumentation
+Great work! Now we have successfully implemented nginx with OpenTelemetry
+instrumentation.
 
 ## Related Guides
 

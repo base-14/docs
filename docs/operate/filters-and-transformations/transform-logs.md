@@ -1,5 +1,5 @@
 ---
-date: 2025-04-29
+date: 2025-11-19
 id: extracting-trace-id-and-span-id-from-log-body
 title: Extracting TraceId and SpanId from JSON Log Body
 description:
