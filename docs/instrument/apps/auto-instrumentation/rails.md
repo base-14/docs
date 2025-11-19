@@ -132,7 +132,13 @@ OpenTelemetry Rails instrumentation can be configured using multiple approaches
 depending on your deployment requirements and preferences. Choose the method
 that best fits your application architecture.
 
-### Option 1: Initializer Configuration (Recommended)
+```mdx-code-block
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs>
+<TabItem value="initializer" label="Initializer (Recommended)" default>
+```
 
 The recommended approach is to create a dedicated OpenTelemetry initializer.
 This provides the most flexibility and keeps configuration separate from your
@@ -170,7 +176,10 @@ gems including:
 - **Background Jobs**: Sidekiq, DelayedJob, Resque
 - **Web Servers**: Rack, Puma, Unicorn
 
-### Option 2: Environment Configuration
+```mdx-code-block
+</TabItem>
+<TabItem value="environment" label="Environment Config">
+```
 
 For applications using `config/environment.rb` for initialization, you can
 configure OpenTelemetry before Rails boots:
@@ -191,7 +200,10 @@ Rails.application.initialize!
 This approach ensures OpenTelemetry is configured before any application code
 runs, which can be useful for capturing early initialization events.
 
-### Option 3: Environment Variables Only
+```mdx-code-block
+</TabItem>
+<TabItem value="env-vars" label="Environment Variables">
+```
 
 For containerized deployments or environments where configuration is managed
 externally, you can rely entirely on environment variables:
@@ -207,7 +219,7 @@ end
 
 With this minimal configuration, use environment variables to control behavior:
 
-```bash
+```bash showLineNumbers
 export OTEL_SERVICE_NAME=rails-app
 export OTEL_SERVICE_VERSION=1.0.0
 export OTEL_EXPORTER_OTLP_ENDPOINT=http://scout-collector:4318
@@ -216,7 +228,10 @@ export OTEL_METRICS_EXPORTER=otlp
 export OTEL_LOGS_LEVEL=info
 ```
 
-### Selective Instrumentation
+```mdx-code-block
+</TabItem>
+<TabItem value="selective" label="Selective Instrumentation">
+```
 
 If you want to enable only specific instrumentations or disable certain gems,
 use selective configuration:
@@ -249,6 +264,11 @@ OpenTelemetry::SDK.configure do |c|
     'OpenTelemetry::Instrumentation::MongoDB' => { enabled: false }
   })
 end
+```
+
+```mdx-code-block
+</TabItem>
+</Tabs>
 ```
 
 ### Configuring Instrumentation Options
@@ -480,7 +500,7 @@ HOST_TYPE=container
 
 For containerized Rails applications, configure OpenTelemetry in your Docker setup:
 
-```dockerfile showLineNumbers title="Dockerfile"
+```docker showLineNumbers title="Dockerfile"
 FROM ruby:3.2-alpine
 
 WORKDIR /app
@@ -1564,7 +1584,7 @@ RAILS_ENV=production
 DATABASE_URL=postgres://user:pass@db:5432/production
 ```
 
-This complete example is available in our [GitHub examples repository](https://github.com/base14/opentelemetry-examples/tree/main/rails).
+This complete example is available in our [GitHub examples repository](https://github.com/base-14/opentelemetry-examples/tree/main/rails).
 
 ## References
 
