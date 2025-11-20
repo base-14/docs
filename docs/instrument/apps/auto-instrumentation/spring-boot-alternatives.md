@@ -1,6 +1,6 @@
 ---
 title: Spring Boot OpenTelemetry Alternative Approaches - Java Agent & Native Starter
-sidebar_label: Spring Boot (Agent & Native)
+sidebar_label: Spring Boot Alternatives
 sidebar_position: 10
 description:
   Alternative approaches for Spring Boot OpenTelemetry instrumentation using

@@ -1,6 +1,6 @@
 ---
-title: Scout Console RBAC - User Management and Access Control
-sidebar_label: Console RBAC
+title: User Management and Access Control
+sidebar_label: User Management
 description: >-
   Complete guide to Scout Console role-based access control (RBAC), user
   management, organization settings, and account configuration.
