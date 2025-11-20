@@ -1,6 +1,7 @@
 ---
 title: FastAPI OpenTelemetry Instrumentation Guide
 sidebar_label: FastAPI
+sidebar_position: 4
 description:
   Auto-instrument FastAPI with OpenTelemetry for traces and metrics. Complete
   Python monitoring setup with distributed tracing and HTTP observability.

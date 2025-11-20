@@ -1,6 +1,7 @@
 ---
 title: Legacy Rails OpenTelemetry Instrumentation (Ruby 2.7, Rails 5.x)
 sidebar_label: Ruby on Rails (Legacy)
+sidebar_position: 7
 last_update:
   date: 2025-11-16
 description:

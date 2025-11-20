@@ -2,6 +2,7 @@
 date: 2025-11-19
 title: Elixir Phoenix OpenTelemetry Instrumentation Guide
 sidebar_label: Elixir Phoenix
+sidebar_position: 2
 description:
   Auto-instrument Phoenix with OpenTelemetry for traces. Complete
   Elixir monitoring setup with distributed tracing and database.

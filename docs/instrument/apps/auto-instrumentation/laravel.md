@@ -2,6 +2,7 @@
 date: 2025-11-19
 title: Laravel OpenTelemetry Instrumentation
 sidebar_label: Laravel
+sidebar_position: 5
 description:
   Auto-instrument Laravel with OpenTelemetry for traces. Complete PHP APM setup
   with distributed tracing and HTTP monitoring.
