@@ -8,6 +8,13 @@ tags: [security, certificates, automation, observability]
 
 ## Making Certificate Expiry Boring
 
+<!-- markdownlint-disable MD033 -->
+<div className="blog-cover">
+  <img src={require('./cover.png').default}
+    alt="Certificate expiry issues are entirely preventable" />
+</div>
+<!-- markdownlint-enable MD033 -->
+
 On 18 November 2025, GitHub had an hour-long outage that affected the
 heart of their product: Git operations. The post-incident
 [summary](https://www.githubstatus.com/incidents/5q7nmlxz30sk) was brief
@@ -146,7 +153,7 @@ Cert-manager stores certificate metadata in the Kubernetes API, including
 - a Kubernetes metadata exporter
 - or a lightweight custom controller if you prefer tighter control
 
-Once the metric is flowing into Prometheus or Datadog, you can build
+Once the metric is flowing into your observability stack, you can build
 straightforward alerts:
 
 - 30 days → warning
