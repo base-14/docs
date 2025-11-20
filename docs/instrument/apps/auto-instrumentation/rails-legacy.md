@@ -264,7 +264,7 @@ end
 
 **Solution**: Verify gem version and test:
 
-```bash
+```bash showLineNumbers
 bundle exec rails console
 
 # Test ActiveRecord instrumentation
