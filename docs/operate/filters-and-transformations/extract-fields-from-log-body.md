@@ -54,15 +54,15 @@ Let's break down one of the statements to understand the logic:
 - set(attributes["method"], ExtractPatterns(body, "method=(?P<method>[A-Z]+)")["method"])
 ```
 
-1.  **`set(target, value)`**: This is the core OTTL function that assigns a
+1.**`set(target, value)`**: This is the core OTTL function that assigns a
     `value` to a `target`. Here, the target is `attributes["method"]`, meaning
     we are creating or overwriting a log attribute named `method`.
 
-2.  **`ExtractPatterns(body, pattern)`**: This function is used to pull out
+2.**`ExtractPatterns(body, pattern)`**: This function is used to pull out
     substrings from a source string (`body` in this case) that match a regular
     expression (`pattern`).
 
-3.  **The Regex Pattern**: The second argument, `"method=(?P<method>[A-Z]+)"`,
+3.**The Regex Pattern**: The second argument, `"method=(?P<method>[A-Z]+)"`,
     is a regular expression with a special component:
     - `method=`: This is a literal match for the string "method=".
     - `(?P<method>[A-Z]+)`: This is a **named capture group**.
@@ -70,7 +70,7 @@ Let's break down one of the statements to understand the logic:
       - `[A-Z]+`: This is the pattern inside the group, which matches one or
         more uppercase letters (e.g., "GET", "POST").
 
-4.  **Accessing the Captured Value**: The `ExtractPatterns` function returns a
+4.**Accessing the Captured Value**: The `ExtractPatterns` function returns a
     map where the keys are the names of the capture groups you defined. By
     appending `["method"]` to the function call, we access the value captured
     by the `method` group.
