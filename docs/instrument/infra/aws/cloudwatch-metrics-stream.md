@@ -82,7 +82,7 @@ metrics to S3
 ### 3. Configuring the Stream
 
 - Select `Custom Setup with Firehose`.
-- Change output format to `opentelemetry 1.0`
+- Change output format to `JSON`
 - Select the required metrics.
 - Give a name to the pipeline. `Click on`Create Metrics Stream`.
 
@@ -101,7 +101,7 @@ mkdir python
 cd python
 
 # install requests module
-pip install --target . requests opentelemetry-proto protobuf
+pip install --target . requests
 # zip the contents under the name dependencies.zip
 zip -r dependencies.zip ../python
 ```
@@ -146,85 +146,173 @@ function.
 import boto3
 import requests
 import os
-from opentelemetry.proto.collector.metrics.v1.metrics_service_pb2 import ExportMetricsServiceRequest
-from google.protobuf.internal.decoder import _DecodeVarint32
-
+import json
+from collections import defaultdict
 
 s3 = boto3.client('s3')
-client_id=os.environ.get('CLIENT_ID')
-client_secret=os.environ.get('CLIENT_SECRET')
-token_url=os.environ.get('TOKEN_URL')
-endpoint_url=os.environ.get('ENDPOINT_URL')
+client_id = os.environ.get('CLIENT_ID')
+client_secret = os.environ.get('CLIENT_SECRET')
+token_url = os.environ.get('TOKEN_URL')
+endpoint_url = os.environ.get('ENDPOINT_URL')
+
+def parse_cloudwatch_json_file(buffer):
+    """
+    Parse CloudWatch Metrics Stream JSON file (newline-delimited JSON).
+    Returns a list of metric dictionaries.
+    """
+    metrics = []
+    content = buffer.decode('utf-8')
+
+    for line in content.strip().split('\n'):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            metric = json.loads(line)
+            metrics.append(metric)
+        except json.JSONDecodeError as e:
+            print(f"Failed to parse JSON line: {e}")
+            continue
+
+    return metrics
+
+def convert_to_otlp_json(metrics):
+    """
+    Convert CloudWatch metrics to OTLP JSON format.
+    Groups metrics by account/region for efficient batching.
+    Preserves attribute format: Namespace, MetricName, Dimensions (as JSON string)
+    """
+    grouped = defaultdict(list)
+    for metric in metrics:
+        key = (metric.get('account_id', ''), metric.get('region', ''))
+        grouped[key].append(metric)
+
+    resource_metrics = []
+
+    for (account_id, region), account_metrics in grouped.items():
+        # Resource attributes
+        resource_attributes = [
+            {"key": "cloud.provider", "value": {"stringValue": "aws"}},
+            {"key": "cloud.account.id", "value": {"stringValue": account_id}},
+            {"key": "cloud.region", "value": {"stringValue": region}},
+            {"key": "service.name", "value": {"stringValue": "aws-cloudwatch-stream"}},
+            {"key": "environment", "value": {"stringValue": "production"}},
+        ]
+
+        otlp_metrics = []
+        for cw_metric in account_metrics:
+            metric_name = cw_metric.get('metric_name', 'unknown')
+            namespace = cw_metric.get('namespace', '')
+            timestamp_ms = cw_metric.get('timestamp', 0)
+            timestamp_ns = timestamp_ms * 1_000_000
+            value = cw_metric.get('value', {})
+            unit = cw_metric.get('unit', '')
+            dimensions = cw_metric.get('dimensions', {})
+
+            datapoint_attributes = [
+                {"key": "Namespace", "value": {"stringValue": namespace}},
+                {"key": "MetricName", "value": {"stringValue": metric_name}},
+                {"key": "Dimensions", "value": {"stringValue": json.dumps(dimensions)}},
+            ]
+
+            otlp_metrics.append({
+                "name": f"amazonaws.com/{namespace}/{metric_name}",
+                "unit": unit if unit != "None" else "",
+                "summary": {
+                    "dataPoints": [{
+                        "timeUnixNano": str(timestamp_ns),
+                        "count": str(int(value.get('count', 0))),
+                        "sum": value.get('sum', 0.0),
+                        "quantileValues": [
+                            {"quantile": 0.0, "value": value.get('min', 0.0)},
+                            {"quantile": 1.0, "value": value.get('max', 0.0)}
+                        ],
+                        "attributes": datapoint_attributes
+                    }]
+                }
+            })
+
+        resource_metrics.append({
+            "resource": {"attributes": resource_attributes},
+            "scopeMetrics": [{
+                "scope": {"name": "aws.cloudwatch", "version": "1.0.0"},
+                "metrics": otlp_metrics
+            }]
+        })
+
+    return {"resourceMetrics": resource_metrics}
+
 
 def lambda_handler(event, context):
     for record in event['Records']:
         bucket_name = record['s3']['bucket']['name']
         file_key = record['s3']['object']['key']
         print(f"Processing file: {file_key}")
+
         file_obj = s3.get_object(Bucket=bucket_name, Key=file_key)
         buffer = file_obj['Body'].read()
-        pos = 0
-        buffer_len = len(buffer)
 
-        request_count = 0
-        success_count = 0
-        headers = {}
+        try:
+            metrics = parse_cloudwatch_json_file(buffer)
+            print(f"Parsed {len(metrics)} metrics from file")
+        except Exception as e:
+            print(f"Error parsing file: {e}")
+            raise
 
-        # Ensure the content-type is set
-        headers["Content-Type"] = "application/x-protobuf"
-        # Process all messages in the buffer
-        while pos < buffer_len:
-            # Decode the varint (message length)
-            msg_len, new_pos = _DecodeVarint32(buffer, pos)
-            pos = new_pos
+        if not metrics:
+            print("No metrics found in file")
+            continue
 
-            # Extract the message bytes
-            msg_buf = buffer[pos : pos + msg_len]
-            # Parse the message to validate it (optional)
-            request = ExportMetricsServiceRequest()
-            request.ParseFromString(msg_buf)
+        try:
+            otlp_payload = convert_to_otlp_json(metrics)
+            print(f"Converted to OTLP format with {len(otlp_payload['resourceMetrics'])} resource groups")
+        except Exception as e:
+            print(f"Error converting to OTLP: {e}")
+            raise
 
-            for resource_metric in request.resource_metrics:
-                if resource_metric.resource:
-                    resource_metric.resource.attributes.add(
-                        key="service.name",
-                        value={"string_value": "aws-cloudwatch-stream18may"}
-                    )
-                    resource_metric.resource.attributes.add(
-                        key="service.uname",
-                        value={"string_value": "aws-cloudwatch-stream18may"}
-                    )
-
-            # Send the raw serialized message
-
-
+        try:
             token_response = requests.post(
                 token_url,
                 data={
                     "grant_type": "client_credentials",
-                    "audience": "b14collector",  # Optional, based on your provider
+                    "audience": "b14collector",
                 },
                 auth=(client_id, client_secret),
-                verify=False,  # Optional: set to False to skip TLS cert verification (NOT RECOMMENDED for prod)
+                verify=False,
             )
             token_response.raise_for_status()
             access_token = token_response.json()["access_token"]
-            headers["Authorization"] = f"Bearer {access_token}"
+        except Exception as e:
+            print(f"Failed to get auth token: {e}")
+            raise
 
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {access_token}"
+        }
+
+        try:
             response = requests.post(
                 endpoint_url,
-                data=request.SerializeToString(),
+                json=otlp_payload,
                 headers=headers,
                 verify=False,
             )
-            if resource.status_code == 200:
-                print("Metrics successfully forwarded.")
+
+            if response.status_code == 200:
+                print(f"Successfully forwarded {len(metrics)} metrics to OTLP endpoint")
             else:
-                print(
-                    f"Failed to send metrics. Status: {response.status_code}, "
-                    f"Response: {response.text}"
-                )
-            pos += msg_len
+                print(f"Failed to send metrics. Status: {response.status_code}, Response: {response.text}")
+
+        except Exception as e:
+            print(f"Error sending to endpoint: {e}")
+            raise
+
+    return {
+        'statusCode': 200,
+        'body': f'Processed {len(event["Records"])} files'
+    }
+
 ```
 
 - Click on the `Deploy`
