@@ -14,6 +14,8 @@ At base14, everyone is always
 - helping customers
 - on production support
 
+<!--truncate-->
+
 ## Principles
 
 Craftsmanship

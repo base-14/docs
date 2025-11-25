@@ -23,6 +23,8 @@ reflexes, and the clarity of their shared context. MTTR rises when friction
 builds up in those connections — between tools, roles, or data. It falls when
 context flows freely and decisions move faster than confusion.
 
+<!--truncate-->
+
 The table below outlines what typically increases MTTR, and what helps reduce
 it.
 

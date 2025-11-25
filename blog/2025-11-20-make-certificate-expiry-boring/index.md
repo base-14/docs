@@ -39,6 +39,8 @@ certificate expiry as a real reliability concern, how to detect issues
 early, and how to ensure a single date on a single file never brings down
 an entire system.
 
+<!--truncate-->
+
 ### Why certificate-expiry outages happen
 
 Most outages have a shape: a graph that starts bending the wrong way, an
