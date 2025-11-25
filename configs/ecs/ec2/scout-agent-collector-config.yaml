@@ -2,10 +2,10 @@ receivers:
   postgres:
     endpoint: localhost:5432
     transport: tcp
-    username: postgres
-    password: postgres
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
     databases:
-      - postres
+      - postgres
     collection_interval: 5m
 
   otlp:
