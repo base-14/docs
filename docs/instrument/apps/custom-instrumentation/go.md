@@ -1,9 +1,9 @@
 ---
-title: Go Custom OpenTelemetry Instrumentation
+title: Go Custom OpenTelemetry Instrumentation - Manual Tracing Guide
 sidebar_label: Go
 description:
-  Custom instrumentation for Go applications with OpenTelemetry. Manual tracing,
-  metrics, spans, and telemetry export with Go OTel SDK.
+  Custom instrumentation for Go applications with OpenTelemetry. Manual
+  tracing, spans, metrics, and telemetry export with Go OpenTelemetry SDK.
 keywords:
   [
     go instrumentation,
@@ -11,40 +11,47 @@ keywords:
     opentelemetry go,
     go custom instrumentation,
     golang observability,
+    go distributed tracing,
+    go manual instrumentation,
+    opentelemetry go sdk,
   ]
 ---
 
 # Go
 
-Implement OpenTelemetry custom instrumentation for `Go` applications to collect
-metrics, and traces using the Go OTel SDK.
+Implement OpenTelemetry custom instrumentation for Go applications to collect
+traces, metrics, and logs using the Go OpenTelemetry SDK. This guide covers
+manual instrumentation for any Go application, including Gin, Echo, Chi, gRPC,
+and custom frameworks.
 
-> **Note:** This guide provides a concise overview based on the official
+> **Note:** This guide provides a practical overview based on the official
 > OpenTelemetry documentation. For complete information, please consult the
-> [official OpenTelemetry documentation](https://opentelemetry.io/docs/languages/go/).
+> [official OpenTelemetry Go documentation](https://opentelemetry.io/docs/languages/go/).
 
 ## Overview
 
 This guide demonstrates how to:
 
-- Set up OpenTelemetry custom instrumentation for `Go`
-- Configure manual tracing using spans
-- Create and manage custom metrics
-- Add semantic attributes and events
-- Export telemetry data to Scout Collector
+- Set up OpenTelemetry SDK for manual instrumentation
+- Create and manage custom spans
+- Add attributes, events, and exception tracking
+- Implement metrics collection
+- Propagate context across service boundaries
+- Instrument common Go patterns and frameworks
 
 ## Prerequisites
 
 Before starting, ensure you have:
 
-- Go 1.23.5 or later installed
-- A Go project set up with `go mod init`
+- **Go 1.21 or later** installed (Go 1.23+ recommended)
+- A Go project initialized with `go mod init`
+- Basic understanding of OpenTelemetry concepts (traces, spans, attributes)
 
 ## Required Packages
 
-Install the following necessary packages
+Install the OpenTelemetry SDK and necessary packages:
 
-```bash
+```bash showLineNumbers
 go get go.opentelemetry.io/otel \
   go.opentelemetry.io/otel/trace \
   go.opentelemetry.io/otel/sdk \
@@ -59,25 +66,15 @@ go get go.opentelemetry.io/otel \
 
 ## Traces
 
-Traces give us the big picture of what happens when a request is made to an
-application. Whether your application is a monolith with a single database or a
-sophisticated mesh of services, traces are essential to understanding the full
-"path" a request takes in your application.
+Traces provide a complete picture of request flows through your application,
+from initial request to final response, including all operations and services
+involved.
 
 ### Initialization
 
-To Start tracing, first a tracer should be acquired and a TracerProvider should
-be initialized optionally we can pass a resource to TracerProvider.
+Initialize the OpenTelemetry SDK with resource information and exporters:
 
-> A Resource is an immutable representation of the entity producing telemetry.
-> For example, a process producing telemetry that is running in a container on
-> Kubernetes has a Pod name, it is in a namespace and possibly is part of a
-> Deployment which also has a name. All three of these attributes can be
-> included in the Resource.
-
-Sample Reference code for Initialization
-
-```go showLineNumbers
+```go showLineNumbers title="telemetry.go"
 package main
 
 import (
@@ -94,18 +91,17 @@ func setupTracing(ctx context.Context) (trace.Tracer, error) {
     // Create resource with service information
     res, err := resource.Merge(resource.Default(),
         resource.NewWithAttributes(semconv.SchemaURL,
-            semconv.ServiceName("my.service.name"),
+            semconv.ServiceName("my-go-app"),
             semconv.ServiceVersion("1.0.0"),
+            semconv.DeploymentEnvironment("production"),
         ))
     if err != nil {
         return nil, err
     }
 
     // Create OTLP trace exporter
-    traceExporter, err := otlptracehttp.New(ctx,
-        otlptracehttp.WithEndpointURL("http://0.0.0.0:4318/v1/traces"),
-        otlptracehttp.WithInsecure(),
-    )
+    // Uses OTEL_EXPORTER_OTLP_ENDPOINT environment variable
+    traceExporter, err := otlptracehttp.New(ctx)
     if err != nil {
         return nil, err
     }
@@ -120,26 +116,18 @@ func setupTracing(ctx context.Context) (trace.Tracer, error) {
     otel.SetTracerProvider(tracerProvider)
 
     // Create and return tracer
-    tracer := otel.Tracer("my.tracer.name")
+    tracer := otel.Tracer("my-go-app", trace.WithInstrumentationVersion("1.0.0"))
     return tracer, nil
 }
 ```
 
-> View your traces in the base14 Scout observability platform.
->
-> **Note**: Ensure your Scout Collector is properly configured to receive and
-> process the trace data.
+> **Note**: Set the `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable to your
+> Scout Collector endpoint (e.g., `http://localhost:4318`). Ensure your Scout
+> Collector is properly configured to receive trace data.
 
-#### Reference
+### Creating Spans
 
-[Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
-
-### Span
-
-A span represents a unit of work or operation. Spans are the building blocks of
-Traces. In OpenTelemetry, they include some necessary information.
-
-#### Creating a Span
+Create a span to track an operation:
 
 ```go showLineNumbers
 func doWork(ctx context.Context, tracer trace.Tracer) {
@@ -151,7 +139,9 @@ func doWork(ctx context.Context, tracer trace.Tracer) {
 }
 ```
 
-#### Creating nested Spans
+### Creating Nested Spans
+
+Create parent-child span relationships:
 
 ```go showLineNumbers
 func doWork(ctx context.Context, tracer trace.Tracer) {
@@ -170,7 +160,7 @@ func doWork(ctx context.Context, tracer trace.Tracer) {
 }
 ```
 
-#### Creating Spans with helper functions
+### Helper Methods for Cleaner Code
 
 ```go showLineNumbers
 func doWork(ctx context.Context, tracer trace.Tracer) {
@@ -193,18 +183,11 @@ withSpan(ctx, tracer, "work.operation", func(ctx context.Context) {
 })
 ```
 
-> View these spans in base14 Scout observability backend.
+## Attributes
 
-#### Reference
+Attributes add context to spans as key-value pairs:
 
-[Official Span Documentation](https://opentelemetry.io/docs/concepts/signals/traces/#spans)
-
-### Attributes
-
-Attributes let you attach key/value pairs to a span so it carries more
-information about the current operation that it's tracking.
-
-#### Adding Attributes to a Span
+### Adding Custom Attributes
 
 ```go showLineNumbers
 import "go.opentelemetry.io/otel/attribute"
@@ -223,11 +206,9 @@ func doWork(ctx context.Context, tracer trace.Tracer) {
 }
 ```
 
-#### Adding Semantic Attributes to a Span
+### Using Semantic Conventions
 
-Semantic Attributes are pre-defined Attributes that are well-known naming
-conventions for common kinds of data. Using Semantic Attributes lets you
-normalize this kind of information across your systems.
+Use standardized attribute names for common operations:
 
 ```go showLineNumbers
 import semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
@@ -246,23 +227,11 @@ func doWork(ctx context.Context, tracer trace.Tracer) {
 }
 ```
 
-> View these spans in the base14 Scout observability platform.
->
-> **Note**: Ensure your Scout Collector is properly configured to receive and
-> process the span data.
+## Events
 
-#### Reference
+Events mark significant moments during a span's lifetime:
 
-[Official Attributes Documentation](https://opentelemetry.io/docs/concepts/signals/traces/#attributes)
-
-### Events
-
-An event is a human-readable message on a span that represents "something
-happening" during its lifetime.
-
-You can think of it as a primitive log.
-
-#### Adding an event to a span
+### Adding Events to a Span
 
 ```go showLineNumbers
 func doWork(ctx context.Context, tracer trace.Tracer) {
@@ -275,7 +244,7 @@ func doWork(ctx context.Context, tracer trace.Tracer) {
 }
 ```
 
-#### Adding events with attributes
+### Adding Events with Attributes
 
 ```go showLineNumbers
 import "go.opentelemetry.io/otel/attribute"
@@ -293,21 +262,9 @@ func doWork(ctx context.Context, tracer trace.Tracer) {
 }
 ```
 
-#### Reference
+## Exception Recording
 
-[Official Event Documentation](https://opentelemetry.io/docs/concepts/signals/traces/#span-events)
-
-### Span Status
-
-A Status can be set on a Span, typically used to specify that a Span has not
-completed successfully - `Error`. By default, all spans are Unset, which means a
-span completed without error. The `Ok` status is reserved for when you need to
-explicitly mark a span as successful rather than stick with the default of
-`Unset` (i.e., "without error").
-
-We also look at how to record an exception in the Span.
-
-#### Setting a Span Status
+Capture and record exceptions in spans:
 
 ```go showLineNumbers
 import (
@@ -338,21 +295,15 @@ func someOperation() error {
 }
 ```
 
-> View these spans in the base14 Scout observability platform.
->
-> **Note**: Ensure your Scout Collector is properly configured to receive and
-> process the span data.
-
 ## Metrics
+
+Collect custom metrics to track application performance:
 
 ### Initialization
 
-To start collecting metrics, you'll need to initialize a MeterProvider and
-optionally set it as the global default.
+Initialize the MeterProvider with metric exporters:
 
-Sample Reference code for Metrics Initialization
-
-```go showLineNumbers
+```go showLineNumbers title="metrics.go"
 import (
     "context"
     "time"
@@ -368,17 +319,16 @@ func setupMetrics(ctx context.Context) (metric.Meter, error) {
     // Create resource
     res, err := resource.Merge(resource.Default(),
         resource.NewWithAttributes(semconv.SchemaURL,
-            semconv.ServiceName("my.service.name"),
+            semconv.ServiceName("my-go-app"),
+            semconv.ServiceVersion("1.0.0"),
         ))
     if err != nil {
         return nil, err
     }
 
     // Create OTLP metric exporter
-    metricExporter, err := otlpmetrichttp.New(ctx,
-        otlpmetrichttp.WithEndpointURL("http://0.0.0.0:4318/v1/metrics"),
-        otlpmetrichttp.WithInsecure(),
-    )
+    // Uses OTEL_EXPORTER_OTLP_ENDPOINT environment variable
+    metricExporter, err := otlpmetrichttp.New(ctx)
     if err != nil {
         return nil, err
     }
@@ -395,19 +345,18 @@ func setupMetrics(ctx context.Context) (metric.Meter, error) {
     otel.SetMeterProvider(meterProvider)
 
     // Create and return meter
-    meter := otel.Meter("my.meter.name")
+    meter := otel.Meter("my-go-app", metric.WithInstrumentationVersion("1.0.0"))
     return meter, nil
 }
 ```
 
-> View these metrics in base14 Scout observability backend.
->
-> **Note**: Ensure your Scout Collector is properly configured to receive and
-> process the metric data.
+> **Note**: The exporter uses the `OTEL_EXPORTER_OTLP_ENDPOINT` environment
+> variable. Ensure your Scout Collector is properly configured to receive metric
+> data.
 
 ### Counter
 
-Counter is a synchronous Instrument that supports non-negative increments.
+Track cumulative values that only increase:
 
 #### Creating a Synchronous Counter
 
@@ -431,16 +380,14 @@ func doWork(ctx context.Context, counter metric.Int64Counter, workType string) {
 }
 ```
 
-> View these metrics in base14 Scout observability backend.
-
 #### Creating Asynchronous Counter
 
 ```go showLineNumbers
 func setupAsyncCounter(meter metric.Meter) error {
-    _, err := meter.Int64ObservableCounter(
+    counter, err := meter.Int64ObservableCounter(
         "process.page.faults",
-        metric.WithDescription("process page faults"),
-        metric.WithUnit("1"),
+        metric.WithDescription("Process page faults"),
+        metric.WithUnit("faults"),
     )
     if err != nil {
         return err
@@ -470,22 +417,15 @@ func setupAsyncCounter(meter metric.Meter) error {
 }
 ```
 
-> View these metrics in base14 Scout observability backend.
-
-#### Reference
-
-[Official Counter Documentation](https://opentelemetry.io/docs/specs/otel/metrics/api/#counter)
-
 ### Histogram
 
-Histogram is a synchronous Instrument that can be used to report arbitrary
-values that are likely to be statistically meaningful. It is intended for
-statistics such as histograms, summaries, and percentile.
+Record distributions of values:
 
 #### Creating a Histogram
 
 ```go showLineNumbers
 import (
+    "time"
     "go.opentelemetry.io/otel/attribute"
     semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
 )
@@ -517,16 +457,9 @@ func handleRequest(ctx context.Context, histogram metric.Int64Histogram) {
 }
 ```
 
-> View these metrics in base14 Scout observability backend.
-
-#### Reference
-
-[Official Histogram Documentation](https://opentelemetry.io/docs/specs/otel/metrics/api/#histogram)
-
 ### Gauge
 
-Gauge is an asynchronous Instrument that reports non-additive values that can
-increase and decrease over time.
+Track values that can increase or decrease:
 
 #### Creating an Observable Gauge
 
@@ -562,12 +495,476 @@ func getCurrentCPUUsage() int64 {
 }
 ```
 
-> View all telemetry data in the base14 Scout observability platform.
+## Context Propagation
+
+Propagate trace context across HTTP requests to maintain distributed traces:
+
+### Outgoing HTTP Requests
+
+```go showLineNumbers
+import (
+    "net/http"
+    "go.opentelemetry.io/otel"
+    "go.opentelemetry.io/otel/propagation"
+)
+
+func makeExternalRequest(ctx context.Context, tracer trace.Tracer, url string) error {
+    ctx, span := tracer.Start(ctx, "external-api-call")
+    defer span.End()
+
+    req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+    if err != nil {
+        return err
+    }
+
+    // Inject trace context into HTTP headers
+    otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(req.Header))
+
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        span.RecordError(err)
+        return err
+    }
+    defer resp.Body.Close()
+
+    span.SetAttributes(attribute.Int("http.status_code", resp.StatusCode))
+    return nil
+}
+```
+
+### Incoming HTTP Requests
+
+```go showLineNumbers
+func handleRequest(w http.ResponseWriter, r *http.Request, tracer trace.Tracer) {
+    // Extract context from incoming request headers
+    ctx := otel.GetTextMapPropagator().Extract(r.Context(), propagation.HeaderCarrier(r.Header))
+
+    // Start span with extracted context
+    ctx, span := tracer.Start(ctx, "handle-request")
+    defer span.End()
+
+    span.SetAttributes(
+        attribute.String("http.method", r.Method),
+        attribute.String("http.url", r.URL.Path),
+    )
+
+    // Process request with propagated context
+    processRequest(ctx)
+
+    span.SetAttributes(attribute.Int("http.status_code", 200))
+    w.WriteHeader(http.StatusOK)
+}
+```
+
+## Framework-Specific Examples
+
+### Gin Web Framework
+
+```go showLineNumbers title="gin_example.go"
+import (
+    "github.com/gin-gonic/gin"
+    "go.opentelemetry.io/otel"
+    "go.opentelemetry.io/otel/attribute"
+    "go.opentelemetry.io/otel/propagation"
+)
+
+func main() {
+    tracer := otel.Tracer("gin-app")
+    router := gin.Default()
+
+    // Middleware to extract and propagate context
+    router.Use(func(c *gin.Context) {
+        ctx := otel.GetTextMapPropagator().Extract(c.Request.Context(), propagation.HeaderCarrier(c.Request.Header))
+        ctx, span := tracer.Start(ctx, c.Request.Method+" "+c.FullPath())
+        defer span.End()
+
+        span.SetAttributes(
+            attribute.String("http.method", c.Request.Method),
+            attribute.String("http.route", c.FullPath()),
+        )
+
+        c.Request = c.Request.WithContext(ctx)
+        c.Next()
+
+        span.SetAttributes(attribute.Int("http.status_code", c.Writer.Status()))
+    })
+
+    router.GET("/users/:id", func(c *gin.Context) {
+        ctx := c.Request.Context()
+        _, span := tracer.Start(ctx, "get-user")
+        defer span.End()
+
+        userID := c.Param("id")
+        span.SetAttributes(attribute.String("user.id", userID))
+
+        // Fetch user logic here
+        c.JSON(200, gin.H{"id": userID, "name": "John Doe"})
+    })
+
+    router.Run(":8080")
+}
+```
+
+### Echo Web Framework
+
+```go showLineNumbers title="echo_example.go"
+import (
+    "github.com/labstack/echo/v4"
+    "go.opentelemetry.io/otel"
+    "go.opentelemetry.io/otel/attribute"
+    "go.opentelemetry.io/otel/propagation"
+)
+
+func main() {
+    tracer := otel.Tracer("echo-app")
+    e := echo.New()
+
+    // Middleware
+    e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+        return func(c echo.Context) error {
+            ctx := otel.GetTextMapPropagator().Extract(c.Request().Context(), propagation.HeaderCarrier(c.Request().Header))
+            ctx, span := tracer.Start(ctx, c.Request().Method+" "+c.Path())
+            defer span.End()
+
+            span.SetAttributes(
+                attribute.String("http.method", c.Request().Method),
+                attribute.String("http.route", c.Path()),
+            )
+
+            c.SetRequest(c.Request().WithContext(ctx))
+            err := next(c)
+
+            span.SetAttributes(attribute.Int("http.status_code", c.Response().Status))
+            return err
+        }
+    })
+
+    e.GET("/users/:id", func(c echo.Context) error {
+        ctx := c.Request().Context()
+        _, span := tracer.Start(ctx, "get-user")
+        defer span.End()
+
+        userID := c.Param("id")
+        span.SetAttributes(attribute.String("user.id", userID))
+
+        return c.JSON(200, map[string]string{"id": userID, "name": "Jane Doe"})
+    })
+
+    e.Start(":8080")
+}
+```
+
+### gRPC Server
+
+```go showLineNumbers title="grpc_server.go"
+import (
+    "context"
+    "google.golang.org/grpc"
+    "go.opentelemetry.io/otel"
+    "go.opentelemetry.io/otel/attribute"
+)
+
+func UnaryServerInterceptor(tracer trace.Tracer) grpc.UnaryServerInterceptor {
+    return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+        ctx, span := tracer.Start(ctx, info.FullMethod)
+        defer span.End()
+
+        span.SetAttributes(
+            attribute.String("rpc.system", "grpc"),
+            attribute.String("rpc.method", info.FullMethod),
+        )
+
+        resp, err := handler(ctx, req)
+        if err != nil {
+            span.RecordError(err)
+            span.SetStatus(codes.Error, err.Error())
+        }
+
+        return resp, err
+    }
+}
+```
+
+### Plain HTTP Server
+
+```go showLineNumbers title="http_server.go"
+import (
+    "net/http"
+    "go.opentelemetry.io/otel"
+    "go.opentelemetry.io/otel/attribute"
+    "go.opentelemetry.io/otel/propagation"
+)
+
+func main() {
+    tracer := otel.Tracer("http-server")
+
+    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+        ctx := otel.GetTextMapPropagator().Extract(r.Context(), propagation.HeaderCarrier(r.Header))
+        ctx, span := tracer.Start(ctx, r.Method+" "+r.URL.Path)
+        defer span.End()
+
+        span.SetAttributes(
+            attribute.String("http.method", r.Method),
+            attribute.String("http.url", r.URL.Path),
+        )
+
+        // Business logic
+        w.WriteHeader(http.StatusOK)
+        w.Write([]byte("Hello, World!"))
+
+        span.SetAttributes(attribute.Int("http.status_code", http.StatusOK))
+    })
+
+    http.ListenAndServe(":8080", nil)
+}
+```
+
+## Best Practices
+
+### 1. Always End Spans
+
+```go
+// Good - using defer
+ctx, span := tracer.Start(ctx, "operation")
+defer span.End()
+doWork(ctx)
+
+// Bad - span may not end if panic occurs
+ctx, span := tracer.Start(ctx, "operation")
+doWork(ctx)
+span.End()
+```
+
+### 2. Use Descriptive Span Names
+
+```go
+// Good
+ctx, span := tracer.Start(ctx, "UserRepository.FindByID")
+ctx, span := tracer.Start(ctx, "PaymentService.ProcessPayment")
+
+// Bad
+ctx, span := tracer.Start(ctx, "operation")
+ctx, span := tracer.Start(ctx, "query")
+```
+
+### 3. Add Relevant Attributes
+
+```go
+// Good
+span.SetAttributes(
+    attribute.String("user.id", userID),
+    attribute.Float64("order.amount", amount),
+    attribute.Bool("cache.hit", true),
+)
+
+// Bad - sensitive data
+span.SetAttributes(
+    attribute.String("user.password", password), // Never!
+    attribute.String("credit.card.number", ccNumber), // Never!
+)
+```
+
+### 4. Use Semantic Conventions
+
+```go
+// Good - using semantic conventions
+import semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
+
+span.SetAttributes(
+    semconv.HTTPRequestMethodOriginal("POST"),
+    semconv.DBSystemPostgreSQL,
+    semconv.DBNamespace("production"),
+)
+```
+
+### 5. Handle Errors Properly
+
+```go
+// Good
+ctx, span := tracer.Start(ctx, "risky-operation")
+defer span.End()
+
+if err := riskyOperation(); err != nil {
+    span.RecordError(err)
+    span.SetStatus(codes.Error, err.Error())
+    return err
+}
+
+span.SetStatus(codes.Ok, "")
+
+// Bad - swallowing errors
+if err := riskyOperation(); err != nil {
+    // Error lost
+}
+```
+
+## Complete Example
+
+Here's a complete example of a Go application with custom instrumentation:
+
+```go showLineNumbers title="main.go"
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+    "time"
+
+    "go.opentelemetry.io/otel"
+    "go.opentelemetry.io/otel/attribute"
+    "go.opentelemetry.io/otel/codes"
+    "go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
+    "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+    "go.opentelemetry.io/otel/metric"
+    "go.opentelemetry.io/otel/sdk/resource"
+    sdkmetric "go.opentelemetry.io/otel/sdk/metric"
+    sdktrace "go.opentelemetry.io/otel/sdk/trace"
+    semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
+    "go.opentelemetry.io/otel/trace"
+)
+
+var (
+    tracer          trace.Tracer
+    meter           metric.Meter
+    requestCounter  metric.Int64Counter
+    requestDuration metric.Int64Histogram
+)
+
+func initTelemetry(ctx context.Context) error {
+    // Create resource
+    res, err := resource.Merge(resource.Default(),
+        resource.NewWithAttributes(semconv.SchemaURL,
+            semconv.ServiceName("my-go-app"),
+            semconv.ServiceVersion("1.0.0"),
+        ))
+    if err != nil {
+        return err
+    }
+
+    // Setup traces
+    // Uses OTEL_EXPORTER_OTLP_ENDPOINT environment variable
+    traceExporter, err := otlptracehttp.New(ctx)
+    if err != nil {
+        return err
+    }
+
+    tracerProvider := sdktrace.NewTracerProvider(
+        sdktrace.WithBatcher(traceExporter),
+        sdktrace.WithResource(res),
+    )
+    otel.SetTracerProvider(tracerProvider)
+
+    // Setup metrics
+    // Uses OTEL_EXPORTER_OTLP_ENDPOINT environment variable
+    metricExporter, err := otlpmetrichttp.New(ctx)
+    if err != nil {
+        return err
+    }
+
+    meterProvider := sdkmetric.NewMeterProvider(
+        sdkmetric.WithResource(res),
+        sdkmetric.WithReader(sdkmetric.NewPeriodicReader(metricExporter,
+            sdkmetric.WithInterval(5*time.Second),
+        )),
+    )
+    otel.SetMeterProvider(meterProvider)
+
+    // Create tracer and meter
+    tracer = otel.Tracer("my-go-app")
+    meter = otel.Meter("my-go-app")
+
+    // Create metrics
+    requestCounter, err = meter.Int64Counter(
+        "requests.total",
+        metric.WithDescription("Total requests"),
+        metric.WithUnit("requests"),
+    )
+    if err != nil {
+        return err
+    }
+
+    requestDuration, err = meter.Int64Histogram(
+        "requests.duration",
+        metric.WithDescription("Request duration"),
+        metric.WithUnit("ms"),
+    )
+    if err != nil {
+        return err
+    }
+
+    return nil
+}
+
+func processRequest(ctx context.Context) {
+    start := time.Now()
+
+    ctx, span := tracer.Start(ctx, "http.request")
+    defer span.End()
+
+    span.SetAttributes(
+        attribute.String("http.method", "POST"),
+        attribute.String("http.url", "/api/orders"),
+    )
+
+    // Business logic
+    if err := createOrder(ctx); err != nil {
+        span.RecordError(err)
+        span.SetStatus(codes.Error, err.Error())
+        recordMetrics(500, start)
+        return
+    }
+
+    span.SetAttributes(attribute.Int("http.status_code", 201))
+    span.SetStatus(codes.Ok, "")
+    recordMetrics(201, start)
+}
+
+func createOrder(ctx context.Context) error {
+    ctx, span := tracer.Start(ctx, "create_order")
+    defer span.End()
+
+    // Simulate order creation
+    orderID := 12345
+    span.SetAttributes(
+        attribute.Int("order.id", orderID),
+        attribute.Float64("order.total", 99.99),
+    )
+
+    fmt.Printf("Order created: %d\n", orderID)
+    return nil
+}
+
+func recordMetrics(statusCode int, startTime time.Time) {
+    duration := time.Since(startTime).Milliseconds()
+
+    attrs := metric.WithAttributes(
+        attribute.Int("status", statusCode),
+    )
+
+    requestCounter.Add(context.Background(), 1, attrs)
+    requestDuration.Record(context.Background(), duration, attrs)
+}
+
+func main() {
+    ctx := context.Background()
+
+    if err := initTelemetry(ctx); err != nil {
+        log.Fatalf("Failed to initialize telemetry: %v", err)
+    }
+
+    // Process request
+    processRequest(ctx)
+
+    // Allow time for export
+    time.Sleep(2 * time.Second)
+}
+```
 
 ## Extracting Trace and Span IDs
 
-You can extract trace and span IDs from the current context for correlation with
-logs or external systems:
+Extract trace ID and span ID for log correlation:
 
 ```go showLineNumbers
 import "go.opentelemetry.io/otel/trace"
@@ -582,39 +979,33 @@ func getTraceAndSpanIDs(ctx context.Context) (string, string) {
     return "", ""
 }
 
-// Usage example
+// Usage with logging
 func doWork(ctx context.Context, tracer trace.Tracer) {
     ctx, span := tracer.Start(ctx, "work.operation")
     defer span.End()
 
     traceID, spanID := getTraceAndSpanIDs(ctx)
 
-    // Use trace and span IDs for logging or correlation
-    fmt.Printf("TraceID: %s, SpanID: %s\n", traceID, spanID)
-
-    // Example: Add to structured logs
+    // Use for structured logging
     log.Printf("Processing request - TraceID: %s, SpanID: %s", traceID, spanID)
+
+    performWork(ctx)
 }
 ```
 
-This is particularly useful for:
-
-- Correlating application logs with traces
-- Adding trace context to error messages
-- Integrating with external monitoring systems
-- Creating custom dashboards with trace correlation
-
 ## References
 
-- [Official OpenTelemetry Go Documentation](https://opentelemetry.io/docs/languages/go/instrumentation/)
-- [Sample Go application with Otel instrumentation here](https://github.com/base-14/examples/tree/main/go)
-- [OpenTelemetry API Documentation](https://opentelemetry.io/docs/reference/specification/)
-- [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/reference/specification/semantic-conventions/)
+- [Official OpenTelemetry Go Documentation](https://opentelemetry.io/docs/languages/go/)
+- [OpenTelemetry Go GitHub](https://github.com/open-telemetry/opentelemetry-go)
+- [Sample Go Application with OpenTelemetry](https://github.com/base-14/examples/tree/main/go)
+- [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/)
 
 ## Related Guides
 
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
-  up collector for local development
+  up Scout Collector for local development
 - [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
   Production deployment
 - [Custom Java Instrumentation](./java.md) - Alternative language guide
+- [Creating Alerts](../../../guides/creating-alerts-with-logx.md) - Set up
+  alerts for your telemetry data
