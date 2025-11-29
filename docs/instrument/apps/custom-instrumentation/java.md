@@ -1,55 +1,65 @@
 ---
-title: Java Custom OpenTelemetry Instrumentation
+title: Java Custom OpenTelemetry Instrumentation - Manual Tracing Guide
 sidebar_label: Java
 description:
   Custom instrumentation for Java applications with OpenTelemetry. Manual
-  tracing, metrics, spans, and telemetry export with Java OTel SDK.
+  tracing, spans, metrics, and telemetry export with Java OpenTelemetry SDK.
 keywords:
   [
     java instrumentation,
-    java monitoring,
-    opentelemetry java,
+    java opentelemetry,
     java custom instrumentation,
+    java tracing,
     java observability,
+    java distributed tracing,
+    java manual instrumentation,
+    opentelemetry java sdk,
   ]
 ---
 
 # Java
 
-Implement OpenTelemetry custom instrumentation for `Java` applications to
-collect metrics, and traces using the Java OTel SDK.
+Implement OpenTelemetry custom instrumentation for Java applications to collect
+traces, metrics, and logs using the Java OpenTelemetry SDK. This guide covers
+manual instrumentation for any Java application, including Spring, Micronaut,
+Quarkus, servlets, and custom frameworks.
 
-> **Note:** This guide provides a concise overview based on the official
+> **Note:** This guide provides a practical overview based on the official
 > OpenTelemetry documentation. For complete information, please consult the
-> [official OpenTelemetry documentation](https://opentelemetry.io/docs/languages/java/).
+> [official OpenTelemetry Java documentation](https://opentelemetry.io/docs/languages/java/).
 
 ## Overview
 
 This guide demonstrates how to:
 
-- Set up OpenTelemetry custom instrumentation for `Java`
-- Configure manual tracing using spans
-- Create and manage custom metrics
-- Add semantic attributes and events
-- Export telemetry data to Scout Collector
+- Set up OpenTelemetry SDK for manual instrumentation
+- Create and manage custom spans
+- Add attributes, events, and exception tracking
+- Implement metrics collection
+- Propagate context across service boundaries
+- Instrument common Java patterns and frameworks
 
 ## Prerequisites
 
 Before starting, ensure you have:
 
-- Java 8 or later installed
-- A Java project set up with Maven or Gradle
+- **Java 8 or later** installed (Java 11+ recommended)
+- **Maven or Gradle** for dependency management
+- Basic understanding of OpenTelemetry concepts (traces, spans, attributes)
 
 ## Required Dependencies
 
-import Tabs from '@theme/Tabs'; import TabItem from '@theme/TabItem';
+```mdx-code-block
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
 <Tabs groupId="build-tool">
 <TabItem value="maven" label="Maven">
+```
 
 Add the following dependencies to your `pom.xml`:
 
-```xml showLineNumbers
+```xml showLineNumbers title="pom.xml"
 <dependencies>
   <!-- OpenTelemetry API -->
   <dependency>
@@ -81,39 +91,42 @@ Add the following dependencies to your `pom.xml`:
 </dependencies>
 ```
 
+```mdx-code-block
 </TabItem>
 <TabItem value="gradle" label="Gradle">
+```
 
 Add the following dependencies to your `build.gradle`:
 
-```gradle showLineNumbers
+```gradle showLineNumbers title="build.gradle"
 dependencies {
     implementation 'io.opentelemetry:opentelemetry-api:1.32.0'
     implementation 'io.opentelemetry:opentelemetry-sdk:1.32.0'
     implementation 'io.opentelemetry:opentelemetry-exporter-otlp:1.32.0'
-    implementation 'io.opentelemetry:opentelemetry-semconv:1.23.1-alpha'
+    implementation 'io.opentelemetry.semconv:opentelemetry-semconv:1.23.1-alpha'
 }
 ```
 
+```mdx-code-block
 </TabItem>
 </Tabs>
+```
 
-## Initialization
+## Traces
 
-To start collecting telemetry data, you need to initialize OpenTelemetry with
-both tracing and metrics capabilities in a single setup.
+Traces provide a complete picture of request flows through your application,
+from initial request to final response, including all operations and services
+involved.
 
-> A Resource is an immutable representation of the entity producing telemetry.
-> For example, a process producing telemetry that is running in a container on
-> Kubernetes has a Pod name, it is in a namespace and possibly is part of a
-> Deployment which also has a name. All three of these attributes can be
-> included in the Resource.
+### Initialization
 
-Sample Reference code for OpenTelemetry Initialization
+Initialize the OpenTelemetry SDK with resource information and exporters:
 
-```java showLineNumbers
+```java showLineNumbers title="OpenTelemetryConfig.java"
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
@@ -124,23 +137,26 @@ import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
+
 import java.time.Duration;
 
-public class OpenTelemetrySetup {
+public class OpenTelemetryConfig {
 
-    public static OpenTelemetry setupOpenTelemetry() {
+    private static final String SERVICE_NAME = "my-java-app";
+    private static final String SERVICE_VERSION = "1.0.0";
+
+    public static OpenTelemetry initializeOpenTelemetry() {
         // Create resource with service information
         Resource resource = Resource.getDefault()
                 .merge(Resource.create(Attributes.of(
-                        AttributeKey.stringKey("service.name"), "my.service.name",
-                        AttributeKey.stringKey("service.version"), "1.0.0"
+                        AttributeKey.stringKey("service.name"), SERVICE_NAME,
+                        AttributeKey.stringKey("service.version"), SERVICE_VERSION,
+                        AttributeKey.stringKey("deployment.environment"), "production"
                 )));
 
         // Create OTLP trace exporter
         OtlpGrpcSpanExporter spanExporter = OtlpGrpcSpanExporter.builder()
-                .setEndpoint("http://0.0.0.0:4317")
+                .setEndpoint("http://localhost:4317")
                 .build();
 
         // Create tracer provider
@@ -151,7 +167,7 @@ public class OpenTelemetrySetup {
 
         // Create OTLP metric exporter
         OtlpGrpcMetricExporter metricExporter = OtlpGrpcMetricExporter.builder()
-                .setEndpoint("http://0.0.0.0:4317")
+                .setEndpoint("http://localhost:4317")
                 .build();
 
         // Create meter provider
@@ -162,45 +178,37 @@ public class OpenTelemetrySetup {
                         .build())
                 .build();
 
-        // Create OpenTelemetry SDK with both providers and register it globally
+        // Build and register OpenTelemetry SDK globally
         OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
                 .setTracerProvider(tracerProvider)
                 .setMeterProvider(meterProvider)
                 .buildAndRegisterGlobal();
 
+        // Add shutdown hook
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            tracerProvider.close();
+            meterProvider.close();
+        }));
+
         return openTelemetry;
     }
 
     public static Tracer getTracer() {
-        return GlobalOpenTelemetry.getTracer("my.tracer.name");
+        return GlobalOpenTelemetry.getTracer(SERVICE_NAME, SERVICE_VERSION);
     }
 
     public static Meter getMeter() {
-        return GlobalOpenTelemetry.getMeter("my.meter.name");
+        return GlobalOpenTelemetry.getMeter(SERVICE_NAME, SERVICE_VERSION);
     }
 }
 ```
 
-> Ensure OpenTelemetrySetup.setupOpenTelemetry() is called before using these
-> helper classes, as they access the global OpenTelemetry instance during class
+> **Note**: Ensure your Scout Collector is properly configured to receive trace
+> data at the endpoint specified above.
 
-## Traces
+### Creating Spans
 
-Traces give us the big picture of what happens when a request is made to an
-application. Whether your application is a monolith with a single database or a
-sophisticated mesh of services, traces are essential to understanding the full
-"path" a request takes in your application.
-
-### Reference
-
-[Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
-
-### Span
-
-A span represents a unit of work or operation. Spans are the building blocks of
-Traces. In OpenTelemetry, they include some necessary information.
-
-#### Creating a Span
+Create a span to track an operation:
 
 ```java showLineNumbers
 import io.opentelemetry.api.trace.Span;
@@ -208,57 +216,66 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 
 public void doWork() {
-    Tracer tracer = OpenTelemetrySetup.getTracer();
+    Tracer tracer = OpenTelemetryConfig.getTracer();
 
-    Span span = tracer.spanBuilder("span.name").startSpan();
+    Span span = tracer.spanBuilder("operation-name").startSpan();
     try (Scope scope = span.makeCurrent()) {
-        // do some work that 'span' tracks
-        System.out.println("doing some work...");
+        // Perform your operation
+        performWork();
     } finally {
         span.end();
     }
 }
 ```
 
-#### Creating nested Spans
+### Creating Nested Spans
+
+Create parent-child span relationships:
 
 ```java showLineNumbers
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.context.Scope;
+public void processRequest() {
+    Tracer tracer = OpenTelemetryConfig.getTracer();
 
-public void doWork() {
-    Tracer tracer = OpenTelemetrySetup.getTracer();
+    Span parentSpan = tracer.spanBuilder("process_request").startSpan();
+    try (Scope parentScope = parentSpan.makeCurrent()) {
 
-    Span parent = tracer.spanBuilder("parent").startSpan();
-    try (Scope parentScope = parent.makeCurrent()) {
-        // do some work that 'parent' tracks
-        System.out.println("doing some work...");
-
-        // Create a nested span to track nested work
-        Span child = tracer.spanBuilder("child").startSpan();
-        try (Scope childScope = child.makeCurrent()) {
-            // do some work that 'child' tracks
-            System.out.println("doing some nested work...");
+        // Validate input
+        Span validateSpan = tracer.spanBuilder("validate_input").startSpan();
+        try (Scope validateScope = validateSpan.makeCurrent()) {
+            validateInput();
         } finally {
-            child.end();
+            validateSpan.end();
         }
+
+        // Fetch data
+        Span fetchSpan = tracer.spanBuilder("fetch_data").startSpan();
+        try (Scope fetchScope = fetchSpan.makeCurrent()) {
+            fetchFromDatabase();
+        } finally {
+            fetchSpan.end();
+        }
+
+        // Process results
+        Span processSpan = tracer.spanBuilder("process_data").startSpan();
+        try (Scope processScope = processSpan.makeCurrent()) {
+            processResults();
+        } finally {
+            processSpan.end();
+        }
+
     } finally {
-        parent.end();
+        parentSpan.end();
     }
 }
 ```
 
-#### Creating Spans with helper methods
+### Helper Methods for Cleaner Code
 
 ```java showLineNumbers
 import java.util.function.Supplier;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.context.Scope;
 
 public class SpanHelper {
-    private static final Tracer tracer = OpenTelemetrySetup.getTracer();
+    private static final Tracer tracer = OpenTelemetryConfig.getTracer();
 
     public static <T> T withSpan(String spanName, Supplier<T> operation) {
         Span span = tracer.spanBuilder(spanName).startSpan();
@@ -280,363 +297,661 @@ public class SpanHelper {
 }
 
 // Usage
-SpanHelper.withSpan("work.operation", () -> {
-    System.out.println("doing some work...");
+String result = SpanHelper.withSpan("database_query", () -> {
+    return database.query("SELECT * FROM users");
 });
 ```
 
-> View these spans in base14 Scout observability backend.
+## Attributes
 
-#### Reference
+Attributes add context to spans as key-value pairs:
 
-[Official Span Documentation](https://opentelemetry.io/docs/concepts/signals/traces/#spans)
-
-### Attributes
-
-Attributes let you attach key/value pairs to a span so it carries more
-information about the current operation that it's tracking.
-
-#### Adding Attributes to a Span
+### Adding Custom Attributes
 
 ```java showLineNumbers
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import java.util.Arrays;
 
-public void doWork() {
-    Tracer tracer = OpenTelemetrySetup.getTracer();
-
-    Span span = tracer.spanBuilder("span.name").startSpan();
+public void processOrder(String orderId) {
+    Span span = tracer.spanBuilder("process_order").startSpan();
     try (Scope scope = span.makeCurrent()) {
-        span.setAllAttributes(Attributes.of(
-            AttributeKey.longKey("operation.value"), 1L,
-            AttributeKey.stringKey("operation.name"), "Saying hello!",
-            AttributeKey.stringArrayKey("operation.other-stuff"), Arrays.asList("1", "2", "3")
-        ));
+        span.setAttribute("order.id", orderId);
+        span.setAttribute("order.status", "processing");
+        span.setAttribute("order.items_count", 5);
 
-        System.out.println("doing some work...");
+        // Process the order
+        Order order = processOrder(orderId);
+
+        span.setAttribute("order.total", order.getTotal());
+        span.setAttribute("order.status", "completed");
+
     } finally {
         span.end();
     }
 }
 ```
 
-#### Adding Semantic Attributes to a Span
+### Using Semantic Conventions
 
-Semantic Attributes are pre-defined Attributes that are well-known naming
-conventions for common kinds of data. Using Semantic Attributes lets you
-normalize this kind of information across your systems.
+Use standardized attribute names for common operations:
 
 ```java showLineNumbers
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.context.Scope;
 
-public void doWork() {
-    Tracer tracer = OpenTelemetrySetup.getTracer();
-
-    Span span = tracer.spanBuilder("span.name").startSpan();
+public void makeHttpRequest(String url, String method) {
+    Span span = tracer.spanBuilder("http_request").startSpan();
     try (Scope scope = span.makeCurrent()) {
-        span.setAllAttributes(Attributes.of(
-            SemanticAttributes.HTTP_REQUEST_METHOD, "GET",
-            SemanticAttributes.URL_FULL, "https://base14.io/",
-            SemanticAttributes.HTTP_RESPONSE_STATUS_CODE, 200L
-        ));
+        span.setAttribute(SemanticAttributes.HTTP_REQUEST_METHOD, method);
+        span.setAttribute(SemanticAttributes.URL_FULL, url);
 
-        System.out.println("doing some work...");
+        // Make HTTP request
+        HttpResponse response = httpClient.send(url, method);
+
+        span.setAttribute(SemanticAttributes.HTTP_RESPONSE_STATUS_CODE,
+                         response.getStatusCode());
+
     } finally {
         span.end();
     }
 }
 ```
 
-> View these spans in the base14 Scout observability platform.
->
-> **Note**: Ensure your Scout Collector is properly configured to receive and
-> process the span data.
+## Events
 
-#### Reference
-
-[Official Attributes Documentation](https://opentelemetry.io/docs/concepts/signals/traces/#attributes)
-
-### Events
-
-An event is a human-readable message on a span that represents "something
-happening" during its lifetime.
-
-You can think of it as a primitive log.
-
-#### Adding an event to a span
+Events mark significant moments during a span's lifetime:
 
 ```java showLineNumbers
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.context.Scope;
-
-public void doWork() {
-    Tracer tracer = OpenTelemetrySetup.getTracer();
-
-    Span span = tracer.spanBuilder("span.name").startSpan();
+public void processPayment(PaymentInfo payment) {
+    Span span = tracer.spanBuilder("process_payment").startSpan();
     try (Scope scope = span.makeCurrent()) {
-        span.addEvent("Starting some work");
-        System.out.println("doing some work...");
-        span.addEvent("Finished working");
-    } finally {
-        span.end();
-    }
-}
-```
 
-#### Adding events with attributes
-
-```java showLineNumbers
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.trace.Tracer;
-
-public void doWork() {
-    Tracer tracer = OpenTelemetrySetup.getTracer();
-
-    Span span = tracer.spanBuilder("span.name").startSpan();
-    try (Scope scope = span.makeCurrent()) {
-        span.addEvent("Processing request", Attributes.of(
-            AttributeKey.stringKey("user.id"), "12345",
-            AttributeKey.stringKey("request.type"), "api"
+        span.addEvent("payment_received", Attributes.of(
+            AttributeKey.stringKey("payment.method"), payment.getMethod(),
+            AttributeKey.doubleKey("payment.amount"), payment.getAmount()
         ));
 
-        System.out.println("doing some work...");
+        // Process payment
+        PaymentResult result = chargeCard(payment);
+
+        span.addEvent("payment_processed", Attributes.of(
+            AttributeKey.stringKey("transaction.id"), result.getTransactionId(),
+            AttributeKey.stringKey("payment.status"), result.getStatus()
+        ));
+
+        if (result.isSuccess()) {
+            span.addEvent("payment_confirmed");
+        }
+
     } finally {
         span.end();
     }
 }
 ```
 
-#### Reference
+## Exception Recording
 
-[Official Event Documentation](https://opentelemetry.io/docs/concepts/signals/traces/#span-events)
-
-### Span Status
-
-A Status can be set on a Span, typically used to specify that a Span has not
-completed successfully - `Error`. By default, all spans are Unset, which means a
-span completed without error. The `Ok` status is reserved for when you need to
-explicitly mark a span as successful rather than stick with the default of
-`Unset` (i.e., "without error").
-
-We also look at how to record an exception in the Span.
-
-#### Setting a Span Status
+Capture and record exceptions in spans:
 
 ```java showLineNumbers
 import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.trace.Tracer;
 
-public void doWork() {
-    Tracer tracer = OpenTelemetrySetup.getTracer();
-
-    Span span = tracer.spanBuilder("span.name").startSpan();
+public void riskyOperation() {
+    Span span = tracer.spanBuilder("risky_operation").startSpan();
     try (Scope scope = span.makeCurrent()) {
-        try {
-            // Simulate work that might fail
-            someOperation();
 
-            // Explicitly mark as successful (optional)
-            span.setStatus(StatusCode.OK, "Operation completed successfully");
-        } catch (Exception e) {
-            span.setStatus(StatusCode.ERROR, "Operation failed");
-            span.recordException(e, Attributes.of(
-                AttributeKey.stringKey("error.type"), "operation_error"
-            ));
-        }
+        performRiskyWork();
+        span.setStatus(StatusCode.OK);
+
+    } catch (Exception e) {
+        span.recordException(e, Attributes.of(
+            AttributeKey.stringKey("exception.escaped"), "true"
+        ));
+        span.setStatus(StatusCode.ERROR, e.getMessage());
+        throw new RuntimeException("Operation failed", e);
+
     } finally {
         span.end();
     }
 }
-
-private void someOperation() throws Exception {
-    // simulate an operation that might fail
-}
 ```
-
-> View these spans in the base14 Scout observability platform.
->
-> **Note**: Ensure your Scout Collector is properly configured to receive and
-> process the span data.
 
 ## Metrics
 
-Metrics are essential for monitoring the performance and health of your
-application over time.
+Collect custom metrics to track application performance:
 
 ### Counter
 
-Counter is a synchronous Instrument that supports non-negative increments.
-
-#### Creating a Synchronous Counter
+Track cumulative values that only increase:
 
 ```java showLineNumbers
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 
-public class CounterExample {
-    private static final Meter meter = OpenTelemetrySetup.getMeter();
-    private static final LongCounter workCounter = meter
-            .counterBuilder("work.counter")
-            .setDescription("Counts the amount of work done")
-            .setUnit("1")
+public class MetricsExample {
+    private static final Meter meter = OpenTelemetryConfig.getMeter();
+
+    private static final LongCounter requestCounter = meter
+            .counterBuilder("http.requests")
+            .setDescription("Total number of HTTP requests")
+            .setUnit("requests")
             .build();
 
-    public static void doWork(String workType) {
-        workCounter.add(1, Attributes.of(
-            AttributeKey.stringKey("work.type"), workType
+    public void handleRequest(String method, String route) {
+        requestCounter.add(1, Attributes.of(
+            AttributeKey.stringKey("http.method"), method,
+            AttributeKey.stringKey("http.route"), route
         ));
-        System.out.println("doing some work...");
+
+        // Handle request...
     }
 }
 ```
-
-> View these metrics in base14 Scout observability backend.
-
-#### Creating Asynchronous Counter
-
-```java showLineNumbers
-import io.opentelemetry.api.metrics.ObservableLongCounter;
-import java.util.Random;
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
-
-public class AsyncCounterExample {
-    private static final Meter meter = OpenTelemetrySetup.getMeter();
-    private static final Random random = new Random();
-
-    public static void setupAsyncCounter() {
-        ObservableLongCounter counter = meter
-                .counterBuilder("process.page.faults")
-                .setDescription("process page faults")
-                .setUnit("1")
-                .buildWithCallback(measurement -> {
-                    // Simulate getting process stats
-                    measurement.record(8, Attributes.of(
-                        AttributeKey.longKey("pid"), 0L,
-                        AttributeKey.longKey("bitness"), 64L
-                    ));
-                    measurement.record(37741921, Attributes.of(
-                        AttributeKey.longKey("pid"), 4L,
-                        AttributeKey.longKey("bitness"), 64L
-                    ));
-                    measurement.record(10465, Attributes.of(
-                        AttributeKey.longKey("pid"), 880L,
-                        AttributeKey.longKey("bitness"), 32L
-                    ));
-                });
-    }
-}
-```
-
-> View these metrics in base14 Scout observability backend.
-
-#### Reference
-
-[Official Counter Documentation](https://opentelemetry.io/docs/specs/otel/metrics/api/#counter)
 
 ### Histogram
 
-Histogram is a synchronous Instrument that can be used to report arbitrary
-values that are likely to be statistically meaningful. It is intended for
-statistics such as histograms, summaries, and percentile.
-
-#### Creating a Histogram
+Record distributions of values:
 
 ```java showLineNumbers
 import io.opentelemetry.api.metrics.LongHistogram;
 
-public class HistogramExample {
-    private static final Meter meter = OpenTelemetrySetup.getMeter();
-    private static final LongHistogram httpServerDuration = meter
-            .histogramBuilder("http.server.duration")
-            .setDescription("measures the duration of the inbound HTTP request")
+public class RequestDurationTracker {
+    private static final LongHistogram requestDuration = meter
+            .histogramBuilder("http.request.duration")
+            .setDescription("HTTP request duration")
             .setUnit("ms")
             .ofLongs()
             .build();
 
-    public static void recordDuration(long duration, String method, String scheme) {
-        httpServerDuration.record(duration);
-    }
+    public void trackRequest(String method, int statusCode) {
+        long startTime = System.currentTimeMillis();
 
-    // Usage example
-    public static void handleRequest() {
-        long start = System.currentTimeMillis();
+        try {
+            // Process request
+            processRequest();
+        } finally {
+            long duration = System.currentTimeMillis() - startTime;
 
-        // Handle request logic here...
-
-        long duration = System.currentTimeMillis() - start;
-        recordDuration(duration, "POST", "https");
+            requestDuration.record(duration, Attributes.of(
+                AttributeKey.stringKey("http.method"), method,
+                AttributeKey.longKey("http.status_code"), statusCode
+            ));
+        }
     }
 }
 ```
 
-> View these metrics in base14 Scout observability backend.
-
-#### Reference
-
-[Official Histogram Documentation](https://opentelemetry.io/docs/specs/otel/metrics/api/#histogram)
-
 ### Gauge
 
-Gauge is an asynchronous Instrument that reports non-additive values that can
-increase and decrease over time.
-
-#### Creating an Observable Gauge
+Track values that can increase or decrease:
 
 ```java showLineNumbers
 import io.opentelemetry.api.metrics.ObservableLongGauge;
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
 
 public class GaugeExample {
-    private static final Meter meter = OpenTelemetrySetup.getMeter();
+    private static volatile long activeConnections = 0;
 
     public static void setupGauge() {
         ObservableLongGauge gauge = meter
-                .gaugeBuilder("system.cpu.usage")
-                .setDescription("Current CPU usage percentage")
-                .setUnit("%")
+                .gaugeBuilder("db.connections.active")
+                .setDescription("Currently active database connections")
+                .setUnit("connections")
                 .ofLongs()
                 .buildWithCallback(measurement -> {
-                    // Get current CPU usage (simulated)
-                    long cpuUsage = getCurrentCPUUsage();
-                    measurement.record(cpuUsage, Attributes.of(
-                        AttributeKey.stringKey("cpu.core"), "0"
+                    measurement.record(activeConnections, Attributes.of(
+                        AttributeKey.stringKey("db.type"), "postgresql"
                     ));
                 });
     }
 
-    private static long getCurrentCPUUsage() {
-        // Simulate getting CPU usage
-        return 75; // 75% CPU usage
+    public static void incrementConnections() {
+        activeConnections++;
+    }
+
+    public static void decrementConnections() {
+        activeConnections--;
     }
 }
 ```
 
-> View all telemetry data in the base14 Scout observability platform.
+## Context Propagation
+
+Propagate trace context across HTTP requests:
+
+### Outgoing HTTP Requests
+
+```java showLineNumbers
+import io.opentelemetry.context.propagation.TextMapSetter;
+import java.net.http.HttpRequest;
+import java.net.http.HttpClient;
+
+public class HttpClientExample {
+    private static final Tracer tracer = OpenTelemetryConfig.getTracer();
+
+    // Setter for injecting context into HTTP headers
+    private static final TextMapSetter<HttpRequest.Builder> setter =
+        (carrier, key, value) -> carrier.header(key, value);
+
+    public String makeExternalRequest(String url) {
+        Span span = tracer.spanBuilder("external_api_call").startSpan();
+        try (Scope scope = span.makeCurrent()) {
+
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .GET();
+
+            // Inject trace context into headers
+            GlobalOpenTelemetry.getPropagators()
+                    .getTextMapPropagator()
+                    .inject(Context.current(), requestBuilder, setter);
+
+            HttpRequest request = requestBuilder.build();
+            HttpClient client = HttpClient.newHttpClient();
+
+            HttpResponse<String> response = client.send(request,
+                    HttpResponse.BodyHandlers.ofString());
+
+            span.setAttribute("http.status_code", response.statusCode());
+
+            return response.body();
+
+        } catch (Exception e) {
+            span.recordException(e);
+            span.setStatus(StatusCode.ERROR, e.getMessage());
+            throw new RuntimeException(e);
+        } finally {
+            span.end();
+        }
+    }
+}
+```
+
+### Incoming HTTP Requests (Servlet)
+
+```java showLineNumbers
+import io.opentelemetry.context.propagation.TextMapGetter;
+import javax.servlet.http.HttpServletRequest;
+
+public class ServletExample {
+
+    // Getter for extracting context from HTTP headers
+    private static final TextMapGetter<HttpServletRequest> getter =
+        new TextMapGetter<>() {
+            @Override
+            public Iterable<String> keys(HttpServletRequest carrier) {
+                return Collections.list(carrier.getHeaderNames());
+            }
+
+            @Override
+            public String get(HttpServletRequest carrier, String key) {
+                return carrier.getHeader(key);
+            }
+        };
+
+    public void handleRequest(HttpServletRequest request) {
+        // Extract context from incoming request
+        Context extractedContext = GlobalOpenTelemetry.getPropagators()
+                .getTextMapPropagator()
+                .extract(Context.current(), request, getter);
+
+        Span span = tracer.spanBuilder("handle_request")
+                .setParent(extractedContext)
+                .startSpan();
+
+        try (Scope scope = span.makeCurrent()) {
+            span.setAttribute("http.method", request.getMethod());
+            span.setAttribute("http.url", request.getRequestURI());
+
+            // Process request
+            processRequest(request);
+
+        } finally {
+            span.end();
+        }
+    }
+}
+```
+
+## Framework-Specific Examples
+
+### Spring MVC Controller
+
+```java showLineNumbers
+import org.springframework.web.bind.annotation.*;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+
+@RestController
+@RequestMapping("/api")
+public class UserController {
+
+    private final Tracer tracer = OpenTelemetryConfig.getTracer();
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    @GetMapping("/users/{id}")
+    public User getUser(@PathVariable String id) {
+        Span span = tracer.spanBuilder("UserController.getUser").startSpan();
+        try (Scope scope = span.makeCurrent()) {
+
+            span.setAttribute("user.id", id);
+            span.setAttribute("http.method", "GET");
+            span.setAttribute("http.route", "/api/users/{id}");
+
+            User user = userService.findById(id);
+
+            span.setAttribute("user.found", user != null);
+
+            return user;
+
+        } finally {
+            span.end();
+        }
+    }
+
+    @PostMapping("/orders")
+    public Order createOrder(@RequestBody OrderRequest request) {
+        Span span = tracer.spanBuilder("UserController.createOrder").startSpan();
+        try (Scope scope = span.makeCurrent()) {
+
+            span.setAttribute("order.items_count", request.getItems().size());
+            span.setAttribute("http.method", "POST");
+
+            Order order = userService.createOrder(request);
+
+            span.setAttribute("order.id", order.getId());
+            span.setAttribute("order.total", order.getTotal());
+            span.setStatus(StatusCode.OK);
+
+            return order;
+
+        } catch (Exception e) {
+            span.recordException(e);
+            span.setStatus(StatusCode.ERROR, e.getMessage());
+            throw e;
+        } finally {
+            span.end();
+        }
+    }
+}
+```
+
+### Servlet Filter
+
+```java showLineNumbers
+import javax.servlet.*;
+import javax.servlet.http.*;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Scope;
+
+public class TelemetryFilter implements Filter {
+
+    private final Tracer tracer = OpenTelemetryConfig.getTracer();
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response,
+                         FilterChain chain) throws IOException, ServletException {
+
+        if (request instanceof HttpServletRequest) {
+            HttpServletRequest httpRequest = (HttpServletRequest) request;
+            HttpServletResponse httpResponse = (HttpServletResponse) response;
+
+            String spanName = httpRequest.getMethod() + " " + httpRequest.getRequestURI();
+            Span span = tracer.spanBuilder(spanName).startSpan();
+
+            try (Scope scope = span.makeCurrent()) {
+                span.setAttribute("http.method", httpRequest.getMethod());
+                span.setAttribute("http.url", httpRequest.getRequestURI());
+
+                chain.doFilter(request, response);
+
+                span.setAttribute("http.status_code", httpResponse.getStatus());
+
+            } finally {
+                span.end();
+            }
+        } else {
+            chain.doFilter(request, response);
+        }
+    }
+}
+```
+
+### Plain Java Application
+
+```java showLineNumbers
+public class BackgroundWorker {
+
+    private final Tracer tracer = OpenTelemetryConfig.getTracer();
+
+    public void processJobs() {
+        while (true) {
+            Job job = fetchNextJob();
+
+            Span span = tracer.spanBuilder("process_job").startSpan();
+            try (Scope scope = span.makeCurrent()) {
+
+                span.setAttribute("job.id", job.getId());
+                span.setAttribute("job.type", job.getType());
+
+                try {
+                    processJob(job);
+
+                    span.setAttribute("job.status", "completed");
+                    span.setStatus(StatusCode.OK);
+
+                } catch (Exception e) {
+                    span.recordException(e);
+                    span.setAttribute("job.status", "failed");
+                    span.setStatus(StatusCode.ERROR, e.getMessage());
+
+                    handleJobFailure(job, e);
+                }
+
+            } finally {
+                span.end();
+            }
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+    }
+}
+```
+
+## Best Practices
+
+### 1. Always Close Spans
+
+```java
+// Good - using try-with-resources
+Span span = tracer.spanBuilder("operation").startSpan();
+try (Scope scope = span.makeCurrent()) {
+    doWork();
+} finally {
+    span.end(); // Always called
+}
+
+// Bad - span may not end if exception thrown
+Span span = tracer.spanBuilder("operation").startSpan();
+Scope scope = span.makeCurrent();
+doWork();
+scope.close();
+span.end();
+```
+
+### 2. Use Descriptive Span Names
+
+```java
+// Good
+Span span = tracer.spanBuilder("UserRepository.findById").startSpan();
+Span span = tracer.spanBuilder("PaymentService.processPayment").startSpan();
+
+// Bad
+Span span = tracer.spanBuilder("operation").startSpan();
+Span span = tracer.spanBuilder("query").startSpan();
+```
+
+### 3. Add Relevant Attributes
+
+```java
+// Good
+span.setAttribute("user.id", userId);
+span.setAttribute("order.amount", amount);
+span.setAttribute("cache.hit", true);
+
+// Bad - sensitive data
+span.setAttribute("user.password", password); // Never!
+span.setAttribute("credit.card.number", ccNumber); // Never!
+```
+
+### 4. Use Semantic Conventions
+
+```java
+// Good - using semantic conventions
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+
+span.setAttribute(SemanticAttributes.HTTP_REQUEST_METHOD, "POST");
+span.setAttribute(SemanticAttributes.DB_SYSTEM, "postgresql");
+span.setAttribute(SemanticAttributes.DB_NAME, "production");
+```
+
+### 5. Handle Exceptions Properly
+
+```java
+// Good
+try {
+    riskyOperation();
+    span.setStatus(StatusCode.OK);
+} catch (Exception e) {
+    span.recordException(e);
+    span.setStatus(StatusCode.ERROR, e.getMessage());
+    throw e;
+}
+
+// Bad - swallowing exceptions
+try {
+    riskyOperation();
+} catch (Exception e) {
+    // Exception lost
+}
+```
+
+## Complete Example
+
+Here's a complete example of a Java application with custom instrumentation:
+
+```java showLineNumbers title="Application.java"
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.*;
+import io.opentelemetry.api.trace.*;
+
+public class Application {
+
+    private static Tracer tracer;
+    private static Meter meter;
+    private static LongCounter requestCounter;
+    private static LongHistogram requestDuration;
+
+    public static void main(String[] args) {
+        // Initialize OpenTelemetry
+        OpenTelemetry openTelemetry = OpenTelemetryConfig.initializeOpenTelemetry();
+
+        tracer = OpenTelemetryConfig.getTracer();
+        meter = OpenTelemetryConfig.getMeter();
+
+        // Create metrics
+        requestCounter = meter.counterBuilder("requests.total")
+                .setDescription("Total requests")
+                .setUnit("requests")
+                .build();
+
+        requestDuration = meter.histogramBuilder("requests.duration")
+                .setDescription("Request duration")
+                .setUnit("ms")
+                .ofLongs()
+                .build();
+
+        // Process request
+        processRequest();
+    }
+
+    private static void processRequest() {
+        long startTime = System.currentTimeMillis();
+
+        Span span = tracer.spanBuilder("http.request").startSpan();
+        try (Scope scope = span.makeCurrent()) {
+
+            span.setAttribute("http.method", "POST");
+            span.setAttribute("http.url", "/api/orders");
+
+            try {
+                // Business logic
+                createOrder();
+
+                span.setAttribute("http.status_code", 201);
+                span.setStatus(StatusCode.OK);
+
+                recordMetrics(201, startTime);
+
+            } catch (Exception e) {
+                span.recordException(e);
+                span.setAttribute("http.status_code", 500);
+                span.setStatus(StatusCode.ERROR, e.getMessage());
+
+                recordMetrics(500, startTime);
+            }
+
+        } finally {
+            span.end();
+        }
+    }
+
+    private static void createOrder() {
+        Span span = tracer.spanBuilder("create_order").startSpan();
+        try (Scope scope = span.makeCurrent()) {
+
+            // Simulate order creation
+            int orderId = (int) (Math.random() * 10000);
+
+            span.setAttribute("order.id", orderId);
+            span.setAttribute("order.total", 99.99);
+
+            System.out.println("Order created: " + orderId);
+
+        } finally {
+            span.end();
+        }
+    }
+
+    private static void recordMetrics(int statusCode, long startTime) {
+        long duration = System.currentTimeMillis() - startTime;
+
+        Attributes attrs = Attributes.of(
+            AttributeKey.longKey("status"), (long) statusCode
+        );
+
+        requestCounter.add(1, attrs);
+        requestDuration.record(duration, attrs);
+    }
+}
+```
 
 ## Extracting Trace and Span IDs
 
-You can extract trace and span IDs from the current context for correlation with
-logs or external systems:
+Extract trace ID and span ID for log correlation:
 
 ```java showLineNumbers
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.context.Scope;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import io.opentelemetry.api.trace.Tracer;
 
 public class TraceContextExtractor {
 
@@ -652,22 +967,21 @@ public class TraceContextExtractor {
         return new String[]{"", ""};
     }
 
-    // Usage example
+    // Usage with logging
     public static void doWork() {
-        Tracer tracer = OpenTelemetrySetup.getTracer();
-
         Span span = tracer.spanBuilder("work.operation").startSpan();
         try (Scope scope = span.makeCurrent()) {
+
             String[] ids = getTraceAndSpanIDs();
             String traceId = ids[0];
             String spanId = ids[1];
 
-            // Use trace and span IDs for logging or correlation
-            System.out.printf("TraceID: %s, SpanID: %s%n", traceId, spanId);
+            // Use for structured logging
+            logger.info("Processing request - TraceID: {}, SpanID: {}",
+                       traceId, spanId);
 
-            // Example: Add to structured logs
-            Logger logger = LoggerFactory.getLogger(TraceContextExtractor.class);
-            logger.info("Processing request - TraceID: {}, SpanID: {}", traceId, spanId);
+            performWork();
+
         } finally {
             span.end();
         }
@@ -675,24 +989,17 @@ public class TraceContextExtractor {
 }
 ```
 
-This is particularly useful for:
-
-- Correlating application logs with traces
-- Adding trace context to error messages
-- Integrating with external monitoring systems
-- Creating custom dashboards with trace correlation
-
 ## References
 
-- [Official OpenTelemetry Java Documentation](https://opentelemetry.io/docs/languages/java/instrumentation/)
-- [OpenTelemetry API Documentation](https://opentelemetry.io/docs/reference/specification/)
-- [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/reference/specification/semantic-conventions/)
+- [Official OpenTelemetry Java Documentation](https://opentelemetry.io/docs/languages/java/)
+- [OpenTelemetry Java GitHub](https://github.com/open-telemetry/opentelemetry-java)
+- [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/)
 
 ## Related Guides
 
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
-  up collector for local development
-- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
-  Production deployment
 - [Spring Boot Auto-Instrumentation](../auto-instrumentation/spring-boot.md) -
-  Auto-instrumentation for Java Spring Boot applications
+  Automatic tracing for Java Spring Boot applications
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
+  up Scout Collector for local development
+- [Creating Alerts](../../../guides/creating-alerts-with-logx.md) - Set up
+  alerts for your telemetry data

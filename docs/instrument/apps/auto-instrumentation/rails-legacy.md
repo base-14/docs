@@ -64,8 +64,8 @@ source 'https://rubygems.org'
 gem 'rails', '~> 6.1.0'  # or your Rails version
 
 # OpenTelemetry - use older versions compatible with Ruby 2.7
-gem 'opentelemetry-sdk', '~> 1.3.0'
-gem 'opentelemetry-exporter-otlp', '~> 0.26.0'
+gem 'opentelemetry-sdk', '~> 1.1.0'
+gem 'opentelemetry-exporter-otlp', '~> 0.21.0'
 
 # Use specific instrumentation gems instead of -all
 gem 'opentelemetry-instrumentation-rails', '~> 0.28.0'
