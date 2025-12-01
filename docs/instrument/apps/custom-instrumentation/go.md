@@ -39,13 +39,23 @@ This guide demonstrates how to:
 - Propagate context across service boundaries
 - Instrument common Go patterns and frameworks
 
+> 📦 **Complete Working Examples**: This guide includes code snippets for
+> learning. For full implementations, see the [Complete Examples](#complete-examples)
+> section featuring Gin + PostgreSQL and Chi router applications.
+
 ## Prerequisites
 
 Before starting, ensure you have:
 
-- **Go 1.21 or later** installed (Go 1.23+ recommended)
+- **Go 1.21 or later** installed (Go 1.24+ recommended for forward compatibility)
 - A Go project initialized with `go mod init`
 - Basic understanding of OpenTelemetry concepts (traces, spans, attributes)
+
+> ⚠️ **Signal Stability Status** (as of 2025):
+>
+> - **Traces**: Stable ✅
+> - **Metrics**: Stable ✅
+> - **Logs**: Beta (API may change before reaching stable status)
 
 ## Required Packages
 
@@ -606,6 +616,10 @@ func main() {
 }
 ```
 
+> 💡 **Complete Gin Example**: For a production-ready Gin application with
+> database instrumentation, structured logging, and Docker deployment, see the
+> [go119-gin191-postgres example](https://github.com/base-14/examples/tree/main/go/go119-gin191-postgres).
+
 ### Echo Web Framework
 
 ```go showLineNumbers title="echo_example.go"
@@ -993,11 +1007,478 @@ func doWork(ctx context.Context, tracer trace.Tracer) {
 }
 ```
 
+## Proper Shutdown and Resource Cleanup
+
+Always ensure proper cleanup of telemetry resources to flush all pending spans
+and metrics before application exit. This is critical for preventing data loss.
+
+### Shutdown Pattern
+
+```go showLineNumbers title="main.go"
+package main
+
+import (
+    "context"
+    "errors"
+    "log"
+    "os"
+    "os/signal"
+)
+
+func main() {
+    ctx := context.Background()
+
+    // Setup OpenTelemetry
+    shutdown, err := setupOTelSDK(ctx)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    // Ensure all spans and metrics are flushed before exit
+    defer func() {
+        if err := shutdown(ctx); err != nil {
+            log.Printf("Error during shutdown: %v", err)
+        }
+    }()
+
+    // Handle graceful shutdown on interrupt
+    sigCh := make(chan os.Signal, 1)
+    signal.Notify(sigCh, os.Interrupt)
+
+    go func() {
+        <-sigCh
+        log.Println("Received interrupt signal, shutting down...")
+        if err := shutdown(ctx); err != nil {
+            log.Printf("Error during graceful shutdown: %v", err)
+        }
+        os.Exit(0)
+    }()
+
+    // Your application code...
+    log.Println("Application running...")
+}
+
+func setupOTelSDK(ctx context.Context) (func(context.Context) error, error) {
+    var shutdownFuncs []func(context.Context) error
+
+    // Setup trace provider
+    tracerProvider, err := setupTracing(ctx)
+    if err != nil {
+        return nil, err
+    }
+    shutdownFuncs = append(shutdownFuncs, tracerProvider.Shutdown)
+
+    // Setup meter provider
+    meterProvider, err := setupMetrics(ctx)
+    if err != nil {
+        return nil, err
+    }
+    shutdownFuncs = append(shutdownFuncs, meterProvider.Shutdown)
+
+    // Return combined shutdown function
+    shutdown := func(ctx context.Context) error {
+        var err error
+        for _, fn := range shutdownFuncs {
+            err = errors.Join(err, fn(ctx))
+        }
+        return err
+    }
+
+    return shutdown, nil
+}
+```
+
+### Why Shutdown Matters
+
+Without proper shutdown:
+
+- **Span Loss**: Batched spans may not be exported
+- **Metric Loss**: Periodic metric readings may be missed
+- **Resource Leaks**: Exporters and connections remain open
+- **Incomplete Traces**: Distributed traces may appear broken
+
+### Shutdown with Timeout
+
+For production applications, add a timeout to prevent hanging:
+
+```go showLineNumbers
+func gracefulShutdown(shutdown func(context.Context) error) {
+    ctx, cancel := context.WithTimeout(
+        context.Background(),
+        5*time.Second,
+    )
+    defer cancel()
+
+    if err := shutdown(ctx); err != nil {
+        log.Printf("Failed to shutdown cleanly: %v", err)
+    }
+}
+```
+
+## Complete Examples
+
+For production-ready reference implementations, explore our complete example applications:
+
+### Go 1.19 + Gin + PostgreSQL Example
+
+A complete REST API demonstrating OpenTelemetry instrumentation with older Go
+versions:
+
+**[go119-gin191-postgres](https://github.com/base-14/examples/tree/main/go/go119-gin191-postgres)**
+
+**Stack:**
+
+- Go 1.19.13 with OpenTelemetry v1.17.0
+- Gin Framework v1.9.1 for HTTP routing
+- PostgreSQL 14 with GORM ORM
+- Custom GORM tracing implementation
+- Logrus with trace correlation
+- Docker Compose setup
+
+**What's Instrumented:**
+
+- ✅ HTTP requests and responses (Gin middleware)
+- ✅ Database queries with custom GORM callbacks
+- ✅ SQL operations (INSERT, SELECT, UPDATE, DELETE)
+- ✅ Structured JSON logs with trace correlation
+- ✅ Graceful shutdown handling
+- ✅ Distributed trace propagation
+
+**Key Features:**
+
+- **Custom GORM Tracing**: Demonstrates how to instrument GORM without
+  external plugins, compatible with older OpenTelemetry versions
+- **Log Correlation**: Shows how to extract trace IDs and span IDs for
+  structured logging with Logrus
+- **Production Configuration**: Includes resource attributes, batch span
+  processor, and OTLP exporter setup
+- **Docker Deployment**: Complete docker-compose.yml with app, database, and
+  OTel collector
+
+**Implementation Highlights:**
+
+```go
+// Custom GORM callback tracing (internal/database/tracing.go)
+func (g *gormTracer) before(operation string) func(*gorm.DB) {
+    return func(db *gorm.DB) {
+        ctx, span := tracer.Start(
+            db.Statement.Context,
+            operation,
+            trace.WithSpanKind(trace.SpanKindClient),
+            trace.WithAttributes(
+                attribute.String("db.system", "postgresql"),
+                attribute.String("db.name", db.Statement.Table),
+            ),
+        )
+        db.Statement.Context = ctx
+        db.InstanceSet("otel:span", span)
+    }
+}
+
+// Log correlation (internal/logging/logger.go)
+func WithContext(ctx context.Context) *logrus.Entry {
+    spanCtx := trace.SpanContextFromContext(ctx)
+    fields := logrus.Fields{
+        "service.name": os.Getenv("OTEL_SERVICE_NAME"),
+    }
+    if spanCtx.IsValid() {
+        fields["trace_id"] = spanCtx.TraceID().String()
+        fields["span_id"] = spanCtx.SpanID().String()
+    }
+    return log.WithFields(fields)
+}
+```
+
+**Quick Start:**
+
+```bash
+cd examples/go/go119-gin191-postgres
+docker compose up --build
+curl http://localhost:8080/api/users
+```
+
+### Go 1.25 + Chi + In-Memory Example
+
+**[go-chi-inmemory](https://github.com/base-14/examples/tree/main/go/go-chi-inmemory)**
+
+A modern Go application showcasing the latest OpenTelemetry features:
+
+**Stack:**
+
+- Go 1.25 (latest) with OpenTelemetry v1.38.0
+- Chi router for lightweight HTTP routing
+- In-memory storage (no external database)
+- Native OpenTelemetry instrumentation
+- Docker Compose setup
+
+**What's Instrumented:**
+
+- ✅ HTTP request tracing with Chi middleware
+- ✅ Custom business logic spans
+- ✅ Context propagation across handlers
+- ✅ Metrics collection (request duration, counts)
+- ✅ Error recording and status codes
+
+**Key Features:**
+
+- **Modern Go Patterns**: Demonstrates latest Go 1.25 features and
+  OpenTelemetry v1.38.0
+- **Lightweight Setup**: No database dependencies, focuses on HTTP
+  instrumentation
+- **Custom Middleware**: Shows how to build Chi middleware with
+  OpenTelemetry
+- **Metrics Export**: Includes both traces and metrics with OTLP
+
+**Implementation Highlights:**
+
+```go
+// Chi middleware with OpenTelemetry
+func TracingMiddleware(
+    tracer trace.Tracer,
+) func(http.Handler) http.Handler {
+    return func(next http.Handler) http.Handler {
+        return http.HandlerFunc(
+            func(w http.ResponseWriter, r *http.Request) {
+                ctx, span := tracer.Start(
+                    r.Context(),
+                    r.Method+" "+r.URL.Path,
+                    trace.WithSpanKind(trace.SpanKindServer),
+                )
+                defer span.End()
+
+                span.SetAttributes(
+                    attribute.String("http.method", r.Method),
+                    attribute.String("http.route", r.URL.Path),
+                )
+
+                next.ServeHTTP(w, r.WithContext(ctx))
+
+                span.SetAttributes(
+                    attribute.Int("http.status_code", w.StatusCode),
+                )
+            })
+    }
+}
+```
+
+**Quick Start:**
+
+```bash
+cd examples/go/go-chi-inmemory
+docker compose up --build
+curl http://localhost:8080/api/health
+```
+
+### Example Comparison
+
+| Feature | go119-gin191-postgres | go-chi-inmemory |
+|---------|----------------------|-----------------|
+| **Go Version** | 1.19.13 (EOL) | 1.25 (Latest) |
+| **Framework** | Gin 1.9.1 | Chi (latest) |
+| **Database** | PostgreSQL + GORM | In-memory |
+| **OTel Version** | v1.17.0 | v1.38.0 |
+| **Custom Tracing** | GORM callbacks | Chi middleware |
+| **Log Correlation** | ✅ Logrus | Basic logging |
+| **Use Case** | Legacy migrations | Modern greenfield |
+
+### Using These Examples
+
+**For Learning:**
+
+1. Clone the examples repository
+2. Start with `go-chi-inmemory` for modern patterns
+3. Study `go119-gin191-postgres` for database instrumentation
+
+**For Production:**
+
+1. Use `go119-gin191-postgres` as reference for:
+   - Custom ORM tracing patterns
+   - Log correlation implementation
+   - Graceful shutdown handling
+2. Use `go-chi-inmemory` as reference for:
+   - Modern Go instrumentation
+   - Lightweight HTTP services
+   - Metrics collection
+
+**For Migrations:**
+
+- If upgrading from Go 1.19: Compare both examples to see API changes
+- If adding observability to existing apps: Start with framework-specific
+  patterns from these examples
+
+## Database Instrumentation Patterns
+
+### GORM Custom Tracing
+
+For applications using GORM, implement custom callbacks for comprehensive
+database tracing:
+
+```go showLineNumbers title="database/tracing.go"
+package database
+
+import (
+    "go.opentelemetry.io/otel"
+    "go.opentelemetry.io/otel/attribute"
+    "go.opentelemetry.io/otel/codes"
+    "go.opentelemetry.io/otel/trace"
+    "gorm.io/gorm"
+)
+
+var tracer = otel.Tracer("gorm")
+
+// RegisterCallbacks registers GORM callbacks for all CRUD operations
+func RegisterCallbacks(db *gorm.DB) error {
+    callbacks := &gormTracer{}
+
+    // Register before/after callbacks for each operation
+    operations := []string{"create", "query", "update", "delete"}
+    for _, op := range operations {
+        if err := db.Callback().Create().Before("gorm:"+op).
+            Register("otel:before", callbacks.before("gorm:"+op)); err != nil {
+            return err
+        }
+        if err := db.Callback().Create().After("gorm:"+op).
+            Register("otel:after", callbacks.after()); err != nil {
+            return err
+        }
+    }
+
+    return nil
+}
+
+type gormTracer struct{}
+
+func (g *gormTracer) before(operation string) func(*gorm.DB) {
+    return func(db *gorm.DB) {
+        ctx := db.Statement.Context
+        if ctx == nil {
+            return
+        }
+
+        ctx, span := tracer.Start(ctx, operation,
+            trace.WithSpanKind(trace.SpanKindClient),
+            trace.WithAttributes(
+                attribute.String("db.system", "postgresql"),
+                attribute.String("db.name", db.Statement.Table),
+            ),
+        )
+
+        db.Statement.Context = ctx
+        db.InstanceSet("otel:span", span)
+    }
+}
+
+func (g *gormTracer) after() func(*gorm.DB) {
+    return func(db *gorm.DB) {
+        spanInterface, ok := db.InstanceGet("otel:span")
+        if !ok {
+            return
+        }
+
+        span := spanInterface.(trace.Span)
+        defer span.End()
+
+        // Add SQL query details
+        if db.Statement.SQL.String() != "" {
+            span.SetAttributes(
+                attribute.String("db.statement", db.Statement.SQL.String()),
+            )
+        }
+
+        span.SetAttributes(
+            attribute.Int64("db.rows_affected", db.Statement.RowsAffected),
+            attribute.String("db.sql.table", db.Statement.Table),
+        )
+
+        // Record errors
+        if db.Error != nil && db.Error != gorm.ErrRecordNotFound {
+            span.RecordError(db.Error)
+            span.SetStatus(codes.Error, db.Error.Error())
+        } else {
+            span.SetStatus(codes.Ok, "")
+        }
+    }
+}
+```
+
+**See the complete implementation:**
+[go119-gin191-postgres/internal/database/tracing.go](https://github.com/base-14/examples/blob/main/go/go119-gin191-postgres/internal/database/tracing.go)
+
+### Structured Logging with Trace Correlation
+
+Integrate OpenTelemetry trace context with structured logging:
+
+```go showLineNumbers title="logging/logger.go"
+package logging
+
+import (
+    "context"
+    "os"
+
+    "github.com/sirupsen/logrus"
+    "go.opentelemetry.io/otel/trace"
+)
+
+var log = logrus.New()
+
+func init() {
+    log.SetFormatter(&logrus.JSONFormatter{})
+    log.SetOutput(os.Stdout)
+    log.SetLevel(logrus.InfoLevel)
+}
+
+// WithContext creates a log entry with trace correlation
+func WithContext(ctx context.Context) *logrus.Entry {
+    spanCtx := trace.SpanContextFromContext(ctx)
+
+    fields := logrus.Fields{
+        "service.name": os.Getenv("OTEL_SERVICE_NAME"),
+    }
+
+    if spanCtx.IsValid() {
+        fields["trace_id"] = spanCtx.TraceID().String()
+        fields["span_id"] = spanCtx.SpanID().String()
+        fields["trace_flags"] = spanCtx.TraceFlags().String()
+    }
+
+    return log.WithFields(fields)
+}
+
+// WithFields creates a log entry with custom fields and trace correlation
+func WithFields(ctx context.Context, fields map[string]interface{}) *logrus.Entry {
+    entry := WithContext(ctx)
+    return entry.WithFields(fields)
+}
+
+// Usage in handlers
+func CreateUser(ctx context.Context, user User) error {
+    logging.WithContext(ctx).Info("Creating user in database")
+
+    if err := db.Create(&user).Error; err != nil {
+        logging.WithFields(ctx, map[string]interface{}{
+            "error": err.Error(),
+        }).Error("Failed to create user")
+        return err
+    }
+
+    logging.WithFields(ctx, map[string]interface{}{
+        "user.id": user.ID,
+    }).Info("User created successfully")
+
+    return nil
+}
+```
+
+**See the complete implementation:**
+[go119-gin191-postgres/internal/logging/logger.go](https://github.com/base-14/examples/blob/main/go/go119-gin191-postgres/internal/logging/logger.go)
+
 ## References
 
 - [Official OpenTelemetry Go Documentation](https://opentelemetry.io/docs/languages/go/)
 - [OpenTelemetry Go GitHub](https://github.com/open-telemetry/opentelemetry-go)
-- [Sample Go Application with OpenTelemetry](https://github.com/base-14/examples/tree/main/go)
+- [Go Examples Repository](https://github.com/base-14/examples/tree/main/go)
+  - [go119-gin191-postgres](https://github.com/base-14/examples/tree/main/go/go119-gin191-postgres)
+  - [go-chi-inmemory](https://github.com/base-14/examples/tree/main/go/go-chi-inmemory)
 - [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/)
 
 ## Related Guides
