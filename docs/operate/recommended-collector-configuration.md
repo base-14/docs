@@ -25,7 +25,7 @@ We'll focus on compression, batching, retry mechanisms and memory limiter.
 These settings help in reducing network bandwidth, improving  preventing the collector
 from consuming too much memory.
 
-### Compression
+## Compression
 
 Enabling `gzip` compression on the `otlphttp/b14` exporter reduces the amount of
 data sent over the network, which can lower costs and improve throughput. This
@@ -42,7 +42,7 @@ exporters:
     compression: gzip
 ```
 
-### Batch Processor
+## Batch Processor
 
 The batch processor groups telemetry data into batches before sending it to the
 next component in the pipeline. This is more efficient than sending individual
@@ -56,7 +56,7 @@ processors:
     send_batch_max_size: 10000
 ```
 
-### Retry Mechanism
+## Retry Mechanism
 
 The `retry_on_failure` setting configures the exporter to automatically retry
 sending data if the initial attempt fails. This is essential for handling
@@ -73,7 +73,7 @@ exporters:
       max_elapsed_time: 60s
 ```
 
-### Memory Limiter Processor
+## Memory Limiter Processor
 
 The `memory_limiter` processor prevents the OpenTelemetry Collector from
 consuming excessive memory, which can lead to out-of-memory errors.
@@ -88,7 +88,7 @@ processors:
     spike_limit_percentage: 30
 ```
 
-### Full Configuration Example
+## Full Configuration Example
 
 Here is a full example of a pipeline with all the recommended settings.
 Note that `batch` and `memory_limiter` are processors and should be defined
