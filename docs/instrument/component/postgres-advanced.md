@@ -226,6 +226,7 @@ pgdashex is configured using environment variables:
 | `PG_SSLMODE` | `disable` | SSL mode (`disable`, `require`, `verify-ca`,<br/>`verify-full`) |
 | `PG_ALL_DBS` | `false` | Collect metrics from all databases in the cluster |
 | `PG_DATABASES` | - | Comma-separated list of databases to monitor<br/>(overrides `PG_ALL_DBS`) |
+| `CLUSTER_NAME` | - | Cluster name label added to all metrics<br/>(falls back to connection hostname if not set) |
 | `LISTEN_ADDRESS` | `:9187` | Address to expose metrics |
 | `METRICS_PATH` | `/metrics` | Path to expose metrics |
 | `SCRAPE_TIMEOUT` | `10` | Timeout in seconds for metrics collection |
