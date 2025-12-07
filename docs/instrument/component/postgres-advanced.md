@@ -79,7 +79,7 @@ psql -h <postgres-host> -p 5432 -U pgdashex_user -d postgres -c "SELECT version(
 ### Image Details
 
 - **Image Name**: `base14/pgdashex`
-- **Image Tag**: `base14/pgdashex:v0.5.1`
+- **Image Tag**: `base14/pgdashex:v0.5.6`
 
 ### Exposed Ports
 
@@ -92,7 +92,7 @@ psql -h <postgres-host> -p 5432 -U pgdashex_user -d postgres -c "SELECT version(
 Pull and run the Docker image:
 
 ```bash
-docker pull base14/pgdashex:v0.5.1
+docker pull base14/pgdashex:v0.5.6
 
 docker run -d \
   --name pgdashex \
@@ -103,7 +103,7 @@ docker run -d \
   -e PG_PASSWORD='your_secure_password' \
   -e PG_DATABASE=postgres \
   -e PGDASHEX_COLLECT_METRICS=all \
-  base14/pgdashex:v0.5.1
+  base14/pgdashex:v0.5.6
 ```
 
 **Note**: If PostgreSQL is on the host machine, use `host.docker.internal` as
@@ -116,7 +116,7 @@ version: '3.8'
 
 services:
   pgdashex:
-    image: base14/pgdashex:v0.5.1
+    image: base14/pgdashex:v0.5.6
     container_name: pgdashex
     ports:
       - "9187:9187"
@@ -224,6 +224,8 @@ pgdashex is configured using environment variables:
 | `PG_PASSWORD` | - | PostgreSQL password (special characters are<br/>auto-encoded) |
 | `PG_DATABASE` | `postgres` | PostgreSQL database name |
 | `PG_SSLMODE` | `disable` | SSL mode (`disable`, `require`, `verify-ca`,<br/>`verify-full`) |
+| `PG_ALL_DBS` | `false` | Collect metrics from all databases in the cluster |
+| `PG_DATABASES` | - | Comma-separated list of databases to monitor<br/>(overrides `PG_ALL_DBS`) |
 | `LISTEN_ADDRESS` | `:9187` | Address to expose metrics |
 | `METRICS_PATH` | `/metrics` | Path to expose metrics |
 | `SCRAPE_TIMEOUT` | `10` | Timeout in seconds for metrics collection |
