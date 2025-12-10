@@ -56,6 +56,7 @@ the tribal knowledge, and just 1 minute for them to pinpoint the actual issue.
 > This is because of The Human-in-the-Loop Dependency
 
 ## Making it Better: The Living Knowledge Base (LKB)
+
 The solution is to codify system knowledge using the system's own data.
 A real knowledge base isn’t just a dependency diagram—it’s the combination
 of relationships and the metadata around them. Instead of relying on static
@@ -102,6 +103,7 @@ prompt the Observability Agent:
 Prompt: "Why did payment service latency spike?"
 
 The agent does not guess; it walks the graph:  
+
 - Find Node: Find the Service A 500 Error node.  
 - Walk Upstream: Follow the CAUSED_BY edge (derived from trace data)
 to find the dependency on Service B.  
