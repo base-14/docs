@@ -168,18 +168,28 @@ For production applications, add all dependencies to `package.json`:
     "ioredis": "^5.4.2",
 
     "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/api-logs": "^0.208.0",
     "@opentelemetry/sdk-node": "^0.208.0",
+    "@opentelemetry/sdk-logs": "^0.208.0",
     "@opentelemetry/auto-instrumentations-node": "^0.67.2",
     "@opentelemetry/exporter-trace-otlp-http": "^0.208.0",
     "@opentelemetry/exporter-metrics-otlp-http": "^0.208.0",
+    "@opentelemetry/exporter-logs-otlp-http": "^0.208.0",
     "@opentelemetry/instrumentation-express": "^0.57.0",
+    "@opentelemetry/instrumentation-http": "^0.208.0",
+    "@opentelemetry/instrumentation-mongodb": "^0.61.0",
     "@opentelemetry/instrumentation-mongoose": "^0.55.0",
     "@opentelemetry/instrumentation-ioredis": "^0.56.0",
+    "@opentelemetry/instrumentation-winston": "^0.53.0",
     "@opentelemetry/resources": "^2.2.0",
     "@opentelemetry/semantic-conventions": "^1.29.0"
   }
 }
 ```
+
+> For a complete list of dependencies including security, validation, and other
+> libraries, see the
+> [complete example](https://github.com/base-14/examples/tree/main/nodejs/express-typescript-mongodb/package.json).
 
 Then install all dependencies:
 
@@ -228,7 +238,7 @@ export function setupTelemetry(): NodeSDK {
   const resource = resourceFromAttributes({
     [ATTR_SERVICE_NAME]: process.env.OTEL_SERVICE_NAME || "express-app",
     [ATTR_SERVICE_VERSION]: process.env.APP_VERSION || "1.0.0",
-    "deployment.environment": process.env.NODE_ENV || "production",
+    "deployment.environment": process.env.NODE_ENV || "development",
   });
 
   const endpoint =
@@ -366,7 +376,7 @@ container-friendly deployments:
 
 ```bash title=".env" showLineNumbers
 # Application
-NODE_ENV=production
+NODE_ENV=development
 APP_PORT=3000
 APP_VERSION=1.0.0
 
@@ -387,7 +397,7 @@ Update your telemetry module to use environment variables:
 const resource = resourceFromAttributes({
   [ATTR_SERVICE_NAME]: process.env.OTEL_SERVICE_NAME || "express-app",
   [ATTR_SERVICE_VERSION]: process.env.APP_VERSION || "1.0.0",
-  "deployment.environment": process.env.NODE_ENV || "production",
+  "deployment.environment": process.env.NODE_ENV || "development",
 });
 
 const endpoint =
@@ -693,7 +703,7 @@ const resource = resourceFromAttributes({
   [ATTR_SERVICE_VERSION]: process.env.APP_VERSION || "1.0.0",
 
   // Deployment information
-  "deployment.environment": process.env.NODE_ENV || "production",
+  "deployment.environment": process.env.NODE_ENV || "development",
   "deployment.region": process.env.AWS_REGION || "us-east-1",
 
   // Instance identification
@@ -738,7 +748,7 @@ export const config = {
 
 ### Docker Compose Configuration
 
-Example `docker-compose.yml` for production-like deployment:
+Example `compose.yml` for production-like deployment:
 
 ```yaml title="compose.yml" showLineNumbers
 services:
@@ -747,7 +757,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
       APP_VERSION: "1.0.0"
       OTEL_SERVICE_NAME: express-app
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
@@ -759,22 +769,22 @@ services:
       - otel-collector
 
   mongo:
-    image: mongo:8.0
+    image: mongo:8.0-noble
     ports:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
 
   redis:
-    image: redis:8.0-alpine
+    image: redis:8-alpine
     ports:
       - "6379:6379"
 
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:latest
-    command: ["--config=/etc/otel-collector-config.yaml"]
+    image: otel/opentelemetry-collector-contrib:0.115.1
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
     volumes:
-      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - ./config/otel-config.yaml:/etc/otelcol-contrib/config.yaml
     ports:
       - "4317:4317" # OTLP gRPC
       - "4318:4318" # OTLP HTTP
@@ -784,19 +794,24 @@ volumes:
   mongo_data:
 ```
 
+> For a production-ready compose configuration with health checks, networks, and
+> env_file support, see the
+> [complete example](https://github.com/base-14/examples/tree/main/nodejs/express-typescript-mongodb/compose.yml).
+
 ### Environment Variables Template
 
 Create a `.env.example` file for your team:
 
 ```bash title=".env.example" showLineNumbers
 # Application
-NODE_ENV=production
+NODE_ENV=development
 APP_PORT=3000
 APP_VERSION=1.0.0
 
 # OpenTelemetry
 OTEL_SERVICE_NAME=express-mongodb-app
 OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+OTEL_RESOURCE_ATTRIBUTES=deployment.environment=development,service.version=1.0.0
 
 # MongoDB
 MONGODB_URI=mongodb://mongo:27017/express-app
@@ -805,7 +820,7 @@ MONGODB_URI=mongodb://mongo:27017/express-app
 REDIS_URL=redis://redis:6379
 
 # JWT Authentication
-JWT_SECRET=your-secret-key-change-in-production
+JWT_SECRET=your-secret-key-change-in-development
 JWT_EXPIRES_IN=7d
 
 # Security
@@ -813,10 +828,11 @@ CORS_ORIGIN=*
 RATE_LIMIT_WINDOW_MS=900000
 RATE_LIMIT_MAX=100
 
-# Scout (optional - if using Scout backend directly)
+# base14 Scout Configuration (Required - set these via environment or .env.local)
 SCOUT_ENDPOINT=https://your-tenant.base14.io:4318
 SCOUT_CLIENT_ID=your_client_id
 SCOUT_CLIENT_SECRET=your_client_secret
+SCOUT_TOKEN_URL=https://your-tenant.base14.io/oauth/token
 ```
 
 ### Dockerfile with OpenTelemetry
@@ -824,45 +840,43 @@ SCOUT_CLIENT_SECRET=your_client_secret
 Build a production-ready Docker image:
 
 ```dockerfile title="Dockerfile" showLineNumbers
-FROM node:24.0.0-alpine AS builder
+FROM node:24-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY tsconfig.json ./
+RUN apk add --no-cache python3 make g++
 
-# Install dependencies
-RUN npm ci
+COPY package*.json tsconfig.json ./
 
-# Copy source code
+RUN npm install
+
 COPY src ./src
 
-# Build TypeScript
 RUN npm run build
 
-# Production image
-FROM node:24.0.0-alpine
+RUN npm prune --production
+
+# Runtime stage
+FROM node:24-alpine
 
 WORKDIR /app
 
-# Copy package files and install production dependencies only
-COPY package*.json ./
-RUN npm ci --only=production
+RUN apk add --no-cache curl
 
-# Copy built application
-COPY --from=builder /app/dist ./dist
+RUN addgroup -S appuser && \
+    adduser -D -S -G appuser appuser
 
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
-USER nodejs
+COPY --from=builder --chown=appuser:appuser /app/dist ./dist
+COPY --from=builder --chown=appuser:appuser /app/node_modules ./node_modules
+COPY --chown=appuser:appuser package*.json ./
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+USER appuser
 
-# Run with instrumentation
+EXPOSE 3000
+
+HEALTHCHECK --interval=5m --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:3000/api/health || exit 1
+
 CMD ["node", "--import", "./dist/instrumentation.js", "dist/index.js"]
 ```
 
@@ -1370,7 +1384,7 @@ Run with OTLP exporter pointing to Scout Collector:
 npm run build
 
 # Set production environment variables
-export NODE_ENV=production
+export NODE_ENV=development
 export OTEL_SERVICE_NAME=express-app
 export OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
 export APP_VERSION=1.0.0
@@ -1392,7 +1406,7 @@ docker build -t express-app:latest .
 docker run -d \
   --name express-app \
   -p 3000:3000 \
-  -e NODE_ENV=production \
+  -e NODE_ENV=development \
   -e OTEL_SERVICE_NAME=express-app \
   -e OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318 \
   -e MONGODB_URI=mongodb://mongo:27017/express-app \
@@ -1988,12 +2002,16 @@ instrumentation is available at:
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/api-logs": "^0.208.0",
     "@opentelemetry/sdk-node": "^0.208.0",
+    "@opentelemetry/sdk-logs": "^0.208.0",
     "@opentelemetry/auto-instrumentations-node": "^0.67.2",
     "@opentelemetry/exporter-trace-otlp-http": "^0.208.0",
     "@opentelemetry/exporter-metrics-otlp-http": "^0.208.0",
     "@opentelemetry/exporter-logs-otlp-http": "^0.208.0",
     "@opentelemetry/instrumentation-express": "^0.57.0",
+    "@opentelemetry/instrumentation-http": "^0.208.0",
+    "@opentelemetry/instrumentation-mongodb": "^0.61.0",
     "@opentelemetry/instrumentation-mongoose": "^0.55.0",
     "@opentelemetry/instrumentation-ioredis": "^0.56.0",
     "@opentelemetry/instrumentation-winston": "^0.53.0",
@@ -2001,16 +2019,7 @@ instrumentation is available at:
     "@opentelemetry/semantic-conventions": "^1.29.0",
     "express": "^5.0.1",
     "mongoose": "^8.20.1",
-    "bullmq": "^5.65.0",
-    "ioredis": "^5.4.2",
-    "socket.io": "^4.8.1",
-    "winston": "^3.17.0",
-    "helmet": "^8.1.0",
-    "cors": "^2.8.5",
-    "express-rate-limit": "^8.2.1",
-    "bcryptjs": "^3.0.3",
-    "jsonwebtoken": "^9.0.3",
-    "zod": "^4.1.13"
+    "ioredis": "^5.4.2"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
@@ -2022,135 +2031,25 @@ instrumentation is available at:
 }
 ```
 
-### Complete telemetry.ts
+> For additional dependencies like BullMQ, Socket.IO, security libraries, and
+> more, see the
+> [complete example](https://github.com/base-14/examples/tree/main/nodejs/express-typescript-mongodb).
 
-```typescript title="src/telemetry.ts" showLineNumbers
-import { NodeSDK } from "@opentelemetry/sdk-node";
-import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
-import { MongooseInstrumentation } from "@opentelemetry/instrumentation-mongoose";
-import { WinstonInstrumentation } from "@opentelemetry/instrumentation-winston";
-import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
-import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http";
-import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-http";
-import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
-import {
-  LoggerProvider,
-  BatchLogRecordProcessor,
-} from "@opentelemetry/sdk-logs";
-import { logs } from "@opentelemetry/api-logs";
-import { resourceFromAttributes } from "@opentelemetry/resources";
-import {
-  ATTR_SERVICE_NAME,
-  ATTR_SERVICE_VERSION,
-} from "@opentelemetry/semantic-conventions";
+### Additional Configuration Files
 
-export function setupTelemetry(): NodeSDK {
-  const resource = resourceFromAttributes({
-    [ATTR_SERVICE_NAME]: process.env.OTEL_SERVICE_NAME || "express-app",
-    [ATTR_SERVICE_VERSION]: process.env.APP_VERSION || "1.0.0",
-    "deployment.environment": process.env.NODE_ENV || "production",
-  });
+For complete production-ready configuration files, see the example repository:
 
-  const endpoint =
-    process.env.OTEL_EXPORTER_OTLP_ENDPOINT || "http://localhost:4318";
+- [src/telemetry.ts][example-telemetry] - Complete telemetry setup with logs,
+  metrics, and traces
+- [.env.example][example-env] - All environment variables with Scout
+  configuration
+- [Dockerfile][example-dockerfile] - Multi-stage production build
+- [compose.yml][example-compose] - Full stack with health checks and networks
 
-  // Configure log exporter
-  const logExporter = new OTLPLogExporter({
-    url: `${endpoint}/v1/logs`,
-  });
-
-  const loggerProvider = new LoggerProvider({
-    resource,
-    processors: [new BatchLogRecordProcessor(logExporter)],
-  });
-
-  logs.setGlobalLoggerProvider(loggerProvider);
-
-  const sdk = new NodeSDK({
-    resource,
-    traceExporter: new OTLPTraceExporter({
-      url: `${endpoint}/v1/traces`,
-    }),
-    metricReader: new PeriodicExportingMetricReader({
-      exporter: new OTLPMetricExporter({
-        url: `${endpoint}/v1/metrics`,
-      }),
-      exportIntervalMillis: 60000,
-    }),
-    instrumentations: [
-      getNodeAutoInstrumentations({
-        "@opentelemetry/instrumentation-fs": {
-          enabled: false,
-        },
-        "@opentelemetry/instrumentation-mongodb": {
-          enabled: true,
-        },
-        "@opentelemetry/instrumentation-express": {
-          enabled: true,
-        },
-        "@opentelemetry/instrumentation-http": {
-          enabled: true,
-        },
-        "@opentelemetry/instrumentation-ioredis": {
-          enabled: true,
-        },
-      }),
-      new MongooseInstrumentation({
-        requireParentSpan: false,
-      }),
-      new WinstonInstrumentation(),
-    ],
-  });
-
-  sdk.start();
-  console.log("✅ OpenTelemetry SDK initialized");
-
-  process.on("SIGTERM", () => {
-    sdk
-      .shutdown()
-      .then(() => console.log("OpenTelemetry SDK shut down successfully"))
-      .catch((error) =>
-        console.error("Error shutting down OpenTelemetry SDK", error),
-      )
-      .finally(() => process.exit(0));
-  });
-
-  return sdk;
-}
-```
-
-### Complete .env.example
-
-```bash title=".env.example" showLineNumbers
-# Application
-NODE_ENV=production
-APP_PORT=3000
-APP_VERSION=1.0.0
-
-# OpenTelemetry
-OTEL_SERVICE_NAME=express-mongodb-app
-OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
-
-# MongoDB
-MONGODB_URI=mongodb://mongo:27017/express-app
-
-# Redis (for BullMQ job queue)
-REDIS_URL=redis://redis:6379
-
-# JWT Authentication
-JWT_SECRET=your-secret-key-change-in-production
-JWT_EXPIRES_IN=7d
-
-# Security
-CORS_ORIGIN=*
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX=100
-
-# Scout Collector (optional)
-SCOUT_ENDPOINT=https://your-tenant.base14.io:4318
-SCOUT_CLIENT_ID=your_client_id
-SCOUT_CLIENT_SECRET=your_client_secret
-```
+[example-telemetry]: https://github.com/base-14/examples/tree/main/nodejs/express-typescript-mongodb/src/telemetry.ts
+[example-env]: https://github.com/base-14/examples/tree/main/nodejs/express-typescript-mongodb/.env.example
+[example-dockerfile]: https://github.com/base-14/examples/tree/main/nodejs/express-typescript-mongodb/Dockerfile
+[example-compose]: https://github.com/base-14/examples/tree/main/nodejs/express-typescript-mongodb/compose.yml
 
 ## References
 
