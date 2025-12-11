@@ -5,6 +5,11 @@ authors: [nimisha-gj]
 tags: [observability, engineering, best-practices]
 ---
 
+<!-- markdownlint-disable MD033 -->
+<div className="blog-cover">
+  <img src={require('./cover.png').default} alt="Service map graph" />
+</div>
+<!-- markdownlint-enable MD033 -->
 
 We’ve gotten pretty good at collecting observability data,
 but we’re terrible at making sense of it. Most teams—especially
