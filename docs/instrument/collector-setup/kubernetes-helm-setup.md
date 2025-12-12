@@ -668,7 +668,7 @@ scout:
             grpc:
               endpoint: ${env:MY_POD_IP}:4317
         k8s_cluster:
-          auth_type: serviceaccount
+          auth_type: serviceAccount
           collection_interval: 60s
           node_conditions_to_report: [
             ready, 
