@@ -74,7 +74,7 @@ Download the required files:
 curl -o task-definition.json \
   https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/fargate/task-definition.json
 
-curl -o scout-agent-collector-config.yaml \
+curl -o scout-service-collector-config.yaml \
   https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/fargate/scout-collector-config.yaml
 ```
 
@@ -82,8 +82,6 @@ curl -o scout-agent-collector-config.yaml \
 
 - This service mode collector can include receivers for AWS services (RDS,
   ElastiCache, Amazon MQ) and external databases.
-- Replace the `clientId`, `clientSecret`, `Endpoint`, and `TokenUrl`
-  placeholders with actual values.
 - Review the configuration to add or remove pipelines based on your monitoring
   needs.
 - Visit
@@ -92,6 +90,21 @@ curl -o scout-agent-collector-config.yaml \
 
 :::
 
+#### Generate Configuration
+
+Replace the placeholders with your actual values:
+
+```shell
+SERVICE_NAME='<service name>' \
+ENVIRONMENT='<environment>' \
+SCOUT_ENDPOINT='<scout backend endpoint>' \
+SCOUT_CLIENT_ID='<client id>' \
+SCOUT_CLIENT_SECRET='<client secret>' \
+SCOUT_TOKEN_URL='<token url>' \
+envsubst < scout-service-collector-config.yaml > scout-service-collector-config.yaml.tmp && \
+mv scout-service-collector-config.yaml.tmp scout-service-collector-config.yaml
+```
+
 #### Store Configuration in AWS Secrets Manager
 
 ```shell
@@ -99,7 +112,7 @@ curl -o scout-agent-collector-config.yaml \
 aws secretsmanager create-secret \
   --name "/ecs/scout/otelcol-service-config" \
   --description "Scout OTEL Service Collector Configuration for Fargate" \
-  --secret-string file://scout-agent-collector-config.yaml
+  --secret-string file://scout-service-collector-config.yaml
 ```
 
 If the secret already exists, update it:
@@ -107,31 +120,136 @@ If the secret already exists, update it:
 ```shell
 aws secretsmanager update-secret \
   --secret-id "/ecs/scout/otelcol-service-config" \
-  --secret-string file://scout-agent-collector-config.yaml
+  --secret-string file://scout-service-collector-config.yaml
 ```
+
+#### Get Secret ARN
+
+After creating the secret, retrieve its full ARN (required for task definition):
+
+```shell
+aws secretsmanager describe-secret \
+  --secret-id "/ecs/scout/otelcol-service-config" \
+  --query 'ARN' \
+  --output text
+```
+
+Save this ARN - you'll need it in the next step.
 
 #### Generate Task Definition
 
-```shell
-export AWS_TASK_EXECUTION_ROLE=<ARN of the task execution Role>
+Replace the placeholders with your actual values:
 
-AWS_TASK_EXECUTION_ROLE=${AWS_TASK_EXECUTION_ROLE} \
+```shell
+AWS_TASK_EXECUTION_ROLE='<task execution role ARN>' \
 TASK_NAME='Scout_service_collector' \
 SERVICE_NAME='Scout_service_collector' \
-SECRET_NAME='/ecs/scout/otelcol-service-config' \
+SECRET_ARN='<secret ARN from previous step>' \
 envsubst < task-definition.json > scout-service-collector-task-definition.json
 ```
 
+:::tip
+To find your ECS task execution role ARN:
+
+```shell
+aws iam list-roles --query 'Roles[?RoleName==`ecsTaskExecutionRole`].Arn' --output text
+```
+
+:::
+
+#### Register Task Definition
+
+Register the task definition with ECS:
+
+```shell
+aws ecs register-task-definition \
+  --cli-input-json file://scout-service-collector-task-definition.json
+```
+
+#### Get Network Configuration
+
+Fargate requires network configuration. Get your VPC subnets and security groups:
+
+```shell
+# Get default VPC subnets
+aws ec2 describe-subnets \
+  --filters "Name=default-for-az,Values=true" \
+  --query 'Subnets[*].SubnetId' \
+  --output text
+
+# Get the VPC ID from one of the subnets
+VPC_ID=$(aws ec2 describe-subnets \
+  --subnet-ids <subnet-id-from-above> \
+  --query 'Subnets[0].VpcId' \
+  --output text)
+
+# Get the default security group for the VPC
+aws ec2 describe-security-groups \
+  --filters "Name=vpc-id,Values=$VPC_ID" "Name=group-name,Values=default" \
+  --query 'SecurityGroups[0].GroupId' \
+  --output text
+```
+
 #### Deploy Service
+
+Create the ECS service with network configuration:
 
 ```shell
 aws ecs create-service \
   --cluster <cluster-name> \
   --service-name scout-service-collector \
-  --task-definition scout-service-collector-task-definition \
+  --task-definition Scout_service_collector:1 \
   --scheduling-strategy REPLICA \
   --desired-count 1 \
-  --launch-type FARGATE
+  --launch-type FARGATE \
+  --network-configuration "awsvpcConfiguration={subnets=[<subnet-id-1>,<subnet-id-2>,<subnet-id-3>],securityGroups=[<security-group-id>],assignPublicIp=ENABLED}"
+```
+
+:::warning
+
+- Replace `<cluster-name>` with your ECS cluster name
+- Replace subnet IDs with the values from the previous step
+- Replace security group ID with the value from the previous step
+- Ensure all subnets belong to the same VPC as the security group
+
+:::
+
+#### Verify Deployment
+
+Check the service status:
+
+```shell
+aws ecs describe-services \
+  --cluster <cluster-name> \
+  --services scout-service-collector \
+  --query 'services[0].{Name:serviceName,Status:status,Running:runningCount,Desired:desiredCount}' \
+  --output table
+```
+
+Wait for the task to reach RUNNING status (may take 1-2 minutes):
+
+```shell
+# List running tasks
+aws ecs list-tasks \
+  --cluster <cluster-name> \
+  --service-name scout-service-collector \
+  --desired-status RUNNING
+
+# Check task details
+aws ecs describe-tasks \
+  --cluster <cluster-name> \
+  --tasks <task-arn-from-above> \
+  --query 'tasks[0].{Status:lastStatus,Health:healthStatus,Container:containers[0].name}' \
+  --output table
+```
+
+If the task stops or fails, check the stopped reason:
+
+```shell
+aws ecs describe-tasks \
+  --cluster <cluster-name> \
+  --tasks <task-arn> \
+  --query 'tasks[0].stoppedReason'
 ```
 
 </TabItem>
@@ -150,7 +268,7 @@ curl -o task-definition.json \
   https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/fargate/task-definition.json
 
 curl -o scout-sidecar-collector-config.yaml \
-  https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/fargate/scout-collector-config.yaml
+  https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/fargate/scout-sidecar-collector-config.yaml
 ```
 
 :::warning
@@ -158,8 +276,6 @@ curl -o scout-sidecar-collector-config.yaml \
 - The sidecar collector should focus on application-specific telemetry only.
 - Avoid including AWS service receivers (RDS, ElastiCache) in sidecar mode to
   prevent duplication.
-- Replace the `clientId`, `clientSecret`, `Endpoint`, and `TokenUrl`
-  placeholders with actual values.
 - Configure this collector to receive OTLP data from your application
   containers.
 - Visit
@@ -167,6 +283,21 @@ curl -o scout-sidecar-collector-config.yaml \
   for more details on the configuration.
 
 :::
+
+#### Generate Configuration
+
+Replace the placeholders with your actual values:
+
+```shell
+SERVICE_NAME='<service name>' \
+ENVIRONMENT='<environment>' \
+SCOUT_ENDPOINT='<scout backend endpoint>' \
+SCOUT_CLIENT_ID='<client id>' \
+SCOUT_CLIENT_SECRET='<client secret>' \
+SCOUT_TOKEN_URL='<token url>' \
+envsubst < scout-sidecar-collector-config.yaml > scout-sidecar-collector-config.yaml.tmp && \
+mv scout-sidecar-collector-config.yaml.tmp scout-sidecar-collector-config.yaml
+```
 
 #### Store Configuration in AWS Secrets Manager
 
@@ -233,10 +364,12 @@ your existing application task definition as a sidecar:
 
 #### Update IAM Permissions
 
-Ensure your ECS Task Execution Role has permission to access the secrets (adjust
-resources based on your selected deployment mode):
+Your ECS Task Execution Role needs permission to access Secrets Manager.
 
-```json
+First, create the IAM policy document:
+
+```shell
+cat > /tmp/secrets-policy.json << 'EOF'
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -250,7 +383,30 @@ resources based on your selected deployment mode):
     }
   ]
 }
+EOF
 ```
+
+Replace `<aws-region>` and `<aws-account-id>` with your values:
+
+- Region: The AWS region where you created the secret (e.g., `us-east-1`)
+- Account ID: Your 12-digit AWS account ID
+
+Then attach the policy to your task execution role:
+
+```shell
+aws iam put-role-policy \
+  --role-name ecsTaskExecutionRole \
+  --policy-name ScoutSecretsAccess \
+  --policy-document file:///tmp/secrets-policy.json
+```
+
+:::warning Common Error
+If you skip this step, your tasks will fail with:
+`ResourceInitializationError: unable to retrieve secrets from ssm`
+
+This happens because the task execution role cannot access
+the secret stored in Secrets Manager.
+:::
 
 ```mdx-code-block
 </TabItem>
@@ -282,8 +438,6 @@ curl -o scout-agent-collector-config.yaml \
 
 - Use PostgreSQL, Redis, RabbitMQ, AWS Firehose, etc., receivers in the agent
   collector to avoid data duplication.
-- Replace the `clientId`, `clientSecret`, `Endpoint`, and `TokenUrl`
-  placeholders with their actual values.
 - Review the configuration to remove or add new pipelines before proceeding.
 - Visit
   [docs.base14.io](https://docs.base14.io/instrument/collector-setup/otel-collector-config)
@@ -294,14 +448,14 @@ curl -o scout-agent-collector-config.yaml \
 #### Generate Configuration
 
 ```shell
-export SERVICE_NAME=<service name>
-
-ENVIRONMENT=development \
+SERVICE_NAME='<service name>' \
+ENVIRONMENT='<environment>' \
 SCOUT_ENDPOINT='<scout backend endpoint>' \
 SCOUT_CLIENT_ID='<client id>' \
 SCOUT_CLIENT_SECRET='<client secret>' \
 SCOUT_TOKEN_URL='<token url>' \
-envsubst < scout-agent-collector-config.yaml > scout-agent-collector-config.yaml
+envsubst < scout-agent-collector-config.yaml > scout-agent-collector-config.yaml.tmp && \
+mv scout-agent-collector-config.yaml.tmp scout-agent-collector-config.yaml
 ```
 
 #### Store Configuration in AWS Secrets Manager
@@ -368,8 +522,6 @@ curl -o scout-daemon-collector-config.yaml \
 
 - The daemon collector focuses on infrastructure metrics and should not include
   application-specific receivers.
-- Replace the `clientId`, `clientSecret`, `Endpoint`, and `TokenUrl`
-  placeholders with their actual values.
 - Review the configuration to remove or add new pipelines before proceeding.
 - Visit
   [docs.base14.io](https://docs.base14.io/instrument/collector-setup/otel-collector-config)
@@ -380,14 +532,14 @@ curl -o scout-daemon-collector-config.yaml \
 #### Generate Configuration
 
 ```shell
-export SERVICE_NAME=<service name>
-
-ENVIRONMENT=development \
+SERVICE_NAME='<service name>' \
+ENVIRONMENT='<environment>' \
 SCOUT_ENDPOINT='<scout backend endpoint>' \
 SCOUT_CLIENT_ID='<client id>' \
 SCOUT_CLIENT_SECRET='<client secret>' \
 SCOUT_TOKEN_URL='<token url>' \
-envsubst < scout-daemon-collector-config.yaml > scout-daemon-collector-config.yaml
+envsubst < scout-daemon-collector-config.yaml > scout-daemon-collector-config.yaml.tmp && \
+mv scout-daemon-collector-config.yaml.tmp scout-daemon-collector-config.yaml
 ```
 
 #### Store Configuration in AWS Secrets Manager
@@ -462,8 +614,6 @@ curl -o scout-agent-collector-config.yaml \
 - Use PostgreSQL, Redis, RabbitMQ, AWS Firehose, etc., receivers in the agent
   collector to avoid data duplication between daemon and agent collectors.
 - The daemon collector should focus on infrastructure metrics only.
-- Replace the `clientId`, `clientSecret`, `Endpoint`, and `TokenUrl`
-  placeholders with their actual values in both configurations.
 - Review both configurations to remove or add new pipelines before proceeding.
 - Visit
   [docs.base14.io](https://docs.base14.io/instrument/collector-setup/otel-collector-config)
@@ -474,21 +624,23 @@ curl -o scout-agent-collector-config.yaml \
 #### Generate Configuration
 
 ```shell
-export SERVICE_NAME=<service name>
-ENVIRONMENT=development \
+SERVICE_NAME='<service name>' \
+ENVIRONMENT='<environment>' \
 SCOUT_ENDPOINT='<scout backend endpoint>' \
 SCOUT_CLIENT_ID='<client id>' \
 SCOUT_CLIENT_SECRET='<client secret>' \
 SCOUT_TOKEN_URL='<token url>' \
-envsubst < scout-agent-collector-config.yaml > scout-agent-collector-config.yaml
+envsubst < scout-agent-collector-config.yaml > scout-agent-collector-config.yaml.tmp && \
+mv scout-agent-collector-config.yaml.tmp scout-agent-collector-config.yaml
 
-export SERVICE_NAME=<service name>
-ENVIRONMENT=development \
+SERVICE_NAME='<service name>' \
+ENVIRONMENT='<environment>' \
 SCOUT_ENDPOINT='<scout backend endpoint>' \
 SCOUT_CLIENT_ID='<client id>' \
 SCOUT_CLIENT_SECRET='<client secret>' \
 SCOUT_TOKEN_URL='<token url>' \
-envsubst < scout-daemon-collector-config.yaml > scout-daemon-collector-config.yaml
+envsubst < scout-daemon-collector-config.yaml > scout-daemon-collector-config.yaml.tmp && \
+mv scout-daemon-collector-config.yaml.tmp scout-daemon-collector-config.yaml
 ```
 
 #### Store Configurations in AWS Secrets Manager
