@@ -1,13 +1,4 @@
 receivers:
-  postgres:
-    endpoint: localhost:5432
-    transport: tcp
-    username: postgres
-    password: postgres
-    databases:
-      - postres
-    collection_interval: 5m
-
   otlp:
     protocols:
       grpc:
@@ -27,22 +18,17 @@ processors:
   resource:
     attributes:
       - key: service.name
-        value: <service.name>
+        value: ${SERVICE_NAME}
         action: upsert
   resource/ecs:
     attributes:
       - key: service.name
         value: ecs
         action: upsert
-  resource/postgres:
-    attributes:
-      - key: service.name
-        value: postgres
-        action: upsert
   resource/env:
     attributes:
       - key: environment
-        value: staging
+        value: ${ENVIRONMENT}
         action: upsert
   resourcedetection:
     detectors: [ecs, system]
@@ -110,10 +96,6 @@ service:
     metrics:
       receivers: [otlp]
       processors: [resourcedetection, resource/env, resource]
-      exporters: [otlphttp/b14]
-    metrics/postgres:
-      receivers: [postgres]
-      processors: [resourcedetection, resource/env, resource/postgres]
       exporters: [otlphttp/b14]
     traces:
       receivers: [otlp]

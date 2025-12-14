@@ -7,13 +7,13 @@
           "name": "grpc-port",
           "containerPort": 4317,
           "hostPort": 4317,
-          "protocol": "tcp",
+          "protocol": "tcp"
         },
         {
           "name": "http-port",
           "containerPort": 4318,
           "hostPort": 4318,
-          "protocol": "tcp",
+          "protocol": "tcp"
         }
       ],
       "cpu": 256,
@@ -29,16 +29,18 @@
       "secrets": [
         {
           "name": "SCOUT_CONFIG_CONTENT",
-          "valueFrom": "${SECRET_NAME}"
+          "valueFrom": "${SECRET_ARN}"
         }
       ],
-      "systemControls": [],
-    },
+      "systemControls": []
+    }
   ],
   "family": "${SERVICE_NAME}",
   "requiresCompatibilities": [
     "FARGATE"
   ],
   "networkMode": "awsvpc",
-  "volumes": [],
+  "cpu": "256",
+  "memory": "512",
+  "volumes": []
 }
