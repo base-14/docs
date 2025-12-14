@@ -150,9 +150,11 @@ envsubst < task-definition.json > scout-service-collector-task-definition.json
 
 :::tip
 To find your ECS task execution role ARN:
+
 ```shell
 aws iam list-roles --query 'Roles[?RoleName==`ecsTaskExecutionRole`].Arn' --output text
 ```
+
 :::
 
 #### Register Task Definition
@@ -204,10 +206,12 @@ aws ecs create-service \
 ```
 
 :::warning
+
 - Replace `<cluster-name>` with your ECS cluster name
 - Replace subnet IDs with the values from the previous step
 - Replace security group ID with the value from the previous step
 - Ensure all subnets belong to the same VPC as the security group
+
 :::
 
 #### Verify Deployment
@@ -383,6 +387,7 @@ EOF
 ```
 
 Replace `<aws-region>` and `<aws-account-id>` with your values:
+
 - Region: The AWS region where you created the secret (e.g., `us-east-1`)
 - Account ID: Your 12-digit AWS account ID
 
@@ -399,7 +404,8 @@ aws iam put-role-policy \
 If you skip this step, your tasks will fail with:
 `ResourceInitializationError: unable to retrieve secrets from ssm`
 
-This happens because the task execution role cannot access the secret stored in Secrets Manager.
+This happens because the task execution role cannot access
+the secret stored in Secrets Manager.
 :::
 
 ```mdx-code-block
