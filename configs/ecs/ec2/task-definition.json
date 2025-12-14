@@ -7,20 +7,20 @@
           "name": "grpc-port",
           "containerPort": 4317,
           "hostPort": 4317,
-          "protocol": "tcp",
+          "protocol": "tcp"
         },
         {
           "name": "http-port",
           "containerPort": 4318,
           "hostPort": 4318,
-          "protocol": "tcp",
+          "protocol": "tcp"
         },
         {
           "name": "fluentforward-port",
           "containerPort": 24224,
           "hostPort": 24224,
-          "protocol": "tcp",
-        },
+          "protocol": "tcp"
+        }
       ],
       "cpu": 256,
       "memory": 512,
@@ -66,11 +66,11 @@
       "secrets": [
         {
           "name": "SCOUT_CONFIG_CONTENT",
-          "valueFrom": "${SECRET_NAME}"
+          "valueFrom": "${SECRET_ARN}"
         }
       ],
-      "systemControls": [],
-    },
+      "systemControls": []
+    }
   ],
   "family": "${SERVICE_NAME}",
   "requiresCompatibilities": [
@@ -114,5 +114,5 @@
         "sourcePath": "/cgroup"
       }
     }
-  ],
+  ]
 }

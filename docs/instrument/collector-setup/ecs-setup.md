@@ -476,16 +476,47 @@ aws secretsmanager update-secret \
   --secret-string file://scout-agent-collector-config.yaml
 ```
 
-#### Generate Task Definition
+#### Get Secret ARN
+
+After creating the secret, retrieve its full ARN (required for task definition):
 
 ```shell
-export AWS_TASK_EXECUTION_ROLE=<ARN of the task execution Role>
+aws secretsmanager describe-secret \
+  --secret-id "/ecs/scout/otelcol-agent-config" \
+  --query 'ARN' \
+  --output text
+```
 
-AWS_TASK_EXECUTION_ROLE=${AWS_TASK_EXECUTION_ROLE} \
+Save this ARN - you'll need it in the next step.
+
+#### Generate Task Definition
+
+Replace the placeholders with your actual values:
+
+```shell
+AWS_TASK_EXECUTION_ROLE='<task execution role ARN>' \
 TASK_NAME='Scout_agent_collector' \
 SERVICE_NAME='Scout_agent_collector' \
-SECRET_NAME='/ecs/scout/otelcol-agent-config' \
+SECRET_ARN='<secret ARN from previous step>' \
 envsubst < task-definition.json > scout-agent-collector-task-definition.json
+```
+
+:::tip
+To find your ECS task execution role ARN:
+
+```shell
+aws iam list-roles --query 'Roles[?RoleName==`ecsTaskExecutionRole`].Arn' --output text
+```
+
+:::
+
+#### Register Task Definition
+
+Register the task definition with ECS:
+
+```shell
+aws ecs register-task-definition \
+  --cli-input-json file://scout-agent-collector-task-definition.json
 ```
 
 #### Deploy Service
@@ -494,10 +525,22 @@ envsubst < task-definition.json > scout-agent-collector-task-definition.json
 aws ecs create-service \
   --cluster <cluster-name> \
   --service-name scout-agent-collector \
-  --task-definition scout-agent-collector-task-definition \
+  --task-definition Scout_agent_collector:1 \
   --scheduling-strategy REPLICA \
   --desired-count 1 \
   --launch-type EC2
+```
+
+#### Verify Deployment
+
+Check the service status:
+
+```shell
+aws ecs describe-services \
+  --cluster <cluster-name> \
+  --services scout-agent-collector \
+  --query 'services[0].{Name:serviceName,Status:status,Running:runningCount,Desired:desiredCount}' \
+  --output table
 ```
 
 </TabItem>
@@ -560,16 +603,47 @@ aws secretsmanager update-secret \
   --secret-string file://scout-daemon-collector-config.yaml
 ```
 
-#### Generate Task Definition
+#### Get Secret ARN
+
+After creating the secret, retrieve its full ARN (required for task definition):
 
 ```shell
-export AWS_TASK_EXECUTION_ROLE=<ARN of the task execution Role>
+aws secretsmanager describe-secret \
+  --secret-id "/ecs/scout/otelcol-daemon-config" \
+  --query 'ARN' \
+  --output text
+```
 
-AWS_TASK_EXECUTION_ROLE=${AWS_TASK_EXECUTION_ROLE} \
+Save this ARN - you'll need it in the next step.
+
+#### Generate Task Definition
+
+Replace the placeholders with your actual values:
+
+```shell
+AWS_TASK_EXECUTION_ROLE='<task execution role ARN>' \
 TASK_NAME='Scout_daemon_collector' \
 SERVICE_NAME='Scout_daemon_collector' \
-SECRET_NAME='/ecs/scout/otelcol-daemon-config' \
+SECRET_ARN='<secret ARN from previous step>' \
 envsubst < task-definition.json > scout-daemon-collector-task-definition.json
+```
+
+:::tip
+To find your ECS task execution role ARN:
+
+```shell
+aws iam list-roles --query 'Roles[?RoleName==`ecsTaskExecutionRole`].Arn' --output text
+```
+
+:::
+
+#### Register Task Definition
+
+Register the task definition with ECS:
+
+```shell
+aws ecs register-task-definition \
+  --cli-input-json file://scout-daemon-collector-task-definition.json
 ```
 
 #### Deploy Daemon Service
@@ -578,9 +652,21 @@ envsubst < task-definition.json > scout-daemon-collector-task-definition.json
 aws ecs create-service \
   --cluster <cluster-name> \
   --service-name scout-daemon-collector \
-  --task-definition scout-daemon-collector-task-definition \
+  --task-definition Scout_daemon_collector:1 \
   --scheduling-strategy DAEMON \
   --launch-type EC2
+```
+
+#### Verify Deployment
+
+Check the service status:
+
+```shell
+aws ecs describe-services \
+  --cluster <cluster-name> \
+  --services scout-daemon-collector \
+  --query 'services[0].{Name:serviceName,Status:status,Running:runningCount,Desired:desiredCount}' \
+  --output table
 ```
 
 </TabItem>
@@ -658,24 +744,67 @@ aws secretsmanager create-secret \
   --secret-string file://scout-agent-collector-config.yaml
 ```
 
-#### Generate Both Task Definitions
+#### Get Secret ARNs
+
+Retrieve the ARNs for both secrets (required for task definitions):
 
 ```shell
-export AWS_TASK_EXECUTION_ROLE=<ARN of the task execution Role>
+# Get daemon config secret ARN
+aws secretsmanager describe-secret \
+  --secret-id "/ecs/scout/otelcol-daemon-config" \
+  --query 'ARN' \
+  --output text
 
+# Get agent config secret ARN
+aws secretsmanager describe-secret \
+  --secret-id "/ecs/scout/otelcol-agent-config" \
+  --query 'ARN' \
+  --output text
+```
+
+Save both ARNs - you'll need them in the next step.
+
+#### Generate Both Task Definitions
+
+Replace the placeholders with your actual values:
+
+```shell
 # Generate daemon collector task definition
-AWS_TASK_EXECUTION_ROLE=${AWS_TASK_EXECUTION_ROLE} \
+AWS_TASK_EXECUTION_ROLE='<task execution role ARN>' \
 TASK_NAME='Scout_daemon_collector' \
 SERVICE_NAME='Scout_daemon_collector' \
-SECRET_NAME='/ecs/scout/otelcol-daemon-config' \
+SECRET_ARN='<daemon secret ARN from previous step>' \
 envsubst < task-definition.json > scout-daemon-collector-task-definition.json
 
 # Generate agent collector task definition
-AWS_TASK_EXECUTION_ROLE=${AWS_TASK_EXECUTION_ROLE} \
+AWS_TASK_EXECUTION_ROLE='<task execution role ARN>' \
 TASK_NAME='Scout_agent_collector' \
 SERVICE_NAME='Scout_agent_collector' \
-SECRET_NAME='/ecs/scout/otelcol-agent-config' \
+SECRET_ARN='<agent secret ARN from previous step>' \
 envsubst < task-definition.json > scout-agent-collector-task-definition.json
+```
+
+:::tip
+To find your ECS task execution role ARN:
+
+```shell
+aws iam list-roles --query 'Roles[?RoleName==`ecsTaskExecutionRole`].Arn' --output text
+```
+
+:::
+
+#### Register Both Task Definitions
+
+Register both task definitions with ECS:
+
+```shell
+# Register daemon task definition
+aws ecs register-task-definition \
+  --cli-input-json file://scout-daemon-collector-task-definition.json
+
+# Register agent task definition
+aws ecs register-task-definition \
+  --cli-input-json file://scout-agent-collector-task-definition.json
 ```
 
 #### Deploy Both Services
@@ -685,7 +814,7 @@ envsubst < task-definition.json > scout-agent-collector-task-definition.json
 aws ecs create-service \
   --cluster <cluster-name> \
   --service-name scout-daemon-collector \
-  --task-definition scout-daemon-collector-task-definition \
+  --task-definition Scout_daemon_collector:1 \
   --scheduling-strategy DAEMON \
   --launch-type EC2
 
@@ -693,10 +822,30 @@ aws ecs create-service \
 aws ecs create-service \
   --cluster <cluster-name> \
   --service-name scout-agent-collector \
-  --task-definition scout-agent-collector-task-definition \
+  --task-definition Scout_agent_collector:1 \
   --scheduling-strategy REPLICA \
   --desired-count 1 \
   --launch-type EC2
+```
+
+#### Verify Deployments
+
+Check both services status:
+
+```shell
+# Check daemon service
+aws ecs describe-services \
+  --cluster <cluster-name> \
+  --services scout-daemon-collector \
+  --query 'services[0].{Name:serviceName,Status:status,Running:runningCount,Desired:desiredCount}' \
+  --output table
+
+# Check agent service
+aws ecs describe-services \
+  --cluster <cluster-name> \
+  --services scout-agent-collector \
+  --query 'services[0].{Name:serviceName,Status:status,Running:runningCount,Desired:desiredCount}' \
+  --output table
 ```
 
 </TabItem>
@@ -704,10 +853,13 @@ aws ecs create-service \
 
 #### Update IAM Permissions
 
-Ensure your ECS Task Execution Role has permission to access the secrets (adjust
-resources based on your selected deployment mode):
+Your ECS Task Execution Role needs permission to access Secrets Manager.
 
-```json
+First, create the IAM policy document (adjust resources based on your
+selected deployment mode):
+
+```shell
+cat > /tmp/secrets-policy-ec2.json << 'EOF'
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -721,7 +873,22 @@ resources based on your selected deployment mode):
     }
   ]
 }
+EOF
 ```
+
+Then attach the policy to your task execution role:
+
+```shell
+aws iam put-role-policy \
+  --role-name ecsTaskExecutionRole \
+  --policy-name ScoutSecretsAccessEC2 \
+  --policy-document file:///tmp/secrets-policy-ec2.json
+```
+
+:::warning Common Error
+If you skip this step, your tasks will fail with:
+`ResourceInitializationError: unable to retrieve secrets from ssm`
+:::
 
 ```mdx-code-block
 </TabItem>
