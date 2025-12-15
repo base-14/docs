@@ -1,13 +1,4 @@
 receivers:
-  postgres:
-    endpoint: localhost:5432
-    transport: tcp
-    username: ${POSTGRES_USERNAME}
-    password: ${POSTGRES_PASSWORD}
-    databases:
-      - postgres
-    collection_interval: 5m
-
   otlp:
     protocols:
       grpc:
@@ -21,9 +12,9 @@ processors:
     send_batch_size: 8192
     send_batch_max_size: 10000
   memory_limiter:
-    check_interval: 5s
-    limit_percentage: 80
-    spike_limit_percentage: 20
+    check_interval: 1s
+    limit_percentage: 70
+    spike_limit_percentage: 30
   resource:
     attributes:
       - key: service.name
@@ -33,11 +24,6 @@ processors:
     attributes:
       - key: service.name
         value: ecs
-        action: upsert
-  resource/postgres:
-    attributes:
-      - key: service.name
-        value: postgres
         action: upsert
   resource/env:
     attributes:
@@ -117,10 +103,6 @@ service:
     metrics:
       receivers: [otlp]
       processors: [resourcedetection, resource/env, resource]
-      exporters: [otlphttp/b14]
-    metrics/postgres:
-      receivers: [postgres]
-      processors: [resourcedetection, resource/env, resource/postgres]
       exporters: [otlphttp/b14]
     traces:
       receivers: [otlp]

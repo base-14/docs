@@ -5,6 +5,8 @@ receivers:
         endpoint: "0.0.0.0:4317"
       http:
         endpoint: "0.0.0.0:4318"
+  awsecscontainermetrics:
+    collection_interval: 10s
 
 processors:
   batch:
@@ -12,16 +14,23 @@ processors:
     send_batch_size: 8192
     send_batch_max_size: 10000
   memory_limiter:
-    check_interval: 5s
-    limit_percentage: 80
+    check_interval: 1s
+    limit_percentage: 70
     spike_limit_percentage: 30
+  resource/env:
+    attributes:
+      - key: environment
+        value: ${ENVIRONMENT}
+        action: upsert
   resource:
     attributes:
       - key: service.name
         value: ${SERVICE_NAME}
         action: upsert
-      - key: environment
-        value: ${ENVIRONMENT}
+  resource/ecs:
+    attributes:
+      - key: service.name
+        value: ecs
         action: upsert
 
 exporters:
@@ -31,6 +40,11 @@ exporters:
       authenticator: oauth2client
     tls:
       insecure_skip_verify: true
+    retry_on_failure:
+      enabled: true
+      initial_interval: 2s
+      max_interval: 10s
+      max_elapsed_time: 60s
   debug:
     verbosity: detailed
 
@@ -51,13 +65,17 @@ service:
   pipelines:
     logs:
       receivers: [otlp]
-      processors: [resource, batch, memory_limiter]
+      processors: [resource/env, resource, batch, memory_limiter]
       exporters: [otlphttp/b14]
     metrics:
       receivers: [otlp]
-      processors: [resource, batch, memory_limiter]
+      processors: [resource/env, resource, batch, memory_limiter]
+      exporters: [otlphttp/b14]
+    metrics/ecs:
+      receivers: [awsecscontainermetrics]
+      processors: [resource/env, resource/ecs, batch, memory_limiter]
       exporters: [otlphttp/b14]
     traces:
       receivers: [otlp]
-      processors: [resource, batch, memory_limiter]
+      processors: [resource/env, resource, batch, memory_limiter]
       exporters: [otlphttp/b14]
