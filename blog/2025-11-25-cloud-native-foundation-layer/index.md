@@ -10,7 +10,9 @@ image: ./cover.png
 
 <!-- markdownlint-disable MD033 -->
 <div className="blog-cover">
-  <img src={require('./cover.png').default} alt="Cloud-Native Foundation Layer" />
+  <img
+    src={require('./cover.png').default}
+    alt="Cloud-Native Foundation Layer" />
 </div>
 <!-- markdownlint-enable MD033 -->
 

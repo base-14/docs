@@ -870,7 +870,8 @@ fine-grained control over spans and attributes.
 
 > 💡 **Java Agent Users**: The Java agent only supports annotation-based custom
 > instrumentation (`@WithSpan`, `@SpanAttribute`). For full programmatic API
-> access shown in this section, use the OpenTelemetry SDK Integration. For Java Agent
+> access shown in this section, use the OpenTelemetry SDK Integration. For Java
+> Agent
 > annotation examples, see [Custom Instrumentation with
 > Agent](./spring-boot-alternatives.md#custom-instrumentation-with-agent).
 >
@@ -1536,7 +1537,8 @@ otel.instrumentation.annotations.enabled=false
 
 For most cases:
 
-- **Quick start / Legacy apps**: Use **Java Agent** (zero code changes, fastest setup)
+- **Quick start / Legacy apps**: Use **Java Agent** (zero code changes, fastest
+  setup)
 - **Production with flexibility**: Use **OpenTelemetry SDK Integration** (full API
   access, Spring config, GraalVM support)
 - **Future (after GA)**: Consider **Spring Boot 4.0 Native** (Spring-native conventions)

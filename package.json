@@ -30,7 +30,7 @@
     "@docusaurus/module-type-aliases": "^3.9.2",
     "@docusaurus/tsconfig": "^3.9.2",
     "@docusaurus/types": "^3.9.2",
-    "markdownlint-cli": "^0.46.0",
+    "markdownlint-cli": "^0.47.0",
     "typescript": "^5.9.3"
   },
   "browserslist": {

@@ -1394,8 +1394,8 @@ these resources to maximize your observability:
 
 ### Deployment and Operations
 
-- **[Docker Compose Setup](../../collector-setup/docker-compose-example.md)** - Set
-  up Scout Collector for local development and testing
+- **[Docker Compose Setup](../../collector-setup/docker-compose-example.md)** -
+  Set up Scout Collector for local development and testing
 
 ## Complete Example
 

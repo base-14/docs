@@ -66,7 +66,8 @@ This documentation is designed for:
 - **Engineering teams:**
   migrating from DataDog, New Relic, or other commercial APM solutions
 - **Developers:**
-  debugging performance issues, slow database queries, or N+1 problems in Rails applications
+  debugging performance issues, slow database queries, or N+1 problems in Rails
+  applications
 - **Platform teams:**
   standardizing observability across multiple Rails services
 
@@ -1462,8 +1463,8 @@ these resources to maximize your observability:
 
 ### Deployment and Operations
 
-- **[Docker Compose Setup](../../collector-setup/docker-compose-example.md)** - Set
-  up Scout Collector for local development and testing
+- **[Docker Compose Setup](../../collector-setup/docker-compose-example.md)** -
+  Set up Scout Collector for local development and testing
 
 ## Complete Example
 
