@@ -2,9 +2,12 @@
 title: Connections
 sidebar_label: Connections
 sidebar_position: 6
+description:
+  Monitor PostgreSQL connections with pgX. Track pool utilization, identify
+  connection leaks, and optimize connection management.
+keywords:
+  [pgx, postgresql connections, connection pool, idle connections, pgbouncer]
 ---
-
-# Connections
 
 The Connections tab provides comprehensive visibility into PostgreSQL connection
 management. Use it to monitor connection pools, identify connection leaks, and
@@ -27,13 +30,15 @@ The Connections tab is organized into four sections:
 
 ## Overview Section
 
-The Overview section provides immediate visibility into connection state and distribution.
+The Overview section provides immediate visibility into connection state and
+distribution.
 
 ![Overview Section](/img/pgx/07-connections-overview.png)
 
 ### Application Connections Graph
 
-A node graph visualization showing which applications are connected to PostgreSQL.
+A node graph visualization showing which applications are connected to
+PostgreSQL.
 
 **What it shows:**
 
@@ -49,7 +54,8 @@ A node graph visualization showing which applications are connected to PostgreSQ
 
 ### Current Connections
 
-**What it shows:** Current connection count as a percentage of `max_connections`.
+**What it shows:** Current connection count as a percentage of
+`max_connections`.
 
 **Healthy range:** < 80% of max_connections.
 
@@ -73,11 +79,11 @@ A node graph visualization showing which applications are connected to PostgreSQ
 
 A pie chart showing connections by state.
 
-| State | Description |
-|-------|-------------|
-| **active** | Currently executing a query |
-| **idle** | Connected but not executing |
-| **idle in transaction** | In a transaction but not executing |
+| State                             | Description                              |
+| --------------------------------- | ---------------------------------------- |
+| **active**                        | Currently executing a query              |
+| **idle**                          | Connected but not executing              |
+| **idle in transaction**           | In a transaction but not executing       |
 | **idle in transaction (aborted)** | Transaction failed, waiting for rollback |
 
 **Healthy pattern:**
@@ -113,16 +119,16 @@ is collapsed by default — click to expand.
 
 ### Table Columns
 
-| Column | Description |
-|--------|-------------|
-| **PID** | Process ID of the backend |
-| **Database** | Connected database |
-| **User** | PostgreSQL role |
+| Column          | Description               |
+| --------------- | ------------------------- |
+| **PID**         | Process ID of the backend |
+| **Database**    | Connected database        |
+| **User**        | PostgreSQL role           |
 | **Application** | Application name (if set) |
-| **Client** | Client IP address |
-| **State** | Current connection state |
-| **Query** | Current or last query |
-| **Duration** | Time in current state |
+| **Client**      | Client IP address         |
+| **State**       | Current connection state  |
+| **Query**       | Current or last query     |
+| **Duration**    | Time in current state     |
 
 ### How to Use
 
@@ -326,23 +332,24 @@ When you see many "idle in transaction" connections:
 
 ## Related Metrics
 
-The Connections section uses these metrics from the [Metrics Reference](./metrics.md):
+The Connections section uses these metrics from the
+[Metrics Reference](./metrics.md):
 
-| Panel | Primary Metrics |
-|-------|-----------------|
-| Current Connections | `pg_connections`, `pg_settings.max_connections` |
-| Connection Count | `pg_connections` |
-| Distribution | `pg_connections` (by state) |
-| Duration Heatmap | `pg_backend_age_seconds` |
-| Active Sessions | `pg_backend_info`, `pg_backend_age_seconds` |
-| Idle Analysis | `pg_connections` (state = idle) |
-| Pool Utilization | `pg_connections`, `pg_settings.max_connections` |
-| Wait Time | `pg_database_stats.session_time_ms` |
-| Application Behavior | `pg_connections` (by application) |
+| Panel                | Primary Metrics                                 |
+| -------------------- | ----------------------------------------------- |
+| Current Connections  | `pg_connections`, `pg_settings.max_connections` |
+| Connection Count     | `pg_connections`                                |
+| Distribution         | `pg_connections` (by state)                     |
+| Duration Heatmap     | `pg_backend_age_seconds`                        |
+| Active Sessions      | `pg_backend_info`, `pg_backend_age_seconds`     |
+| Idle Analysis        | `pg_connections` (state = idle)                 |
+| Pool Utilization     | `pg_connections`, `pg_settings.max_connections` |
+| Wait Time            | `pg_database_stats.session_time_ms`             |
+| Application Behavior | `pg_connections` (by application)               |
 
 ---
 
-## Next Steps
+## Related Guides
 
 - [Overview](./overview.md) — High-level cluster health
 - [Locks & Waits](./locks-waits.md) — Investigate blocked connections

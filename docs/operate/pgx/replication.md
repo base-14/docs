@@ -2,9 +2,12 @@
 title: Replication
 sidebar_label: Replication
 sidebar_position: 7
+description:
+  Monitor PostgreSQL streaming replication with pgX. Track replication lag,
+  standby health, WAL generation, and troubleshoot replication issues.
+keywords:
+  [pgx, postgresql replication, replication lag, standby, wal, streaming]
 ---
-
-# Replication
 
 The Replication tab provides comprehensive monitoring of PostgreSQL streaming
 replication. Use it to track replication lag, monitor standby health, and
@@ -54,7 +57,8 @@ A node graph visualization showing your replication topology.
 
 **What it shows:** Time-series of replication lag for each standby.
 
-**Healthy range:** Depends on requirements, typically < 1 second for hot standby.
+**Healthy range:** Depends on requirements, typically < 1 second for hot
+standby.
 
 **Types of lag:**
 
@@ -75,15 +79,15 @@ A table showing health status of all replication connections.
 
 **Columns:**
 
-| Column | Description |
-|--------|-------------|
-| **Standby** | Standby identifier |
-| **State** | Connection state (streaming, catchup, etc.) |
-| **Sync State** | async, sync, or quorum |
-| **Sent LSN** | WAL position sent |
-| **Write LSN** | WAL position written on standby |
-| **Flush LSN** | WAL position flushed on standby |
-| **Replay LSN** | WAL position replayed on standby |
+| Column         | Description                                 |
+| -------------- | ------------------------------------------- |
+| **Standby**    | Standby identifier                          |
+| **State**      | Connection state (streaming, catchup, etc.) |
+| **Sync State** | async, sync, or quorum                      |
+| **Sent LSN**   | WAL position sent                           |
+| **Write LSN**  | WAL position written on standby             |
+| **Flush LSN**  | WAL position flushed on standby             |
+| **Replay LSN** | WAL position replayed on standby            |
 
 **Healthy indicators:**
 
@@ -104,14 +108,14 @@ workload. This section is collapsed by default — click to expand.
 
 **What it shows:** Status of all replication slots.
 
-| Column | Description |
-|--------|-------------|
-| **Slot Name** | Name of the replication slot |
-| **Slot Type** | physical or logical |
-| **Active** | Whether slot is in use |
-| **WAL Status** | reserved, extended, unreserved, lost |
-| **Restart LSN** | LSN to restart from |
-| **Lag** | How far behind the slot is |
+| Column          | Description                          |
+| --------------- | ------------------------------------ |
+| **Slot Name**   | Name of the replication slot         |
+| **Slot Type**   | physical or logical                  |
+| **Active**      | Whether slot is in use               |
+| **WAL Status**  | reserved, extended, unreserved, lost |
+| **Restart LSN** | LSN to restart from                  |
+| **Lag**         | How far behind the slot is           |
 
 **When to investigate:**
 
@@ -172,10 +176,10 @@ collapsed by default — click to expand.
 
 **What it shows:** Recovery state on standby replicas.
 
-| Metric | Description |
-|--------|-------------|
-| **Last WAL Receive LSN** | Latest WAL position received |
-| **Last WAL Replay LSN** | Latest WAL position applied |
+| Metric                      | Description                            |
+| --------------------------- | -------------------------------------- |
+| **Last WAL Receive LSN**    | Latest WAL position received           |
+| **Last WAL Replay LSN**     | Latest WAL position applied            |
 | **Last Transaction Replay** | Timestamp of last replayed transaction |
 
 **When to investigate:**
@@ -227,28 +231,28 @@ Extended view of replication slots with additional metrics.
 
 **What it shows:** Detailed WAL archiving status.
 
-| Metric | Description |
-|--------|-------------|
-| **Archived Count** | Number of WAL files archived |
-| **Failed Count** | Number of archive failures |
-| **Last Archived WAL** | Most recently archived file |
-| **Last Archived Time** | When last archive completed |
-| **Last Failed WAL** | Most recent failed archive |
-| **Last Failed Time** | When last failure occurred |
+| Metric                 | Description                  |
+| ---------------------- | ---------------------------- |
+| **Archived Count**     | Number of WAL files archived |
+| **Failed Count**       | Number of archive failures   |
+| **Last Archived WAL**  | Most recently archived file  |
+| **Last Archived Time** | When last archive completed  |
+| **Last Failed WAL**    | Most recent failed archive   |
+| **Last Failed Time**   | When last failure occurred   |
 
 ### Connected Standbys Details
 
 **What it shows:** Detailed information about each standby connection.
 
-| Column | Description |
-|--------|-------------|
-| **PID** | Backend process ID |
-| **Client Address** | Standby IP address |
-| **User** | Replication user |
-| **Application Name** | Standby identifier |
-| **State** | Connection state |
-| **Sync State** | Synchronization mode |
-| **Backend Start** | When connection started |
+| Column               | Description             |
+| -------------------- | ----------------------- |
+| **PID**              | Backend process ID      |
+| **Client Address**   | Standby IP address      |
+| **User**             | Replication user        |
+| **Application Name** | Standby identifier      |
+| **State**            | Connection state        |
+| **Sync State**       | Synchronization mode    |
+| **Backend Start**    | When connection started |
 
 ### Time Since Last Reply
 
@@ -266,11 +270,11 @@ Extended view of replication slots with additional metrics.
 
 **What it shows:** Statistics for WAL sender processes.
 
-| Metric | Description |
-|--------|-------------|
-| **Sent LSN** | WAL position sent |
-| **Write LSN** | WAL written on standby |
-| **Flush LSN** | WAL flushed on standby |
+| Metric         | Description             |
+| -------------- | ----------------------- |
+| **Sent LSN**   | WAL position sent       |
+| **Write LSN**  | WAL written on standby  |
+| **Flush LSN**  | WAL flushed on standby  |
 | **Replay LSN** | WAL replayed on standby |
 
 ---
@@ -348,25 +352,26 @@ Before planned failover:
 
 ## Related Metrics
 
-The Replication section uses these metrics from the [Metrics Reference](./metrics.md):
+The Replication section uses these metrics from the
+[Metrics Reference](./metrics.md):
 
-| Panel | Primary Metrics |
-|-------|-----------------|
-| Replica Topology | `pg_replication_outgoing`, `pg_replication_incoming` |
-| Replication Lag | `pg_replication_lag_milliseconds` |
-| Health Board | `pg_replication_outgoing` |
-| Slot Status | `pg_replication_slot_info`, `pg_replication_slot_lag_bytes` |
-| WAL Generation | `pg_wal.bytes` |
-| Archive Lag | `pg_wal_archiving` |
-| Standby List | `pg_replication_outgoing_info` |
-| Recovery Progress | `pg_recovery_detail` |
-| Conflicts | `pg_database_stats.conflicts` |
-| Archive Status | `pg_wal_archiving` |
-| WAL Sender Stats | `pg_replication_outgoing` |
+| Panel             | Primary Metrics                                             |
+| ----------------- | ----------------------------------------------------------- |
+| Replica Topology  | `pg_replication_outgoing`, `pg_replication_incoming`        |
+| Replication Lag   | `pg_replication_lag_milliseconds`                           |
+| Health Board      | `pg_replication_outgoing`                                   |
+| Slot Status       | `pg_replication_slot_info`, `pg_replication_slot_lag_bytes` |
+| WAL Generation    | `pg_wal.bytes`                                              |
+| Archive Lag       | `pg_wal_archiving`                                          |
+| Standby List      | `pg_replication_outgoing_info`                              |
+| Recovery Progress | `pg_recovery_detail`                                        |
+| Conflicts         | `pg_database_stats.conflicts`                               |
+| Archive Status    | `pg_wal_archiving`                                          |
+| WAL Sender Stats  | `pg_replication_outgoing`                                   |
 
 ---
 
-## Next Steps
+## Related Guides
 
 - [Overview](./overview.md) — Cluster health overview
 - [Performance](./performance.md) — Query performance analysis

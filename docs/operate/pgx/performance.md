@@ -2,9 +2,12 @@
 title: Performance
 sidebar_label: Performance
 sidebar_position: 3
+description:
+  Analyze PostgreSQL query and transaction performance with pgX. Identify slow
+  queries, analyze execution patterns, and optimize database workloads.
+keywords:
+  [pgx, postgresql performance, query analysis, slow queries, transactions]
 ---
-
-# Performance
 
 The Performance tab provides detailed insights into query and transaction
 performance. Use it to identify slow queries, analyze execution patterns, and
@@ -26,7 +29,8 @@ The Performance tab is organized into three sections:
 
 ## Overview Section
 
-The Overview section provides immediate visibility into query performance and distribution.
+The Overview section provides immediate visibility into query performance and
+distribution.
 
 ### Average Response Time
 
@@ -110,17 +114,17 @@ section is collapsed by default — click to expand.
 
 ### Table Columns
 
-| Column | Description |
-|--------|-------------|
-| **Query** | The SQL query text (normalized) |
-| **Calls** | Number of times the query was executed |
-| **Total Time** | Cumulative execution time |
-| **Mean Time** | Average execution time per call |
-| **Min Time** | Fastest execution |
-| **Max Time** | Slowest execution |
-| **Rows** | Total rows returned/affected |
-| **Shared Blks Hit** | Buffer cache hits |
-| **Shared Blks Read** | Disk reads required |
+| Column               | Description                            |
+| -------------------- | -------------------------------------- |
+| **Query**            | The SQL query text (normalized)        |
+| **Calls**            | Number of times the query was executed |
+| **Total Time**       | Cumulative execution time              |
+| **Mean Time**        | Average execution time per call        |
+| **Min Time**         | Fastest execution                      |
+| **Max Time**         | Slowest execution                      |
+| **Rows**             | Total rows returned/affected           |
+| **Shared Blks Hit**  | Buffer cache hits                      |
+| **Shared Blks Read** | Disk reads required                    |
 
 ### How to Use
 
@@ -240,20 +244,21 @@ When users report slow application performance:
 
 ## Related Metrics
 
-The Performance section uses these metrics from the [Metrics Reference](./metrics.md):
+The Performance section uses these metrics from the
+[Metrics Reference](./metrics.md):
 
-| Panel | Primary Metrics |
-|-------|-----------------|
-| Average Response Time | `pg_statement_stats.avg_time_ms` |
-| Query Distribution | `pg_statement_stats.calls` |
-| Top Consuming Queries | `pg_statement_stats.total_time_ms`, `pg_statement_stats.calls` |
-| Query Analytics | `pg_statement_stats.*` |
-| TPS | `pg_database_stats.xact_commit` |
-| Commit/Rollback | `pg_database_stats.xact_commit`, `pg_database_stats.xact_rollback` |
+| Panel                 | Primary Metrics                                                    |
+| --------------------- | ------------------------------------------------------------------ |
+| Average Response Time | `pg_statement_stats.avg_time_ms`                                   |
+| Query Distribution    | `pg_statement_stats.calls`                                         |
+| Top Consuming Queries | `pg_statement_stats.total_time_ms`, `pg_statement_stats.calls`     |
+| Query Analytics       | `pg_statement_stats.*`                                             |
+| TPS                   | `pg_database_stats.xact_commit`                                    |
+| Commit/Rollback       | `pg_database_stats.xact_commit`, `pg_database_stats.xact_rollback` |
 
 ---
 
-## Next Steps
+## Related Guides
 
 - [Queries](./queries.md) — Deep query analysis with filtering
 - [Tables & Indexes](./tables-indexes.md) — Index and table optimization

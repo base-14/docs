@@ -2,9 +2,11 @@
 title: Resources
 sidebar_label: Resources
 sidebar_position: 8
+description:
+  Monitor cloud infrastructure metrics for PostgreSQL with pgX. Track CPU,
+  memory, disk I/O, and network for AWS RDS deployments.
+keywords: [pgx, postgresql resources, aws rds, cloudwatch, cpu, memory, iops]
 ---
-
-# Resources
 
 The Resources tab provides visibility into cloud infrastructure metrics for your
 PostgreSQL deployment. Currently, this tab supports AWS RDS metrics via
@@ -30,13 +32,15 @@ The Resources tab is organized into four sections:
 
 ## CPU Section
 
-The CPU section provides insight into processor utilization across your RDS cluster.
+The CPU section provides insight into processor utilization across your RDS
+cluster.
 
 ![CPU Section](/img/pgx/09-resources-cpu.png)
 
 ### CPU Utilization by Cluster
 
-**What it shows:** Aggregate CPU utilization across all instances in the cluster.
+**What it shows:** Aggregate CPU utilization across all instances in the
+cluster.
 
 **Healthy range:** < 70% for sustained workloads.
 
@@ -68,10 +72,10 @@ The CPU section provides insight into processor utilization across your RDS clus
 
 **Interpretation:**
 
-| Value | Meaning |
-|-------|---------|
-| < 1.0 | CPU has capacity |
-| = 1.0 | CPU fully utilized |
+| Value | Meaning                 |
+| ----- | ----------------------- |
+| < 1.0 | CPU has capacity        |
+| = 1.0 | CPU fully utilized      |
 | > 1.0 | Queries waiting for CPU |
 
 **When to investigate:**
@@ -214,8 +218,8 @@ collapsed by default — click to expand.
 
 ## Network Section
 
-The Network section monitors data transfer metrics. This section is collapsed
-by default — click to expand.
+The Network section monitors data transfer metrics. This section is collapsed by
+default — click to expand.
 
 ![Network Section](/img/pgx/09-resources-network.png)
 
@@ -307,20 +311,20 @@ During maintenance windows:
 
 The Resources section uses CloudWatch metrics:
 
-| Panel | CloudWatch Metric |
-|-------|------------------|
-| CPU Utilization (Cluster) | `CPUUtilization` (aggregated) |
+| Panel                      | CloudWatch Metric               |
+| -------------------------- | ------------------------------- |
+| CPU Utilization (Cluster)  | `CPUUtilization` (aggregated)   |
 | CPU Utilization (Instance) | `CPUUtilization` (per instance) |
-| DB CPU Load | `DBLoadCPU` |
-| Freeable Memory | `FreeableMemory` |
-| Free Local Storage | `FreeLocalStorage` |
-| Free Ephemeral Storage | `FreeEphemeralStorage` |
-| Read IOPS | `ReadIOPS` |
-| Write IOPS | `WriteIOPS` |
-| Read Latency | `ReadLatency` |
-| Write Latency | `WriteLatency` |
-| Storage Throughput | `StorageNetworkThroughput` |
-| Network Throughput | `NetworkThroughput` |
+| DB CPU Load                | `DBLoadCPU`                     |
+| Freeable Memory            | `FreeableMemory`                |
+| Free Local Storage         | `FreeLocalStorage`              |
+| Free Ephemeral Storage     | `FreeEphemeralStorage`          |
+| Read IOPS                  | `ReadIOPS`                      |
+| Write IOPS                 | `WriteIOPS`                     |
+| Read Latency               | `ReadLatency`                   |
+| Write Latency              | `WriteLatency`                  |
+| Storage Throughput         | `StorageNetworkThroughput`      |
+| Network Throughput         | `NetworkThroughput`             |
 
 ---
 
@@ -336,7 +340,7 @@ See [Configuration Reference](./configuration.md) for details.
 
 ---
 
-## Next Steps
+## Related Guides
 
 - [Performance](./performance.md) — Query performance analysis
 - [Connections](./connections.md) — Connection pool management

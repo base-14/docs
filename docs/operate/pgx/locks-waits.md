@@ -2,9 +2,11 @@
 title: Locks & Waits
 sidebar_label: Locks & Waits
 sidebar_position: 9
+description:
+  Analyze PostgreSQL concurrency with pgX. Detect deadlocks, identify blocking
+  sessions, and troubleshoot wait events for optimal performance.
+keywords: [pgx, postgresql locks, deadlocks, blocking, wait events, concurrency]
 ---
-
-# Locks & Waits
 
 The Locks & Waits tab provides visibility into PostgreSQL concurrency behavior.
 Use it to identify lock contention, detect deadlocks, analyze blocking sessions,
@@ -25,7 +27,8 @@ The Locks & Waits tab is organized into four sections:
 
 ## Concurrency Overview Section
 
-The Concurrency Overview section provides immediate visibility into lock activity.
+The Concurrency Overview section provides immediate visibility into lock
+activity.
 
 ### Lock Count by Type
 
@@ -33,15 +36,15 @@ A pie chart showing the distribution of lock types.
 
 **Lock types:**
 
-| Type | Description |
-|------|-------------|
-| **relation** | Table-level locks |
-| **tuple** | Row-level locks |
-| **transactionid** | Transaction ID locks |
-| **virtualxid** | Virtual transaction ID locks |
-| **object** | Database object locks |
-| **userlock** | User-defined advisory locks |
-| **advisory** | Advisory locks |
+| Type              | Description                  |
+| ----------------- | ---------------------------- |
+| **relation**      | Table-level locks            |
+| **tuple**         | Row-level locks              |
+| **transactionid** | Transaction ID locks         |
+| **virtualxid**    | Virtual transaction ID locks |
+| **object**        | Database object locks        |
+| **userlock**      | User-defined advisory locks  |
+| **advisory**      | Advisory locks               |
 
 **Healthy pattern:**
 
@@ -102,28 +105,28 @@ is collapsed by default — click to expand.
 
 ### Table Columns
 
-| Column | Description |
-|--------|-------------|
-| **PID** | Backend process ID |
-| **Database** | Database name |
-| **Lock Type** | Type of lock held/requested |
-| **Mode** | Lock mode (AccessShare, RowExclusive, etc.) |
-| **Granted** | Whether lock is held (true) or waiting (false) |
-| **Relation** | Table or object being locked |
-| **Wait Start** | When waiting began |
+| Column         | Description                                    |
+| -------------- | ---------------------------------------------- |
+| **PID**        | Backend process ID                             |
+| **Database**   | Database name                                  |
+| **Lock Type**  | Type of lock held/requested                    |
+| **Mode**       | Lock mode (AccessShare, RowExclusive, etc.)    |
+| **Granted**    | Whether lock is held (true) or waiting (false) |
+| **Relation**   | Table or object being locked                   |
+| **Wait Start** | When waiting began                             |
 
 ### Lock Modes
 
-| Mode | Description | Conflicts With |
-|------|-------------|----------------|
-| **AccessShareLock** | SELECT | AccessExclusiveLock |
-| **RowShareLock** | SELECT FOR UPDATE | Exclusive, AccessExclusive |
-| **RowExclusiveLock** | UPDATE, DELETE, INSERT | Share, ShareRowExclusive, Exclusive, AccessExclusive |
-| **ShareUpdateExclusiveLock** | VACUUM, ANALYZE | ShareUpdateExclusive, Share, ShareRowExclusive, Exclusive, AccessExclusive |
-| **ShareLock** | CREATE INDEX | RowExclusive, ShareUpdateExclusive, ShareRowExclusive, Exclusive, AccessExclusive |
-| **ShareRowExclusiveLock** | Rarely used | RowExclusive, ShareUpdateExclusive, Share, ShareRowExclusive, Exclusive, AccessExclusive |
-| **ExclusiveLock** | Blocks reads/writes | All except AccessShare |
-| **AccessExclusiveLock** | ALTER TABLE, DROP | All |
+| Mode                         | Description            | Conflicts With                                                                           |
+| ---------------------------- | ---------------------- | ---------------------------------------------------------------------------------------- |
+| **AccessShareLock**          | SELECT                 | AccessExclusiveLock                                                                      |
+| **RowShareLock**             | SELECT FOR UPDATE      | Exclusive, AccessExclusive                                                               |
+| **RowExclusiveLock**         | UPDATE, DELETE, INSERT | Share, ShareRowExclusive, Exclusive, AccessExclusive                                     |
+| **ShareUpdateExclusiveLock** | VACUUM, ANALYZE        | ShareUpdateExclusive, Share, ShareRowExclusive, Exclusive, AccessExclusive               |
+| **ShareLock**                | CREATE INDEX           | RowExclusive, ShareUpdateExclusive, ShareRowExclusive, Exclusive, AccessExclusive        |
+| **ShareRowExclusiveLock**    | Rarely used            | RowExclusive, ShareUpdateExclusive, Share, ShareRowExclusive, Exclusive, AccessExclusive |
+| **ExclusiveLock**            | Blocks reads/writes    | All except AccessShare                                                                   |
+| **AccessExclusiveLock**      | ALTER TABLE, DROP      | All                                                                                      |
 
 ### How to Use
 
@@ -225,15 +228,15 @@ This section is collapsed by default — click to expand.
 
 **Wait event types:**
 
-| Type | Description |
-|------|-------------|
-| **Client** | Waiting for client (ClientRead, ClientWrite) |
-| **Lock** | Waiting for heavyweight locks |
-| **LWLock** | Waiting for lightweight locks |
-| **BufferPin** | Waiting for buffer pin |
-| **IO** | Waiting for I/O |
-| **Activity** | Background worker activity |
-| **Extension** | Extension-related waits |
+| Type          | Description                                  |
+| ------------- | -------------------------------------------- |
+| **Client**    | Waiting for client (ClientRead, ClientWrite) |
+| **Lock**      | Waiting for heavyweight locks                |
+| **LWLock**    | Waiting for lightweight locks                |
+| **BufferPin** | Waiting for buffer pin                       |
+| **IO**        | Waiting for I/O                              |
+| **Activity**  | Background worker activity                   |
+| **Extension** | Extension-related waits                      |
 
 **Healthy pattern:**
 
@@ -352,20 +355,21 @@ If your application uses advisory locks:
 
 ## Related Metrics
 
-The Locks & Waits section uses these metrics from the [Metrics Reference](./metrics.md):
+The Locks & Waits section uses these metrics from the
+[Metrics Reference](./metrics.md):
 
-| Panel | Primary Metrics |
-|-------|-----------------|
-| Lock Count by Type | `pg_locks_count` |
-| Lock Wait Queue | `pg_locks_count` (granted=false) |
-| Deadlock Frequency | `pg_database_stats.deadlocks` |
-| Locks Grid | `pg_lock_detail`, `pg_backend_info` |
-| Blocking Sessions | `pg_blocking_pids` |
-| Wait Events | `pg_backend_wait_events` |
+| Panel              | Primary Metrics                     |
+| ------------------ | ----------------------------------- |
+| Lock Count by Type | `pg_locks_count`                    |
+| Lock Wait Queue    | `pg_locks_count` (granted=false)    |
+| Deadlock Frequency | `pg_database_stats.deadlocks`       |
+| Locks Grid         | `pg_lock_detail`, `pg_backend_info` |
+| Blocking Sessions  | `pg_blocking_pids`                  |
+| Wait Events        | `pg_backend_wait_events`            |
 
 ---
 
-## Next Steps
+## Related Guides
 
 - [Performance](./performance.md) — Query performance analysis
 - [Connections](./connections.md) — Connection management

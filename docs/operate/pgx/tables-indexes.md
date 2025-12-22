@@ -2,9 +2,11 @@
 title: Tables & Indexes
 sidebar_label: Tables & Indexes
 sidebar_position: 4
+description:
+  Monitor PostgreSQL table and index health with pgX. Track bloat, cache hit
+  ratios, vacuum status, and identify optimization opportunities.
+keywords: [pgx, postgresql tables, index optimization, bloat, vacuum, cache]
 ---
-
-# Tables & Indexes
 
 The Tables & Indexes tab provides detailed insights into table health, index
 effectiveness, and storage optimization opportunities. Use it to identify
@@ -71,10 +73,10 @@ section is collapsed by default — click to expand.
 
 ### Filters
 
-| Filter | Description |
-|--------|-------------|
-| **Database** | Select the database to explore |
-| **Table** | Select the specific table to analyze |
+| Filter       | Description                          |
+| ------------ | ------------------------------------ |
+| **Database** | Select the database to explore       |
+| **Table**    | Select the specific table to analyze |
 
 ### Key Stats Row
 
@@ -152,11 +154,11 @@ Four stat panels showing critical table health indicators:
 
 Four panels showing maintenance timestamps:
 
-| Panel | Description |
-|-------|-------------|
-| **Last Auto Vacuum** | When autovacuum last ran |
-| **Last Auto Analyze** | When autoanalyze last ran |
-| **Last Manual Vacuum** | When manual VACUUM was run |
+| Panel                   | Description                 |
+| ----------------------- | --------------------------- |
+| **Last Auto Vacuum**    | When autovacuum last ran    |
+| **Last Auto Analyze**   | When autoanalyze last ran   |
+| **Last Manual Vacuum**  | When manual VACUUM was run  |
 | **Last Manual Analyze** | When manual ANALYZE was run |
 
 **When to investigate:**
@@ -237,10 +239,10 @@ collapsed by default — click to expand.
 
 ### Filters
 
-| Filter | Description |
-|--------|-------------|
-| **Database** | Select the database to explore |
-| **Index** | Select the specific index to analyze |
+| Filter       | Description                          |
+| ------------ | ------------------------------------ |
+| **Database** | Select the database to explore       |
+| **Index**    | Select the specific index to analyze |
 
 ### Index Metadata
 
@@ -248,13 +250,13 @@ collapsed by default — click to expand.
 
 **What it shows:** The index access method (btree, hash, gin, gist, etc.).
 
-| Type | Best For |
-|------|----------|
+| Type  | Best For                                |
+| ----- | --------------------------------------- |
 | btree | General purpose, range queries, sorting |
-| hash | Equality comparisons only |
-| gin | Full-text search, arrays, JSONB |
-| gist | Geometric data, full-text search |
-| brin | Very large tables with natural ordering |
+| hash  | Equality comparisons only               |
+| gin   | Full-text search, arrays, JSONB         |
+| gist  | Geometric data, full-text search        |
+| brin  | Very large tables with natural ordering |
 
 #### Table Association
 
@@ -371,24 +373,25 @@ collapsed by default — click to expand.
 
 ## Related Metrics
 
-The Tables & Indexes section uses these metrics from the [Metrics Reference](./metrics.md):
+The Tables & Indexes section uses these metrics from the
+[Metrics Reference](./metrics.md):
 
-| Panel | Primary Metrics |
-|-------|-----------------|
-| Schema Size | `pg_table_stats.size_bytes` |
-| Table/Index Count | `pg_table_info`, `pg_index_info` |
-| Cache Hit Ratios | `pg_table_stats.heap_blks_hit`, `pg_table_stats.heap_blks_read` |
-| Bloat | `pg_table_stats.bloat_bytes`, `pg_index_stats.bloat_bytes` |
-| Row Counts | `pg_table_stats.n_live_tup`, `pg_table_stats.n_dead_tup` |
-| Scan Activity | `pg_table_stats.seq_scan`, `pg_table_stats.idx_scan` |
-| Vacuum Stats | `pg_table_stats.last_vacuum`, `pg_table_stats.last_autovacuum` |
-| Row Activity | `pg_table_stats.n_tup_ins`, `pg_table_stats.n_tup_upd`, `pg_table_stats.n_tup_del` |
-| HOT Updates | `pg_table_stats.n_tup_hot_upd` |
-| Index Stats | `pg_index_stats.*`, `pg_index_info`, `pg_index_extended_info` |
+| Panel             | Primary Metrics                                                                    |
+| ----------------- | ---------------------------------------------------------------------------------- |
+| Schema Size       | `pg_table_stats.size_bytes`                                                        |
+| Table/Index Count | `pg_table_info`, `pg_index_info`                                                   |
+| Cache Hit Ratios  | `pg_table_stats.heap_blks_hit`, `pg_table_stats.heap_blks_read`                    |
+| Bloat             | `pg_table_stats.bloat_bytes`, `pg_index_stats.bloat_bytes`                         |
+| Row Counts        | `pg_table_stats.n_live_tup`, `pg_table_stats.n_dead_tup`                           |
+| Scan Activity     | `pg_table_stats.seq_scan`, `pg_table_stats.idx_scan`                               |
+| Vacuum Stats      | `pg_table_stats.last_vacuum`, `pg_table_stats.last_autovacuum`                     |
+| Row Activity      | `pg_table_stats.n_tup_ins`, `pg_table_stats.n_tup_upd`, `pg_table_stats.n_tup_del` |
+| HOT Updates       | `pg_table_stats.n_tup_hot_upd`                                                     |
+| Index Stats       | `pg_index_stats.*`, `pg_index_info`, `pg_index_extended_info`                      |
 
 ---
 
-## Next Steps
+## Related Guides
 
 - [Maintenance](./maintenance.md) — Vacuum and maintenance tracking
 - [Performance](./performance.md) — Query performance analysis

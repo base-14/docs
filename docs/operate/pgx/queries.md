@@ -2,13 +2,15 @@
 title: Queries
 sidebar_label: Queries
 sidebar_position: 5
+description:
+  Deep PostgreSQL query analysis with pgX. Filter by database, user, and query
+  type. Visualize performance with heatmaps and drill-down analysis.
+keywords: [pgx, postgresql queries, query analysis, sql performance, heatmap]
 ---
 
-# Queries
-
 The Queries tab provides deep query-level analysis with powerful filtering
-capabilities. Use it to identify slow queries, analyze performance patterns,
-and drill down into specific query behavior.
+capabilities. Use it to identify slow queries, analyze performance patterns, and
+drill down into specific query behavior.
 
 ![Queries](/img/pgx/06-queries-full.png)
 
@@ -35,12 +37,12 @@ The section provides four filters to narrow your analysis.
 
 Select which response time percentile to display in the heatmap.
 
-| Option | Description |
-|--------|-------------|
-| **p50 Response time** | Median response time (50th percentile) |
+| Option                | Description                                 |
+| --------------------- | ------------------------------------------- |
+| **p50 Response time** | Median response time (50th percentile)      |
 | **p90 Response time** | 90th percentile — 90% of queries are faster |
-| **p95 Response time** | 95th percentile — typical SLA target |
-| **p99 Response time** | 99th percentile — worst-case performance |
+| **p95 Response time** | 95th percentile — typical SLA target        |
+| **p99 Response time** | 99th percentile — worst-case performance    |
 
 **How to use:**
 
@@ -53,16 +55,16 @@ Select which response time percentile to display in the heatmap.
 
 Filter queries by SQL statement type.
 
-| Option | Description |
-|--------|-------------|
-| **All** | Show all query types |
-| **SELECT** | Read queries |
-| **INSERT** | Insert operations |
-| **UPDATE** | Update operations |
-| **DELETE** | Delete operations |
-| **CREATE** | DDL statements |
-| **BEGIN** | Transaction starts |
-| **COMMIT** | Transaction commits |
+| Option       | Description           |
+| ------------ | --------------------- |
+| **All**      | Show all query types  |
+| **SELECT**   | Read queries          |
+| **INSERT**   | Insert operations     |
+| **UPDATE**   | Update operations     |
+| **DELETE**   | Delete operations     |
+| **CREATE**   | DDL statements        |
+| **BEGIN**    | Transaction starts    |
+| **COMMIT**   | Transaction commits   |
 | **ROLLBACK** | Transaction rollbacks |
 
 **How to use:**
@@ -115,13 +117,13 @@ The heatmap visualization shows query response time distribution over time.
 
 ### Common Patterns
 
-| Pattern | Meaning | Action |
-|---------|---------|--------|
-| Tight band at bottom | Consistent fast performance | Healthy — maintain current state |
-| Spreading upward over time | Performance degradation | Investigate index/bloat issues |
-| Periodic spikes | Scheduled jobs or traffic patterns | Review job timing and impact |
-| Sudden vertical spread | Incident occurring | Immediate investigation needed |
-| Two distinct bands | Bimodal query performance | May have two query categories |
+| Pattern                    | Meaning                            | Action                           |
+| -------------------------- | ---------------------------------- | -------------------------------- |
+| Tight band at bottom       | Consistent fast performance        | Healthy — maintain current state |
+| Spreading upward over time | Performance degradation            | Investigate index/bloat issues   |
+| Periodic spikes            | Scheduled jobs or traffic patterns | Review job timing and impact     |
+| Sudden vertical spread     | Incident occurring                 | Immediate investigation needed   |
+| Two distinct bands         | Bimodal query performance          | May have two query categories    |
 
 ---
 
@@ -133,12 +135,12 @@ The stats table provides detailed metrics for each query.
 
 ### Table Columns
 
-| Column | Description |
-|--------|-------------|
-| **Query** | The normalized SQL query text |
-| **Query ID** | Unique identifier for the query |
-| **Calls** | Number of times executed |
-| **Average Time** | Mean execution time |
+| Column           | Description                     |
+| ---------------- | ------------------------------- |
+| **Query**        | The normalized SQL query text   |
+| **Query ID**     | Unique identifier for the query |
+| **Calls**        | Number of times executed        |
+| **Average Time** | Mean execution time             |
 
 ### Sorting and Analysis
 
@@ -289,23 +291,24 @@ Temporary file activity:
 
 ## Related Metrics
 
-The Queries section uses these metrics from the [Metrics Reference](./metrics.md):
+The Queries section uses these metrics from the
+[Metrics Reference](./metrics.md):
 
-| Panel | Primary Metrics |
-|-------|-----------------|
-| Heatmap | `pg_statement_stats.total_time_ms`, `pg_statement_stats.calls` |
-| Stats Table | `pg_statement_stats.calls`, `pg_statement_stats.avg_time_ms` |
-| Execution Time | `pg_statement_stats.avg_time_ms` |
-| Cache Hit | `pg_statement_stats.shared_blks_hit`, `pg_statement_stats.shared_blks_read` |
-| Read I/O | `pg_statement_stats.rows`, `pg_statement_stats.shared_blks_*` |
-| Write I/O | `pg_statement_stats.shared_blks_dirtied`, `pg_statement_stats.shared_blks_written` |
-| Planning Time | `pg_statement_stats.total_plan_time_ms` |
-| WAL Bytes | `pg_statement_stats.wal_bytes` |
-| Temp Files | `pg_statement_stats.temp_blks_read`, `pg_statement_stats.temp_blks_written` |
+| Panel          | Primary Metrics                                                                    |
+| -------------- | ---------------------------------------------------------------------------------- |
+| Heatmap        | `pg_statement_stats.total_time_ms`, `pg_statement_stats.calls`                     |
+| Stats Table    | `pg_statement_stats.calls`, `pg_statement_stats.avg_time_ms`                       |
+| Execution Time | `pg_statement_stats.avg_time_ms`                                                   |
+| Cache Hit      | `pg_statement_stats.shared_blks_hit`, `pg_statement_stats.shared_blks_read`        |
+| Read I/O       | `pg_statement_stats.rows`, `pg_statement_stats.shared_blks_*`                      |
+| Write I/O      | `pg_statement_stats.shared_blks_dirtied`, `pg_statement_stats.shared_blks_written` |
+| Planning Time  | `pg_statement_stats.total_plan_time_ms`                                            |
+| WAL Bytes      | `pg_statement_stats.wal_bytes`                                                     |
+| Temp Files     | `pg_statement_stats.temp_blks_read`, `pg_statement_stats.temp_blks_written`        |
 
 ---
 
-## Next Steps
+## Related Guides
 
 - [Performance](./performance.md) — Higher-level performance view
 - [Tables & Indexes](./tables-indexes.md) — Optimize tables and indexes

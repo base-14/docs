@@ -2,9 +2,11 @@
 title: Configuration Reference
 sidebar_label: Configuration
 sidebar_position: 11
+description:
+  Complete pgX configuration reference. Configure data sources, environments,
+  RDS settings, and access control for PostgreSQL monitoring.
+keywords: [pgx, configuration, settings, rds, environments, grafana plugin]
 ---
-
-# Configuration Reference
 
 This document provides a complete reference of all pgX configuration options.
 
@@ -27,12 +29,12 @@ This document provides a complete reference of all pgX configuration options.
 
 #### Datasource UID
 
-| Property | Value |
-|----------|-------|
-| **Setting** | `clickhouseDataSourceUid` |
-| **Type** | String |
-| **Required** | Yes |
-| **Default** | — |
+| Property     | Value                     |
+| ------------ | ------------------------- |
+| **Setting**  | `clickhouseDataSourceUid` |
+| **Type**     | String                    |
+| **Required** | Yes                       |
+| **Default**  | —                         |
 
 The UID of your Scout Telemetry Data Lake datasource in Grafana. This datasource
 must be configured and working before pgX can display metrics.
@@ -45,23 +47,23 @@ must be configured and working before pgX can display metrics.
 
 #### Database Name
 
-| Property | Value |
-|----------|-------|
-| **Setting** | `clickhouseDatabaseName` |
-| **Type** | String |
-| **Required** | No |
-| **Default** | `default` |
+| Property     | Value                    |
+| ------------ | ------------------------ |
+| **Setting**  | `clickhouseDatabaseName` |
+| **Type**     | String                   |
+| **Required** | No                       |
+| **Default**  | `default`                |
 
 The database containing your PostgreSQL metrics tables.
 
 #### Metrics Table Name
 
-| Property | Value |
-|----------|-------|
-| **Setting** | `metricsTableName` |
-| **Type** | String |
-| **Required** | No |
-| **Default** | `otel_metrics_gauge` |
+| Property     | Value                |
+| ------------ | -------------------- |
+| **Setting**  | `metricsTableName`   |
+| **Type**     | String               |
+| **Required** | No                   |
+| **Default**  | `otel_metrics_gauge` |
 
 The name of the table containing PostgreSQL metrics in OpenTelemetry format.
 
@@ -71,12 +73,12 @@ The name of the table containing PostgreSQL metrics in OpenTelemetry format.
 
 #### Environments
 
-| Property | Value |
-|----------|-------|
-| **Setting** | `environments` |
-| **Type** | String (comma-separated) |
-| **Required** | No |
-| **Default** | `staging,production` |
+| Property     | Value                    |
+| ------------ | ------------------------ |
+| **Setting**  | `environments`           |
+| **Type**     | String (comma-separated) |
+| **Required** | No                       |
+| **Default**  | `staging,production`     |
 
 Comma-separated list of environment names to show in the environment dropdown.
 
@@ -88,12 +90,12 @@ Comma-separated list of environment names to show in the environment dropdown.
 
 #### Environment Attribute Key
 
-| Property | Value |
-|----------|-------|
-| **Setting** | `environmentAttributeKey` |
-| **Type** | String |
-| **Required** | No |
-| **Default** | `environment` |
+| Property     | Value                     |
+| ------------ | ------------------------- |
+| **Setting**  | `environmentAttributeKey` |
+| **Type**     | String                    |
+| **Required** | No                        |
+| **Default**  | `environment`             |
 
 The resource attribute key used to filter metrics by environment. This should
 match the attribute used when collecting metrics.
@@ -106,14 +108,15 @@ match the attribute used when collecting metrics.
 
 #### Service Names
 
-| Property | Value |
-|----------|-------|
-| **Setting** | `serviceNames` |
-| **Type** | String (comma-separated) |
-| **Required** | No |
-| **Default** | `pgdashex` |
+| Property     | Value                    |
+| ------------ | ------------------------ |
+| **Setting**  | `serviceNames`           |
+| **Type**     | String (comma-separated) |
+| **Required** | No                       |
+| **Default**  | `pgdashex`               |
 
-Comma-separated list of service names that identify your PostgreSQL metrics collector.
+Comma-separated list of service names that identify your PostgreSQL metrics
+collector.
 
 ---
 
@@ -121,12 +124,12 @@ Comma-separated list of service names that identify your PostgreSQL metrics coll
 
 #### Max Time Range
 
-| Property | Value |
-|----------|-------|
-| **Setting** | `maxTimeRange` |
-| **Type** | String (duration) |
-| **Required** | No |
-| **Default** | `1h` |
+| Property     | Value             |
+| ------------ | ----------------- |
+| **Setting**  | `maxTimeRange`    |
+| **Type**     | String (duration) |
+| **Required** | No                |
+| **Default**  | `1h`              |
 
 Maximum time range allowed for queries. Limits how far back users can query to
 prevent expensive queries.
@@ -142,15 +145,15 @@ prevent expensive queries.
 
 #### Max Variable Options
 
-| Property | Value |
-|----------|-------|
-| **Setting** | `maxVariableOptions` |
-| **Type** | Number |
-| **Required** | No |
-| **Default** | `100` |
+| Property     | Value                |
+| ------------ | -------------------- |
+| **Setting**  | `maxVariableOptions` |
+| **Type**     | Number               |
+| **Required** | No                   |
+| **Default**  | `100`                |
 
-Maximum number of options to load in template variable dropdowns. Increase if you
-have many databases/tables/indexes.
+Maximum number of options to load in template variable dropdowns. Increase if
+you have many databases/tables/indexes.
 
 ---
 
@@ -158,12 +161,12 @@ have many databases/tables/indexes.
 
 #### Enable RBAC Service Name Filtering
 
-| Property | Value |
-|----------|-------|
-| **Setting** | `enableRBACServiceNameFiltering` |
-| **Type** | Boolean |
-| **Required** | No |
-| **Default** | `false` |
+| Property     | Value                            |
+| ------------ | -------------------------------- |
+| **Setting**  | `enableRBACServiceNameFiltering` |
+| **Type**     | Boolean                          |
+| **Required** | No                               |
+| **Default**  | `false`                          |
 
 When enabled, filters metrics based on service names the user has access to.
 Requires Grafana Enterprise RBAC configuration.
@@ -174,20 +177,20 @@ Requires Grafana Enterprise RBAC configuration.
 
 #### PostgreSQL Deployment Type
 
-| Property | Value |
-|----------|-------|
-| **Setting** | `postgresDeploymentType` |
-| **Type** | Enum |
-| **Required** | No |
-| **Default** | `self-hosted` |
+| Property     | Value                    |
+| ------------ | ------------------------ |
+| **Setting**  | `postgresDeploymentType` |
+| **Type**     | Enum                     |
+| **Required** | No                       |
+| **Default**  | `self-hosted`            |
 
 The type of PostgreSQL deployment being monitored.
 
-| Value | Description | Features |
-|-------|-------------|----------|
-| `self-hosted` | PostgreSQL on your own infrastructure | All features |
-| `rds` | Amazon RDS for PostgreSQL | Includes Resources dashboard |
-| `cloud-sql` | Google Cloud SQL for PostgreSQL | Coming soon |
+| Value         | Description                           | Features                     |
+| ------------- | ------------------------------------- | ---------------------------- |
+| `self-hosted` | PostgreSQL on your own infrastructure | All features                 |
+| `rds`         | Amazon RDS for PostgreSQL             | Includes Resources dashboard |
+| `cloud-sql`   | Google Cloud SQL for PostgreSQL       | Coming soon                  |
 
 **Impact:**
 
@@ -203,52 +206,52 @@ These settings only apply when `postgresDeploymentType` is set to `rds`.
 
 #### RDS Service Name
 
-| Property | Value |
-|----------|-------|
-| **Setting** | `rdsServiceName` |
-| **Type** | String |
-| **Required** | No (for RDS) |
-| **Default** | `aws-cloudwatch-stream` |
+| Property     | Value                   |
+| ------------ | ----------------------- |
+| **Setting**  | `rdsServiceName`        |
+| **Type**     | String                  |
+| **Required** | No (for RDS)            |
+| **Default**  | `aws-cloudwatch-stream` |
 
 The service name used for CloudWatch metrics collection.
 
 #### RDS Metrics Prefix
 
-| Property | Value |
-|----------|-------|
-| **Setting** | `rdsMetricsPrefix` |
-| **Type** | String |
-| **Required** | No (for RDS) |
-| **Default** | `amazonaws.com/AWS/RDS/` |
+| Property     | Value                    |
+| ------------ | ------------------------ |
+| **Setting**  | `rdsMetricsPrefix`       |
+| **Type**     | String                   |
+| **Required** | No (for RDS)             |
+| **Default**  | `amazonaws.com/AWS/RDS/` |
 
 The prefix used for CloudWatch RDS metric names.
 
 #### RDS Metrics Table Name
 
-| Property | Value |
-|----------|-------|
-| **Setting** | `rdsMetricsTableName` |
-| **Type** | String |
-| **Required** | No (for RDS) |
-| **Default** | `otel_metrics_summary` |
+| Property     | Value                  |
+| ------------ | ---------------------- |
+| **Setting**  | `rdsMetricsTableName`  |
+| **Type**     | String                 |
+| **Required** | No (for RDS)           |
+| **Default**  | `otel_metrics_summary` |
 
 The table containing CloudWatch metrics.
 
 #### RDS Attribute Format
 
-| Property | Value |
-|----------|-------|
-| **Setting** | `rdsAttributeFormat` |
-| **Type** | Enum |
-| **Required** | No (for RDS) |
-| **Default** | `nested` |
+| Property     | Value                |
+| ------------ | -------------------- |
+| **Setting**  | `rdsAttributeFormat` |
+| **Type**     | Enum                 |
+| **Required** | No (for RDS)         |
+| **Default**  | `nested`             |
 
 How CloudWatch dimension attributes are stored in the data lake.
 
-| Value | Description |
-|-------|-------------|
+| Value    | Description                                                                                                                                              |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `nested` | Attributes stored as nested JSON objects. Access via `JSONExtract`. Example: `Attributes['Dimensions']` contains `'{"DBInstanceIdentifier": "prod-db"}'` |
-| `flat` | Attributes stored with dot-notation keys. Direct access. Example: `Attributes['Dimensions.DBInstanceIdentifier']` contains `'prod-db'` |
+| `flat`   | Attributes stored with dot-notation keys. Direct access. Example: `Attributes['Dimensions.DBInstanceIdentifier']` contains `'prod-db'`                   |
 
 ---
 
@@ -316,21 +319,21 @@ How CloudWatch dimension attributes are stored in the data lake.
 
 ## Default Values Reference
 
-| Setting | Default Value |
-|---------|---------------|
-| `clickhouseDatabaseName` | `default` |
-| `metricsTableName` | `otel_metrics_gauge` |
-| `maxVariableOptions` | `100` |
-| `environments` | `staging,production` |
-| `environmentAttributeKey` | `environment` |
-| `enableRBACServiceNameFiltering` | `false` |
-| `maxTimeRange` | `1h` |
-| `serviceNames` | `pgdashex` |
-| `postgresDeploymentType` | `self-hosted` |
-| `rdsServiceName` | `aws-cloudwatch-stream` |
-| `rdsMetricsPrefix` | `amazonaws.com/AWS/RDS/` |
-| `rdsMetricsTableName` | `otel_metrics_summary` |
-| `rdsAttributeFormat` | `nested` |
+| Setting                          | Default Value            |
+| -------------------------------- | ------------------------ |
+| `clickhouseDatabaseName`         | `default`                |
+| `metricsTableName`               | `otel_metrics_gauge`     |
+| `maxVariableOptions`             | `100`                    |
+| `environments`                   | `staging,production`     |
+| `environmentAttributeKey`        | `environment`            |
+| `enableRBACServiceNameFiltering` | `false`                  |
+| `maxTimeRange`                   | `1h`                     |
+| `serviceNames`                   | `pgdashex`               |
+| `postgresDeploymentType`         | `self-hosted`            |
+| `rdsServiceName`                 | `aws-cloudwatch-stream`  |
+| `rdsMetricsPrefix`               | `amazonaws.com/AWS/RDS/` |
+| `rdsMetricsTableName`            | `otel_metrics_summary`   |
+| `rdsAttributeFormat`             | `nested`                 |
 
 ---
 
@@ -364,7 +367,7 @@ How CloudWatch dimension attributes are stored in the data lake.
 
 ---
 
-## Next Steps
+## Related Guides
 
 - [Getting Started](./quickstart.md) — Initial setup guide
 - [Overview](./overview.md) — Start using pgX

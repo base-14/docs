@@ -2,9 +2,11 @@
 title: Maintenance
 sidebar_label: Maintenance
 sidebar_position: 10
+description:
+  Monitor PostgreSQL maintenance operations with pgX. Track vacuum status, dead
+  tuples, bloat levels, and freeze age to keep your database healthy.
+keywords: [pgx, postgresql maintenance, vacuum, autovacuum, bloat, dead tuples]
 ---
-
-# Maintenance
 
 The Maintenance tab helps you monitor PostgreSQL maintenance operations and
 identify tables requiring attention. Use it to track vacuum status, dead tuple
@@ -43,12 +45,12 @@ requiring attention.
 
 **Columns:**
 
-| Column | Description |
-|--------|-------------|
-| **Table** | Table name |
-| **Last Analyze** | When last ANALYZE ran |
-| **Last Autoanalyze** | When autovacuum last analyzed |
-| **Rows Modified** | Rows changed since last analyze |
+| Column               | Description                     |
+| -------------------- | ------------------------------- |
+| **Table**            | Table name                      |
+| **Last Analyze**     | When last ANALYZE ran           |
+| **Last Autoanalyze** | When autovacuum last analyzed   |
+| **Rows Modified**    | Rows changed since last analyze |
 
 **When to investigate:**
 
@@ -68,12 +70,12 @@ requiring attention.
 
 **Warning thresholds:**
 
-| Age | Status |
-|-----|--------|
-| < 100M | Healthy |
-| 100M - 150M | Monitor |
-| 150M - 200M | Warning |
-| > 200M | Critical — immediate action needed |
+| Age         | Status                             |
+| ----------- | ---------------------------------- |
+| < 100M      | Healthy                            |
+| 100M - 150M | Monitor                            |
+| 150M - 200M | Warning                            |
+| > 200M      | Critical — immediate action needed |
 
 **When to investigate:**
 
@@ -183,11 +185,11 @@ section is collapsed by default — click to expand.
 
 **Remediation:**
 
-| Bloat Level | Action |
-|-------------|--------|
-| 10-20% | Standard VACUUM |
-| 20-40% | VACUUM FULL (during maintenance window) |
-| > 40% | pg_repack or VACUUM FULL |
+| Bloat Level | Action                                  |
+| ----------- | --------------------------------------- |
+| 10-20%      | Standard VACUUM                         |
+| 20-40%      | VACUUM FULL (during maintenance window) |
+| > 40%       | pg_repack or VACUUM FULL                |
 
 ```sql
 -- Standard vacuum (non-blocking)
@@ -330,44 +332,45 @@ SELECT pg_reload_conf();
 
 Set up alerts for:
 
-| Metric | Warning | Critical |
-|--------|---------|----------|
-| Dead Tuple % | > 10% | > 20% |
-| Table Bloat % | > 20% | > 40% |
-| Index Bloat % | > 30% | > 50% |
-| Freeze Age | > 100M | > 150M |
+| Metric             | Warning  | Critical  |
+| ------------------ | -------- | --------- |
+| Dead Tuple %       | > 10%    | > 20%     |
+| Table Bloat %      | > 20%    | > 40%     |
+| Index Bloat %      | > 30%    | > 50%     |
+| Freeze Age         | > 100M   | > 150M    |
 | Time Since Analyze | > 7 days | > 14 days |
 
 ### Maintenance Schedule
 
 Recommended maintenance cadence:
 
-| Task | Frequency |
-|------|-----------|
-| Review maintenance dashboard | Daily |
-| ANALYZE heavily modified tables | After bulk loads |
-| VACUUM FULL bloated tables | Monthly (maintenance window) |
-| REINDEX bloated indexes | Monthly (maintenance window) |
-| Check freeze ages | Weekly |
+| Task                            | Frequency                    |
+| ------------------------------- | ---------------------------- |
+| Review maintenance dashboard    | Daily                        |
+| ANALYZE heavily modified tables | After bulk loads             |
+| VACUUM FULL bloated tables      | Monthly (maintenance window) |
+| REINDEX bloated indexes         | Monthly (maintenance window) |
+| Check freeze ages               | Weekly                       |
 
 ---
 
 ## Related Metrics
 
-The Maintenance section uses these metrics from the [Metrics Reference](./metrics.md):
+The Maintenance section uses these metrics from the
+[Metrics Reference](./metrics.md):
 
-| Panel | Primary Metrics |
-|-------|-----------------|
+| Panel         | Primary Metrics                                                                                        |
+| ------------- | ------------------------------------------------------------------------------------------------------ |
 | Analyze Stats | `pg_table_stats.last_analyze`, `pg_table_stats.last_autoanalyze`, `pg_table_stats.n_mod_since_analyze` |
-| Freeze Age | `pg_table_stats.age_relfrozenxid` |
-| Dead Tuple % | `pg_table_stats.n_dead_tup`, `pg_table_stats.n_live_tup` |
-| Vacuum Events | `pg_table_stats.vacuum_count`, `pg_table_stats.autovacuum_count` |
-| Table Bloat | `pg_table_stats.bloat_bytes`, `pg_table_stats.size_bytes` |
-| Index Bloat | `pg_index_stats.bloat_bytes`, `pg_index_stats.size_bytes` |
+| Freeze Age    | `pg_table_stats.age_relfrozenxid`                                                                      |
+| Dead Tuple %  | `pg_table_stats.n_dead_tup`, `pg_table_stats.n_live_tup`                                               |
+| Vacuum Events | `pg_table_stats.vacuum_count`, `pg_table_stats.autovacuum_count`                                       |
+| Table Bloat   | `pg_table_stats.bloat_bytes`, `pg_table_stats.size_bytes`                                              |
+| Index Bloat   | `pg_index_stats.bloat_bytes`, `pg_index_stats.size_bytes`                                              |
 
 ---
 
-## Next Steps
+## Related Guides
 
 - [Tables & Indexes](./tables-indexes.md) — Detailed table analysis
 - [Performance](./performance.md) — Query performance

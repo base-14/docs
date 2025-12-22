@@ -2,9 +2,12 @@
 title: Overview
 sidebar_label: Overview
 sidebar_position: 2
+description:
+  Monitor PostgreSQL cluster health with pgX Overview tab. Track connections,
+  response times, cache hit ratios, and replication topology.
+keywords:
+  [pgx, postgresql monitoring, cluster health, cache hit ratio, replication]
 ---
-
-# Overview
 
 The Overview tab provides a high-level view of your PostgreSQL cluster's health
 and performance. It's designed to give you immediate visibility into the most
@@ -78,10 +81,10 @@ Six stat panels displaying the most critical health indicators.
 
 **What it shows:** Whether PostgreSQL is up and responding.
 
-| Value | Meaning |
-|-------|---------|
-| UP | PostgreSQL is responding to connections |
-| DOWN | PostgreSQL is not reachable |
+| Value | Meaning                                 |
+| ----- | --------------------------------------- |
+| UP    | PostgreSQL is responding to connections |
+| DOWN  | PostgreSQL is not reachable             |
 
 **When to investigate:** Immediately if showing DOWN.
 
@@ -118,7 +121,8 @@ Six stat panels displaying the most critical health indicators.
 
 ### Transaction Error Rate
 
-**What it shows:** The percentage of transactions that resulted in errors (rollbacks).
+**What it shows:** The percentage of transactions that resulted in errors
+(rollbacks).
 
 **Healthy range:** Typically < 1% for most workloads.
 
@@ -219,22 +223,23 @@ Use the Overview dashboard for capacity planning:
 
 ## Related Metrics
 
-The Overview section uses these metrics from the [Metrics Reference](./metrics.md):
+The Overview section uses these metrics from the
+[Metrics Reference](./metrics.md):
 
-| Panel | Primary Metrics |
-|-------|-----------------|
-| Health Check | `pg_up` |
-| Response Time | `pg_statement_stats` |
-| Database Size | `pg_database_size_bytes` |
-| Connections | `pg_connections`, `pg_database_stats.num_backends` |
-| Error Rate | `pg_database_stats.xact_rollback`, `pg_database_stats.xact_commit` |
-| Cache Hit Ratio | `pg_database_stats.blks_hit`, `pg_database_stats.blks_read` |
-| Growth Rate | `pg_database_size_bytes` |
-| Deadlocks | `pg_database_stats.deadlocks` |
+| Panel           | Primary Metrics                                                    |
+| --------------- | ------------------------------------------------------------------ |
+| Health Check    | `pg_up`                                                            |
+| Response Time   | `pg_statement_stats`                                               |
+| Database Size   | `pg_database_size_bytes`                                           |
+| Connections     | `pg_connections`, `pg_database_stats.num_backends`                 |
+| Error Rate      | `pg_database_stats.xact_rollback`, `pg_database_stats.xact_commit` |
+| Cache Hit Ratio | `pg_database_stats.blks_hit`, `pg_database_stats.blks_read`        |
+| Growth Rate     | `pg_database_size_bytes`                                           |
+| Deadlocks       | `pg_database_stats.deadlocks`                                      |
 
 ---
 
-## Next Steps
+## Related Guides
 
 - [Performance](./performance.md) — Dive deeper into query performance
 - [Connections](./connections.md) — Detailed connection analysis
