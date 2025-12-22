@@ -55,7 +55,8 @@ The logX interface consists of:
 | **Max Unfiltered Range** | `15m` | Maximum time range when no service/environment is selected |
 
 - For time ranges **up to 15 minutes**: Select any time range and browse logs directly
-- For time ranges **longer than 15 minutes**: Select a **Service Name** and **Environment** first
+- For time ranges **longer than 15 minutes**: Select a **Service Name** and
+  **Environment** first
 
 ### Browse Logs
 
@@ -83,7 +84,8 @@ When you expand a log entry, you'll see:
 ### Using the Filter Sidebar
 
 1. Click the expand icon to open the sidebar
-2. Choose a category: **Resource Attributes**, **Log Attributes**, or **Standard Columns**
+2. Choose a category: **Resource Attributes**, **Log Attributes**, or
+   **Standard Columns**
 3. Click an attribute to see available values
 4. Select values to add filters (use `=` to include, `!=` to exclude)
 
@@ -206,3 +208,10 @@ logX state is persisted in the URL for bookmarking and sharing:
 | `pinned` | Comma-separated pinned log IDs |
 
 Share the URL to give others the exact same view.
+
+---
+
+## Related Guides
+
+- [Creating Alerts with logX](../../manage/creating-alerts-with-logx.md) —
+  Set up alerts based on log patterns
