@@ -55,7 +55,8 @@ Let's setup **Scout in less than 5 minutes**. We will follow the steps below:
    directly on your machine. The installation method will depend on your
    environment and preferences.
    - [Docker Compose](./instrument/collector-setup/docker-compose-example)
-   - [Kubernetes (EKS, GKE, AKS)](./instrument/collector-setup/kubernetes-helm-setup.md)
+   - [OpenTelemetry Operator](./instrument/collector-setup/opentelemetry-operator-setup.md)
+     \- Recommended setup for Kubernetes deployment
    - [Linux](./instrument/collector-setup/linux-setup)
    - [Using Otel Binary](./instrument/collector-setup/otel-collector-binary-example.md)
 2. **Configure the Scout Collector**: Step 1 should help you get started with a
@@ -94,6 +95,8 @@ Let's setup **Scout in less than 5 minutes**. We will follow the steps below:
   \- Quick start in under 5 minutes
 - [Kubernetes Helm Setup](./instrument/collector-setup/kubernetes-helm-setup.md)
   \- Production deployment guide
+- [OpenTelemetry Operator](./instrument/collector-setup/opentelemetry-operator-setup.md)
+  \- Auto-instrumentation and CRD-based collector management
 - [Scout Exporter Configuration](./instrument/collector-setup/scout-exporter.md)
   \- Configure authentication and endpoints
 

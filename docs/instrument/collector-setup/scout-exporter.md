@@ -64,5 +64,7 @@ exporters:
   setup
 - [Kubernetes Helm Setup](./kubernetes-helm-setup.md) - Production Kubernetes
   deployment
+- [OpenTelemetry Operator Setup](./opentelemetry-operator-setup.md) -
+  Auto-instrumentation and CRD-based collector management
 - [Advanced Collector Configuration](./otel-collector-config.md) - Full
   collector configuration reference
