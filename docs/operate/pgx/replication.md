@@ -3,10 +3,19 @@ title: Replication
 sidebar_label: Replication
 sidebar_position: 7
 description:
-  Monitor PostgreSQL streaming replication with pgX. Track replication lag,
-  standby health, WAL generation, and troubleshoot replication issues.
+  Monitor PostgreSQL streaming replication with pgX in Base14 Scout. Track
+  replication lag, standby health, WAL generation, and troubleshoot issues.
 keywords:
-  [pgx, postgresql replication, replication lag, standby, wal, streaming]
+  [
+    pgx,
+    postgresql replication,
+    replication lag,
+    standby,
+    wal,
+    streaming,
+    database replication monitoring,
+    postgres standby health,
+  ]
 ---
 
 The Replication tab provides comprehensive monitoring of PostgreSQL streaming

@@ -3,10 +3,18 @@ title: Connections
 sidebar_label: Connections
 sidebar_position: 6
 description:
-  Monitor PostgreSQL connections with pgX. Track pool utilization, identify
-  connection leaks, and optimize connection management.
+  Monitor PostgreSQL connections with pgX in Base14 Scout. Track pool
+  utilization, identify connection leaks, and optimize connection management.
 keywords:
-  [pgx, postgresql connections, connection pool, idle connections, pgbouncer]
+  [
+    pgx,
+    postgresql connections,
+    connection pool,
+    idle connections,
+    pgbouncer,
+    database connection monitoring,
+    postgres connection pooling,
+  ]
 ---
 
 The Connections tab provides comprehensive visibility into PostgreSQL connection

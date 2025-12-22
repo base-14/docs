@@ -3,9 +3,20 @@ title: Resources
 sidebar_label: Resources
 sidebar_position: 8
 description:
-  Monitor cloud infrastructure metrics for PostgreSQL with pgX. Track CPU,
-  memory, disk I/O, and network for AWS RDS deployments.
-keywords: [pgx, postgresql resources, aws rds, cloudwatch, cpu, memory, iops]
+  Monitor cloud infrastructure metrics for PostgreSQL with pgX in Base14 Scout.
+  Track CPU, memory, disk I/O, and network for AWS RDS deployments.
+keywords:
+  [
+    pgx,
+    postgresql resources,
+    aws rds,
+    cloudwatch,
+    cpu,
+    memory,
+    iops,
+    database resource monitoring,
+    rds performance metrics,
+  ]
 ---
 
 The Resources tab provides visibility into cloud infrastructure metrics for your

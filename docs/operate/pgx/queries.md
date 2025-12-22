@@ -3,9 +3,18 @@ title: Queries
 sidebar_label: Queries
 sidebar_position: 5
 description:
-  Deep PostgreSQL query analysis with pgX. Filter by database, user, and query
-  type. Visualize performance with heatmaps and drill-down analysis.
-keywords: [pgx, postgresql queries, query analysis, sql performance, heatmap]
+  Deep PostgreSQL query analysis with pgX in Base14 Scout. Filter by database,
+  user, and query type. Visualize performance with heatmaps and drill-down.
+keywords:
+  [
+    pgx,
+    postgresql queries,
+    query analysis,
+    sql performance,
+    heatmap,
+    database query monitoring,
+    postgres slow query analysis,
+  ]
 ---
 
 The Queries tab provides deep query-level analysis with powerful filtering

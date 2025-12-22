@@ -3,9 +3,19 @@ title: Configuration Reference
 sidebar_label: Configuration
 sidebar_position: 11
 description:
-  Complete pgX configuration reference. Configure data sources, environments,
-  RDS settings, and access control for PostgreSQL monitoring.
-keywords: [pgx, configuration, settings, rds, environments, grafana plugin]
+  Complete pgX configuration reference for Base14 Scout. Configure data sources,
+  environments, RDS settings, and access control for PostgreSQL monitoring.
+keywords:
+  [
+    pgx,
+    configuration,
+    settings,
+    rds,
+    environments,
+    grafana plugin,
+    postgresql monitoring setup,
+    database monitoring configuration,
+  ]
 ---
 
 This document provides a complete reference of all pgX configuration options.

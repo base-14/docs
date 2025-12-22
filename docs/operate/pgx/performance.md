@@ -3,10 +3,18 @@ title: Performance
 sidebar_label: Performance
 sidebar_position: 3
 description:
-  Analyze PostgreSQL query and transaction performance with pgX. Identify slow
-  queries, analyze execution patterns, and optimize database workloads.
+  Analyze PostgreSQL query and transaction performance with pgX in Base14 Scout.
+  Identify slow queries, analyze execution patterns, and optimize workloads.
 keywords:
-  [pgx, postgresql performance, query analysis, slow queries, transactions]
+  [
+    pgx,
+    postgresql performance,
+    query analysis,
+    slow queries,
+    transactions,
+    database performance monitoring,
+    postgres query optimization,
+  ]
 ---
 
 The Performance tab provides detailed insights into query and transaction

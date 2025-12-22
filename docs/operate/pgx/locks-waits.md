@@ -3,9 +3,19 @@ title: Locks & Waits
 sidebar_label: Locks & Waits
 sidebar_position: 9
 description:
-  Analyze PostgreSQL concurrency with pgX. Detect deadlocks, identify blocking
-  sessions, and troubleshoot wait events for optimal performance.
-keywords: [pgx, postgresql locks, deadlocks, blocking, wait events, concurrency]
+  Analyze PostgreSQL concurrency with pgX in Base14 Scout. Detect deadlocks,
+  identify blocking sessions, and troubleshoot wait events.
+keywords:
+  [
+    pgx,
+    postgresql locks,
+    deadlocks,
+    blocking,
+    wait events,
+    concurrency,
+    database lock monitoring,
+    postgres deadlock detection,
+  ]
 ---
 
 The Locks & Waits tab provides visibility into PostgreSQL concurrency behavior.

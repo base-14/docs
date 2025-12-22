@@ -3,10 +3,18 @@ title: Metrics Reference
 sidebar_label: Metrics
 sidebar_position: 12
 description:
-  Complete pgX metrics reference. All PostgreSQL metrics including connections,
-  replication, queries, locks, tables, indexes, and more.
+  Complete pgX metrics reference for Base14 Scout. All PostgreSQL metrics
+  including connections, replication, queries, locks, tables, indexes, and more.
 keywords:
-  [pgx, postgresql metrics, monitoring metrics, database metrics, prometheus]
+  [
+    pgx,
+    postgresql metrics,
+    monitoring metrics,
+    database metrics,
+    prometheus,
+    postgres observability,
+    database telemetry,
+  ]
 ---
 
 pgX provides the most comprehensive PostgreSQL monitoring available. From server

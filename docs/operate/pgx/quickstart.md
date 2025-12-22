@@ -3,8 +3,8 @@ title: pgX Quick Start
 sidebar_label: Quick Start
 sidebar_position: 1
 description:
-  Get started with pgX, the advanced PostgreSQL monitoring Grafana app. Monitor
-  query performance, replication, connections, and more.
+  Get started with pgX, the advanced PostgreSQL monitoring Grafana app in Base14
+  Scout. Monitor query performance, replication, connections, and more.
 keywords:
   [
     pgx,
@@ -12,11 +12,13 @@ keywords:
     postgres grafana,
     database monitoring,
     postgres performance,
+    database observability,
+    postgres metrics,
   ]
 ---
 
 pgX is a powerful PostgreSQL monitoring and optimization Grafana app built into
-Scout. It provides deep visibility into every aspect of your PostgreSQL
+Base14 Scout. It provides deep visibility into every aspect of your PostgreSQL
 clusters.
 
 ## What is pgX?

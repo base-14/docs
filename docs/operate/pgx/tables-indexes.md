@@ -3,9 +3,19 @@ title: Tables & Indexes
 sidebar_label: Tables & Indexes
 sidebar_position: 4
 description:
-  Monitor PostgreSQL table and index health with pgX. Track bloat, cache hit
-  ratios, vacuum status, and identify optimization opportunities.
-keywords: [pgx, postgresql tables, index optimization, bloat, vacuum, cache]
+  Monitor PostgreSQL table and index health with pgX in Base14 Scout. Track
+  bloat, cache hit ratios, vacuum status, and optimization opportunities.
+keywords:
+  [
+    pgx,
+    postgresql tables,
+    index optimization,
+    bloat,
+    vacuum,
+    cache,
+    database table monitoring,
+    postgres index health,
+  ]
 ---
 
 The Tables & Indexes tab provides detailed insights into table health, index

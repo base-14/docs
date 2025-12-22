@@ -3,10 +3,18 @@ title: Overview
 sidebar_label: Overview
 sidebar_position: 2
 description:
-  Monitor PostgreSQL cluster health with pgX Overview tab. Track connections,
-  response times, cache hit ratios, and replication topology.
+  Monitor PostgreSQL cluster health with pgX Overview tab in Base14 Scout. Track
+  connections, response times, cache hit ratios, and replication topology.
 keywords:
-  [pgx, postgresql monitoring, cluster health, cache hit ratio, replication]
+  [
+    pgx,
+    postgresql monitoring,
+    cluster health,
+    cache hit ratio,
+    replication,
+    database health dashboard,
+    postgres cluster monitoring,
+  ]
 ---
 
 The Overview tab provides a high-level view of your PostgreSQL cluster's health

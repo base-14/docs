@@ -3,9 +3,19 @@ title: Maintenance
 sidebar_label: Maintenance
 sidebar_position: 10
 description:
-  Monitor PostgreSQL maintenance operations with pgX. Track vacuum status, dead
-  tuples, bloat levels, and freeze age to keep your database healthy.
-keywords: [pgx, postgresql maintenance, vacuum, autovacuum, bloat, dead tuples]
+  Monitor PostgreSQL maintenance operations with pgX in Base14 Scout. Track
+  vacuum status, dead tuples, bloat levels, and freeze age.
+keywords:
+  [
+    pgx,
+    postgresql maintenance,
+    vacuum,
+    autovacuum,
+    bloat,
+    dead tuples,
+    database maintenance monitoring,
+    postgres vacuum tracking,
+  ]
 ---
 
 The Maintenance tab helps you monitor PostgreSQL maintenance operations and
