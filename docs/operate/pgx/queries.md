@@ -6,7 +6,9 @@ sidebar_position: 5
 
 # Queries
 
-The Queries tab provides deep query-level analysis with powerful filtering capabilities. Use it to identify slow queries, analyze performance patterns, and drill down into specific query behavior.
+The Queries tab provides deep query-level analysis with powerful filtering
+capabilities. Use it to identify slow queries, analyze performance patterns,
+and drill down into specific query behavior.
 
 ![Queries](/img/pgx/06-queries-full.png)
 
@@ -16,7 +18,8 @@ The Queries tab provides deep query-level analysis with powerful filtering capab
 
 The Queries tab offers:
 
-1. **Flexible Filtering** — Filter by database, user, query type, and response time percentile
+1. **Flexible Filtering** — Filter by database, user, query type, and response
+   time percentile
 2. **Query Heatmap** — Visualize query performance distribution over time
 3. **Query Stats Table** — Detailed metrics for individual queries
 
@@ -40,6 +43,7 @@ Select which response time percentile to display in the heatmap.
 | **p99 Response time** | 99th percentile — worst-case performance |
 
 **How to use:**
+
 - Start with **p95** for typical SLA monitoring
 - Use **p50** to understand normal behavior
 - Use **p99** to catch tail latency issues
@@ -62,6 +66,7 @@ Filter queries by SQL statement type.
 | **ROLLBACK** | Transaction rollbacks |
 
 **How to use:**
+
 - Use **All** for overall view
 - Filter to **SELECT** to analyze read performance
 - Filter to **INSERT/UPDATE/DELETE** for write analysis
@@ -72,6 +77,7 @@ Filter queries by SQL statement type.
 Filter queries to a specific database.
 
 **How to use:**
+
 - Use **All** to see cluster-wide patterns
 - Select specific database for focused analysis
 - Compare query patterns across databases
@@ -81,6 +87,7 @@ Filter queries to a specific database.
 Filter queries by the PostgreSQL user/role executing them.
 
 **How to use:**
+
 - Identify which users are running expensive queries
 - Compare application vs admin query patterns
 - Isolate queries from specific services
@@ -100,6 +107,7 @@ The heatmap visualization shows query response time distribution over time.
 - **Color intensity:** Number of queries in that bucket
 
 **Interpretation:**
+
 - Dense color at low Y values = most queries are fast
 - Color spread upward = response time variance
 - Spikes at high Y values = slow query incidents
@@ -135,16 +143,19 @@ The stats table provides detailed metrics for each query.
 ### Sorting and Analysis
 
 **Find most frequent queries:**
+
 - Sort by "Calls" descending
 - These queries have the most impact on overall load
 - Even small improvements yield significant gains
 
 **Find slowest queries:**
+
 - Sort by "Average Time" descending
 - Focus optimization on these first
 - Check if they're missing indexes
 
 **Calculate impact:**
+
 - Impact = Calls × Average Time
 - High-call + slow = highest priority
 - Low-call + slow = may be acceptable
@@ -219,44 +230,57 @@ Click on a query to access detailed analysis panels:
 
 ## Query Analysis Deep Dive
 
-When you click on a query in the stats table, you get access to detailed time-series panels:
+When you click on a query in the stats table, you get access to detailed
+time-series panels:
 
 ### Average Execution Time
+
 Track how the query's response time varies over time. Look for:
+
 - Degradation trends
 - Correlation with load
 - Impact of optimizations
 
 ### Cache Hit Ratio
+
 Monitor buffer cache efficiency for this specific query:
+
 - High ratio (> 99%) = good caching
 - Low ratio = disk I/O overhead
 - Consider memory tuning or query optimization
 
 ### Read I/O Analysis
+
 - **Rows Returned** — Data returned to client
 - **Blocks Read** — Disk blocks accessed
 - High blocks/low rows = inefficient query
 
 ### Write I/O Analysis
+
 - **Blocks Dirtied** — Pages modified
 - **Blocks Written** — Pages flushed to disk
 - High values indicate write-heavy operations
 
 ### Planning Time
+
 Query planning overhead:
+
 - High planning time = complex query
 - Consider prepared statements
 - May indicate statistics issues
 
 ### WAL Impact
+
 Write-ahead log bytes generated:
+
 - High values = significant durability overhead
 - Consider batching writes
 - May impact replication lag
 
 ### Temp File Usage
+
 Temporary file activity:
+
 - Indicates memory pressure
 - Query may need more `work_mem`
 - Consider query optimization

@@ -6,8 +6,9 @@ sidebar_position: 9
 
 # Locks & Waits
 
-The Locks & Waits tab provides visibility into PostgreSQL concurrency behavior. Use it to identify lock contention, detect deadlocks, analyze blocking sessions, and troubleshoot wait events.
-
+The Locks & Waits tab provides visibility into PostgreSQL concurrency behavior.
+Use it to identify lock contention, detect deadlocks, analyze blocking sessions,
+and troubleshoot wait events.
 
 ---
 
@@ -26,7 +27,6 @@ The Locks & Waits tab is organized into four sections:
 
 The Concurrency Overview section provides immediate visibility into lock activity.
 
-
 ### Lock Count by Type
 
 A pie chart showing the distribution of lock types.
@@ -44,11 +44,13 @@ A pie chart showing the distribution of lock types.
 | **advisory** | Advisory locks |
 
 **Healthy pattern:**
+
 - Mostly relation and transactionid locks
 - Few tuple locks (row-level contention)
 - Advisory locks if using application locking
 
 **When to investigate:**
+
 - High tuple lock count — row contention
 - Growing lock counts — possible lock escalation
 - Unexpected lock types — review application behavior
@@ -60,11 +62,13 @@ A pie chart showing the distribution of lock types.
 **Healthy range:** Near zero for most workloads.
 
 **When to investigate:**
+
 - Queue depth > 0 sustained
 - Growing trend
 - Spikes correlating with slowness
 
 **High queue causes:**
+
 - Long-running transactions
 - Lock contention on hot rows
 - Missing indexes causing table locks
@@ -76,11 +80,13 @@ A pie chart showing the distribution of lock types.
 **Healthy range:** Zero.
 
 **When to investigate:**
+
 - Any deadlocks occurring
 - Recurring patterns
 - Increasing frequency
 
 **Deadlock causes:**
+
 - Circular lock dependencies
 - Inconsistent lock ordering
 - Long transactions increasing collision probability
@@ -89,7 +95,8 @@ A pie chart showing the distribution of lock types.
 
 ## Locks Grid Section
 
-The Locks Grid shows detailed information about all current locks. This section is collapsed by default — click to expand.
+The Locks Grid shows detailed information about all current locks. This section
+is collapsed by default — click to expand.
 
 ![Locks Grid](/img/pgx/10-locks-waits-grid.png)
 
@@ -121,14 +128,17 @@ The Locks Grid shows detailed information about all current locks. This section 
 ### How to Use
 
 **Find blocked sessions:**
+
 - Filter for Granted = false
 - These sessions are waiting for locks
 
 **Identify blockers:**
+
 - Find locks on same relation
 - Match PIDs with Granted = true
 
 **Track wait duration:**
+
 - Check Wait Start timestamp
 - Long waits indicate serious contention
 
@@ -136,19 +146,21 @@ The Locks Grid shows detailed information about all current locks. This section 
 
 ## Blocking Analysis Section
 
-The Blocking Analysis section helps identify blocking chains and their impact. This section is collapsed by default — click to expand.
-
+The Blocking Analysis section helps identify blocking chains and their impact.
+This section is collapsed by default — click to expand.
 
 ### Blocking Sessions Node Graph
 
 A visual representation of which sessions are blocking others.
 
 **What it shows:**
+
 - Blocking session → Blocked session relationships
 - Chain of blocked processes
 - Root blocker identification
 
 **How to use it:**
+
 - Identify the root cause of blocking
 - See cascade effects of blocking
 - Prioritize which session to address
@@ -158,11 +170,13 @@ A visual representation of which sessions are blocking others.
 **What it shows:** Lock escalation behavior over time.
 
 **Lock escalation:**
+
 - Row locks promoted to table locks
 - Can cause widespread blocking
 - Often indicates suboptimal queries
 
 **When to investigate:**
+
 - Frequent escalations
 - Correlation with blocking
 - After query changes
@@ -172,11 +186,13 @@ A visual representation of which sessions are blocking others.
 **What it shows:** Business impact of current blocking.
 
 **Metrics:**
+
 - Number of blocked sessions
 - Total wait time
 - Affected queries/operations
 
 **How to use it:**
+
 - Prioritize intervention
 - Quantify blocking impact
 - Track improvement
@@ -186,10 +202,12 @@ A visual representation of which sessions are blocking others.
 **What it shows:** Application-level advisory locks.
 
 **Advisory lock types:**
+
 - Session-level (released at session end)
 - Transaction-level (released at transaction end)
 
 **When to investigate:**
+
 - Application using advisory locks
 - Unexpected lock counts
 - Locks not being released
@@ -198,8 +216,8 @@ A visual representation of which sessions are blocking others.
 
 ## Wait Event Analysis Section
 
-The Wait Event Analysis section shows where PostgreSQL is spending time waiting. This section is collapsed by default — click to expand.
-
+The Wait Event Analysis section shows where PostgreSQL is spending time waiting.
+This section is collapsed by default — click to expand.
 
 ### Wait Event Distribution
 
@@ -218,6 +236,7 @@ The Wait Event Analysis section shows where PostgreSQL is spending time waiting.
 | **Extension** | Extension-related waits |
 
 **Healthy pattern:**
+
 - Mostly Client waits (waiting for queries)
 - Low Lock waits
 - Minimal IO waits
@@ -227,12 +246,14 @@ The Wait Event Analysis section shows where PostgreSQL is spending time waiting.
 **What it shows:** I/O-related wait events.
 
 **IO wait types:**
+
 - DataFileRead — Reading data files
 - DataFileWrite — Writing data files
 - WALWrite — Writing WAL
 - WALSync — Syncing WAL
 
 **When to investigate:**
+
 - High DataFileRead — buffer cache misses
 - High WALWrite — heavy write workload
 - Any sustained IO waits — storage bottleneck
@@ -242,12 +263,14 @@ The Wait Event Analysis section shows where PostgreSQL is spending time waiting.
 **What it shows:** Lightweight lock wait events.
 
 **Common LWLocks:**
+
 - buffer_content — Buffer access
 - WALInsert — WAL insertion
 - lock_manager — Lock management
 - proc — Process management
 
 **When to investigate:**
+
 - High buffer_content — buffer contention
 - High WALInsert — WAL write contention
 - Unusual patterns — configuration issues

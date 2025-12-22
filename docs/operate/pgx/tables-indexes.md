@@ -6,7 +6,9 @@ sidebar_position: 4
 
 # Tables & Indexes
 
-The Tables & Indexes tab provides detailed insights into table health, index effectiveness, and storage optimization opportunities. Use it to identify bloated tables, underutilized indexes, and maintenance needs.
+The Tables & Indexes tab provides detailed insights into table health, index
+effectiveness, and storage optimization opportunities. Use it to identify
+bloated tables, underutilized indexes, and maintenance needs.
 
 ![Tables & Indexes](/img/pgx/05-tables-indexes-full.png)
 
@@ -33,6 +35,7 @@ The Overview section provides cluster-wide table and index metrics.
 **What it shows:** Total size of schemas over time.
 
 **How to use it:**
+
 - Track storage growth trends
 - Identify schemas consuming most space
 - Plan capacity and cleanup
@@ -42,6 +45,7 @@ The Overview section provides cluster-wide table and index metrics.
 **What it shows:** Number of tables over time.
 
 **How to use it:**
+
 - Track schema evolution
 - Detect unexpected table creation
 - Monitor temporary table patterns
@@ -51,6 +55,7 @@ The Overview section provides cluster-wide table and index metrics.
 **What it shows:** Number of indexes over time.
 
 **How to use it:**
+
 - Track index growth
 - Ensure indexes are being created as expected
 - Detect index sprawl
@@ -59,7 +64,8 @@ The Overview section provides cluster-wide table and index metrics.
 
 ## Table Explorer Section
 
-The Table Explorer allows you to drill down into individual table metrics. This section is collapsed by default — click to expand.
+The Table Explorer allows you to drill down into individual table metrics. This
+section is collapsed by default — click to expand.
 
 ![Table Explorer](/img/pgx/05-tables-indexes-table-explorer.png)
 
@@ -81,6 +87,7 @@ Four stat panels showing critical table health indicators:
 **Healthy range:** > 99% for frequently accessed tables.
 
 **When to investigate:**
+
 - Cache hit ratio below 95%
 - Sudden drops in cache hit ratio
 - Tables with unexpectedly low ratios
@@ -92,6 +99,7 @@ Four stat panels showing critical table health indicators:
 **Healthy range:** > 99% for indexed queries.
 
 **When to investigate:**
+
 - Low index cache hits indicate memory pressure
 - May need to increase `shared_buffers`
 - Consider index optimization
@@ -103,6 +111,7 @@ Four stat panels showing critical table health indicators:
 **Healthy range:** < 20% for most tables.
 
 **When to investigate:**
+
 - Bloat > 20% — consider VACUUM
 - Bloat > 50% — consider VACUUM FULL or pg_repack
 - Rapidly increasing bloat
@@ -112,6 +121,7 @@ Four stat panels showing critical table health indicators:
 **What it shows:** Current table size as a bar gauge.
 
 **How to use it:**
+
 - Quick visual reference for table size
 - Compare relative sizes across tables
 - Track growth over time
@@ -123,6 +133,7 @@ Four stat panels showing critical table health indicators:
 **What it shows:** Live and dead row counts over time.
 
 **How to interpret:**
+
 - Growing dead rows = vacuum falling behind
 - Sudden live row drops = mass deletions
 - Stable ratios = healthy maintenance
@@ -132,6 +143,7 @@ Four stat panels showing critical table health indicators:
 **What it shows:** Sequential scans vs index scans.
 
 **What to look for:**
+
 - High sequential scans on large tables = missing indexes
 - All index scans = good index coverage
 - Mix depends on query patterns
@@ -148,6 +160,7 @@ Four panels showing maintenance timestamps:
 | **Last Manual Analyze** | When manual ANALYZE was run |
 
 **When to investigate:**
+
 - Very old timestamps indicate maintenance issues
 - Frequent manual runs may indicate autovacuum tuning needed
 - Missing autovacuum runs on busy tables
@@ -161,6 +174,7 @@ Three time-series panels showing row operations:
 **What it shows:** Insert rate over time.
 
 **How to use it:**
+
 - Track data ingestion patterns
 - Identify bulk load operations
 - Correlate with application behavior
@@ -170,6 +184,7 @@ Three time-series panels showing row operations:
 **What it shows:** Update rate over time.
 
 **How to use it:**
+
 - Track update-heavy workloads
 - Identify update storms
 - Plan for bloat management
@@ -179,6 +194,7 @@ Three time-series panels showing row operations:
 **What it shows:** Delete rate over time.
 
 **How to use it:**
+
 - Track data purge patterns
 - Identify mass delete operations
 - Plan vacuum scheduling
@@ -187,13 +203,15 @@ Three time-series panels showing row operations:
 
 #### Table Info
 
-**What it shows:** Table metadata including schema, tablespace, and partitioning info.
+**What it shows:** Table metadata including schema, tablespace, and partitioning
+info.
 
 #### HOT Updates
 
 **What it shows:** Heap-Only Tuple updates over time.
 
 **Why it matters:**
+
 - HOT updates are more efficient (no index update needed)
 - High HOT ratio = good fillfactor configuration
 - Low HOT ratio = consider adjusting fillfactor
@@ -203,6 +221,7 @@ Three time-series panels showing row operations:
 **What it shows:** Number of rows changed since last ANALYZE.
 
 **Why it matters:**
+
 - High values may indicate stale statistics
 - Query planner uses statistics for optimization
 - May need more frequent ANALYZE
@@ -211,7 +230,8 @@ Three time-series panels showing row operations:
 
 ## Index Explorer Section
 
-The Index Explorer allows you to analyze individual indexes. This section is collapsed by default — click to expand.
+The Index Explorer allows you to analyze individual indexes. This section is
+collapsed by default — click to expand.
 
 ![Index Explorer](/img/pgx/05-tables-indexes-index-explorer.png)
 
@@ -245,6 +265,7 @@ The Index Explorer allows you to analyze individual indexes. This section is col
 **What it shows:** Current index size.
 
 **How to use it:**
+
 - Monitor index growth
 - Identify oversized indexes
 - Plan storage capacity
@@ -256,6 +277,7 @@ The Index Explorer allows you to analyze individual indexes. This section is col
 **What it shows:** Index efficiency over time.
 
 **How to interpret:**
+
 - Rows read ≈ rows returned = efficient index
 - High read/low return = index scanning too much data
 - Consider more selective indexes
@@ -267,6 +289,7 @@ The Index Explorer allows you to analyze individual indexes. This section is col
 **Healthy range:** < 30% for most indexes.
 
 **When to investigate:**
+
 - Bloat > 30% — consider REINDEX
 - Bloat > 50% — definite reindex needed
 - Rapidly increasing bloat
@@ -284,6 +307,7 @@ The Index Explorer allows you to analyze individual indexes. This section is col
 **What it shows:** The WHERE clause for partial indexes.
 
 **Why it matters:**
+
 - Partial indexes are smaller and more efficient
 - Verify the condition matches your query patterns
 
@@ -292,6 +316,7 @@ The Index Explorer allows you to analyze individual indexes. This section is col
 **What it shows:** How many columns the index covers.
 
 **Why it matters:**
+
 - Single-column vs multi-column index strategy
 - Covering indexes reduce table lookups
 
@@ -300,6 +325,7 @@ The Index Explorer allows you to analyze individual indexes. This section is col
 **What it shows:** The full CREATE INDEX statement.
 
 **How to use it:**
+
 - Understand index structure
 - Copy for documentation or recreation
 - Verify index configuration

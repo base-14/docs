@@ -6,7 +6,9 @@ sidebar_position: 3
 
 # Performance
 
-The Performance tab provides detailed insights into query and transaction performance. Use it to identify slow queries, analyze execution patterns, and optimize your database workload.
+The Performance tab provides detailed insights into query and transaction
+performance. Use it to identify slow queries, analyze execution patterns, and
+optimize your database workload.
 
 ![Performance](/img/pgx/04-performance-full.png)
 
@@ -33,16 +35,19 @@ A time-series chart showing query response times over the selected period.
 ![Average Response Time](/img/pgx/04-performance-response-time.png)
 
 **What it shows:**
+
 - Average query execution time
 - Trends over time
 - Response time variations
 
 **How to interpret:**
+
 - Flat line at low values = healthy, consistent performance
 - Spikes = potential issues (locks, resource contention, complex queries)
 - Gradual increase = possible index degradation or data growth issues
 
 **When to investigate:**
+
 - Response times exceeding baseline by > 20%
 - Sudden spikes correlating with errors
 - Sustained elevated response times
@@ -54,15 +59,18 @@ A pie chart showing the breakdown of query types.
 ![Query Distribution](/img/pgx/04-performance-query-distribution.png)
 
 **What it shows:**
+
 - Proportion of SELECT, INSERT, UPDATE, DELETE operations
 - Overall query mix
 
 **How to interpret:**
+
 - Most OLTP systems are read-heavy (SELECT > 70%)
 - Write-heavy patterns may indicate bulk operations or data ingestion
 - Unexpected changes may indicate application behavior changes
 
 **When to investigate:**
+
 - Sudden shift in query type distribution
 - Unexpected write-heavy patterns
 - High proportion of DELETE operations (may indicate cleanup jobs)
@@ -74,16 +82,19 @@ A heatmap visualization showing which queries consume the most resources.
 ![Top Consuming Queries](/img/pgx/04-performance-heatmap.png)
 
 **What it shows:**
+
 - Query execution time distribution
 - Resource-intensive queries highlighted
 - Time-based patterns
 
 **How to interpret:**
+
 - Darker cells = higher resource consumption
 - Horizontal patterns = consistently expensive queries
 - Vertical patterns = time-based load spikes
 
 **How to use it:**
+
 - Identify your most expensive queries
 - Spot queries that need optimization
 - Correlate with deployment or traffic patterns
@@ -92,7 +103,8 @@ A heatmap visualization showing which queries consume the most resources.
 
 ## Query Analytics Section
 
-A detailed table showing performance metrics for individual queries. This section is collapsed by default — click to expand.
+A detailed table showing performance metrics for individual queries. This
+section is collapsed by default — click to expand.
 
 ![Query Analytics](/img/pgx/04-performance-query-analytics.png)
 
@@ -113,16 +125,19 @@ A detailed table showing performance metrics for individual queries. This sectio
 ### How to Use
 
 **Find slow queries:**
+
 1. Sort by "Mean Time" descending
 2. Identify queries with high average execution time
 3. Focus optimization efforts on high-call-count slow queries
 
 **Find resource-intensive queries:**
+
 1. Sort by "Total Time" descending
 2. These queries consume the most cumulative resources
 3. Even fast queries with high call counts can dominate
 
 **Identify caching issues:**
+
 1. Compare "Shared Blks Hit" vs "Shared Blks Read"
 2. High read ratio = poor cache utilization
 3. Consider index improvements or memory tuning
@@ -131,22 +146,26 @@ A detailed table showing performance metrics for individual queries. This sectio
 
 ## Transactions Section
 
-The Transactions section shows throughput and transaction health. This section is collapsed by default — click to expand.
+The Transactions section shows throughput and transaction health. This section
+is collapsed by default — click to expand.
 
 ![Transactions](/img/pgx/04-performance-transactions.png)
 
 ### Transactions Per Second (TPS)
 
 **What it shows:**
+
 - Number of committed transactions per second
 - Throughput trends over time
 
 **How to interpret:**
+
 - Stable TPS = consistent workload
 - Drops in TPS = potential bottlenecks or issues
 - Spikes = batch operations or traffic surges
 
 **Benchmarking:**
+
 - Establish baseline TPS for your workload
 - Set alerts for significant deviations
 - Use for capacity planning
@@ -154,17 +173,20 @@ The Transactions section shows throughput and transaction health. This section i
 ### Commit/Rollback Ratio
 
 **What it shows:**
+
 - Ratio of successful commits to rollbacks
 - Transaction success rate over time
 
 **Healthy range:** > 99% commits for most workloads.
 
 **When to investigate:**
+
 - Rollback rate exceeding 1%
 - Sudden increase in rollbacks
 - Correlation with application errors
 
 **Common causes of high rollbacks:**
+
 - Application errors
 - Constraint violations
 - Deadlocks

@@ -34,9 +34,11 @@ This document provides a complete reference of all pgX configuration options.
 | **Required** | Yes |
 | **Default** | — |
 
-The UID of your Scout Telemetry Data Lake datasource in Grafana. This datasource must be configured and working before pgX can display metrics.
+The UID of your Scout Telemetry Data Lake datasource in Grafana. This datasource
+must be configured and working before pgX can display metrics.
 
 **How to find:**
+
 1. Go to **Connections** → **Data Sources**
 2. Click on your Scout Telemetry Data Lake datasource
 3. The UID is in the URL or datasource settings
@@ -79,6 +81,7 @@ The name of the table containing PostgreSQL metrics in OpenTelemetry format.
 Comma-separated list of environment names to show in the environment dropdown.
 
 **Examples:**
+
 - `staging,production`
 - `dev,staging,prod`
 - `us-east,us-west,eu-west`
@@ -92,9 +95,11 @@ Comma-separated list of environment names to show in the environment dropdown.
 | **Required** | No |
 | **Default** | `environment` |
 
-The resource attribute key used to filter metrics by environment. This should match the attribute used when collecting metrics.
+The resource attribute key used to filter metrics by environment. This should
+match the attribute used when collecting metrics.
 
 **Common values:**
+
 - `environment`
 - `env`
 - `deployment.environment`
@@ -123,11 +128,13 @@ Comma-separated list of service names that identify your PostgreSQL metrics coll
 | **Required** | No |
 | **Default** | `1h` |
 
-Maximum time range allowed for queries. Limits how far back users can query to prevent expensive queries.
+Maximum time range allowed for queries. Limits how far back users can query to
+prevent expensive queries.
 
 **Format:** Duration string (e.g., `30m`, `1h`, `6h`, `1d`)
 
 **Examples:**
+
 - `30m` — 30 minutes
 - `1h` — 1 hour
 - `6h` — 6 hours
@@ -142,7 +149,8 @@ Maximum time range allowed for queries. Limits how far back users can query to p
 | **Required** | No |
 | **Default** | `100` |
 
-Maximum number of options to load in template variable dropdowns. Increase if you have many databases/tables/indexes.
+Maximum number of options to load in template variable dropdowns. Increase if you
+have many databases/tables/indexes.
 
 ---
 
@@ -157,7 +165,8 @@ Maximum number of options to load in template variable dropdowns. Increase if yo
 | **Required** | No |
 | **Default** | `false` |
 
-When enabled, filters metrics based on service names the user has access to. Requires Grafana Enterprise RBAC configuration.
+When enabled, filters metrics based on service names the user has access to.
+Requires Grafana Enterprise RBAC configuration.
 
 ---
 
@@ -181,6 +190,7 @@ The type of PostgreSQL deployment being monitored.
 | `cloud-sql` | Google Cloud SQL for PostgreSQL | Coming soon |
 
 **Impact:**
+
 - `self-hosted`: Standard metrics, no cloud resource metrics
 - `rds`: Enables AWS CloudWatch metrics in Resources dashboard
 - `cloud-sql`: Future support for GCP metrics

@@ -6,7 +6,10 @@ sidebar_position: 12
 
 # pgX Metrics Reference
 
-pgX provides the most comprehensive PostgreSQL monitoring available. From server health to query performance, replication lag to lock contention — every metric you need to understand, optimize, and troubleshoot your PostgreSQL clusters is at your fingertips.
+pgX provides the most comprehensive PostgreSQL monitoring available. From server
+health to query performance, replication lag to lock contention — every metric
+you need to understand, optimize, and troubleshoot your PostgreSQL clusters is
+at your fingertips.
 
 Below is the complete reference of all metrics you can collect and use.
 

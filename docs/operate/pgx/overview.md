@@ -6,7 +6,9 @@ sidebar_position: 2
 
 # Overview
 
-The Overview tab provides a high-level view of your PostgreSQL cluster's health and performance. It's designed to give you immediate visibility into the most critical metrics at a glance.
+The Overview tab provides a high-level view of your PostgreSQL cluster's health
+and performance. It's designed to give you immediate visibility into the most
+critical metrics at a glance.
 
 ![Overview](/img/pgx/03-overview-full.png)
 
@@ -24,20 +26,24 @@ The Overview tab is organized into three main sections:
 
 ## Topology Section
 
-The Topology section provides visual graphs showing how your applications and replicas are connected.
+The Topology section provides visual graphs showing how your applications and
+replicas are connected.
 
 ### Application Connections
 
-A node graph visualization showing which applications are connected to your PostgreSQL cluster.
+A node graph visualization showing which applications are connected to your
+PostgreSQL cluster.
 
 ![Application Connections](/img/pgx/03-overview-app-connections.png)
 
 **What it shows:**
+
 - Connected applications by name
 - Connection distribution across the cluster
 - Active connection paths
 
 **How to use it:**
+
 - Identify which applications are consuming connections
 - Spot unexpected connection sources
 - Verify application connectivity after deployments
@@ -49,11 +55,13 @@ A node graph showing the replication structure of your cluster.
 ![Replica Topology](/img/pgx/03-overview-replica-topology.png)
 
 **What it shows:**
+
 - Primary and standby nodes
 - Replication relationships
 - Synchronous vs asynchronous replicas
 
 **How to use it:**
+
 - Verify replication topology is as expected
 - Identify replication chain structure
 - Spot disconnected standbys quickly
@@ -84,6 +92,7 @@ Six stat panels displaying the most critical health indicators.
 **Healthy range:** Depends on your workload, but typically < 100ms for OLTP.
 
 **When to investigate:**
+
 - Sudden increases in response time
 - Response times exceeding your SLA thresholds
 
@@ -92,6 +101,7 @@ Six stat panels displaying the most critical health indicators.
 **What it shows:** The total size of all databases in the cluster.
 
 **How to use it:**
+
 - Monitor storage growth
 - Plan capacity upgrades
 - Detect unexpected growth
@@ -101,6 +111,7 @@ Six stat panels displaying the most critical health indicators.
 **What it shows:** The number of active connections to PostgreSQL.
 
 **When to investigate:**
+
 - Approaching `max_connections` limit
 - Sudden spikes in connection count
 - Unusually low connections (may indicate application issues)
@@ -112,17 +123,20 @@ Six stat panels displaying the most critical health indicators.
 **Healthy range:** Typically < 1% for most workloads.
 
 **When to investigate:**
+
 - Error rate exceeding normal baseline
 - Sudden spikes in errors
 - Sustained elevated error rates
 
 ### Cache Hit Ratio
 
-**What it shows:** The percentage of data reads served from the buffer cache vs disk.
+**What it shows:** The percentage of data reads served from the buffer cache vs
+disk.
 
 **Healthy range:** > 99% for most OLTP workloads.
 
 **When to investigate:**
+
 - Cache hit ratio below 95%
 - Declining trend over time
 - After significant schema or query changes
@@ -131,7 +145,8 @@ Six stat panels displaying the most critical health indicators.
 
 ## Detailed View Section
 
-The Detailed View section provides time-series panels for trend analysis. This section is collapsed by default — click to expand.
+The Detailed View section provides time-series panels for trend analysis. This
+section is collapsed by default — click to expand.
 
 ![Detailed View](/img/pgx/03-overview-detailed.png)
 
@@ -140,6 +155,7 @@ The Detailed View section provides time-series panels for trend analysis. This s
 **What it shows:** The rate at which your database size is growing over time.
 
 **How to use it:**
+
 - Forecast storage needs
 - Identify periods of high data ingestion
 - Detect data growth anomalies
@@ -151,6 +167,7 @@ The Detailed View section provides time-series panels for trend analysis. This s
 **Healthy range:** Zero or near-zero for most workloads.
 
 **When to investigate:**
+
 - Any deadlocks occurring
 - Increasing trend in deadlock frequency
 - Deadlocks correlating with specific time periods
@@ -162,6 +179,7 @@ The Detailed View section provides time-series panels for trend analysis. This s
 **Healthy range:** Zero for healthy systems.
 
 **When to investigate:**
+
 - Any connection failures
 - Correlation with application errors
 - Spikes during high-traffic periods

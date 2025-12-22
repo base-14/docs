@@ -6,7 +6,9 @@ sidebar_position: 7
 
 # Replication
 
-The Replication tab provides comprehensive monitoring of PostgreSQL streaming replication. Use it to track replication lag, monitor standby health, and troubleshoot replication issues.
+The Replication tab provides comprehensive monitoring of PostgreSQL streaming
+replication. Use it to track replication lag, monitor standby health, and
+troubleshoot replication issues.
 
 ![Replication](/img/pgx/08-replication-full.png)
 
@@ -36,12 +38,14 @@ The Overview section provides immediate visibility into replication health.
 A node graph visualization showing your replication topology.
 
 **What it shows:**
+
 - Primary server
 - Standby replicas
 - Replication relationships
 - Synchronous vs asynchronous replicas
 
 **How to use it:**
+
 - Verify topology matches expected configuration
 - Identify disconnected standbys
 - Visualize cascading replication chains
@@ -53,11 +57,13 @@ A node graph visualization showing your replication topology.
 **Healthy range:** Depends on requirements, typically < 1 second for hot standby.
 
 **Types of lag:**
+
 - **Write lag** — Time for WAL to reach standby
 - **Flush lag** — Time for WAL to be flushed on standby
 - **Replay lag** — Time for WAL to be applied on standby
 
 **When to investigate:**
+
 - Lag exceeding SLA thresholds
 - Increasing lag trend
 - Sudden spikes in lag
@@ -68,6 +74,7 @@ A node graph visualization showing your replication topology.
 A table showing health status of all replication connections.
 
 **Columns:**
+
 | Column | Description |
 |--------|-------------|
 | **Standby** | Standby identifier |
@@ -79,6 +86,7 @@ A table showing health status of all replication connections.
 | **Replay LSN** | WAL position replayed on standby |
 
 **Healthy indicators:**
+
 - State = "streaming"
 - LSN positions close together
 - Recent reply times
@@ -87,7 +95,8 @@ A table showing health status of all replication connections.
 
 ## Primary Metrics Section
 
-The Primary Metrics section focuses on the primary server's replication workload. This section is collapsed by default — click to expand.
+The Primary Metrics section focuses on the primary server's replication
+workload. This section is collapsed by default — click to expand.
 
 ![Primary Metrics](/img/pgx/08-replication-primary-metrics.png)
 
@@ -105,6 +114,7 @@ The Primary Metrics section focuses on the primary server's replication workload
 | **Lag** | How far behind the slot is |
 
 **When to investigate:**
+
 - Inactive slots — may be holding WAL unnecessarily
 - "lost" WAL status — slot fell behind, needs recreation
 - Large lag — consumer is falling behind
@@ -116,11 +126,13 @@ The Primary Metrics section focuses on the primary server's replication workload
 **What it shows:** Rate of Write-Ahead Log generation over time.
 
 **How to use it:**
+
 - Understand write workload
 - Correlate with replication lag
 - Plan network bandwidth for replication
 
 **High WAL generation causes:**
+
 - Heavy write workload
 - Full page writes after checkpoint
 - Large transactions
@@ -133,6 +145,7 @@ The Primary Metrics section focuses on the primary server's replication workload
 **Healthy range:** Near zero for healthy archiving.
 
 **When to investigate:**
+
 - Growing archive lag
 - Archive failures
 - Disk space issues on archive destination
@@ -142,6 +155,7 @@ The Primary Metrics section focuses on the primary server's replication workload
 **What it shows:** Count and list of connected standby replicas.
 
 **How to use it:**
+
 - Verify expected standby count
 - Quick health check
 
@@ -149,7 +163,8 @@ The Primary Metrics section focuses on the primary server's replication workload
 
 ## Replica Metrics Section
 
-The Replica Metrics section shows standby-specific data. This section is collapsed by default — click to expand.
+The Replica Metrics section shows standby-specific data. This section is
+collapsed by default — click to expand.
 
 ![Replica Metrics](/img/pgx/08-replication-replica-metrics.png)
 
@@ -164,6 +179,7 @@ The Replica Metrics section shows standby-specific data. This section is collaps
 | **Last Transaction Replay** | Timestamp of last replayed transaction |
 
 **When to investigate:**
+
 - Large gap between receive and replay LSN
 - Old last transaction replay timestamp
 - Paused recovery
@@ -173,6 +189,7 @@ The Replica Metrics section shows standby-specific data. This section is collaps
 **What it shows:** Replication conflicts on standby replicas.
 
 **Conflict types:**
+
 - **tablespace** — Tablespace being dropped
 - **lock** — Lock conflicts with recovery
 - **snapshot** — Snapshot too old
@@ -182,11 +199,13 @@ The Replica Metrics section shows standby-specific data. This section is collaps
 **Healthy range:** Zero conflicts ideally.
 
 **When to investigate:**
+
 - Any conflicts occurring
 - Increasing conflict rate
 - Specific conflict types recurring
 
 **Mitigation:**
+
 - Increase `max_standby_streaming_delay`
 - Adjust `hot_standby_feedback`
 - Review query patterns on standby
@@ -195,7 +214,8 @@ The Replica Metrics section shows standby-specific data. This section is collaps
 
 ## Replication Debugging Section
 
-The Debugging section provides detailed data for troubleshooting. This section is collapsed by default — click to expand.
+The Debugging section provides detailed data for troubleshooting. This section
+is collapsed by default — click to expand.
 
 ![Replication Debugging](/img/pgx/08-replication-debugging.png)
 
@@ -237,6 +257,7 @@ Extended view of replication slots with additional metrics.
 **Healthy range:** Seconds or less.
 
 **When to investigate:**
+
 - Reply times > 30 seconds
 - Growing reply times
 - Standbys not responding
@@ -276,6 +297,7 @@ When experiencing high replication lag:
 5. Check standby resources (CPU, I/O)
 
 **Common causes:**
+
 - Heavy write workload on primary
 - Network issues
 - Slow standby storage

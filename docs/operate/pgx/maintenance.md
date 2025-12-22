@@ -6,7 +6,9 @@ sidebar_position: 10
 
 # Maintenance
 
-The Maintenance tab helps you monitor PostgreSQL maintenance operations and identify tables requiring attention. Use it to track vacuum status, dead tuple accumulation, bloat levels, and freeze age.
+The Maintenance tab helps you monitor PostgreSQL maintenance operations and
+identify tables requiring attention. Use it to track vacuum status, dead tuple
+accumulation, bloat levels, and freeze age.
 
 ![Maintenance](/img/pgx/11-maintenance-full.png)
 
@@ -24,7 +26,8 @@ The Maintenance tab is organized into three sections:
 
 ## Critical Stats Section
 
-The Critical Stats section shows the most important maintenance metrics requiring attention.
+The Critical Stats section shows the most important maintenance metrics
+requiring attention.
 
 ![Critical Stats](/img/pgx/11-maintenance-critical.png)
 
@@ -33,6 +36,7 @@ The Critical Stats section shows the most important maintenance metrics requirin
 **What it shows:** When tables were last analyzed and rows modified since.
 
 **Why it matters:**
+
 - ANALYZE updates table statistics
 - Query planner uses statistics for optimization
 - Stale statistics cause poor query plans
@@ -47,6 +51,7 @@ The Critical Stats section shows the most important maintenance metrics requirin
 | **Rows Modified** | Rows changed since last analyze |
 
 **When to investigate:**
+
 - Very old analyze timestamps
 - High rows modified counts
 - Poor query performance
@@ -56,6 +61,7 @@ The Critical Stats section shows the most important maintenance metrics requirin
 **What it shows:** Transaction ID age of tables approaching wraparound.
 
 **Why it matters:**
+
 - PostgreSQL uses 32-bit transaction IDs
 - IDs must be "frozen" before wraparound
 - Failure to freeze causes database shutdown
@@ -70,11 +76,13 @@ The Critical Stats section shows the most important maintenance metrics requirin
 | > 200M | Critical — immediate action needed |
 
 **When to investigate:**
+
 - Any table > 100M age
 - Increasing age trends
 - Tables not being frozen
 
 **Emergency action:**
+
 ```sql
 -- Check freeze age
 SELECT c.relname, age(c.relfrozenxid) as freeze_age
@@ -92,6 +100,7 @@ VACUUM FREEZE tablename;
 **What it shows:** Percentage of dead tuples per table over time.
 
 **Why it matters:**
+
 - Dead tuples consume space
 - Cause table bloat
 - Slow down sequential scans
@@ -99,6 +108,7 @@ VACUUM FREEZE tablename;
 **Healthy range:** < 10% for most tables.
 
 **When to investigate:**
+
 - Tables > 10% dead tuples
 - Growing dead tuple percentage
 - Correlation with performance issues
@@ -107,7 +117,8 @@ VACUUM FREEZE tablename;
 
 ## Vacuum Analysis Section
 
-The Vacuum Analysis section shows vacuum operation frequency. This section is collapsed by default — click to expand.
+The Vacuum Analysis section shows vacuum operation frequency. This section is
+collapsed by default — click to expand.
 
 ![Vacuum Analysis](/img/pgx/11-maintenance-vacuum.png)
 
@@ -116,11 +127,13 @@ The Vacuum Analysis section shows vacuum operation frequency. This section is co
 **What it shows:** Manual VACUUM operations over time.
 
 **How to interpret:**
+
 - Scheduled maintenance windows
 - Ad-hoc cleanup operations
 - DBA interventions
 
 **When you need manual vacuum:**
+
 - After bulk deletions
 - Before planned heavy read operations
 - When autovacuum is falling behind
@@ -130,11 +143,13 @@ The Vacuum Analysis section shows vacuum operation frequency. This section is co
 **What it shows:** Autovacuum operations over time.
 
 **How to interpret:**
+
 - Higher frequency = more dead tuples being generated
 - Low frequency = low write activity or generous thresholds
 - Spikes = after bulk operations
 
 **When to investigate:**
+
 - Very low autovacuum frequency on busy tables
 - Autovacuum not running when expected
 - High frequency indicating excessive churn
@@ -143,7 +158,8 @@ The Vacuum Analysis section shows vacuum operation frequency. This section is co
 
 ## Bloat Monitoring Section
 
-The Bloat Monitoring section tracks wasted space in tables and indexes. This section is collapsed by default — click to expand.
+The Bloat Monitoring section tracks wasted space in tables and indexes. This
+section is collapsed by default — click to expand.
 
 ![Bloat Monitoring](/img/pgx/11-maintenance-bloat.png)
 
@@ -152,6 +168,7 @@ The Bloat Monitoring section tracks wasted space in tables and indexes. This sec
 **What it shows:** Estimated table bloat over time.
 
 **What causes bloat:**
+
 - UPDATE operations (old versions retained)
 - DELETE operations (space not immediately reclaimed)
 - Vacuum not running frequently enough
@@ -159,6 +176,7 @@ The Bloat Monitoring section tracks wasted space in tables and indexes. This sec
 **Healthy range:** < 20% for most tables.
 
 **When to investigate:**
+
 - Tables > 20% bloat
 - Growing bloat trend
 - Performance degradation
@@ -187,6 +205,7 @@ VACUUM FULL tablename;
 **What it shows:** Estimated index bloat over time.
 
 **What causes index bloat:**
+
 - Same factors as table bloat
 - Page splits in B-tree indexes
 - Non-HOT updates
@@ -258,6 +277,7 @@ ALTER TABLE tablename SET (
 ```
 
 **Tuning guidelines:**
+
 - High-churn tables: Lower thresholds, more frequent vacuum
 - Large tables: Lower scale factors
 - Read-heavy tables: Less aggressive vacuum acceptable

@@ -6,7 +6,9 @@ sidebar_position: 6
 
 # Connections
 
-The Connections tab provides comprehensive visibility into PostgreSQL connection management. Use it to monitor connection pools, identify connection leaks, and optimize connection utilization.
+The Connections tab provides comprehensive visibility into PostgreSQL connection
+management. Use it to monitor connection pools, identify connection leaks, and
+optimize connection utilization.
 
 ![Connections](/img/pgx/07-connections-full.png)
 
@@ -34,11 +36,13 @@ The Overview section provides immediate visibility into connection state and dis
 A node graph visualization showing which applications are connected to PostgreSQL.
 
 **What it shows:**
+
 - Connected applications and services
 - Connection distribution
 - Network topology
 
 **How to use it:**
+
 - Identify all connection sources
 - Spot unexpected connections
 - Verify application connectivity
@@ -50,6 +54,7 @@ A node graph visualization showing which applications are connected to PostgreSQ
 **Healthy range:** < 80% of max_connections.
 
 **When to investigate:**
+
 - Approaching 80% — plan capacity increase
 - Above 90% — immediate attention needed
 - Sudden spikes — possible connection leak
@@ -59,6 +64,7 @@ A node graph visualization showing which applications are connected to PostgreSQ
 **What it shows:** Peak connection count in the selected time period.
 
 **How to use it:**
+
 - Understand peak demand
 - Plan `max_connections` setting
 - Identify peak usage times
@@ -75,11 +81,13 @@ A pie chart showing connections by state.
 | **idle in transaction (aborted)** | Transaction failed, waiting for rollback |
 
 **Healthy pattern:**
+
 - Mostly idle connections = good pooling
 - Many active = high load or slow queries
 - Many idle in transaction = possible issues
 
 **When to investigate:**
+
 - High "idle in transaction" — application not committing
 - High "idle in transaction (aborted)" — unhandled errors
 - Very few idle — may need more connections
@@ -89,6 +97,7 @@ A pie chart showing connections by state.
 **What it shows:** Distribution of connection ages over time.
 
 **How to interpret:**
+
 - Vertical spread = varying connection lifetimes
 - Concentrated band = consistent pool behavior
 - Long-lived connections = persistent connections or leaks
@@ -97,7 +106,8 @@ A pie chart showing connections by state.
 
 ## Active Sessions Section
 
-The Active Sessions table shows details of all current connections. This section is collapsed by default — click to expand.
+The Active Sessions table shows details of all current connections. This section
+is collapsed by default — click to expand.
 
 ![Active Sessions](/img/pgx/07-connections-active-sessions.png)
 
@@ -117,16 +127,19 @@ The Active Sessions table shows details of all current connections. This section
 ### How to Use
 
 **Find long-running queries:**
+
 - Sort by Duration descending
 - Look for active connections with long duration
 - May indicate stuck queries or missing indexes
 
 **Identify idle in transaction:**
+
 - Filter by state = "idle in transaction"
 - Long duration = possible application bug
 - Check application code for uncommitted transactions
 
 **Track application connections:**
+
 - Group by Application
 - Verify expected applications are connected
 - Identify connection counts per application
@@ -135,7 +148,8 @@ The Active Sessions table shows details of all current connections. This section
 
 ## Connection Pool Analytics Section
 
-The Pool Analytics section helps you understand connection pool behavior. This section is collapsed by default — click to expand.
+The Pool Analytics section helps you understand connection pool behavior. This
+section is collapsed by default — click to expand.
 
 ![Pool Analytics](/img/pgx/07-connections-pool-analytics.png)
 
@@ -144,11 +158,13 @@ The Pool Analytics section helps you understand connection pool behavior. This s
 **What it shows:** Count of idle connections over time.
 
 **How to interpret:**
+
 - Stable idle count = healthy pool
 - Growing idle = possible connection leak
 - Zero idle = pool exhaustion risk
 
 **Optimization tips:**
+
 - Too many idle = reduce pool size
 - Too few idle = increase pool size
 - Fluctuating = adjust pool min/max settings
@@ -160,6 +176,7 @@ The Pool Analytics section helps you understand connection pool behavior. This s
 **Healthy range:** 20-70% for typical workloads.
 
 **When to investigate:**
+
 - Consistently > 80% — increase pool size
 - Consistently < 10% — decrease pool size
 - Sudden spikes — traffic surge or slow queries
@@ -171,6 +188,7 @@ The Pool Analytics section helps you understand connection pool behavior. This s
 **Healthy range:** Near zero for well-sized pools.
 
 **When to investigate:**
+
 - Any consistent wait time — pool too small
 - Spikes correlating with traffic — scale pool dynamically
 - Growing trend — connection leak or load increase
@@ -180,11 +198,13 @@ The Pool Analytics section helps you understand connection pool behavior. This s
 **What it shows:** Rate of connection creation and destruction.
 
 **How to interpret:**
+
 - Low turnover = stable, persistent connections
 - High turnover = connections being recycled frequently
 - Spiky turnover = burst traffic patterns
 
 **Optimization:**
+
 - High turnover is expensive — consider connection pooler
 - Very low turnover with high wait = increase pool
 - Match turnover to application pattern
@@ -193,7 +213,8 @@ The Pool Analytics section helps you understand connection pool behavior. This s
 
 ## Historical Analysis Section
 
-The Historical Analysis section provides long-term connection pattern insights. This section is collapsed by default — click to expand.
+The Historical Analysis section provides long-term connection pattern insights.
+This section is collapsed by default — click to expand.
 
 ![Historical Analysis](/img/pgx/07-connections-historical.png)
 
@@ -202,6 +223,7 @@ The Historical Analysis section provides long-term connection pattern insights. 
 **What it shows:** Connection patterns per application over time.
 
 **How to use it:**
+
 - Identify which apps use most connections
 - Spot applications with connection issues
 - Plan capacity per application
@@ -211,6 +233,7 @@ The Historical Analysis section provides long-term connection pattern insights. 
 **What it shows:** Peak connections over extended periods.
 
 **How to use it:**
+
 - Understand daily/weekly patterns
 - Plan for peak capacity
 - Set appropriate `max_connections`
@@ -220,6 +243,7 @@ The Historical Analysis section provides long-term connection pattern insights. 
 **What it shows:** Connection behavior over the past week.
 
 **How to use it:**
+
 - Identify weekly patterns (weekday vs weekend)
 - Spot anomalies in connection behavior
 - Plan maintenance windows
@@ -239,6 +263,7 @@ When applications report "too many connections":
 5. Review **Pool Utilization** trends
 
 **Common causes:**
+
 - Connection leaks in application
 - Transactions not being committed
 - Pool size too small for load
@@ -253,6 +278,7 @@ When applications report "too many connections":
 5. Adjust pool min/max based on patterns
 
 **Guidelines:**
+
 - Target 30-60% utilization during peak
 - Near-zero wait time
 - Stable idle count matching pool minimum
@@ -266,6 +292,7 @@ When applications report "too many connections":
 4. Look for applications not releasing connections
 
 **Signs of leaks:**
+
 - Growing idle connection count
 - Same connections idle for hours
 - Applications with disproportionate connections
@@ -278,6 +305,7 @@ When applications report "too many connections":
 4. Plan `max_connections` with headroom
 
 **Recommendations:**
+
 - Set `max_connections` to 1.5x peak usage
 - Consider connection pooler (PgBouncer) for high connection counts
 - Monitor trends for growth patterns
