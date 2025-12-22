@@ -6,7 +6,7 @@ sidebar_position: 4
 
 # Tables & Indexes
 
-The Tables & Indexes section provides detailed insights into table health, index effectiveness, and storage optimization opportunities. Use it to identify bloated tables, underutilized indexes, and maintenance needs.
+The Tables & Indexes tab provides detailed insights into table health, index effectiveness, and storage optimization opportunities. Use it to identify bloated tables, underutilized indexes, and maintenance needs.
 
 ![Tables & Indexes](/img/pgx/05-tables-indexes-full.png)
 
@@ -14,7 +14,7 @@ The Tables & Indexes section provides detailed insights into table health, index
 
 ## Sections
 
-This section is organized into three sections:
+The Tables & Indexes tab is organized into three sections:
 
 1. **Overview** — High-level table and index counts
 2. **Table Explorer** — Deep dive into individual table metrics

@@ -6,17 +6,17 @@ sidebar_position: 8
 
 # Resources
 
-The Resources section provides visibility into cloud infrastructure metrics for your PostgreSQL deployment. Currently, this dashboard supports AWS RDS metrics via CloudWatch integration.
+The Resources tab provides visibility into cloud infrastructure metrics for your PostgreSQL deployment. Currently, this tab supports AWS RDS metrics via CloudWatch integration.
 
 ![Resources](/img/pgx/09-resources-full.png)
 
-> **Note:** This section is only available when the deployment type is set to "RDS" in configuration.
+> **Note:** This tab is only available when the deployment type is set to "RDS" in configuration.
 
 ---
 
 ## Sections
 
-The Resources dashboard is organized into four sections:
+The Resources tab is organized into four sections:
 
 1. **CPU** — CPU utilization and load metrics
 2. **Memory** — Available memory tracking

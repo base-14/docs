@@ -8,6 +8,8 @@ sidebar_position: 11
 
 This document provides a complete reference of all pgX configuration options.
 
+![Configuration Page](/img/pgx/12-configuration-page.png)
+
 ---
 
 ## Accessing Configuration

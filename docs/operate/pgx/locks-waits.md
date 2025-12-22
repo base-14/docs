@@ -6,14 +6,14 @@ sidebar_position: 9
 
 # Locks & Waits
 
-The Locks & Waits section provides visibility into PostgreSQL concurrency behavior. Use it to identify lock contention, detect deadlocks, analyze blocking sessions, and troubleshoot wait events.
+The Locks & Waits tab provides visibility into PostgreSQL concurrency behavior. Use it to identify lock contention, detect deadlocks, analyze blocking sessions, and troubleshoot wait events.
 
 
 ---
 
 ## Sections
 
-The Locks & Waits dashboard is organized into four sections:
+The Locks & Waits tab is organized into four sections:
 
 1. **Concurrency Overview** — Lock types and deadlock monitoring
 2. **Locks Grid** — Detailed view of all locks

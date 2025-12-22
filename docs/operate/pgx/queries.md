@@ -6,7 +6,7 @@ sidebar_position: 5
 
 # Queries
 
-The Queries section provides deep query-level analysis with powerful filtering capabilities. Use it to identify slow queries, analyze performance patterns, and drill down into specific query behavior.
+The Queries tab provides deep query-level analysis with powerful filtering capabilities. Use it to identify slow queries, analyze performance patterns, and drill down into specific query behavior.
 
 ![Queries](/img/pgx/06-queries-full.png)
 
@@ -14,7 +14,7 @@ The Queries section provides deep query-level analysis with powerful filtering c
 
 ## Dashboard Features
 
-The Queries dashboard offers:
+The Queries tab offers:
 
 1. **Flexible Filtering** — Filter by database, user, query type, and response time percentile
 2. **Query Heatmap** — Visualize query performance distribution over time

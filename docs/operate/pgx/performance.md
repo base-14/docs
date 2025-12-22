@@ -6,7 +6,7 @@ sidebar_position: 3
 
 # Performance
 
-The Performance section provides detailed insights into query and transaction performance. Use it to identify slow queries, analyze execution patterns, and optimize your database workload.
+The Performance tab provides detailed insights into query and transaction performance. Use it to identify slow queries, analyze execution patterns, and optimize your database workload.
 
 ![Performance](/img/pgx/04-performance-full.png)
 
@@ -14,7 +14,7 @@ The Performance section provides detailed insights into query and transaction pe
 
 ## Sections
 
-The Performance dashboard is organized into three sections:
+The Performance tab is organized into three sections:
 
 1. **Overview** — Key performance visualizations
 2. **Query Analytics** — Detailed query analysis table

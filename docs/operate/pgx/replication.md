@@ -6,17 +6,17 @@ sidebar_position: 7
 
 # Replication
 
-The Replication section provides comprehensive monitoring of PostgreSQL streaming replication. Use it to track replication lag, monitor standby health, and troubleshoot replication issues.
+The Replication tab provides comprehensive monitoring of PostgreSQL streaming replication. Use it to track replication lag, monitor standby health, and troubleshoot replication issues.
 
 ![Replication](/img/pgx/08-replication-full.png)
 
-> **Note:** This dashboard is available for self-hosted and AWS RDS deployments.
+> **Note:** This tab is available for self-hosted and AWS RDS deployments.
 
 ---
 
 ## Sections
 
-The Replication dashboard is organized into four sections:
+The Replication tab is organized into four sections:
 
 1. **Overview** — Topology and health at a glance
 2. **Primary Metrics** — WAL and slot monitoring

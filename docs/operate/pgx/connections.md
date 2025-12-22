@@ -6,7 +6,7 @@ sidebar_position: 6
 
 # Connections
 
-The Connections section provides comprehensive visibility into PostgreSQL connection management. Use it to monitor connection pools, identify connection leaks, and optimize connection utilization.
+The Connections tab provides comprehensive visibility into PostgreSQL connection management. Use it to monitor connection pools, identify connection leaks, and optimize connection utilization.
 
 ![Connections](/img/pgx/07-connections-full.png)
 
@@ -14,7 +14,7 @@ The Connections section provides comprehensive visibility into PostgreSQL connec
 
 ## Sections
 
-The Connections dashboard is organized into four sections:
+The Connections tab is organized into four sections:
 
 1. **Overview** — Connection topology and key stats
 2. **Active Sessions** — Detailed view of current sessions

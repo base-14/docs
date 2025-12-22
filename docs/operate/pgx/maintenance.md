@@ -6,7 +6,7 @@ sidebar_position: 10
 
 # Maintenance
 
-The Maintenance dashboard helps you monitor PostgreSQL maintenance operations and identify tables requiring attention. Use it to track vacuum status, dead tuple accumulation, bloat levels, and freeze age.
+The Maintenance tab helps you monitor PostgreSQL maintenance operations and identify tables requiring attention. Use it to track vacuum status, dead tuple accumulation, bloat levels, and freeze age.
 
 ![Maintenance](/img/pgx/11-maintenance-full.png)
 
@@ -14,7 +14,7 @@ The Maintenance dashboard helps you monitor PostgreSQL maintenance operations an
 
 ## Sections
 
-The Maintenance dashboard is organized into three sections:
+The Maintenance tab is organized into three sections:
 
 1. **Critical Stats** — Key maintenance health indicators
 2. **Vacuum Analysis** — Manual and auto vacuum tracking
