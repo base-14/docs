@@ -213,5 +213,5 @@ Share the URL to give others the exact same view.
 
 ## Related Guides
 
-- [Creating Alerts with logX](../../manage/creating-alerts-with-logx.md) —
+- [Creating Alerts with logX](../../guides/creating-alerts-with-logx.md) —
   Set up alerts based on log patterns
