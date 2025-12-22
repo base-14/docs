@@ -770,6 +770,8 @@ scout:
 
 - [Scout Exporter Configuration](./scout-exporter.md) - Configure authentication
   to send data to Scout
+- [OpenTelemetry Operator Setup](./opentelemetry-operator-setup.md) -
+  Auto-instrumentation and CRD-based collector management
 - [Advanced Collector Configuration](./otel-collector-config.md) - Customize
   your collector setup
 - [AWS ECS/Fargate Setup](./ecs-setup.md) - Alternative container deployment
