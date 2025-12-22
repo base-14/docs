@@ -13,12 +13,18 @@ keywords:
     grafana logs,
     log analysis,
     otel logs,
+    base14,
+    scout,
+    scout telemetry,
   ]
 ---
 
-logX is an OpenTelemetry log explorer Grafana app that provides deep visibility
-into your application and infrastructure logs with advanced filtering,
-searching, and trace correlation.
+logX is a log explorer Grafana app built into Scout. It provides deep visibility
+into your OpenTelemetry logs with advanced filtering, searching, and trace
+correlation.
+
+logX queries logs stored in the Scout Telemetry Data Lake and integrates with
+other Scout apps like TraceX for complete observability.
 
 ![logX Overview](/img/logX/logx-overview.png)
 
