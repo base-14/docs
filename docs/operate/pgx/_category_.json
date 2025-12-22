@@ -1,0 +1,8 @@
+{
+  "label": "PostgreSQL Advanced Monitoring",
+  "position": 5,
+  "link": {
+    "type": "generated-index",
+    "description": "Advanced PostgreSQL monitoring and optimization with pgX Grafana app"
+  }
+}

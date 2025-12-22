@@ -1,8 +1,8 @@
 ---
-title: PostgreSQL Advanced Monitoring with Pgdashex
+title: PostgreSQL Advanced Monitoring
 sidebar_label: PostgreSQL Advanced
 description:
-  Advanced PostgreSQL monitoring with pgdashex. Collect comprehensive database
+  Advanced PostgreSQL monitoring. Collect comprehensive database
   metrics including query statistics, table/index metrics, and replication status.
 keywords:
   [
@@ -15,7 +15,7 @@ keywords:
   ]
 ---
 
-# PostgreSQL Advanced Monitoring with Pgdashex
+# PostgreSQL Advanced Monitoring
 
 Pgdashex is a PostgreSQL monitoring agent that collects comprehensive database
 metrics and exposes them in Prometheus format. This guide covers deploying
