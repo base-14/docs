@@ -158,7 +158,8 @@ Filter traces by duration to find slow requests or quick operations.
 traceX integrates with logX for log-trace correlation:
 
 1. View a trace in traceX
-2. See correlated logs in logX using the same Trace ID
+2. See correlated logs in logX using the **View Logs** button
+in Span Details on the right sidebar.
 3. Navigate between logs and traces seamlessly
 
 ---
