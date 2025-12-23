@@ -39,7 +39,7 @@ The traceX interface consists of:
 | **Filter Sidebar** | Collapsible panel for attribute-based filtering |
 | **Active Filters** | Badges showing currently applied filters |
 | **Heatmap** | Duration distribution visualization over time |
-| **Traces Panel** | List of traces with expandable details |
+| **Table** | List of spans with expandable details |
 
 ---
 
@@ -90,7 +90,7 @@ When you click a trace, you'll see comprehensive trace analysis:
 - Hierarchical view of all spans in the trace
 - Horizontal timeline showing duration and timing
 - Color-coded by service
-- Click any span to see its details
+- Click any span to see its details on the right sidebar
 
 ### Service Flowchart
 
@@ -135,15 +135,15 @@ Use the heatmap to:
 
 ### Using the Filter Sidebar
 
-1. Click the expand icon to open the sidebar
+1. Click the expand(`>`) icon to open the sidebar
 2. Choose a category: **Resource Attributes**, **Span Attributes**, or **Trace Fields**
 3. Click an attribute to see available values
-4. Select values to add filters (use `=` to include, `!=` to exclude)
+4. Select values to add filters (use `+` to include, `-` to exclude)
 
 ### Using Active Filters
 
 - Active filters appear as badges above the heatmap
-- Click **×** on a badge to remove that filter
+- Click **-** on a badge to remove that filter
 - Click **Clear all** to remove all filters
 
 ### Duration Filtering
