@@ -107,8 +107,8 @@ When you click a trace, you'll see comprehensive trace analysis:
 
 When you select a span, you'll see:
 
-- **Attributes tab** — Span attributes (key-value pairs)
-- **Resource Attributes tab** — Resource context information
+- **Attributes tab** — [Span attributes](https://opentelemetry.io/docs/concepts/signals/traces/#attributes)
+  and [Resource attributes](https://opentelemetry.io/docs/concepts/resources/#custom-resources)
 - **Events tab** — Span events with timestamps
 - **Links tab** — Links to related traces
 
