@@ -156,7 +156,7 @@ When logs have trace context, you can navigate to the full trace:
 
 1. Expand a log with a Trace ID
 2. Go to the **Trace Info** tab
-3. Click **View Trace** to open TraceX
+3. Click on **Open trace details** to open TraceX
 4. See the complete distributed trace
 
 ![Trace Correlation](/img/logX/logx-trace-corelation.png)
@@ -168,7 +168,7 @@ When logs have trace context, you can navigate to the full trace:
 Create alerts based on log patterns:
 
 1. Find a log that represents the pattern you want to alert on
-2. Expand the log and click **Generate Alert Query**
+2. Expand the log and click **Explore Alert Query**
 3. Copy the ClickHouse query
 4. Create a new Grafana alert rule with this query
 
