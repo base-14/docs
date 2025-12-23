@@ -15,6 +15,7 @@ keywords:
     otel traces,
     trace analysis,
     span visualization,
+    scout
   ]
 ---
 
