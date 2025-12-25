@@ -185,9 +185,11 @@ Access configuration at **Administration** → **Plugins** → **traceX** → **
 
 When enabled, service visibility is restricted based on Grafana team membership:
 
-- Teams must follow naming pattern: `{ServiceName}-{Role}` (e.g., `api-gateway-Viewer`)
+- Teams must follow naming pattern: `{ServiceName}-viewer` (e.g., `api-gateway-viewer`)
 - Users only see services from teams they belong to
 - All queries are automatically filtered to permitted services
+
+> [Video tutorial on configuring RBAC for traceX](https://drive.google.com/file/d/1BBqF9gs0UU0ZW2TGGNGcBxRdf1J2Hu9X/view?usp=sharing)
 
 ---
 
