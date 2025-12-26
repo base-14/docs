@@ -59,6 +59,7 @@ GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO pgdashex_monitor;
 
 -- Enable query statistics per database
 CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+GRANT SELECT ON pg_stat_statements TO pgdashex_monitor;
 ```
 
 > **Note**: Learn more about these predefined roles:
