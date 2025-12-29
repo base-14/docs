@@ -43,23 +43,10 @@ Create a dedicated PostgreSQL user with monitoring privileges:
 -- Connect as superuser (postgres) 
 CREATE USER pgdashex_monitor WITH ENCRYPTED PASSWORD '<strong_password>';
 
-
--- Grant monitoring roles per cluster
-GRANT pg_read_all_stats TO pgdashex_monitor;
 GRANT pg_monitor TO pgdashex_monitor;
-
-
--- Grant database access per database 
-GRANT CONNECT ON DATABASE <database_name> TO pgdashex_monitor;
-
---- Grant schema usage and table access per database
-GRANT USAGE ON SCHEMA information_schema TO pgdashex_monitor;
-GRANT SELECT ON ALL TABLES IN SCHEMA information_schema TO pgdashex_monitor;
-GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO pgdashex_monitor;
 
 -- Enable query statistics per database
 CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
-GRANT SELECT ON pg_stat_statements TO pgdashex_monitor;
 ```
 
 > **Note**: Learn more about these predefined roles:
