@@ -67,7 +67,7 @@ psql -h <postgres-host> -p 5432 -U pgdashex_user -d postgres -c "SELECT version(
 ### Image Details
 
 - **Image Name**: `base14/pgdashex`
-- **Image Tag**: `base14/pgdashex:v0.5.8`
+- **Image Tag**: `base14/pgdashex:v0.5.10`
 
 ### Exposed Ports
 
@@ -80,7 +80,7 @@ psql -h <postgres-host> -p 5432 -U pgdashex_user -d postgres -c "SELECT version(
 Pull and run the Docker image:
 
 ```bash
-docker pull base14/pgdashex:v0.5.8
+docker pull base14/pgdashex:v0.5.10
 
 docker run -d \
   --name pgdashex \
@@ -91,7 +91,7 @@ docker run -d \
   -e PG_PASSWORD='your_secure_password' \
   -e PG_DATABASE=postgres \
   -e PGDASHEX_COLLECT_METRICS=all \
-  base14/pgdashex:v0.5.8
+  base14/pgdashex:v0.5.10
 ```
 
 **Note**: If PostgreSQL is on the host machine, use `host.docker.internal` as
@@ -104,7 +104,7 @@ version: '3.8'
 
 services:
   pgdashex:
-    image: base14/pgdashex:v0.5.8
+    image: base14/pgdashex:v0.5.10
     container_name: pgdashex
     ports:
       - "9187:9187"
