@@ -1953,7 +1953,7 @@ def health_check():
 A complete working example with database integration, authentication, and full
 instrumentation is available at:
 
-[GitHub: base-14/examples/python/python-fastapi-postgres](https://github.com/base-14/examples/tree/main/python/python-fastapi-postgres)
+[GitHub: base-14/examples/python/fastapi-postgres](https://github.com/base-14/examples/tree/main/python/fastapi-postgres)
 
 ## References
 

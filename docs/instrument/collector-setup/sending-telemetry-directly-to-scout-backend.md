@@ -209,7 +209,7 @@ end
 
 ## References
 
-- [Rails instrumentaion code](https://github.com/base-14/examples/tree/main/rails)
+- [Rails instrumentation code](https://github.com/base-14/examples/tree/main/ruby)
 
 ## Related Guides
 

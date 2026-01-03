@@ -1199,7 +1199,7 @@ curl http://localhost:8080/api/users
 
 ### Go 1.25 + Chi + In-Memory Example
 
-**[go-chi-inmemory](https://github.com/base-14/examples/tree/main/go/go-chi-inmemory)**
+**[chi-inmemory](https://github.com/base-14/examples/tree/main/go/chi-inmemory)**
 
 A modern Go application showcasing the latest OpenTelemetry features:
 
@@ -1264,14 +1264,14 @@ func TracingMiddleware(
 **Quick Start:**
 
 ```bash
-cd examples/go/go-chi-inmemory
+cd examples/go/chi-inmemory
 docker compose up --build
 curl http://localhost:8080/api/health
 ```
 
 ### Example Comparison
 
-| Feature | go119-gin191-postgres | go-chi-inmemory |
+| Feature | go119-gin191-postgres | chi-inmemory |
 |---------|----------------------|-----------------|
 | **Go Version** | 1.19.13 (EOL) | 1.25 (Latest) |
 | **Framework** | Gin 1.9.1 | Chi (latest) |
@@ -1286,7 +1286,7 @@ curl http://localhost:8080/api/health
 **For Learning:**
 
 1. Clone the examples repository
-2. Start with `go-chi-inmemory` for modern patterns
+2. Start with `chi-inmemory` for modern patterns
 3. Study `go119-gin191-postgres` for database instrumentation
 
 **For Production:**
@@ -1295,7 +1295,7 @@ curl http://localhost:8080/api/health
    - Custom ORM tracing patterns
    - Log correlation implementation
    - Graceful shutdown handling
-2. Use `go-chi-inmemory` as reference for:
+2. Use `chi-inmemory` as reference for:
    - Modern Go instrumentation
    - Lightweight HTTP services
    - Metrics collection
@@ -1478,7 +1478,7 @@ func CreateUser(ctx context.Context, user User) error {
 - [OpenTelemetry Go GitHub](https://github.com/open-telemetry/opentelemetry-go)
 - [Go Examples Repository](https://github.com/base-14/examples/tree/main/go)
   - [go119-gin191-postgres](https://github.com/base-14/examples/tree/main/go/go119-gin191-postgres)
-  - [go-chi-inmemory](https://github.com/base-14/examples/tree/main/go/go-chi-inmemory)
+  - [chi-inmemory](https://github.com/base-14/examples/tree/main/go/chi-inmemory)
 - [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/)
 
 ## Related Guides

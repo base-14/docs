@@ -1403,7 +1403,7 @@ Here's a complete working example of a Laravel application with OpenTelemetry in
 
 ### Example Project 1: Laravel 11 + PHP 8.2 + PostgreSQL
 
-Based on our [GitHub example repository](https://github.com/base-14/examples/tree/main/laravel/php85-laravel12-postgres).
+Based on our [GitHub example repository](https://github.com/base-14/examples/tree/main/php/php85-laravel12-postgres).
 
 #### composer.json
 
@@ -1497,7 +1497,7 @@ CMD ["php", "artisan", "serve", "--host=0.0.0.0"]
 
 ### Example Project 2: Laravel 8 + SQLite (Legacy)
 
-For legacy applications still using Laravel 8 (see [GitHub example](https://github.com/base-14/examples/tree/main/laravel/php8-laravel8-sqlite)):
+For legacy applications still using Laravel 8 (see [GitHub example](https://github.com/base-14/examples/tree/main/php/php8-laravel8-sqlite)):
 
 > ⚠️ **Security Warning**: Laravel 8 reached end-of-life in July 2023. This example
 > is provided for reference only and should not be used in production.
@@ -1511,7 +1511,7 @@ OTEL_SERVICE_NAME=laravel-8-legacy
 OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
 ```
 
-Complete working examples are available in our [GitHub examples repository](https://github.com/base-14/examples/tree/main/laravel).
+Complete working examples are available in our [GitHub examples repository](https://github.com/base-14/examples/tree/main/php).
 
 ## References
 

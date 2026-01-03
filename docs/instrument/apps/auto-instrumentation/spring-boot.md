@@ -1720,7 +1720,7 @@ Configure tenant-based filtering as needed.
 For a fully working Spring Boot application with OpenTelemetry instrumentation,
 refer to our example repository:
 
-**[Spring Boot OpenTelemetry Example](https://github.com/base-14/examples/tree/main/spring-boot)**
+**[Spring Boot OpenTelemetry Example](https://github.com/base-14/examples/tree/main/java)**
 
 The example includes:
 
@@ -1741,7 +1741,7 @@ The example includes:
 ```bash showLineNumbers
 # Clone the repository
 git clone https://github.com/base-14/examples.git
-cd examples/spring-boot
+cd examples/java
 
 # Run locally with Docker Compose
 docker-compose up
@@ -1766,7 +1766,7 @@ The example demonstrates:
 
 - [OpenTelemetry Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
 - Sample application:
-  [Spring Boot OTel Instrumentation](https://github.com/base-14/examples/tree/main/spring-boot)
+  [Spring Boot OTel Instrumentation](https://github.com/base-14/examples/tree/main/java)
 
 ## Related Guides
 

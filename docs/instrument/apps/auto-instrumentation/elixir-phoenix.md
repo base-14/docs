@@ -136,7 +136,7 @@ That's it! Head over to Scout Grafana to visualize the traces.
 
 - [OpenTelemetry Erlang Documentation](https://opentelemetry.io/docs/languages/erlang/)
 - [Phoenix Framework Documentation](https://hexdocs.pm/phoenix/telemetry.html)
-- [Sample Phoenix application with OpenTelemetry instrumentation](https://github.com/base-14/examples/tree/main/elixir-phoenix-otel)
+- [Sample Phoenix application with OpenTelemetry instrumentation](https://github.com/base-14/examples/tree/main/elixir/phoenix18-ecto3-postgres)
 
 ## Related Guides
 
