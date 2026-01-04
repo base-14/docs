@@ -136,7 +136,13 @@ npm install --save \
 
 ## Configuration
 
-### Approach 1: Dedicated Instrumentation Module (Recommended)
+```mdx-code-block
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs>
+<TabItem value="module" label="NestJS Module (Recommended)" default>
+```
 
 Create a NestJS module for OpenTelemetry initialization:
 
@@ -212,7 +218,10 @@ import { UsersModule } from './users/users.module';
 export class AppModule {}
 ```
 
-### Approach 2: Standalone Instrumentation File
+```mdx-code-block
+</TabItem>
+<TabItem value="standalone" label="Standalone File">
+```
 
 Create instrumentation file loaded before application bootstrap:
 
@@ -263,7 +272,10 @@ async function bootstrap() {
 bootstrap();
 ```
 
-### Approach 3: Environment Variables Configuration
+```mdx-code-block
+</TabItem>
+<TabItem value="env-vars" label="Environment Variables">
+```
 
 For containerized deployments:
 
@@ -291,6 +303,11 @@ Run with Node.js instrumentation:
 
 ```bash showLineNumbers
 node --require ./instrumentation.js dist/main.js
+```
+
+```mdx-code-block
+</TabItem>
+</Tabs>
 ```
 
 ## Production Configuration

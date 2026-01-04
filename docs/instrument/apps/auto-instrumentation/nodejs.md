@@ -162,7 +162,13 @@ npm install --save-dev @types/node
 
 ## Configuration
 
-### Approach 1: Separate Instrumentation File (Recommended)
+```mdx-code-block
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs>
+<TabItem value="separate-file" label="Separate File (Recommended)" default>
+```
 
 Create a dedicated file to initialize OpenTelemetry before your application
 starts:
@@ -243,7 +249,10 @@ app.listen(3000, () => {
 });
 ```
 
-### Approach 2: Environment Variables Only
+```mdx-code-block
+</TabItem>
+<TabItem value="env-vars" label="Environment Variables">
+```
 
 For containerized deployments, use environment variables without code changes:
 
@@ -277,7 +286,10 @@ Then use the `--require` flag to load instrumentation:
 node --require ./instrumentation.js server.js
 ```
 
-### Approach 3: TypeScript Configuration
+```mdx-code-block
+</TabItem>
+<TabItem value="typescript" label="TypeScript">
+```
 
 For TypeScript projects with ES modules:
 
@@ -324,6 +336,11 @@ Update `tsconfig.json`:
     "strict": true
   }
 }
+```
+
+```mdx-code-block
+</TabItem>
+</Tabs>
 ```
 
 ## Production Configuration

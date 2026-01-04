@@ -148,7 +148,13 @@ go get go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgr
 
 ## Configuration
 
-### Approach 1: Centralized Tracing Package (Recommended)
+```mdx-code-block
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs>
+<TabItem value="centralized" label="Centralized Package (Recommended)" default>
+```
 
 Create a dedicated package for OpenTelemetry initialization:
 
@@ -299,7 +305,10 @@ func handleGetUser(c echo.Context) error {
 }
 ```
 
-### Approach 2: Environment Variables Configuration
+```mdx-code-block
+</TabItem>
+<TabItem value="env-vars" label="Environment Variables">
+```
 
 For containerized deployments:
 
@@ -320,7 +329,10 @@ OTEL_RESOURCE_ATTRIBUTES=deployment.environment=production,service.namespace=bac
 OTEL_TRACES_SAMPLER=parentbased_always_on
 ```
 
-### Approach 3: Production Configuration with TLS
+```mdx-code-block
+</TabItem>
+<TabItem value="production-tls" label="Production with TLS">
+```
 
 ```go showLineNumbers title="internal/tracing/production.go"
 package tracing
@@ -387,7 +399,17 @@ func InitProductionTracer(serviceName string) (func(context.Context) error, erro
 }
 ```
 
+```mdx-code-block
+</TabItem>
+</Tabs>
+```
+
 ## Framework-Specific Instrumentation
+
+```mdx-code-block
+<Tabs>
+<TabItem value="echo" label="Echo" default>
+```
 
 ### Echo Framework
 
@@ -452,6 +474,11 @@ type User struct {
  Name  string
  Email string
 }
+```
+
+```mdx-code-block
+</TabItem>
+<TabItem value="fiber" label="Fiber">
 ```
 
 ### Fiber Framework
@@ -527,6 +554,11 @@ func main() {
 }
 ```
 
+```mdx-code-block
+</TabItem>
+<TabItem value="chi" label="Chi">
+```
+
 ### Chi Router
 
 ```go showLineNumbers title="Chi with custom middleware"
@@ -574,7 +606,17 @@ func main() {
 }
 ```
 
+```mdx-code-block
+</TabItem>
+</Tabs>
+```
+
 ## Database Instrumentation
+
+```mdx-code-block
+<Tabs>
+<TabItem value="gorm" label="GORM" default>
+```
 
 ### GORM (Echo/Gin)
 
@@ -621,6 +663,11 @@ func GetUsers(c echo.Context) error {
 
  return c.JSON(200, users)
 }
+```
+
+```mdx-code-block
+</TabItem>
+<TabItem value="sqlx" label="sqlx">
 ```
 
 ### sqlx (Fiber)
@@ -681,6 +728,11 @@ func (r *UserRepository) List(ctx context.Context) ([]User, error) {
   `SELECT id, name, email FROM users ORDER BY created_at DESC`)
  return users, err
 }
+```
+
+```mdx-code-block
+</TabItem>
+</Tabs>
 ```
 
 ## Redis Instrumentation
