@@ -1,9 +1,10 @@
 ---
-title: Flask OpenTelemetry Instrumentation - Complete APM Setup Guide | Base14 Scout
+title: Flask OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: Flask
+sidebar_position: 6
 description:
   Flask OpenTelemetry instrumentation guide for APM, distributed tracing,
-  SQLAlchemy monitoring, and Celery task tracing with Base14 Scout.
+  SQLAlchemy monitoring, and Celery task tracing with base14 Scout.
 keywords:
   [
     flask opentelemetry instrumentation,
@@ -39,8 +40,9 @@ keywords:
     flask production monitoring,
     flask microservices tracing,
   ]
-sidebar_position: 11
 ---
+
+# Flask
 
 ## Introduction
 
@@ -1652,17 +1654,7 @@ def filter_sensitive_headers():
 
 ### Optimization Strategies
 
-#### 1. Probabilistic Sampling
-
-```python
-from opentelemetry.sdk.trace.sampling import TraceIdRatioBased, ParentBased
-
-sample_rate = 0.1  # 10%
-sampler = ParentBased(root=TraceIdRatioBased(sample_rate))
-provider = TracerProvider(resource=resource, sampler=sampler)
-```
-
-#### 2. Exclude High-Volume Endpoints
+#### 1. Exclude High-Volume Endpoints
 
 ```python
 FlaskInstrumentor().instrument_app(
@@ -1671,7 +1663,7 @@ FlaskInstrumentor().instrument_app(
 )
 ```
 
-#### 3. Optimize Database Queries
+#### 2. Optimize Database Queries
 
 ```python
 # BAD: N+1 query problem
@@ -1686,7 +1678,7 @@ for order in orders:
     print(order.user.username)  # Single query
 ```
 
-#### 4. Batch Span Export
+#### 3. Batch Span Export
 
 ```python
 batch_processor = BatchSpanProcessor(
@@ -1697,7 +1689,7 @@ batch_processor = BatchSpanProcessor(
 )
 ```
 
-#### 5. Disable Tracing in Tests
+#### 4. Disable Tracing in Tests
 
 ```python
 # config.py

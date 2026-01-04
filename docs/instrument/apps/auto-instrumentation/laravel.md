@@ -1,12 +1,10 @@
 ---
-title: Laravel OpenTelemetry Instrumentation - Complete APM Setup Guide | Base14 Scout
+title: Laravel OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: Laravel
-sidebar_position: 5
+sidebar_position: 8
 description:
-  Complete guide to Laravel OpenTelemetry instrumentation for application
-  performance monitoring. Set up auto-instrumentation for traces, metrics,
-  Eloquent database monitoring, and production deployments with
-  Base14 Scout in minutes.
+  Laravel OpenTelemetry instrumentation for traces, Eloquent database
+  monitoring, and queue tracing with base14 Scout.
 keywords:
   [
     laravel opentelemetry instrumentation,

@@ -1,7 +1,7 @@
 ---
 title: Spring Boot OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: Spring Boot
-sidebar_position: 9
+sidebar_position: 15
 description:
   Comprehensive guide to auto-instrument Spring Boot applications with
   OpenTelemetry for production APM. Includes distributed tracing, metrics,
@@ -32,7 +32,7 @@ keywords:
   ]
 ---
 
-# Spring Boot OpenTelemetry Instrumentation
+# Spring Boot
 
 Spring Boot is one of the most widely adopted Java frameworks for building
 enterprise microservices and web applications. However, understanding
@@ -1661,12 +1661,6 @@ SpanExporter compositeExporter = SpanExporter.composite(
 
 Enable JDBC instrumentation: `otel.instrumentation.jdbc.enabled=true` and
 verify DataSource is created after OpenTelemetry initialization.
-
-**Q: How do I reduce trace volume?**
-
-Use sampling (`OTEL_TRACES_SAMPLER=parentbased_traceidratio`), exclude endpoints
-(`otel.instrumentation.spring-webmvc.exclude-patterns=/actuator/**`), or create
-conditional spans only for high-value transactions.
 
 **Q: Why duplicate spans for the same operation?**
 

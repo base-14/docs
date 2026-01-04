@@ -1,9 +1,10 @@
 ---
-title: Node.js OpenTelemetry Instrumentation - Complete APM Setup Guide | Base14 Scout
+title: Node.js OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: Node.js
+sidebar_position: 10
 description:
   Node.js OpenTelemetry instrumentation for Express, NestJS, Fastify with
-  database, Redis, and message queue tracing using Base14 Scout.
+  database, Redis, and message queue tracing using base14 Scout.
 keywords:
   [
     nodejs opentelemetry instrumentation,
@@ -38,8 +39,9 @@ keywords:
     fastify instrumentation,
     koa instrumentation,
   ]
-sidebar_position: 6
 ---
+
+# Node.js
 
 ## Introduction
 
@@ -712,16 +714,6 @@ instrumentations: [
 '@opentelemetry/instrumentation-dns': { enabled: false },
 ```
 
-#### 4. Sample High-Volume Endpoints
-
-```javascript showLineNumbers
-const { TraceIdRatioBasedSampler } = require('@opentelemetry/sdk-trace-base');
-
-const sdk = new NodeSDK({
-  sampler: new TraceIdRatioBasedSampler(0.1), // Sample 10% of traces
-});
-```
-
 ## Security Considerations
 
 ### Sensitive Data in Spans
@@ -813,11 +805,6 @@ callbacks, manually propagate context using `context.with()`.
 
 Yes, auto-instrumentation includes MongoDB (Mongoose), PostgreSQL (pg, Sequelize,
 TypeORM), MySQL, and Prisma ORM.
-
-### How do I reduce trace volume in production?
-
-Use sampling with `TraceIdRatioBasedSampler`, ignore health check endpoints, and
-disable filesystem/DNS tracing.
 
 ### Can I trace BullMQ and RabbitMQ jobs?
 

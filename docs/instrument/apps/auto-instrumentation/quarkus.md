@@ -1,9 +1,10 @@
 ---
-title: Quarkus OpenTelemetry Instrumentation - Complete APM Setup Guide | Base14 Scout
+title: Quarkus OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: Quarkus
+sidebar_position: 11
 description:
   Quarkus OpenTelemetry instrumentation with native GraalVM compilation for
-  traces, Hibernate Panache, and production deployments using Base14 Scout.
+  traces, Hibernate Panache, and production deployments using base14 Scout.
 keywords:
   [
     quarkus opentelemetry instrumentation,
@@ -39,8 +40,9 @@ keywords:
     quarkus otel extension,
     quarkus native tracing performance,
   ]
-sidebar_position: 9
 ---
+
+# Quarkus
 
 ## Introduction
 
@@ -1548,18 +1550,7 @@ Measured performance impact of OpenTelemetry on Quarkus native images:
 
 ### Optimization Strategies
 
-#### 1. Use Probabilistic Sampling in Production
-
-```properties title="application.properties" showLineNumbers
-# Sample 10% of traces (adjust based on traffic volume)
-%prod.quarkus.otel.traces.sampler=traceidratio
-%prod.quarkus.otel.traces.sampler.arg=0.1
-
-# For high-traffic services (&gt;10,000 rps), sample even less
-%prod.quarkus.otel.traces.sampler.arg=0.01  # 1%
-```
-
-#### 2. Optimize Batch Span Processor
+#### 1. Optimize Batch Span Processor
 
 ```properties title="application.properties" showLineNumbers
 # Export every 5 seconds instead of default 5s
@@ -1575,14 +1566,14 @@ Measured performance impact of OpenTelemetry on Quarkus native images:
 %prod.quarkus.otel.bsp.export.timeout=10s
 ```
 
-#### 3. Disable Instrumentation for High-Volume Endpoints
+#### 2. Disable Instrumentation for High-Volume Endpoints
 
 ```properties title="application.properties" showLineNumbers
 # Skip tracing for health checks and metrics
 %prod.quarkus.otel.traces.suppress-application-uris=/q/health/*,/q/metrics,/favicon.ico
 ```
 
-#### 4. Use Native Image for Maximum Performance
+#### 3. Use Native Image for Maximum Performance
 
 Native compilation provides:
 
@@ -1599,7 +1590,7 @@ Build native image:
   -Dquarkus.native.builder-image=quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-21
 ```
 
-#### 5. Limit Span Attributes
+#### 4. Limit Span Attributes
 
 ```properties title="application.properties" showLineNumbers
 # Limit attribute value length (prevent large payloads)

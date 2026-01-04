@@ -1,9 +1,7 @@
 ---
-title:
-  Express.js OpenTelemetry Instrumentation - Complete APM Setup Guide | base14
-  Scout
+title: Express.js OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: Express.js
-sidebar_position: 3
+sidebar_position: 4
 description:
   Complete guide to Express.js OpenTelemetry instrumentation for application
   performance monitoring. Set up auto-instrumentation for traces, metrics, and
@@ -33,6 +31,8 @@ keywords:
     nodejs apm express,
   ]
 ---
+
+# Express.js
 
 Implement OpenTelemetry instrumentation for Express.js applications to enable
 comprehensive application performance monitoring (APM), distributed tracing, and
@@ -1786,33 +1786,6 @@ const sdk = new NodeSDK({
 });
 ```
 
-#### 5. Conditional Span Recording (Sampling)
-
-Sample high-volume endpoints:
-
-```typescript title="src/middleware/sampling.middleware.ts" showLineNumbers
-import { trace } from "@opentelemetry/api";
-
-export function samplingMiddleware(samplingRate: number = 0.1) {
-  return (req, res, next) => {
-    // Sample 10% of requests (for high-volume endpoints)
-    const shouldSample = Math.random() < samplingRate;
-
-    if (!shouldSample) {
-      const currentSpan = trace.getActiveSpan();
-      if (currentSpan) {
-        currentSpan.end();
-      }
-    }
-
-    next();
-  };
-}
-
-// Usage on high-volume endpoint
-app.get("/api/popular-endpoint", samplingMiddleware(0.01), handler);
-```
-
 ## FAQ
 
 ### Does Express.js instrumentation work with async/await?
@@ -1919,23 +1892,6 @@ if (currentSpan) {
 ```
 
 Then filter and query by tenant attributes in base14 Scout dashboard.
-
-### How do I reduce trace volume in high-traffic Express.js applications?
-
-Use multiple strategies:
-
-1. **Sampling**: Implement probabilistic sampling (sample 10% of requests)
-2. **Endpoint exclusion**: Skip `/health`, `/metrics`, static assets
-3. **Conditional tracing**: Only trace slow requests (>1s) or errors
-4. **Head-based sampling**: Configure at SDK level with TraceIdRatioBasedSampler
-
-```typescript
-import { TraceIdRatioBasedSampler } from "@opentelemetry/sdk-trace-base";
-
-const sdk = new NodeSDK({
-  sampler: new TraceIdRatioBasedSampler(0.1), // Sample 10%
-});
-```
 
 ## What's Next?
 

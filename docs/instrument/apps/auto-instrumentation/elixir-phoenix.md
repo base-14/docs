@@ -1,11 +1,10 @@
 ---
-date: 2025-11-19
-title: Elixir Phoenix OpenTelemetry Instrumentation Guide
+title: Elixir Phoenix OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: Elixir Phoenix
-sidebar_position: 2
+sidebar_position: 3
 description:
-  Auto-instrument Phoenix with OpenTelemetry for traces. Complete
-  Elixir monitoring setup with distributed tracing and database.
+  Elixir Phoenix OpenTelemetry instrumentation for traces, Ecto database
+  monitoring, and LiveView with base14 Scout.
 keywords:
   [
     phoenix observability,

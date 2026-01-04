@@ -30,6 +30,8 @@ keywords:
   ]
 ---
 
+# Celery
+
 Implement OpenTelemetry instrumentation for Celery applications to enable
 comprehensive distributed task queue monitoring, end-to-end tracing, and
 observability. This guide shows you how to auto-instrument your Celery workers
@@ -1109,20 +1111,7 @@ if span.is_recording():
     span.set_attribute("data.summary", expensive_computation())
 ```
 
-#### 4. Use Sampling for High-Volume Tasks
-
-```python showLineNumbers
-from opentelemetry.sdk.trace.sampling import TraceIdRatioBased
-
-# Sample 10% of traces
-sampler = TraceIdRatioBased(0.1)
-
-trace.set_tracer_provider(
-    TracerProvider(resource=resource, sampler=sampler)
-)
-```
-
-#### 5. Optimize Attribute Sizes
+#### 4. Optimize Attribute Sizes
 
 ```python
 # Good - bounded attribute

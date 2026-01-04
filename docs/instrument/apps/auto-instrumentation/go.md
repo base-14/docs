@@ -1,9 +1,10 @@
 ---
-title: Go OpenTelemetry Instrumentation - Complete APM Setup Guide | Base14 Scout
+title: Go OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: Go
+sidebar_position: 7
 description:
   Go OpenTelemetry instrumentation for Echo, Fiber, Chi frameworks with GORM,
-  sqlx, Redis, and background job tracing using Base14 Scout.
+  sqlx, Redis, and background job tracing using base14 Scout.
 keywords:
   [
     go opentelemetry instrumentation,
@@ -37,8 +38,9 @@ keywords:
     golang async tracing,
     go web server monitoring,
   ]
-sidebar_position: 8
 ---
+
+# Go
 
 ## Introduction
 
@@ -1186,19 +1188,7 @@ app.Use(func(next http.Handler) http.Handler {
 })
 ```
 
-#### 3. Use Sampling for High Traffic
-
-```go showLineNumbers
-import "go.opentelemetry.io/otel/sdk/trace"
-
-tp := sdktrace.NewTracerProvider(
- sdktrace.WithSampler(sdktrace.ParentBased(
-  sdktrace.TraceIDRatioBased(0.1), // Sample 10%
- )),
-)
-```
-
-#### 4. Disable Query Parameter Logging
+#### 3. Disable Query Parameter Logging
 
 ```go showLineNumbers
 otelsql.Open("postgres", dsn,
@@ -1269,11 +1259,6 @@ maintain trace hierarchy.
 
 Yes, use `go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc`
 for automatic gRPC tracing.
-
-### How do I reduce trace volume?
-
-Use sampling (`TraceIDRatioBased`), skip health endpoints, and disable query
-logging for high-volume operations.
 
 ### Can I trace Asynq and River background jobs?
 

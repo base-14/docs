@@ -1,9 +1,10 @@
 ---
-title: Django OpenTelemetry Instrumentation - Complete APM Setup Guide | Base14 Scout
+title: Django OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: Django
+sidebar_position: 2
 description:
   Django OpenTelemetry instrumentation guide for APM, distributed tracing,
-  ORM monitoring, and Celery task tracing with Base14 Scout.
+  ORM monitoring, and Celery task tracing with base14 Scout.
 keywords:
   [
     django opentelemetry instrumentation,
@@ -39,8 +40,9 @@ keywords:
     django session monitoring,
     django production monitoring,
   ]
-sidebar_position: 10
 ---
+
+# Django
 
 ## Introduction
 
@@ -1862,19 +1864,7 @@ Measured performance impact of OpenTelemetry on Django applications:
 
 ### Optimization Strategies
 
-#### 1. Use Probabilistic Sampling
-
-```python title="myproject/tracing.py" showLineNumbers
-from opentelemetry.sdk.trace.sampling import TraceIdRatioBased, ParentBased
-
-# Sample 10% of traces in production
-sample_rate = 0.1
-sampler = ParentBased(root=TraceIdRatioBased(sample_rate))
-
-provider = TracerProvider(resource=resource, sampler=sampler)
-```
-
-#### 2. Exclude High-Volume Endpoints
+#### 1. Exclude High-Volume Endpoints
 
 ```python title="myproject/tracing.py" showLineNumbers
 from opentelemetry.instrumentation.django import DjangoInstrumentor
@@ -1885,7 +1875,7 @@ DjangoInstrumentor().instrument(
 )
 ```
 
-#### 3. Optimize ORM Queries to Reduce Spans
+#### 2. Optimize ORM Queries to Reduce Spans
 
 ```python title="orders/views.py" showLineNumbers
 # BAD: Creates N+1 query spans
@@ -1901,7 +1891,7 @@ def get_orders_good(request):
         print(order.user.username)  # No extra queries
 ```
 
-#### 4. Batch Span Export Configuration
+#### 3. Batch Span Export Configuration
 
 ```python title="myproject/tracing.py" showLineNumbers
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
@@ -1916,7 +1906,7 @@ batch_processor = BatchSpanProcessor(
 )
 ```
 
-#### 5. Disable Tracing in Tests
+#### 4. Disable Tracing in Tests
 
 ```python title="myproject/settings.py" showLineNumbers
 # Disable tracing in test environment

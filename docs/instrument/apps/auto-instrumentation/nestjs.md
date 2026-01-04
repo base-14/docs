@@ -1,9 +1,10 @@
 ---
-title: NestJS OpenTelemetry Instrumentation - Complete APM Setup Guide | Base14 Scout
+title: NestJS OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: NestJS
+sidebar_position: 9
 description:
   NestJS OpenTelemetry instrumentation for controllers, services, TypeORM,
-  BullMQ, and WebSocket gateways with distributed tracing using Base14 Scout.
+  BullMQ, and WebSocket gateways with distributed tracing using base14 Scout.
 keywords:
   [
     nestjs opentelemetry instrumentation,
@@ -38,8 +39,9 @@ keywords:
     nestjs background jobs tracing,
     nestjs queue monitoring,
   ]
-sidebar_position: 7
 ---
+
+# NestJS
 
 ## Introduction
 
@@ -1110,17 +1112,7 @@ spanProcessor: new BatchSpanProcessor(traceExporter, {
 },
 ```
 
-#### 4. Use Sampling for High-Traffic Endpoints
-
-```typescript showLineNumbers
-import { TraceIdRatioBasedSampler } from '@opentelemetry/sdk-trace-base';
-
-const sdk = new NodeSDK({
-  sampler: new TraceIdRatioBasedSampler(0.1), // Sample 10% of traces
-});
-```
-
-#### 5. Optimize TypeORM Queries
+#### 4. Optimize TypeORM Queries
 
 Use query builder for complex queries to reduce overhead:
 
@@ -1185,11 +1177,6 @@ Add tenant ID as span attribute in guards or interceptors:
 
 Traces show request flow and timing through your NestJS app (spans). Metrics
 aggregate performance data (counters, histograms). Both are supported.
-
-### How do I reduce trace volume in production?
-
-Use sampling (`TraceIdRatioBasedSampler`), ignore health check endpoints,
-disable filesystem tracing, and sample high-volume endpoints.
 
 ### Can I trace custom decorators and metadata?
 

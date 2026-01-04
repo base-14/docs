@@ -1,13 +1,10 @@
 ---
-title: Legacy Rails OpenTelemetry Instrumentation (Ruby 2.7, Rails 5.x)
+title: Ruby on Rails (Legacy) OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: Ruby on Rails (Legacy)
-sidebar_position: 7
-last_update:
-  date: 2025-11-16
+sidebar_position: 13
 description:
-  OpenTelemetry instrumentation guide for legacy Rails applications running
-  Ruby 2.7 or Rails 5.x. Includes working configurations, known limitations,
-  and upgrade recommendations.
+  Legacy Rails OpenTelemetry instrumentation for Ruby 2.7 and Rails 5.x
+  with upgrade recommendations using base14 Scout.
 keywords:
   [
     rails 5 opentelemetry,
@@ -19,7 +16,7 @@ keywords:
   ]
 ---
 
-# Legacy Rails Instrumentation
+# Ruby on Rails (Legacy)
 
 > This guide covers Ruby 2.7 (EOL: March 2023) and Rails 5.2 (EOL: June 2022)
 
