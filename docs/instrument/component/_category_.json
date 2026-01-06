@@ -4,6 +4,7 @@
   "collapsed": false,
   "link": {
     "type": "generated-index",
-    "description": "Next, lets instrument our components to collect it's telemetry."
+    "title": "Database & Component Monitoring Guide",
+    "description": "Monitor PostgreSQL, MongoDB, Redis, RabbitMQ, and NGINX with OpenTelemetry. Collect database metrics, cache performance, and message queue telemetry."
   }
 }

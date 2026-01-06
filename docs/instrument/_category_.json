@@ -4,7 +4,8 @@
     "collapsed": false,
     "link": {
       "type": "generated-index",
-      "description": "Setup OpenTelemetry collector and instrument your apps and infrastucture."
+      "title": "OpenTelemetry Instrumentation Guide",
+      "description": "Complete guide to instrumenting your applications and infrastructure with OpenTelemetry. Collect traces, metrics, and logs for full-stack observability."
     }
   }
   

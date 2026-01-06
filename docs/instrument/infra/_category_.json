@@ -4,7 +4,8 @@
     "collapsed": false,
     "link": {
       "type": "generated-index",
-      "description": "Next, lets instrument our infrastucture to collect infra metrics."
+      "title": "Infrastructure Monitoring Guide",
+      "description": "Collect infrastructure metrics from cloud providers and on-premise systems. Monitor CPU, memory, network, and custom infrastructure telemetry."
     }
   }
   

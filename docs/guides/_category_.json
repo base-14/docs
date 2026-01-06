@@ -4,7 +4,8 @@
     "collapsed": false,
     "link": {
       "type": "generated-index",
-      "description": "Step-by-step guides and tutorials for setting up Scout, creating dashboards, configuring alerts, and transforming telemetry data"
+      "title": "OpenTelemetry Setup Guides",
+      "description": "Quick start guides and tutorials for OpenTelemetry setup, Scout dashboards, alerting, and telemetry data transformation."
     }
   }
   

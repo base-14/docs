@@ -4,6 +4,7 @@
   "collapsed": false,
   "link": {
     "type": "generated-index",
-    "description": "10 minutes guide on instrumenting tracing with OpenTelemetry."
+    "title": "Observability Platform Overview",
+    "description": "Explore your telemetry data with Scout's observability tools. Analyze traces, query logs, and visualize metrics across your entire stack."
   }
 }

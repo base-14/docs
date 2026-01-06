@@ -1,5 +1,5 @@
 ---
-title: Browser JavaScript Custom OpenTelemetry Instrumentation
+title: Browser JavaScript Custom OpenTelemetry Instrumentation - Manual Tracing Guide | base14 Scout
 sidebar_label: Browser JavaScript
 description:
   Custom instrumentation for browser JavaScript with OpenTelemetry. Manual

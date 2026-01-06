@@ -1,6 +1,6 @@
 ---
 date: 2025-11-19
-title: Grafana Dashboards and Alerts as Code with Grizzly
+title: Scout Dashboards and Alerts as Code with Grizzly
 description:
   Manage Grafana dashboards and alerts as code using Grizzly. Automate
   deployment, version control, and CI/CD integration for observability configs.

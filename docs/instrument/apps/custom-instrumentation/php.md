@@ -1,5 +1,5 @@
 ---
-title: PHP Custom OpenTelemetry Instrumentation - Manual Tracing Guide
+title: PHP Custom OpenTelemetry Instrumentation - Manual Tracing Guide | base14 Scout
 sidebar_label: PHP
 description:
   Custom instrumentation for PHP applications with OpenTelemetry. Manual

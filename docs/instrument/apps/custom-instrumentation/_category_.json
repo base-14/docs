@@ -4,6 +4,7 @@
   "collapsed": false,
   "link": {
     "type": "generated-index",
-    "description": "10 minutes guide on instrumenting custom tracing with OpenTelemetry."
+    "title": "OpenTelemetry Manual Instrumentation Guide",
+    "description": "Add custom spans, metrics, and attributes to your OpenTelemetry instrumentation. Fine-tune observability for business-critical code paths."
   }
 }

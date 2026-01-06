@@ -3,6 +3,7 @@
   "position": 5,
   "link": {
     "type": "generated-index",
-    "description": "Advanced PostgreSQL monitoring and optimization with pgX Grafana app"
+    "title": "PostgreSQL Monitoring with pgX",
+    "description": "Deep PostgreSQL monitoring with pgX. Track query performance, connections, replication lag, locks, and table bloat in Scout dashboards."
   }
 }

@@ -5,7 +5,7 @@ import type * as Preset from "@docusaurus/preset-classic";
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-  title: "base14 docs",
+  title: "base14 Scout",
   tagline: "Reduce downtime drastically!",
   favicon: "img/favicon.ico",
 

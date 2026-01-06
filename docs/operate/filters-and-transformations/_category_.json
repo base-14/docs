@@ -4,7 +4,8 @@
     "collapsed": false,
     "link": {
       "type": "generated-index",
-      "description": "Add filters and Transformations during data collection"
+      "title": "OpenTelemetry Data Filters & Transformations",
+      "description": "Filter, transform, and enrich telemetry data using OTTL. Extract fields from logs, redact sensitive data, and optimize data volume."
     }
   }
   

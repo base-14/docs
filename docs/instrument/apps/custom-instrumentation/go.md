@@ -1,5 +1,5 @@
 ---
-title: Go Custom OpenTelemetry Instrumentation - Manual Tracing Guide
+title: Go Custom OpenTelemetry Instrumentation - Manual Tracing Guide | base14 Scout
 sidebar_label: Go
 description:
   Custom instrumentation for Go applications with OpenTelemetry. Manual

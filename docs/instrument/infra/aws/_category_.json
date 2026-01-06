@@ -4,6 +4,7 @@
   "collapsed": false,
   "link": {
     "type": "generated-index",
-    "description": "Collect Telemetry from AWS components and visualise the Telemetry data in Scout observability platform."
+    "title": "AWS Monitoring Guide",
+    "description": "Monitor AWS Lambda, RDS, ElastiCache, ELB, and VPC with OpenTelemetry. Stream CloudWatch metrics and collect AWS infrastructure telemetry."
   }
 }

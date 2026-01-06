@@ -4,6 +4,7 @@
     "collapsed": false,
     "link": {
       "type": "generated-index",
-      "description": "Learn how to set up and configure Scout Collector for your observability pipeline. This guide covers the steps to collect telemetry data from your applications and route them to base14 Scout platform."
+      "title": "OpenTelemetry Collector Setup Guide",
+      "description": "Deploy and configure OpenTelemetry Collector for Kubernetes, Docker, ECS, and Linux. Route traces, metrics, and logs to Scout observability platform."
     }
   }

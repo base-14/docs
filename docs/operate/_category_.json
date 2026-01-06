@@ -4,7 +4,8 @@
     "collapsed": false,
     "link": {
       "type": "generated-index",
-      "description": "Manage your Scout's data collection and dashboard configuration"
+      "title": "Platform Operations & Configuration",
+      "description": "Configure Scout platform settings, manage users, set up Scout dashboards, and optimize your observability pipeline for production workloads."
     }
   }
   
