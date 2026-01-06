@@ -186,29 +186,78 @@ const config: Config = {
       style: "light",
       links: [
         {
-          title: "Docs",
+          title: "Products",
           items: [
             {
-              label: "Tutorial",
+              label: "Scout",
+              href: "https://base14.io/scout",
+            },
+            {
+              label: "Logs / Metrics / Traces / APM",
+              href: "https://base14.io/observability",
+            },
+            {
+              label: "LLM Observability",
+              href: "https://base14.io/llm-observability",
+            },
+            {
+              label: "Monk",
+              href: "https://base14.io/monk",
+            },
+          ],
+        },
+        {
+          title: "Resources",
+          items: [
+            {
+              label: "Documentation",
               to: "/",
             },
+            {
+              label: "Blog",
+              to: "/blog",
+            },
+            {
+              label: "Changelog",
+              href: "https://base14.io/changelog",
+            },
+            {
+              label: "FAQ",
+              href: "https://base14.io/faq",
+            },
+            {
+              label: "Pricing",
+              href: "https://base14.io/pricing",
+            },
           ],
         },
         {
-          title: "Legal",
+          title: "Company",
           items: [
             {
-              label: "Terms of use",
-              href: "https://base14.io/terms-of-service",
+              label: "About",
+              href: "https://base14.io/about",
             },
             {
-              label: "Privacy",
-              href: "https://base14.io/privacy",
+              label: "Services",
+              href: "https://base14.io/services",
+            },
+            {
+              label: "Security",
+              href: "https://base14.io/security",
+            },
+            {
+              label: "Careers",
+              href: "https://base14.io/careers",
+            },
+            {
+              label: "Contact",
+              href: "https://base14.io/contact",
             },
           ],
         },
         {
-          title: "Social",
+          title: "Connect",
           items: [
             {
               label: "GitHub",
@@ -225,7 +274,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} base14. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} base14, Inc. All rights reserved.`,
     },
     prism: {
       additionalLanguages: [
