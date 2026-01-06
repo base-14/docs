@@ -1,5 +1,5 @@
 ---
-slug: pgx-deep-dive
+slug: pgx-details
 date: 2026-01-06
 title: "pgX: Comprehensive PostgreSQL Monitoring at Scale"
 authors: [base14team]
