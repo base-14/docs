@@ -72,7 +72,7 @@ However, several limitations become significant at scale:
 * Storage overhead grows with high query diversity  
 * No context about *why* queries are slow at a given moment
 
-These limitations are not flaws—they reflect the narrow scope
+These limitations are not flaws. They reflect the narrow scope
 `pg_stat_statements` was designed for. The problem arises when teams expect it
 to explain behaviors that live outside that scope.
 
@@ -120,11 +120,11 @@ lag, WAL flow, and standby conflicts across your entire topology.
 `pg_replication_slot_lag_bytes`, `pg_replication_incoming` <sup>[[1]](#footnotes)</sup>
 :::
 
-**Key question:** *"The replica is 30 seconds behind—I/O, network, or query conflicts?"*
+**Key question:** *"The replica is 30 seconds behind - I/O, network, or query conflicts?"*
 
 ### Domain 3: Locks & Waits
 
-Locking behavior is emergent—it arises from concurrency patterns, transaction
+Locking behavior is emergent. It arises from concurrency patterns, transaction
 duration, and workload shape. pgX surfaces blocking chains and wait events in
 real time.
 
@@ -162,7 +162,7 @@ bloat, cache efficiency, scan patterns, and freeze age per table.
 `idx_scan`, `heap_blks_hit`, `age_relfrozenxid` <sup>[[1]](#footnotes)</sup>
 :::
 
-**Key question:** *"Performance degraded—bloat or scan regressions?"*
+**Key question:** *"Performance degraded - bloat or scan regressions?"*
 
 ### Domain 5: Indexes
 
@@ -204,7 +204,7 @@ autovacuum effectiveness.
 `autovacuum_count`, `n_mod_since_analyze` / `pg_vacuum_progress` <sup>[[1]](#footnotes)</sup>
 :::
 
-**Key question:** *"Autovacuum is running—why is bloat still growing?"*
+**Key question:** *"Autovacuum is running - why is bloat still growing?"*
 
 ### Domain 7: Performance (Beyond Aggregates)
 
@@ -243,8 +243,8 @@ correlates database behavior with CPU, memory, disk, and network metrics.
 `pg_system_info` <sup>[[1]](#footnotes)</sup>
 :::
 
-**Key question:** *"Queries look slow, but Postgres looks normal—is the instance
-saturated?"*
+**Key question:** *"Queries look slow, but Postgres looks normal - is the
+instance saturated?"*
 
 ### Domain 9: Topology & Health
 
@@ -383,8 +383,9 @@ issues, engineers also need **application traces, logs, and infrastructure
 signals in the same place**, sharing the same time axis and context.
 
 This is where unified observability matters. When PostgreSQL metrics live
-alongside application and infrastructure telemetry—stored in the same data lake
-and explored through the same interface—teams can move from symptoms to causes
+alongside application and infrastructure telemetry, stored in the same data
+lake and explored through the same interface, teams can move from symptoms to
+causes
 without stitching data across tools. Slow endpoints can be traced to slow
 queries, degraded queries to table bloat or lock contention, and database
 pressure back to application behavior or infrastructure limits.
@@ -393,8 +394,9 @@ That ability to reason about the system end-to-end is what ultimately separates
 surface-level monitoring from true operational understanding. You can find the
 technical setup in our
 [documentation](https://docs.base14.io/category/postgresql-advanced-monitoring).
-And if you're navigating this exact problem—figuring out how to unify database
-observability with the rest of your stack—we'd be interested to hear how you're
+And if you're navigating this exact problem, figuring out how to unify database
+observability with the rest of your stack, we'd be interested to hear how
+you're
 approaching it.
 
 ---
