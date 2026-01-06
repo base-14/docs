@@ -1099,3 +1099,11 @@ aside[class*="sidebar"] h3 {
 [data-theme='dark'] .markdown p > em:only-child {
   color: var(--ifm-color-emphasis-600);
 }
+
+/* Admonition titles - preserve original case for branding (e.g., pgX not PGX) */
+[class*="admonitionHeading"],
+[class*="admonition"] span,
+.alert__heading,
+.admonition-heading {
+  text-transform: none !important;
+}
