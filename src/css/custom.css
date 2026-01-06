@@ -8,6 +8,14 @@
 /* You can override the default Infima variables here. */
 :root {
   /* ========================================
+     Typography - Base14 Design System
+     ======================================== */
+  --ifm-font-family-base: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --ifm-heading-font-family: "Lora", Georgia, "Times New Roman", serif;
+  --ifm-h1-font-size: 1.5rem;
+  --ifm-h2-font-size: 1rem;
+
+  /* ========================================
      Light Mode Colors - Base14 Design System
      ======================================== */
 
@@ -1055,4 +1063,39 @@ article .blog-cover img,
   height: auto;
   border-radius: var(--base14-radius);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Standalone italic paragraphs (e.g., blog teasers, notes) */
+article p > em:only-child,
+.markdown p > em:only-child {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+/* Blog sidebar - narrower layout */
+.col--3[class*="blogSidebar"] {
+  --ifm-col-width: calc(2 / 12 * 100%);
+  flex: 0 0 var(--ifm-col-width);
+  max-width: var(--ifm-col-width);
+}
+
+aside[class*="sidebar"] + main {
+  --ifm-col-width: calc(10 / 12 * 100%);
+  flex: 0 0 var(--ifm-col-width);
+  max-width: var(--ifm-col-width);
+}
+
+/* Blog sidebar - smaller font */
+aside[class*="sidebar"] {
+  font-size: 0.85rem;
+}
+
+aside[class*="sidebar"] h3 {
+  font-size: 0.9rem;
+}
+
+[data-theme='dark'] article p > em:only-child,
+[data-theme='dark'] .markdown p > em:only-child {
+  color: var(--ifm-color-emphasis-600);
 }

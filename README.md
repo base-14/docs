@@ -7,13 +7,45 @@ static website generator.
 
 - Node.js >= 24.0
 - npm (comes with Node.js)
+- make (optional, for convenience commands)
+
+## Quick Start
+
+```bash
+make install   # Install dependencies
+make start     # Start development server
+```
+
+Or using npm directly:
+
+```bash
+npm install
+npm start
+```
+
+## Available Commands
+
+| Make Command    | npm Equivalent        | Description                          |
+|-----------------|-----------------------|--------------------------------------|
+| `make install`  | `npm install`         | Install dependencies                 |
+| `make start`    | `npm start`           | Start development server             |
+| `make dev`      | `npm start`           | Alias for start                      |
+| `make build`    | `npm run build`       | Build static site                    |
+| `make serve`    | `npm run serve`       | Serve built site locally             |
+| `make clean`    | `npm run clear`       | Clear Docusaurus cache               |
+| `make typecheck`| `npm run typecheck`   | Run TypeScript type checking         |
+| `make lint`     | `npm run markdownlint`| Run markdown linting                 |
+| `make test`     | `npm test`            | Run tests                            |
+| `make check`    | `npm run build-lint`  | Run all checks (typecheck, lint, build) |
+
+Run `make help` to see all available targets.
 
 ## Setup
 
 Install the required packages:
 
 ```bash
-npm install
+make install
 ```
 
 Install pre-commit hooks (optional):
@@ -28,7 +60,7 @@ pre-commit install
 Start the local development server:
 
 ```bash
-npm start
+make start
 ```
 
 This command starts a local development server and opens a browser window.
@@ -39,25 +71,25 @@ Most changes are reflected live without having to restart the server.
 Run TypeScript type checking:
 
 ```bash
-npm run typecheck
+make typecheck
 ```
 
 Run markdown linting:
 
 ```bash
-npm run markdownlint
+make lint
 ```
 
 Run all checks and build:
 
 ```bash
-npm run build-lint
+make check
 ```
 
 Run tests:
 
 ```bash
-npm test
+make test
 ```
 
 ## Build
@@ -65,7 +97,7 @@ npm test
 Build the static site:
 
 ```bash
-npm run build
+make build
 ```
 
 This generates static content into the `build` directory.
@@ -73,7 +105,7 @@ This generates static content into the `build` directory.
 Serve the build locally:
 
 ```bash
-npm run serve
+make serve
 ```
 
 ## Contributing

@@ -26,6 +26,28 @@ const config: Config = {
     {
       tagName: "link",
       attributes: {
+        rel: "preconnect",
+        href: "https://fonts.googleapis.com",
+      },
+    },
+    {
+      tagName: "link",
+      attributes: {
+        rel: "preconnect",
+        href: "https://fonts.gstatic.com",
+        crossorigin: "anonymous",
+      },
+    },
+    {
+      tagName: "link",
+      attributes: {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap",
+      },
+    },
+    {
+      tagName: "link",
+      attributes: {
         rel: "icon",
         type: "image/svg+xml",
         href: "/img/favicon.svg",
