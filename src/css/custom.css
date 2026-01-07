@@ -1073,26 +1073,13 @@ article p > em:only-child,
   color: var(--ifm-color-emphasis-700);
 }
 
-/* Blog sidebar - narrower layout */
-.col--3[class*="blogSidebar"] {
-  --ifm-col-width: calc(2 / 12 * 100%);
-  flex: 0 0 var(--ifm-col-width);
-  max-width: var(--ifm-col-width);
+/* Blog sidebar - smaller font only (width controlled by Docusaurus grid) */
+html.blog-wrapper aside[class*="sidebar"] {
+  font-size: 0.8rem;
 }
 
-aside[class*="sidebar"] + main {
-  --ifm-col-width: calc(10 / 12 * 100%);
-  flex: 0 0 var(--ifm-col-width);
-  max-width: var(--ifm-col-width);
-}
-
-/* Blog sidebar - smaller font */
-aside[class*="sidebar"] {
+html.blog-wrapper aside[class*="sidebar"] [class*="sidebarItemTitle"] {
   font-size: 0.85rem;
-}
-
-aside[class*="sidebar"] h3 {
-  font-size: 0.9rem;
 }
 
 [data-theme='dark'] article p > em:only-child,
@@ -1106,4 +1093,11 @@ aside[class*="sidebar"] h3 {
 .alert__heading,
 .admonition-heading {
   text-transform: none !important;
+}
+
+/* Hide announcement bar on blog pages */
+html.blog-wrapper [class*="announcementBar"],
+html.blog-list-page [class*="announcementBar"],
+html.blog-post-page [class*="announcementBar"] {
+  display: none;
 }

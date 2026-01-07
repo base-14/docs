@@ -129,6 +129,15 @@ const config: Config = {
     ],
   ],
 
+  plugins: [
+    [
+      "docusaurus-plugin-llms",
+      {
+        includeBlog: true,
+      },
+    ],
+  ],
+
   themeConfig: {
     // Replace with your project's social card
     image: "img/base14-social-card.jpg",
