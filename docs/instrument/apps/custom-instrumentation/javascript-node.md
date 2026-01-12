@@ -1,6 +1,7 @@
 ---
 title: Node.js Custom OpenTelemetry Instrumentation - Manual Tracing Guide | base14 Scout
 sidebar_label: Node.js
+sidebar_position: 4
 description:
   Custom instrumentation for Node.js applications with OpenTelemetry. Manual
   tracing, metrics, logs, spans, and telemetry export with Node.js OTel SDK.

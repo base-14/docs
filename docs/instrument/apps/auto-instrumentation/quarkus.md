@@ -1,7 +1,7 @@
 ---
 title: Quarkus OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: Quarkus
-sidebar_position: 11
+sidebar_position: 12
 description:
   Quarkus OpenTelemetry instrumentation with native GraalVM compilation for
   traces, Hibernate Panache, and production deployments using base14 Scout.

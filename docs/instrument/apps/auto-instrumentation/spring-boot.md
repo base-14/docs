@@ -1,7 +1,7 @@
 ---
 title: Spring Boot OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: Spring Boot
-sidebar_position: 15
+sidebar_position: 16
 description:
   Comprehensive guide to auto-instrument Spring Boot applications with
   OpenTelemetry for production APM. Includes distributed tracing, metrics,

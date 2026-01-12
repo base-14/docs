@@ -1,7 +1,7 @@
 ---
 title: Celery OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: Celery
-sidebar_position: 1
+sidebar_position: 2
 description:
   Complete guide to Celery OpenTelemetry instrumentation for distributed task
   queue monitoring. Set up auto-instrumentation for traces, metrics, and

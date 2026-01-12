@@ -1,7 +1,7 @@
 ---
 title: Spring Boot Alternatives OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: Spring Boot Alternatives
-sidebar_position: 16
+sidebar_position: 17
 description:
   Spring Boot alternative OpenTelemetry approaches using Java Agent and
   Native Starter with base14 Scout.

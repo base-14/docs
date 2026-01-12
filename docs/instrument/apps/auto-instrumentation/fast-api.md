@@ -1,7 +1,7 @@
 ---
 title: FastAPI OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: FastAPI
-sidebar_position: 5
+sidebar_position: 6
 description:
   Complete guide to FastAPI OpenTelemetry instrumentation for application
   performance monitoring. Set up auto-instrumentation for traces, metrics, and

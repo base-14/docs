@@ -1,7 +1,7 @@
 ---
 title: Go OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: Go
-sidebar_position: 7
+sidebar_position: 8
 description:
   Go OpenTelemetry instrumentation for Echo, Fiber, Chi frameworks with GORM,
   sqlx, Redis, and background job tracing using base14 Scout.

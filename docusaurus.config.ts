@@ -303,6 +303,7 @@ const config: Config = {
         "erlang",
         "rust",
         "swift",
+        "csharp",
       ],
       theme: prismThemes.oneLight,
       darkTheme: prismThemes.oneDark,

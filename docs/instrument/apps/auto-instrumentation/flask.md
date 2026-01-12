@@ -1,7 +1,7 @@
 ---
 title: Flask OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: Flask
-sidebar_position: 6
+sidebar_position: 7
 description:
   Flask OpenTelemetry instrumentation guide for APM, distributed tracing,
   SQLAlchemy monitoring, and Celery task tracing with base14 Scout.

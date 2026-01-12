@@ -1,7 +1,7 @@
 ---
 title: Ruby on Rails (Legacy) OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: Ruby on Rails (Legacy)
-sidebar_position: 13
+sidebar_position: 14
 description:
   Legacy Rails OpenTelemetry instrumentation for Ruby 2.7 and Rails 5.x
   with upgrade recommendations using base14 Scout.

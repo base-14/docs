@@ -1,7 +1,7 @@
 ---
 title: Node.js OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: Node.js
-sidebar_position: 10
+sidebar_position: 11
 description:
   Node.js OpenTelemetry instrumentation for Express, NestJS, Fastify with
   database, Redis, and message queue tracing using base14 Scout.

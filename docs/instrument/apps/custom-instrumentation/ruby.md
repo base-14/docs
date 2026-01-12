@@ -1,6 +1,7 @@
 ---
 title: Ruby Custom OpenTelemetry Instrumentation - Manual Tracing Guide | base14 Scout
 sidebar_label: Ruby
+sidebar_position: 7
 description:
   Custom instrumentation for Ruby applications with OpenTelemetry. Manual
   tracing, spans, metrics, and telemetry export with Ruby OpenTelemetry SDK.

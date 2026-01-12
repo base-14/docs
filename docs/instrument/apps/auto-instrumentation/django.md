@@ -1,7 +1,7 @@
 ---
 title: Django OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: Django
-sidebar_position: 2
+sidebar_position: 3
 description:
   Django OpenTelemetry instrumentation guide for APM, distributed tracing,
   ORM monitoring, and Celery task tracing with base14 Scout.

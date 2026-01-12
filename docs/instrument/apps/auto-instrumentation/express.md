@@ -1,7 +1,7 @@
 ---
 title: Express.js OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: Express.js
-sidebar_position: 4
+sidebar_position: 5
 description:
   Complete guide to Express.js OpenTelemetry instrumentation for application
   performance monitoring. Set up auto-instrumentation for traces, metrics, and
