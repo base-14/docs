@@ -13,9 +13,12 @@ tags: [postgresql, observability, monitoring, database]
   title="YouTube video player"
   frameborder="0"
   allow="accelerometer; autoplay; clipboard-write; encrypted-media;
-    gyroscope; picture-in-picture; web-share"
+    gyroscope; picture-in-picture; web-share; fullscreen"
   allowfullscreen>
 </iframe>
+
+*Watch: Tracing a slow query from application latency to PostgreSQL stats
+with pgX.*
 
 Modern software systems do not fail along clean architectural boundaries.
 Application latency, database contention, infrastructure saturation, and user

@@ -13,9 +13,12 @@ tags: [postgresql, observability, monitoring, database, pgx]
   title="YouTube video player"
   frameborder="0"
   allow="accelerometer; autoplay; clipboard-write; encrypted-media;
-    gyroscope; picture-in-picture; web-share"
+    gyroscope; picture-in-picture; web-share; fullscreen"
   allowfullscreen>
 </iframe>
+
+*Watch: Tracing a slow query from application latency to PostgreSQL stats
+with pgX.*
 
 For many teams, PostgreSQL monitoring begins and often ends with
 `pg_stat_statements`. That choice is understandable. It provides normalized
