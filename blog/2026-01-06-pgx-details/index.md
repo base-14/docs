@@ -4,8 +4,18 @@ date: 2026-01-06
 title: "pgX: Comprehensive PostgreSQL Monitoring at Scale"
 authors: [base14team]
 tags: [postgresql, observability, monitoring, database, pgx]
-unlisted: true
 ---
+
+<iframe
+  width="100%"
+  height="400"
+  src="https://www.youtube.com/embed/ipZdwMLO94s"
+  title="YouTube video player"
+  frameborder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media;
+    gyroscope; picture-in-picture; web-share"
+  allowfullscreen>
+</iframe>
 
 For many teams, PostgreSQL monitoring begins and often ends with
 `pg_stat_statements`. That choice is understandable. It provides normalized

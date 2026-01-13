@@ -6,6 +6,17 @@ authors: [base14team]
 tags: [postgresql, observability, monitoring, database]
 ---
 
+<iframe
+  width="100%"
+  height="400"
+  src="https://www.youtube.com/embed/ipZdwMLO94s"
+  title="YouTube video player"
+  frameborder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media;
+    gyroscope; picture-in-picture; web-share"
+  allowfullscreen>
+</iframe>
+
 Modern software systems do not fail along clean architectural boundaries.
 Application latency, database contention, infrastructure saturation, and user
 behavior are tightly coupled, yet most observability setups continue to treat
