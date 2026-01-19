@@ -1,8 +1,9 @@
 ---
 slug: reducing-bus-factor-in-observability
-title: Reducing Bus factor in Observability using AI
+title: Reducing Bus Factor in Observability Using AI
+description: "Stop relying on tribal knowledge for incident diagnosis. Build a Living Knowledge Base with graph databases and LLMs to democratize root cause analysis across your team."
 authors: [nimisha-gj]
-tags: [observability, engineering, best-practices]
+tags: [observability, engineering, best-practices, ai, llm, knowledge-graph, incident-response]
 ---
 
 <!-- markdownlint-disable MD033 -->

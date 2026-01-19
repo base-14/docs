@@ -2,8 +2,9 @@
 slug: base14-product-engineering-principles
 date: 2025-11-19
 title: base14 Product Engineering Principles
+description: "Craftsmanship, ownership, collaboration, and frugal innovation—the principles that guide how we build at Base14. Everyone ships, everyone supports production."
 authors: [ranjan-sakalley]
-tags: [organization, engineering, principles]
+tags: [organization, engineering, principles, culture, product-engineering]
 ---
 # base14 Product Engineering Principles
 

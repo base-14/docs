@@ -2,8 +2,9 @@
 slug: make-certificate-expiry-boring
 date: 2025-11-20
 title: Making Certificate Expiry Boring
+description: "Certificate expiry outages are preventable. Learn how to detect, automate, and rotate TLS certificates across Kubernetes, VMs, and cloud environments without downtime."
 authors: [ranjan-sakalley]
-tags: [security, certificates, automation, observability]
+tags: [security, certificates, automation, observability, tls, kubernetes, devops]
 ---
 
 <!-- markdownlint-disable MD033 -->

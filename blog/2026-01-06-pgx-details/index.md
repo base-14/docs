@@ -2,8 +2,9 @@
 slug: pgx-details
 date: 2026-01-06
 title: "pgX: Comprehensive PostgreSQL Monitoring at Scale"
+description: "Go beyond pg_stat_statements. Monitor 9 PostgreSQL domains: connections, replication, locks, tables, indexes, vacuum, performance, and topology."
 authors: [base14team]
-tags: [postgresql, observability, monitoring, database, pgx]
+tags: [postgresql, observability, monitoring, database, pgx, pg-stat-statements, replication, vacuum, performance-tuning, database-operations]
 ---
 
 <iframe
@@ -21,9 +22,10 @@ tags: [postgresql, observability, monitoring, database, pgx]
 with pgX.*
 
 For many teams, PostgreSQL monitoring begins and often ends with
-`pg_stat_statements`. That choice is understandable. It provides normalized
-query statistics, execution counts, timing data, and enough signal to identify
-slow queries and obvious inefficiencies. For a long time, that is sufficient.
+`pg_stat_statements` and basic postgres_exporter metrics. That choice is
+understandable. It provides normalized query statistics, execution counts,
+timing data, and enough signal to identify slow queries and obvious
+inefficiencies. For a long time, that is sufficient.
 
 But as PostgreSQL clusters grow in size and importance, the questions engineers
 need to answer change. Instead of *"Which query is slow?"*, the questions
@@ -42,10 +44,12 @@ Most teams eventually respond by stitching together ad-hoc queries against
 and related system views. This works until an incident demands answers in
 minutes, not hours.
 
-This post lays out what *comprehensive PostgreSQL monitoring* actually looks
-like at scale: the **nine observability domains that matter**, the kinds of
-metrics each domain requires, and why moving beyond query-only monitoring is
-unavoidable for serious production systems.
+As we discussed in [our introduction to pgX](/blog/introducing-pgx), PostgreSQL
+monitoring in isolation creates blind spots. This post lays out what
+*comprehensive PostgreSQL monitoring* actually looks like at scale: the **nine
+observability domains that matter**, the kinds of metrics each domain requires,
+and why moving beyond query-only monitoring is unavoidable for serious
+production systems.
 
 <!--truncate-->
 
@@ -100,7 +104,10 @@ answering a different class of operational question.
 ### Domain 1: Connections
 
 Connection behavior often explains system instability long before queries look
-slow. pgX tracks connection state, ownership, and duration patterns.
+slow. This is essential for PostgreSQL connection pool monitoring and capacity
+planning. pgX tracks connection state, ownership, and duration patterns.
+See the [pgX Connections documentation](/operate/pgx/connections) for detailed
+visualizations.
 
 | Signal | Why It Matters |
 |--------|----------------|
@@ -118,8 +125,11 @@ slow. pgX tracks connection state, ownership, and duration patterns.
 
 ### Domain 2: Replication
 
-Replication health determines both performance and reliability. pgX monitors
-lag, WAL flow, and standby conflicts across your entire topology.
+Replication health determines both performance and reliability. Effective
+PostgreSQL replication lag monitoring requires visibility into multiple layers.
+pgX monitors lag, WAL flow, and standby conflicts across your entire topology.
+Explore the [pgX Replication tab](/operate/pgx/replication) for standby
+monitoring.
 
 | Signal | Why It Matters |
 |--------|----------------|
@@ -138,8 +148,10 @@ lag, WAL flow, and standby conflicts across your entire topology.
 ### Domain 3: Locks & Waits
 
 Locking behavior is emergent. It arises from concurrency patterns, transaction
-duration, and workload shape. pgX surfaces blocking chains and wait events in
-real time.
+duration, and workload shape. PostgreSQL lock monitoring and debugging lock
+contention requires real-time visibility. pgX surfaces blocking chains and wait
+events in real time. The [pgX Locks & Waits view](/operate/pgx/locks-waits)
+surfaces blocking chains instantly.
 
 | Signal | Why It Matters |
 |--------|----------------|
@@ -158,8 +170,11 @@ real time.
 
 ### Domain 4: Tables
 
-Table-level health directly impacts performance and predictability. pgX tracks
-bloat, cache efficiency, scan patterns, and freeze age per table.
+Table-level health directly impacts performance and predictability. PostgreSQL
+bloat detection and table health monitoring are essential for performance
+tuning. pgX tracks bloat, cache efficiency, scan patterns, and freeze age per
+table. See the [pgX Tables & Indexes view](/operate/pgx/tables-indexes) for
+detailed table health metrics.
 
 | Signal | Why It Matters |
 |--------|----------------|
@@ -201,8 +216,10 @@ opportunities.
 ### Domain 6: Maintenance (Vacuum & Analyze)
 
 Maintenance debt accumulates quietly and surfaces as sudden performance
-regressions. pgX tracks vacuum and analyze activity, dead tuple growth, and
-autovacuum effectiveness.
+regressions. Effective PostgreSQL vacuum monitoring and autovacuum monitoring
+prevent the silent accumulation of bloat. pgX tracks vacuum and analyze
+activity, dead tuple growth, and autovacuum effectiveness. Track maintenance
+health in the [pgX Maintenance dashboard](/operate/pgx/maintenance).
 
 | Signal | Why It Matters |
 |--------|----------------|
@@ -222,8 +239,10 @@ autovacuum effectiveness.
 ### Domain 7: Performance (Beyond Aggregates)
 
 Performance monitoring at scale requires *distributional* insight, not just
-averages. pgX provides percentile breakdowns, query heatmaps, and per-query
-drill-downs over time.
+averages. PostgreSQL performance tuning needs more than mean latency. pgX
+provides percentile breakdowns, query heatmaps, and per-query drill-downs over
+time. Drill into query performance in the [pgX Queries view](/operate/pgx/queries)
+and explore the [pgX Performance tab](/operate/pgx/performance).
 
 | Signal | Why It Matters |
 |--------|----------------|
@@ -317,7 +336,9 @@ This works, but comes with hidden costs:
 * No prebuilt investigation workflows
 * High cognitive load during incidents
 
-Over time, teams spend more effort maintaining observability than using it.
+This maintenance burden is a form of
+[observability tax](/blog/unified-observability) that compounds over time. Teams
+spend more effort maintaining observability than using it.
 
 ## What “Comprehensive” Actually Looks Like
 
@@ -389,11 +410,14 @@ Teams face a choice:
 
 pgX delivers structured coverage across all nine domains, with deep metrics,
 prebuilt dashboards, and workflows integrated into the same observability
-surface as application telemetry. PostgreSQL does not operate in isolation. Its
-behavior is shaped by application code, request patterns, background jobs,
-deployments, and infrastructure constraints. To reliably debug production
-issues, engineers also need **application traces, logs, and infrastructure
-signals in the same place**, sharing the same time axis and context.
+surface as application telemetry. For teams experiencing long incident
+resolution times, these capabilities directly help
+[reduce MTTR](/blog/factors-influencing-mttr). PostgreSQL does not operate in
+isolation. Its behavior is shaped by application code, request patterns,
+background jobs, deployments, and infrastructure constraints. To reliably debug
+production issues, engineers also need **application traces, logs, and
+infrastructure signals in the same place**, sharing the same time axis and
+context.
 
 This is where unified observability matters. When PostgreSQL metrics live
 alongside application and infrastructure telemetry, stored in the same data
@@ -405,12 +429,11 @@ pressure back to application behavior or infrastructure limits.
 
 That ability to reason about the system end-to-end is what ultimately separates
 surface-level monitoring from true operational understanding. You can find the
-technical setup in our
-[documentation](https://docs.base14.io/category/postgresql-advanced-monitoring).
-And if you're navigating this exact problem, figuring out how to unify database
-observability with the rest of your stack, we'd be interested to hear how
-you're
-approaching it.
+technical setup in our [pgX documentation](/operate/pgx/overview), including the
+[quickstart guide](/operate/pgx/quickstart) and the complete
+[metrics reference](/operate/pgx/metrics). And if you're navigating this exact
+problem—figuring out how to unify database observability with the rest of your
+stack—we'd be interested to hear how you're approaching it.
 
 ---
 

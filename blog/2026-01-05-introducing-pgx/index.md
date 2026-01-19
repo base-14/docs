@@ -2,8 +2,9 @@
 slug: introducing-pgx
 date: 2026-01-05
 title: "Introducing pgX: Bridging the Gap Between Database and Application Monitoring for PostgreSQL"
+description: "pgX unifies PostgreSQL monitoring with application observability. Correlate database metrics with traces, logs, and infrastructure in one platform."
 authors: [base14team]
-tags: [postgresql, observability, monitoring, database]
+tags: [postgresql, observability, monitoring, database, apm, unified-observability, pgx, database-performance]
 ---
 
 <iframe
@@ -23,9 +24,10 @@ with pgX.*
 Modern software systems do not fail along clean architectural boundaries.
 Application latency, database contention, infrastructure saturation, and user
 behavior are tightly coupled, yet most observability setups continue to treat
-them as separate concerns. PostgreSQL, despite being a core component in most
-production systems, is often monitored in isolation-through a separate tool,
-separate dashboards, and separate mental models.
+them as separate concerns, creating silos between database monitoring and APM
+tools. PostgreSQL, despite being a core component in most production systems,
+is often monitored in isolation—through a separate tool, separate dashboards,
+and separate mental models.
 
 This separation works when systems are small and traffic patterns are simple.
 As systems scale, however, PostgreSQL behavior becomes a direct function of
@@ -34,12 +36,12 @@ users, and database pressure reflects upstream design decisions. At this stage,
 isolating database monitoring from application and infrastructure observability
 actively slows down diagnosis and leads teams to optimize the wrong layer.
 
-In-depth PostgreSQL monitoring is necessary-but depth alone is not sufficient.
+In-depth PostgreSQL monitoring is necessary—but depth alone is not sufficient.
 Metrics without context force engineers to manually correlate symptoms across
 tools, timelines, and data models. What is required instead is component-level
-observability, where PostgreSQL metrics live alongside application traces,
-infrastructure signals, and deployment events, sharing the same time axis and
-the same analytical surface.
+observability—a unified database observability platform where PostgreSQL metrics
+live alongside application traces, infrastructure signals, and deployment
+events, sharing the same time axis and the same analytical surface.
 
 This is why PostgreSQL observability belongs in the same place as application
 and infrastructure observability. When database behavior is observed as part of
@@ -66,7 +68,8 @@ As a result, many teams adopt a mental model where:
 This division is rarely intentional. It emerges organically from tooling
 ecosystems and organizational boundaries. Database monitoring tools evolved
 separately, application observability evolved separately, and teams adapted
-around the seams.
+around the seams. This is a form of the observability sprawl we discussed in
+[why unified observability matters](/blog/unified-observability).
 
 The problem is that the system itself does not respect these seams.
 
@@ -80,7 +83,9 @@ coincides with one or more of the following:
 * Multi-tenant or user-driven traffic variability
 * Latency budgets that tighten as the product matures
 
-At this stage, PostgreSQL metrics start reflecting *effects*, not *causes*.
+At this stage, PostgreSQL metrics start reflecting *effects*, not *causes*. This
+is where pg_stat_statements alone stops being sufficient for PostgreSQL
+performance troubleshooting.
 
 Engineers see:
 
@@ -114,8 +119,8 @@ When database observability is isolated, several failure modes become common:
 
 | | **Technical Impact** | **Organizational Impact** |
 |---|---|---|
-| **During Incidents** | **Slower Response** - Engineers spend time *proving* whether the database is the cause or the victim. Valuable minutes are lost ruling things out instead of addressing the root cause. | **Blurred Ownership** - "Database issue" and "application issue" become political labels rather than technical diagnoses. Accountability diffuses. |
-| **After Incidents** | **Incorrect Optimization** - Teams tune queries when the real issue is connection churn, or scale infrastructure when the bottleneck is lock contention driven by application behavior. | **Leadership Mistrust** - When explanations rely on inferred correlation rather than observed causality, confidence erodes-both in the tools and in the process. |
+| **During Incidents** | **Slower Response** - Engineers spend time *proving* whether the database is the cause or the victim. Valuable minutes are lost ruling things out instead of addressing the root cause, directly increasing [Mean Time to Recovery](/blog/factors-influencing-mttr). | **Blurred Ownership** - "Database issue" and "application issue" become political labels rather than technical diagnoses. Accountability diffuses. |
+| **After Incidents** | **Incorrect Optimization** - Teams tune queries when the real issue is connection churn, or scale infrastructure when the bottleneck is lock contention driven by application behavior. | **Leadership Mistrust** - When explanations rely on inferred correlation rather than observed causality, confidence erodes—both in the tools and in the process. |
 
 These are organizational costs, not just technical ones.
 
@@ -209,11 +214,13 @@ PostgreSQL observability integration designed to unify database monitoring with
 application and infrastructure observability.
 
 pgX captures PostgreSQL diagnostic and monitoring data at a depth no other
-observability platform offers-and integrates it directly alongside your
+observability platform offers—and integrates it directly alongside your
 application traces, logs, and infrastructure metrics. This allows engineers to
 analyze database behavior in the context of application performance and
-infrastructure health, enabling faster diagnosis and more effective
-optimization.
+infrastructure health, enabling faster slow query troubleshooting and more
+effective optimization. In our companion post, we detail the
+[nine PostgreSQL observability domains](/blog/pgx-details) that pgX covers
+comprehensively.
 
 ## Getting Started
 
@@ -226,12 +233,12 @@ whether that depth exists in context. With pgX, you get comprehensive Postgres
 metrics flowing into the same data lake as your application and infrastructure
 telemetry-designed for correlation, not just collection.
 
-You can find the technical setup in our
-[documentation](https://docs.base14.io/category/postgresql-advanced-monitoring).
-And if you're navigating this exact problem-figuring out how to unify database
-observability with the rest of your stack-we'd be interested to hear how you're
+You can find the technical setup in our [pgX documentation](/operate/pgx/overview),
+including the [quickstart guide](/operate/pgx/quickstart) to get started. And if
+you're navigating this exact problem—figuring out how to unify database
+observability with the rest of your stack—we'd be interested to hear how you're
 approaching it.
 
-*In our next post, we'll dive deeper into what pgX collects and the
-visualizations it provides to help you understand your PostgreSQL performance
-at a glance.*
+*In our next post, we'll dive deeper into [what pgX collects](/blog/pgx-details)
+and the visualizations it provides to help you understand your PostgreSQL
+performance at a glance.*

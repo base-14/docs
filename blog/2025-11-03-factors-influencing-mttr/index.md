@@ -2,8 +2,9 @@
 slug: factors-influencing-mttr
 date: 2025-11-03
 title: Understanding What Increases and Reduces MTTR
+description: "Tool fragmentation, alert noise, and tribal knowledge slow recovery. Learn what disciplined, observable teams do differently to reduce Mean Time to Recovery."
 authors: [base14team]
-tags: [observability, mttr, reliability, engineering, best-practices, collaboration]
+tags: [observability, mttr, reliability, engineering, best-practices, collaboration, incident-management]
 ---
 
 # Understanding What Increases and Reduces MTTR
@@ -47,7 +48,9 @@ ___
 
 One of the biggest sources of friction during incidents is tool fragmentation.
 When every function — metrics, logs, traces — lives in a separate system,
-engineers lose time stitching context instead of resolving the issue.
+engineers lose time stitching context instead of resolving the issue. Database
+monitoring is a common blind spot—see how [pgX unifies PostgreSQL
+observability](/blog/introducing-pgx) with application telemetry.
 
 Unified observability doesn't mean one vendor or dashboard. It means a single,
 correlated view where you can trace a signal from symptom to cause without

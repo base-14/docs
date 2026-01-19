@@ -1,8 +1,9 @@
 ---
 slug: observability-theatre
 title: Observability Theatre
+description: "Tool sprawl, dead dashboards, alert fatigue—signs your observability investment isn't delivering. Learn why treating observability as infrastructure changes everything."
 authors: [ranjan-sakalley]
-tags: [observability, engineering, best-practices]
+tags: [observability, engineering, best-practices, monitoring, incident-response, alert-fatigue]
 image: ./cover.png
 ---
 

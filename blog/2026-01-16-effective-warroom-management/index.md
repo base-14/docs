@@ -2,8 +2,9 @@
 slug: effective-warroom-management
 date: 2026-01-16
 title: "Effective Warroom Management"
+description: "Battle-tested incident war room practices: clear roles, shared visibility, engineering pairing, and post-incident processes."
 authors: [ranjan-sakalley]
-tags: [incident-management, warroom, devops, sre]
+tags: [incident-management, warroom, devops, sre, on-call, postmortem]
 ---
 
 ![Warroom Management](./warroom.webp)

@@ -3,8 +3,9 @@ slug: cloud-native-foundation-layer
 title:
   "The Cloud-Native Foundation Layer: A Portable, Vendor-Neutral Base for Modern
   Systems"
+description: "Avoid cloud lock-in with a portable foundation layer. Use composable infrastructure, open protocols, and unified observability to stay free across AWS, GCP, and beyond."
 authors: [irfan-shah]
-tags: [cloud-native, portability, vendor-neutral, architecture]
+tags: [cloud-native, portability, vendor-neutral, architecture, multi-cloud, kubernetes]
 image: ./cover.png
 ---
 

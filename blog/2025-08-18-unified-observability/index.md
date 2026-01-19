@@ -1,8 +1,9 @@
 ---
 slug: unified-observability
 title: Why Unified Observability Matters for Growing Engineering Teams
+description: "Stop context-switching between monitoring tools. Unified observability reduces MTTR by 50-60% and cuts alert noise by 90%."
 authors: [ranjan-sakalley]
-tags: [observability, engineering, best-practices, collaboration]
+tags: [observability, engineering, best-practices, collaboration, mttr, incident-response]
 image: ./cover.png
 ---
 
@@ -75,7 +76,9 @@ time formats, and by the time you've gathered all the data, you've lost the
 thread of your investigation. With unified observability, you start with the
 symptom and drill down through correlated data without context switches. The
 failed payments lead directly to the slow database queries, which link to the
-infrastructure metrics showing disk I/O saturation—all in one flow.
+infrastructure metrics showing disk I/O saturation—all in one flow. This is
+exactly the kind of correlation that [pgX](/blog/introducing-pgx) enables for
+PostgreSQL workloads.
 
 The real magic happens when your tools share the same understanding of your
 system. Service names, tags, and timestamps align automatically. What used to
