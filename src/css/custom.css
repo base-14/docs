@@ -1107,3 +1107,17 @@ html.blog-post-page [class*="announcementBar"] {
   width: 2rem !important;
   height: 2rem !important;
 }
+
+/* Blog post title sizing */
+article header h1[class*="title"],
+article header h2[class*="title"] {
+  font-size: 2rem !important;
+}
+
+article .markdown h2 {
+  font-size: 1.5rem;
+}
+
+article .markdown h3 {
+  font-size: 1.25rem;
+}
