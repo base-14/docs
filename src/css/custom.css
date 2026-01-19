@@ -1101,3 +1101,9 @@ html.blog-list-page [class*="announcementBar"],
 html.blog-post-page [class*="announcementBar"] {
   display: none;
 }
+
+/* Blog author photos - smaller avatars */
+.avatar__photo {
+  width: 2rem !important;
+  height: 2rem !important;
+}

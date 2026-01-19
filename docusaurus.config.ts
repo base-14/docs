@@ -112,7 +112,7 @@ const config: Config = {
           blogTitle: "base14 Blog",
           blogDescription:
             "Engineering insights, product updates, and best practices from base14",
-          blogSidebarCount: 10,
+          blogSidebarCount: "ALL",
           blogSidebarTitle: "Recent posts",
           postsPerPage: 10,
         },

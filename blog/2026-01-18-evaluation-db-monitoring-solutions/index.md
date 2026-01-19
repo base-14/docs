@@ -4,7 +4,6 @@ date: 2026-01-18
 title: "Evaluating Database Monitoring Solutions: A Framework for Engineering Leaders"
 authors: [ranjan-sakalley]
 tags: [devops, sre, database-monitoring, postgresql, observability]
-unlisted: true
 ---
 
 It was 5:30 AM when Riya (name changed), VP of Engineering at a Series C
