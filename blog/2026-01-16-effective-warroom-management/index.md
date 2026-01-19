@@ -18,6 +18,8 @@ After managing hundreds of critical incidents across my career, I've distilled
 my key learnings into this guide. These battle-tested practices have repeatedly
 proven their value in high-pressure situations.
 
+<!--truncate-->
+
 ## Initialization
 
 The first minutes of an incident response are critical. Having clear, consistent
