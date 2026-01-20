@@ -6,7 +6,7 @@ authors: [ranjan-sakalley]
 tags: [observability, metrics, opentelemetry, prometheus, open-source]
 ---
 
-Introducing [Metric Registry](https://metric-registry.base14.com): a live,
+Introducing [Metric Registry](https://metric-registry.base14.io): a live,
 searchable catalog of 3,700+ observability (and rapidly growing) metrics
 extracted directly from source repositories across the OpenTelemetry,
 Prometheus, and Kubernetes ecosystems, including cloud provider metrics.
