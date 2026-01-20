@@ -25,7 +25,6 @@ timeline alignment to interpret. Riya realized the problem was not
 instrumentation. It was fragmentation.
 
 <!--truncate-->
-
 ## The Hidden Cost Model of Fragmented Observability
 
 Engineering leaders evaluating PostgreSQL monitoring solutions typically focus
