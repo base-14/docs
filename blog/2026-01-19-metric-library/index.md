@@ -2,8 +2,9 @@
 slug: metric-registry
 date: 2026-01-19
 title: "Live Metric Registry: find and understand observability metrics across your stack"
+description: "Search 3,700+ observability metrics from OpenTelemetry, Prometheus, and Kubernetes. Live registry extracted from source code, updated nightly."
 authors: [ranjan-sakalley]
-tags: [observability, metrics, opentelemetry, prometheus, open-source]
+tags: [observability, metrics, opentelemetry, prometheus, open-source, kubernetes, metric-discovery, otel-collector, semantic-conventions]
 ---
 
 Introducing [Metric Registry](https://metric-registry.base14.io): a live,
@@ -372,7 +373,29 @@ The source code is the truth and this Metric Registry makes it searchable.
 
 ## Contribute
 
-Metric Registry is open source. We welcome contributions - whether it's adding
+Metric Registry is open source. We welcome contributions—whether it's adding
 new metric sources, improving extraction accuracy, or fixing bugs. Check out
 the repo at [github.com/base-14/metric-library](https://github.com/base-14/metric-library)
 and join us in building a comprehensive catalog of observability metrics.
+
+---
+
+**Put these metrics to work.** base14 Scout ingests metrics from all the sources
+indexed in Metric Registry—OpenTelemetry, Prometheus exporters, Kubernetes, and
+more—into a unified observability platform.
+[Get started with Scout →](/guides/quick-start)
+
+---
+
+## Related Reading
+
+- [The Cloud-Native Foundation Layer][cloud-native] —
+  Building observability infrastructure that scales with your stack
+- [Reducing Bus Factor in Observability Using AI][bus-factor] —
+  Making metric knowledge accessible across your team
+- [Why Unified Observability Matters for Growing Engineering Teams][unified] —
+  The case for consolidating your monitoring stack
+
+[cloud-native]: /blog/cloud-native-foundation-layer
+[bus-factor]: /blog/reducing-bus-factor-in-observability
+[unified]: /blog/unified-observability

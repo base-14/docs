@@ -1,10 +1,10 @@
 ---
 slug: effective-warroom-management
 date: 2026-01-16
-title: "Effective Warroom Management"
+title: "Effective War Room Management: A Guide to Incident Response"
 description: "Battle-tested incident war room practices: clear roles, shared visibility, engineering pairing, and post-incident processes."
 authors: [ranjan-sakalley]
-tags: [incident-management, warroom, devops, sre, on-call, postmortem]
+tags: [incident-management, warroom, devops, sre, on-call, postmortem, incident-response, incident-commander, blameless-postmortem, mttr]
 ---
 
 ![Warroom Management](./warroom.webp)
@@ -159,3 +159,28 @@ learning.
   from each incident.
 - **Recognition**: Acknowledge the contributions of all participants in the
   incident response.
+
+---
+
+**Shared visibility starts with unified observability.** When your war room has
+a single pane of glass showing application traces, database queries, and
+infrastructure metrics on the same timeline, engineers spend less time
+correlating data and more time solving problems.
+[See how base14 Scout enables faster incident resolution →][quick-start]
+
+[quick-start]: /guides/quick-start
+
+---
+
+## Related Reading
+
+- [Understanding What Increases and Reduces MTTR][mttr] —
+  Data-driven strategies for cutting incident resolution time
+- [Reducing Bus Factor in Observability Using AI][bus-factor] —
+  How to distribute operational knowledge across your team
+- [Why Unified Observability Matters for Growing Engineering Teams][unified] —
+  The case for consolidating your monitoring stack
+
+[mttr]: /blog/factors-influencing-mttr
+[bus-factor]: /blog/reducing-bus-factor-in-observability
+[unified]: /blog/unified-observability

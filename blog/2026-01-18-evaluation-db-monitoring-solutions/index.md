@@ -67,9 +67,10 @@ to ship more conservatively, or worse, ship without understanding the database
 implications at all.
 
 Consider a team deploying a new feature that introduces a new query pattern.
-With unified observability, they can watch application latency and database
-behavior on the same timeline, verify that the new queries perform as expected,
-and catch regressions before users notice them. With fragmented observability,
+With [unified observability](/blog/unified-observability), they can watch
+application latency and database behavior on the same timeline, verify that the
+new queries perform as expected, and catch regressions before users notice them.
+With fragmented observability,
 this verification requires opening multiple tools, manually correlating
 deployment timestamps, and hoping that the metrics granularity aligns closely
 enough to draw conclusions. Many times they don't even have access to the
@@ -112,8 +113,9 @@ degrades significantly. The tools are still there, the metrics are still being
 collected, but the interpretive knowledge required to use them effectively has
 walked out the door.
 
-Unified observability does not eliminate the need for database expertise, but
-it makes that expertise more accessible. When database metrics appear alongside
+[Unified observability](/blog/unified-observability) does not eliminate the need
+for database expertise, but it makes that expertise more accessible. When
+database metrics appear alongside
 application traces in the same interface, using the same query patterns and
 visualization conventions, engineers can learn by exposure rather than
 requiring dedicated study of a separate tooling ecosystem.
@@ -147,6 +149,51 @@ understand system behavior is accessible to the engineers who need it, when
 they need it, without requiring tool-switching or tribal knowledge to
 interpret.
 
+```text
+┌───────────────────────────────────────────────────────────┐
+│               Fragmented Observability                    │
+├───────────────────────────────────────────────────────────┤
+│                                                           │
+│  ┌───────────┐   ┌───────────┐   ┌───────────┐            │
+│  │ APM Tool  │   │ DB Monitor│   │Infra Tool │            │
+│  │           │   │           │   │           │            │
+│  │App Traces │   │  Queries  │   │CPU/Memory │            │
+│  │ Latency   │   │   Locks   │   │  Disk I/O │            │
+│  └─────┬─────┘   └─────┬─────┘   └─────┬─────┘            │
+│        │               │               │                  │
+│        ▼               ▼               ▼                  │
+│  ┌────────────────────────────────────────────────────┐   │
+│  │           Manual Correlation Required              │   │
+│  │    • Different timestamps  • Different labels      │   │
+│  │    • Context switching     • Knowledge silos       │   │
+│  └────────────────────────────────────────────────────┘   │
+│                                                           │
+└───────────────────────────────────────────────────────────┘
+
+                            vs.
+
+┌───────────────────────────────────────────────────────────┐
+│                Unified Observability                      │
+├───────────────────────────────────────────────────────────┤
+│                                                           │
+│  ┌───────────┐   ┌───────────┐   ┌───────────┐            │
+│  │App Traces │   │ DB Metrics│   │Infra Logs │            │
+│  └─────┬─────┘   └─────┬─────┘   └─────┬─────┘            │
+│        │               │               │                  │
+│        └───────────────┼───────────────┘                  │
+│                        ▼                                  │
+│  ┌────────────────────────────────────────────────────┐   │
+│  │          Single Analytical Backend                 │   │
+│  │    • Unified timeline   • Correlated identifiers   │   │
+│  │    • One query language • Shared dashboards        │   │
+│  └────────────────────────────────────────────────────┘   │
+│                        │                                  │
+│                        ▼                                  │
+│         Faster diagnosis, less context switching          │
+│                                                           │
+└───────────────────────────────────────────────────────────┘
+```
+
 ## Conclusion
 
 The change that brought down Riya's checkout flow was a single line
@@ -164,3 +211,27 @@ timeline as the latency spike, the slow query would have been traceable to the
 specific application endpoint, and the missing index would have been visible in
 the same interface. Riya's team would have been back in bed by 6 AM. Instead,
 they spent the morning writing a postmortem about tooling fragmentation.
+
+---
+
+**This is exactly what we built pgX for.**
+[pgX](/operate/pgx/overview) unifies PostgreSQL monitoring with application
+traces and infrastructure metrics in a single platform. When a deployment causes
+query degradation, you see the deployment marker, the latency spike, and the
+slow query on the same timeline—no tool-switching required.
+[See how pgX works →](/operate/pgx/overview)
+
+---
+
+## Related Reading
+
+- [Why Unified Observability Matters for Growing Engineering Teams][unified] —
+  The case for consolidating your monitoring stack
+- [Introducing pgX: Unified Database and Application Monitoring][pgx-intro] —
+  How pgX bridges the gap between database and application observability
+- [Understanding What Increases and Reduces MTTR][mttr] —
+  Actionable strategies to cut incident resolution time
+
+[unified]: /blog/unified-observability
+[pgx-intro]: /blog/introducing-pgx
+[mttr]: /blog/factors-influencing-mttr
