@@ -8,8 +8,6 @@ tags: [cloud-native, portability, vendor-neutral, architecture, multi-cloud, kub
 unlisted: true
 ---
 
-## **Art of the Exit Plan: Layering your code for Portability**
-
 Portability is not defined by the ability to run everywhere simultaneously, as
 that is often a path toward over-engineering. It is, more accurately, a
 function of reversibility. It provides the technical confidence that if a
