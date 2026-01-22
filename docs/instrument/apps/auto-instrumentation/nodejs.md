@@ -1,7 +1,7 @@
 ---
 title: Node.js OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: Node.js
-sidebar_position: 11
+sidebar_position: 12
 description:
   Node.js OpenTelemetry instrumentation for Express, NestJS, Fastify with
   database, Redis, and message queue tracing using base14 Scout.
@@ -85,11 +85,12 @@ frameworks. For framework-specific details, see:
 
 - **[Express.js](./express.md)** - Express 4.x and 5.x instrumentation with
   MongoDB, Redis, WebSockets
-- **NestJS** - Enterprise framework with DI, TypeORM, BullMQ, WebSocket gateway
-  (coming soon)
-- **Fastify** - High-performance framework instrumentation
-- **Koa** - Middleware-based framework patterns
-- **Next.js** - React framework with SSR/SSG instrumentation (coming soon)
+- **[NestJS](./nestjs.md)** - Enterprise framework with DI, TypeORM, BullMQ,
+  WebSocket gateway
+- **[Next.js](./nextjs.md)** - React framework with App Router, MongoDB, BullMQ
+  workers
+- **Fastify** - High-performance framework instrumentation (coming soon)
+- **Koa** - Middleware-based framework patterns (coming soon)
 
 ### What You'll Learn
 
