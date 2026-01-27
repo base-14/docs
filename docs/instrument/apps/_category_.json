@@ -3,9 +3,8 @@
     "position": 3,
     "collapsed": false,
     "link": {
-      "type": "generated-index",
-      "title": "Application Instrumentation Guide",
-      "description": "Add OpenTelemetry instrumentation to your applications. Supports Python, Node.js, Java, Go, Ruby, PHP, and popular frameworks like Django, Express, Spring Boot, and Rails."
+      "type": "doc",
+      "id": "instrument/apps/index"
     }
   }
   

@@ -1,10 +1,9 @@
 {
   "label": "Custom Instrumentation",
-  "position": 3,
+  "position": 4,
   "collapsed": false,
   "link": {
-    "type": "generated-index",
-    "title": "OpenTelemetry Manual Instrumentation Guide",
-    "description": "Add custom spans, metrics, and attributes to your OpenTelemetry instrumentation. Fine-tune observability for business-critical code paths."
+    "type": "doc",
+    "id": "instrument/apps/custom-instrumentation/index"
   }
 }

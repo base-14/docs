@@ -164,9 +164,9 @@ Now that your collector is running, start sending telemetry data:
 Instrument your applications to send traces, metrics, and logs:
 
 - **Auto-instrumentation**: Get started quickly with zero-code instrumentation
-  for popular frameworks. See [Auto-instrumentation Guides](/category/auto-instrumentation)
+  for popular frameworks. See [Auto-instrumentation Guides](/instrument/apps/auto-instrumentation/)
 - **Custom instrumentation**: Add application-specific telemetry. See
-  [Custom Instrumentation Guides](/category/custom-instrumentation)
+  [Custom Instrumentation Guides](/instrument/apps/custom-instrumentation/)
 
 ### From Components
 

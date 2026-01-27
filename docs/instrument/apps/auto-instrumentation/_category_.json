@@ -3,8 +3,7 @@
   "position": 3,
   "collapsed": false,
   "link": {
-    "type": "generated-index",
-    "title": "OpenTelemetry Auto-Instrumentation Guide",
-    "description": "Zero-code OpenTelemetry instrumentation for Express.js, FastAPI, Django, Rails, Spring Boot, and more. Get traces, metrics, and logs with minimal setup."
+    "type": "doc",
+    "id": "instrument/apps/auto-instrumentation/index"
   }
 }

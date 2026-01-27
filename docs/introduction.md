@@ -72,8 +72,9 @@ Let's setup **Scout in less than 5 minutes**. We will follow the steps below:
    send data to Scout.
 4. **Instrument your application**: Use OpenTelemetry SDKs to instrument your
    application code and send telemetry data to the collector. Depending on your
-   setup, please follow [Auto-instrumentation](/category/auto-instrumentation)
-   or [Manual-instrumentation](/category/custom-instrumentation) guides to
+   setup, please follow
+   [Auto-instrumentation](/instrument/apps/auto-instrumentation/) or
+   [Manual-instrumentation](/instrument/apps/custom-instrumentation/) guides to
    instrument your application.
 5. **Instrument your infrastructure**: Use OpenTelemetry to collect telemetry
    data from your infrastructure components. This can include servers,
