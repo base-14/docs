@@ -1,7 +1,7 @@
 ---
-slug: art-of-exit-plan
-date: 2026-01-21
-title: "Art of the Exit Plan: Layering your code for Portability"
+slug: multi-cloud-design
+date: 2026-01-28
+title: "The Multi-Cloud Design: Engineering your code for Portability"
 description: "Avoid cloud vendor lock-in by decoupling business logic from proprietary SDKs. Learn how the adapter pattern (hexagonal architecture) and GitOps enable architectural portability across AWS, GCP, and Azure."
 authors: [irfan-shah]
 tags: [cloud-native, portability, vendor-neutral, architecture, multi-cloud, kubernetes]
@@ -97,7 +97,7 @@ API and simply translating their contract into your own domain schema. This
 minor friction today prevents a total collision during a high-cost migration
 later.
 
-**Portability costs a little every day. Vendor lock-in costs a lot, suddenly.**
+**While portability requires consistent daily investment, it mitigates the significant, sudden costs associated with vendor lock-in..**
 ![Hexagonal architecture diagram showing adapter pattern with ports connecting business logic to cloud services](./hexagonal.png)
 
 ## Intent vs. Instructions: GitOps for Reproducibility
