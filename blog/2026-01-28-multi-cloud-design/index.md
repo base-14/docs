@@ -57,7 +57,7 @@ Portability provides strategic **leverage**
 ## Kafka as a Library: The Interface-First Mindset
 
 Take Kafka. It's a great example because it has evolved from a tool into a
-protocol. If your app depends on the Kafka *API* rather than a specific
+protocol. If your app depends on the Kafka __API__ rather than a specific
 vendor's implementation, Kafka effectively becomes a library. Whether you're
 using self-hosted Apache Kafka, a managed service, or something like Redpanda,
 your producers and consumers don't care. Only the plumbing changes.
