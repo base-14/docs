@@ -6,7 +6,6 @@ description: "Avoid cloud vendor lock-in by decoupling business logic from propr
 authors: [irfan-shah]
 tags: [cloud-native, portability, vendor-neutral, architecture, multi-cloud, kubernetes]
 image: ./leverage.png
-unlisted: true
 ---
 
 In our [previous post on Cloud-Native foundations](/blog/cloud-native-foundation-layer),
