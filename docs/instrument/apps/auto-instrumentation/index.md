@@ -50,6 +50,7 @@ This is the fastest way to get started with OpenTelemetry.
 | Framework | Guide | What's Instrumented |
 |-----------|-------|---------------------|
 | Express | [Express](./express) | HTTP requests, middleware, routing |
+| Fastify | [Fastify](./fastify) | HTTP requests, hooks, plugins, PostgreSQL, BullMQ |
 | NestJS | [NestJS](./nestjs) | Controllers, services, guards, interceptors |
 | Next.js | [Next.js](./nextjs) | SSR, API routes, middleware, React components |
 | Node.js (generic) | [Node.js](./nodejs) | HTTP, filesystem, child processes |

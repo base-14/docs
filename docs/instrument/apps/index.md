@@ -37,7 +37,7 @@ Find your language and see what's available:
 | Language | Auto-Instrumentation | Custom Instrumentation |
 |----------|---------------------|------------------------|
 | **Python** | [Django](./auto-instrumentation/django), [Flask](./auto-instrumentation/flask), [FastAPI](./auto-instrumentation/fast-api), [Celery](./auto-instrumentation/celery) | [Python SDK](./custom-instrumentation/python) |
-| **Node.js** | [Express](./auto-instrumentation/express), [NestJS](./auto-instrumentation/nestjs), [Next.js](./auto-instrumentation/nextjs), [Node.js](./auto-instrumentation/nodejs) | [Node SDK](./custom-instrumentation/javascript-node) |
+| **Node.js** | [Express](./auto-instrumentation/express), [Fastify](./auto-instrumentation/fastify), [NestJS](./auto-instrumentation/nestjs), [Next.js](./auto-instrumentation/nextjs), [Node.js](./auto-instrumentation/nodejs) | [Node SDK](./custom-instrumentation/javascript-node) |
 | **Java** | [Spring Boot](./auto-instrumentation/spring-boot), [Quarkus](./auto-instrumentation/quarkus) | [Java SDK](./custom-instrumentation/java) |
 | **Go** | [Go](./auto-instrumentation/go), [Axum](./auto-instrumentation/axum) | [Go SDK](./custom-instrumentation/go) |
 | **Ruby** | [Rails](./auto-instrumentation/rails), [Rails Legacy](./auto-instrumentation/rails-legacy) | [Ruby SDK](./custom-instrumentation/ruby) |
