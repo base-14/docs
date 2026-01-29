@@ -28,7 +28,8 @@ choose the right approach and find documentation for your stack.
 |----------|----------|------------|-------------|
 | **[Auto-Instrumentation](./auto-instrumentation/)** | Quick start, standard frameworks | Minutes | Pre-defined spans |
 | **[Custom Instrumentation](./custom-instrumentation/)** | Business metrics, fine control | Hours | Full control |
-| **Both** | Production applications | Hours | Best of both |
+| **[AI Observability](./ai-observability/)** | LLM calls, agents, token/cost tracking | Hours | GenAI semantic conventions |
+| **All three** | Production AI applications | Hours | Best of all |
 
 ## Quick Reference Matrix
 
@@ -74,6 +75,14 @@ import ThemedImage from '@theme/ThemedImage';
 - **User context** - User ID, tenant ID, session info
 - **Custom metrics** - Conversion rates, queue depths, cache hit ratios
 - **Domain-specific spans** - Algorithm execution, batch processing
+
+### AI Observability Adds
+
+- **LLM call tracing** - Model, provider, token counts, cost per call
+- **Agent pipeline spans** - Which agent ran, how long, what failed
+- **Cost attribution** - Cost by model, agent, or business operation
+- **Quality evaluation** - LLM output scores tracked over time
+- **PII-safe telemetry** - Prompt/completion scrubbing before export
 
 ## Next Steps
 
