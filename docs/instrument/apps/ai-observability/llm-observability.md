@@ -1659,8 +1659,8 @@ independently.
 - [Creating Alerts](../../../guides/creating-alerts-with-logx.md) -
   Set up alerts for LLM error rates, cost spikes, or quality
   degradation
-- [Create Your First Dashboard](../../../guides/create-your-first-dashboard.md) -
-  Build dashboards for token usage, cost attribution, and
+- [Create Your First Dashboard](../../../guides/create-your-first-dashboard.md)
+  \- Build dashboards for token usage, cost attribution, and
   evaluation scores
 
 ### Deployment and Operations
