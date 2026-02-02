@@ -53,7 +53,7 @@ failures.**
 
 ## Cloud Costs Make Lock-In Expensive
 
-DHH's _"We Have Left the Cloud"_ is a clear example. Basecamp/HEY left AWS after
+DHH's **We Have Left the Cloud** is a clear example. Basecamp/HEY left AWS after
 realizing the cost no longer made sense. Doing so saved them millions.
 
 Their situation was unusual, but the point is general:
@@ -86,7 +86,7 @@ change something and can't.
 
 ## What the Foundation Layer Really Is
 
-A _Cloud-Native Foundation Layer_ isn't extra architecture. It's the minimum
+A Cloud-Native Foundation Layer isn't extra architecture. It's the minimum
 structure you need to stay free:
 
 ### 1. Composable Infrastructure

@@ -612,18 +612,27 @@ html:not(.blog-wrapper):not([data-theme='dark']) .navbar__link--active {
   font-size: 14px;
 }
 
-/* Docs heading sizes */
+/* Docs heading sizes and font */
 .theme-doc-markdown h1,
 html:not(.blog-wrapper) h1[class*="title"] {
+  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   font-size: 30px;
 }
 
 .theme-doc-markdown h2 {
+  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   font-size: 24px;
 }
 
 .theme-doc-markdown h3 {
+  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   font-size: 18px;
+}
+
+/* Docs body font */
+html:not(.blog-wrapper) .theme-doc-markdown,
+html:not(.blog-wrapper) .markdown {
+  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
 .theme-doc-page {
@@ -818,7 +827,7 @@ html:not(.blog-wrapper)[data-theme='dark'] [class*="docCardList"] .card:hover {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   background: linear-gradient(90deg, var(--base14-white-glass-strong), transparent);
-  border-radius: var(--base14-radius);
+  border-radius: 0;
   transition: var(--base14-transition-fast);
   contain: layout style;
 }
@@ -863,15 +872,14 @@ html:not(.blog-wrapper)[data-theme='dark'] [class*="docCardList"] .card:hover {
 .theme-code-block {
   margin: 0;
   background: transparent !important;
-  border: 1px solid #666666 !important;
+  border: 1px dotted #999999 !important;
   border-radius: 0 !important;
   overflow: hidden;
-  contain: layout style paint;
 }
 
 /* Dark mode code blocks */
 [data-theme='dark'] .theme-code-block {
-  border: 1px solid var(--ifm-color-emphasis-400) !important;
+  border: 1px dotted var(--ifm-color-emphasis-400) !important;
 }
 
 /* Dark mode code block title bar */
@@ -879,7 +887,7 @@ html:not(.blog-wrapper)[data-theme='dark'] [class*="docCardList"] .card:hover {
 [data-theme='dark'] .theme-code-block [class*="codeBlockHeader"],
 [data-theme='dark'] div[class*="codeBlockTitle"],
 [data-theme='dark'] div[class*="codeBlockHeader"] {
-  border-bottom: 1px solid var(--ifm-color-emphasis-400) !important;
+  border-bottom: 1px dotted var(--ifm-color-emphasis-400) !important;
 }
 
 .theme-code-block [class*="codeBlockTitle"],
@@ -888,11 +896,14 @@ div[class*="codeBlockTitle"],
 div[class*="codeBlockHeader"] {
   position: relative;
   margin: 0;
-  background: var(--base14-glass-subtle) !important;
-  border-bottom: 1px solid #666666 !important;
+  padding: 0.25rem 0.75rem !important;
+  background: var(--ifm-menu-color-background-active) !important;
+  border-bottom: 1px dotted #999999 !important;
   border-radius: 0;
   backdrop-filter: blur(var(--base14-glass-blur-strong));
   -webkit-backdrop-filter: blur(var(--base14-glass-blur-strong));
+  font-family: var(--ifm-font-family-monospace);
+  font-weight: normal;
 }
 
 .theme-code-block [class*="codeBlockLinesWithNumbering"] {
@@ -961,11 +972,11 @@ nav[aria-label="Breadcrumbs"] li span {
   display: inline-flex !important;
   align-items: center;
 
-  border-radius: var(--base14-radius-pill) !important;
+  border-radius: 4px !important;
 
   border: 1px solid transparent !important;
 
-  color: var(--base14-orange-dark) !important;
+  color: #555555 !important;
   text-decoration: none !important;
 
   transition: var(--base14-transition-medium) !important;
@@ -974,19 +985,24 @@ nav[aria-label="Breadcrumbs"] li span {
 
 .breadcrumbs__link:hover,
 nav[aria-label="Breadcrumbs"] li a:hover {
-  background: var(--base14-orange-glass-subtle) !important;
-  border-color: var(--base14-orange-glass-border-light) !important;
+  background: var(--ifm-menu-color-background-hover) !important;
+  border-color: transparent !important;
   transform: translate3d(0, -1px, 0);
 }
 
 .breadcrumbs__item--active .breadcrumbs__link,
 nav[aria-label="Breadcrumbs"] li:last-child span {
-  backdrop-filter: blur(12px) saturate(150%) !important;
-  background: linear-gradient(135deg,
-    var(--base14-orange-glass-light),
-    var(--base14-orange-glass)) !important;
-  border: 1px solid var(--base14-orange-glass-border) !important;
+  background: var(--ifm-menu-color-background-active) !important;
+  border: 1px solid transparent !important;
+  color: var(--ifm-menu-color-active) !important;
   font-weight: 500 !important;
+}
+
+[data-theme='dark'] .breadcrumbs__item,
+[data-theme='dark'] .breadcrumbs__link,
+[data-theme='dark'] nav[aria-label="Breadcrumbs"] li a,
+[data-theme='dark'] nav[aria-label="Breadcrumbs"] li span {
+  color: var(--ifm-menu-color-active) !important;
 }
 
 @media (max-width: 996px) {
@@ -1173,6 +1189,19 @@ html.blog-wrapper aside[class*="sidebar"] [class*="sidebarItemTitle"] {
   font-size: 0.85rem;
 }
 
+/* Blog sidebar - selected item styling */
+html.blog-wrapper aside a[aria-current="page"],
+html.blog-wrapper aside [class*="sidebarItemLinkActive"],
+html.blog-wrapper [class*="sidebar"] a[aria-current="page"],
+html.blog-wrapper nav[class*="sidebar"] a[aria-current="page"],
+.blog-wrapper aside a[aria-current="page"] {
+  background: var(--ifm-menu-color-background-active) !important;
+  color: var(--ifm-menu-color-active) !important;
+  font-weight: 500 !important;
+  border-radius: 4px !important;
+  display: block;
+}
+
 [data-theme='dark'] article p > em:only-child,
 [data-theme='dark'] .markdown p > em:only-child {
   color: var(--ifm-color-emphasis-600);
@@ -1212,3 +1241,110 @@ html.blog-wrapper article .markdown h2 {
 html.blog-wrapper article .markdown h3 {
   font-size: 1.5rem;
 }
+
+/* Docs code block - smaller font size */
+html:not(.blog-wrapper) .theme-code-block code {
+  font-size: 13px;
+}
+
+/* Code block padding */
+.theme-code-block pre {
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
+}
+
+/* Table cell styling - smaller font */
+.markdown table td,
+.markdown table th {
+  font-size: 14px;
+}
+
+/* Table header background */
+.markdown table th {
+  background: var(--ifm-menu-color-background-active);
+}
+
+/* Blockquote styling */
+.markdown blockquote {
+  border-left: 4px solid var(--ifm-color-primary);
+  background: var(--ifm-menu-color-background-active);
+  padding: 1rem 1rem 1rem 1.5rem;
+}
+
+/* Admonition/callout header styling */
+[class*="admonitionHeading"],
+.alert__heading,
+.admonition-heading {
+  background: var(--ifm-menu-color-background-active);
+  padding: 0.5rem 1rem;
+  margin: -0.75rem -1rem 0.75rem -1rem;
+  border-radius: var(--ifm-global-radius) var(--ifm-global-radius) 0 0;
+}
+
+/* TOC active item styling */
+.table-of-contents__link--active {
+  background: var(--ifm-menu-color-background-active);
+  color: var(--ifm-menu-color-active) !important;
+  font-weight: 500;
+  border-radius: 4px;
+  padding: 2px 6px;
+  margin-left: -6px;
+}
+
+/* Pagination hover states */
+.pagination-nav__link:hover {
+  background: var(--ifm-menu-color-background-active) !important;
+}
+
+/* Card hover states */
+.card:hover,
+[class*="cardContainer"]:hover {
+  background: var(--ifm-menu-color-background-active) !important;
+}
+
+/* Index page cards - smaller size and font */
+.card {
+  padding: 0.75rem 1rem !important;
+}
+
+.card h2,
+.card [class*="cardTitle"] {
+  margin: 0 0 0.25rem 0 !important;
+  font-size: inherit;
+}
+
+.card [class*="cardDescription"] {
+  margin: 0 !important;
+}
+
+/* Docs card titles - use Poppins, not serif */
+html:not(.blog-wrapper) .card h2,
+html:not(.blog-wrapper) .card [class*="cardTitle"],
+html:not(.blog-wrapper) [class*="docCardList"] h2 {
+  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif !important;
+}
+
+/* Inline code styling */
+code {
+  background: var(--ifm-menu-color-background-active);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+/* Tab styling - underline for selected */
+.tabs__item {
+  font-weight: normal;
+}
+
+.tabs__item--active {
+  background: transparent !important;
+  border-bottom: 3px solid var(--ifm-color-primary) !important;
+  color: var(--ifm-menu-color-active) !important;
+  font-weight: normal;
+}
+
+.tabs__item:hover:not(.tabs__item--active) {
+  background: var(--ifm-menu-color-background-hover);
+}
+
