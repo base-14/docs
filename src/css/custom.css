@@ -615,17 +615,17 @@ html:not(.blog-wrapper):not([data-theme='dark']) .navbar__link--active {
 /* Docs heading sizes and font */
 .theme-doc-markdown h1,
 html:not(.blog-wrapper) h1[class*="title"] {
-  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   font-size: 30px;
 }
 
 .theme-doc-markdown h2 {
-  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   font-size: 24px;
 }
 
 .theme-doc-markdown h3 {
-  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   font-size: 18px;
 }
 
@@ -1278,7 +1278,13 @@ html:not(.blog-wrapper) .theme-code-block code {
   background: var(--ifm-menu-color-background-active);
   padding: 0.5rem 1rem;
   margin: -0.75rem -1rem 0.75rem -1rem;
-  border-radius: var(--ifm-global-radius) var(--ifm-global-radius) 0 0;
+  border-radius: 0;
+}
+
+/* Docs admonitions - rectangular */
+html:not(.blog-wrapper) [class*="admonition"],
+html:not(.blog-wrapper) .alert {
+  border-radius: 0 !important;
 }
 
 /* TOC active item styling */
@@ -1347,4 +1353,5 @@ code {
 .tabs__item:hover:not(.tabs__item--active) {
   background: var(--ifm-menu-color-background-hover);
 }
+
 
