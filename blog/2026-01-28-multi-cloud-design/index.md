@@ -56,7 +56,7 @@ Portability provides strategic **leverage**
 ## Kafka as a Library: The Interface-First Mindset
 
 Take Kafka. It's a great example because it has evolved from a tool into a
-protocol. If your app depends on the Kafka __API__ rather than a specific
+protocol. If your app depends on the Kafka **API** rather than a specific
 vendor's implementation, Kafka effectively becomes a library. Whether you're
 using self-hosted Apache Kafka, a managed service, or something like Redpanda,
 your producers and consumers don't care. Only the plumbing changes.
@@ -96,7 +96,8 @@ API and simply translating their contract into your own domain schema. This
 minor friction today prevents a total collision during a high-cost migration
 later.
 
-**While portability requires consistent daily investment, it mitigates the significant, sudden costs associated with vendor lock-in..**
+**While portability requires consistent daily investment, it mitigates the
+significant, sudden costs associated with vendor lock-in.**
 ![Hexagonal architecture diagram showing adapter pattern with ports connecting business logic to cloud services](./hexagonal.png)
 
 ## Intent vs. Instructions: GitOps for Reproducibility

@@ -94,6 +94,7 @@
   --ifm-button-border-radius: 0.75rem;
 
   /* Code */
+  --ifm-font-family-monospace: ui-monospace, "Fira Code", SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --ifm-code-font-size: 95%;
   --ifm-code-background: rgba(255, 255, 255, 0.5);
   --ifm-code-border-radius: 0.5rem;
@@ -481,6 +482,12 @@ html {
   min-height: 100vh;
 }
 
+/* Docs pages: white background, black font (light mode only) */
+html:not(.blog-wrapper):not([data-theme='dark']) {
+  background: #ffffff;
+  color: #000000;
+}
+
 html[data-theme='dark'] {
   background: var(--ifm-background-surface-color);
 }
@@ -512,6 +519,17 @@ article,
   border-color: var(--ifm-color-border);
 }
 
+/* Docs pages: remove glass effects, use clean styling */
+html:not(.blog-wrapper) article,
+html:not(.blog-wrapper) .markdown > div {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: transparent !important;
+  border: none;
+  border-radius: 0;
+  overflow: visible;
+}
+
 [data-theme='dark'] article {
   border: 0 !important;
 }
@@ -528,6 +546,26 @@ nav.navbar {
   backdrop-filter: blur(var(--base14-glass-blur));
   -webkit-backdrop-filter: blur(var(--base14-glass-blur));
   border-bottom: 1px solid var(--ifm-color-border);
+}
+
+/* Docs navbar: white background, black text (light mode only) */
+html:not(.blog-wrapper):not([data-theme='dark']) nav.navbar {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+html:not(.blog-wrapper):not([data-theme='dark']) .navbar__link {
+  color: #000000 !important;
+}
+
+html:not(.blog-wrapper):not([data-theme='dark']) .navbar__link:hover {
+  color: #333333 !important;
+  background: #f5f5f5 !important;
+}
+
+html:not(.blog-wrapper):not([data-theme='dark']) .navbar__link--active {
+  color: #000000 !important;
+  background: #eeeeee;
 }
 
 .footer {
@@ -571,6 +609,21 @@ nav.navbar {
   height: calc(100vh - var(--ifm-navbar-height));
   overflow-y: auto;
   border-radius: 0 !important;
+  font-size: 14px;
+}
+
+/* Docs heading sizes */
+.theme-doc-markdown h1,
+html:not(.blog-wrapper) h1[class*="title"] {
+  font-size: 30px;
+}
+
+.theme-doc-markdown h2 {
+  font-size: 24px;
+}
+
+.theme-doc-markdown h3 {
+  font-size: 18px;
 }
 
 .theme-doc-page {
@@ -717,6 +770,50 @@ article .card:hover,
   box-shadow: 0 4px 12px var(--base14-emerald-shadow-light);
 }
 
+/* Docs cards: simple rectangular border, no gradient (light mode only) */
+html:not(.blog-wrapper):not([data-theme='dark']) .card,
+html:not(.blog-wrapper):not([data-theme='dark']) article .card,
+html:not(.blog-wrapper):not([data-theme='dark']) [class*="cardContainer"],
+html:not(.blog-wrapper):not([data-theme='dark']) [class*="docCardList"] .card {
+  background: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid #e5e5e5 !important;
+  border-radius: 0 !important;
+}
+
+html:not(.blog-wrapper):not([data-theme='dark']) .card:hover,
+html:not(.blog-wrapper):not([data-theme='dark']) article .card:hover,
+html:not(.blog-wrapper):not([data-theme='dark']) [class*="cardContainer"]:hover,
+html:not(.blog-wrapper):not([data-theme='dark']) [class*="docCardList"] .card:hover {
+  background: #fafafa !important;
+  border: 1px solid #cccccc !important;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Docs cards: simple rectangular border (dark mode) */
+html:not(.blog-wrapper)[data-theme='dark'] .card,
+html:not(.blog-wrapper)[data-theme='dark'] article .card,
+html:not(.blog-wrapper)[data-theme='dark'] [class*="cardContainer"],
+html:not(.blog-wrapper)[data-theme='dark'] [class*="docCardList"] .card {
+  background: var(--base14-dark-surface) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--base14-dark-border) !important;
+  border-radius: 0 !important;
+}
+
+html:not(.blog-wrapper)[data-theme='dark'] .card:hover,
+html:not(.blog-wrapper)[data-theme='dark'] article .card:hover,
+html:not(.blog-wrapper)[data-theme='dark'] [class*="cardContainer"]:hover,
+html:not(.blog-wrapper)[data-theme='dark'] [class*="docCardList"] .card:hover {
+  background: var(--base14-dark-surface) !important;
+  border: 1px solid #555555 !important;
+  box-shadow: none;
+  transform: none;
+}
+
 .pagination-nav__link {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -766,8 +863,8 @@ article .card:hover,
 .theme-code-block {
   margin: 0;
   background: transparent !important;
-  border: 1px solid var(--base14-orange-lighter) !important;
-  border-radius: var(--base14-radius) !important;
+  border: 1px solid #666666 !important;
+  border-radius: 0 !important;
   overflow: hidden;
   contain: layout style paint;
 }
@@ -792,8 +889,8 @@ div[class*="codeBlockHeader"] {
   position: relative;
   margin: 0;
   background: var(--base14-glass-subtle) !important;
-  border-bottom: 1px solid var(--base14-orange-lighter) !important;
-  border-radius: var(--base14-radius) var(--base14-radius) 0 0;
+  border-bottom: 1px solid #666666 !important;
+  border-radius: 0;
   backdrop-filter: blur(var(--base14-glass-blur-strong));
   -webkit-backdrop-filter: blur(var(--base14-glass-blur-strong));
 }
@@ -802,20 +899,14 @@ div[class*="codeBlockHeader"] {
   padding: 0;
 }
 
+/* Hide line numbers in code blocks */
 .theme-code-block .codeLineNumber,
-.theme-code-block [class*="codeLineNumber"],
 .theme-code-block [class*="codeLineNumber"] {
-  border-right: 1px solid var(--base14-orange-lighter) !important;
-}
-
-/* Dark mode line number borders */
-[data-theme='dark'] .theme-code-block .codeLineNumber,
-[data-theme='dark'] .theme-code-block [class*="codeLineNumber"] {
-  border-right: 1px solid var(--ifm-color-emphasis-400) !important;
+  display: none !important;
 }
 
 .theme-code-block [class*="codeLineContent"] {
-  padding-left: 8px;
+  padding-left: 16px;
 }
 
 a[class*="tag_"][class*="tagRegular"],
@@ -1114,10 +1205,10 @@ article header h2[class*="title"] {
   font-size: 2.5rem !important;
 }
 
-article .markdown h2 {
+html.blog-wrapper article .markdown h2 {
   font-size: 1.75rem;
 }
 
-article .markdown h3 {
+html.blog-wrapper article .markdown h3 {
   font-size: 1.5rem;
 }
