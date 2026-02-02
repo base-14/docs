@@ -149,50 +149,7 @@ understand system behavior is accessible to the engineers who need it, when
 they need it, without requiring tool-switching or tribal knowledge to
 interpret.
 
-```text
-┌───────────────────────────────────────────────────────────┐
-│               Fragmented Observability                    │
-├───────────────────────────────────────────────────────────┤
-│                                                           │
-│  ┌───────────┐   ┌───────────┐   ┌───────────┐            │
-│  │ APM Tool  │   │ DB Monitor│   │Infra Tool │            │
-│  │           │   │           │   │           │            │
-│  │App Traces │   │  Queries  │   │CPU/Memory │            │
-│  │ Latency   │   │   Locks   │   │  Disk I/O │            │
-│  └─────┬─────┘   └─────┬─────┘   └─────┬─────┘            │
-│        │               │               │                  │
-│        ▼               ▼               ▼                  │
-│  ┌────────────────────────────────────────────────────┐   │
-│  │           Manual Correlation Required              │   │
-│  │    • Different timestamps  • Different labels      │   │
-│  │    • Context switching     • Knowledge silos       │   │
-│  └────────────────────────────────────────────────────┘   │
-│                                                           │
-└───────────────────────────────────────────────────────────┘
-
-                            vs.
-
-┌───────────────────────────────────────────────────────────┐
-│                Unified Observability                      │
-├───────────────────────────────────────────────────────────┤
-│                                                           │
-│  ┌───────────┐   ┌───────────┐   ┌───────────┐            │
-│  │App Traces │   │ DB Metrics│   │Infra Logs │            │
-│  └─────┬─────┘   └─────┬─────┘   └─────┬─────┘            │
-│        │               │               │                  │
-│        └───────────────┼───────────────┘                  │
-│                        ▼                                  │
-│  ┌────────────────────────────────────────────────────┐   │
-│  │          Single Analytical Backend                 │   │
-│  │    • Unified timeline   • Correlated identifiers   │   │
-│  │    • One query language • Shared dashboards        │   │
-│  └────────────────────────────────────────────────────┘   │
-│                        │                                  │
-│                        ▼                                  │
-│         Faster diagnosis, less context switching          │
-│                                                           │
-└───────────────────────────────────────────────────────────┘
-```
+![Fragmented vs Unified Observability](./fragmented-vs-unified.png)
 
 ## Conclusion
 
