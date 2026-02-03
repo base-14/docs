@@ -629,6 +629,12 @@ html:not(.blog-wrapper) h1[class*="title"] {
   font-size: 18px;
 }
 
+.theme-doc-markdown h4,
+.theme-doc-markdown h5,
+.theme-doc-markdown h6 {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
 /* Docs body font */
 html:not(.blog-wrapper) .theme-doc-markdown,
 html:not(.blog-wrapper) .markdown {
@@ -1253,16 +1259,34 @@ html:not(.blog-wrapper) .theme-code-block code {
   padding-bottom: 12px !important;
 }
 
-/* Table cell styling - smaller font */
+/* Table styling */
 .markdown table td,
 .markdown table th {
   font-size: 14px;
 }
 
-/* Table header background */
 .markdown table th {
   background: var(--ifm-menu-color-background-active);
 }
+
+/* Remove alternate row striping */
+.markdown table tr:nth-child(2n) {
+  background: transparent;
+}
+
+/* Remove left/right borders for cleaner look */
+.markdown table,
+.markdown table th,
+.markdown table td {
+  border-left: none;
+  border-right: none;
+}
+
+/* Hide sidebar collapse button */
+button[class*="collapseSidebarButton"] {
+  display: none !important;
+}
+
 
 /* Blockquote styling */
 .markdown blockquote {
