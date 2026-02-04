@@ -19,8 +19,8 @@ sidebar_position: 4
 
 # Windows
 
-Install and configure the OpenTelemetry Collector on Windows systems to collect Windows
-Event Logs, Performance Counters, and host metrics.
+Install and configure the OpenTelemetry Collector on Windows systems to collect
+Windows Event Logs, Performance Counters, and host metrics.
 
 ## Overview
 
@@ -586,18 +586,19 @@ service:
 
 ### Common Issues
 
-**Permission denied for Security Event Log**
+#### Permission denied for Security Event Log
 
 The collector needs Administrator privileges to read the Security event log channel.
 Ensure the service runs with appropriate permissions.
 
-**Performance counters not found**
+#### Performance counters not found
 
-If a performance counter specified in the config doesn't exist on your system, the collector
-will fail to start with an "Incorrect function" error. Counter names vary by Windows version
-and locale.
+If a performance counter specified in the config doesn't exist on your system, the
+collector will fail to start with an "Incorrect function" error. Counter names vary
+by Windows version and locale.
 
-Verify the counter names match your system. Use `typeperf -q` to list available counters:
+Verify the counter names match your system. Use `typeperf -q` to list available
+counters:
 
 ```powershell
 # List all Processor counters
@@ -613,10 +614,10 @@ typeperf -q "LogicalDisk"
 typeperf -q "Network Interface"
 ```
 
-To isolate the issue, temporarily remove the `windowsperfcounters` receiver from your config
-and test with only `hostmetrics` and `windowseventlog` receivers.
+To isolate the issue, temporarily remove the `windowsperfcounters` receiver from
+your config and test with only `hostmetrics` and `windowseventlog` receivers.
 
-**Service fails to start**
+#### Service fails to start
 
 Run the collector manually to see detailed error messages:
 
