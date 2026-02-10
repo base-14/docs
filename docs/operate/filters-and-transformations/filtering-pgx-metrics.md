@@ -354,7 +354,7 @@ what fields are accessible and what the drop/keep decision applies to.
 
 The OpenTelemetry data model is hierarchical:
 
-```
+```text
 Resource (resource.attributes: pod, service, environment...)
   └─ Metric (name, description, type)
        ├─ Datapoint (value, timestamp, attributes: database, schema, table...)
