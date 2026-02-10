@@ -733,3 +733,4 @@ Some metrics are only available in specific PostgreSQL versions:
 - [Quick Start](./quickstart.md) — Get started with pgX
 - [Overview](./overview.md) — Cluster health monitoring
 - [Configuration Reference](./configuration.md) — Configuration options
+- [Filtering pgX Metrics](../filters-and-transformations/filtering-pgx-metrics.md) — Drop or filter metrics at the collector level
