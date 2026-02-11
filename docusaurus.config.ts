@@ -136,6 +136,16 @@ const config: Config = {
         includeBlog: true,
       },
     ],
+    [
+      "@docusaurus/plugin-content-docs",
+      {
+        id: "scope",
+        path: "scope",
+        routeBasePath: "scope",
+        sidebarPath: "./sidebarsScope.ts",
+        sidebarCollapsed: false,
+      },
+    ],
   ],
 
   themeConfig: {
@@ -144,7 +154,7 @@ const config: Config = {
     announcementBar: {
       id: "announcement-bar",
       content:
-        '🚀 Welcome to base14 Scout documentation! Check out the latest articles on our <a href="https://docs.base14.io/blog" target="_blank" rel="noopener noreferrer" style="color: #FFFFFF; text-decoration: underline;">Blog</a>.',
+        '🚀 Welcome to base14 documentation! Check out the latest articles on our <a href="https://docs.base14.io/blog" target="_blank" rel="noopener noreferrer" style="color: #FFFFFF; text-decoration: underline;">Blog</a>.',
       backgroundColor: "#047857",
       textColor: "#FFFFFF",
       isCloseable: true,
@@ -173,6 +183,12 @@ const config: Config = {
           sidebarId: "tutorialSidebar",
           position: "left",
           label: "Scout",
+        },
+        {
+          to: "/scope/",
+          label: "Scope",
+          position: "left",
+          activeBaseRegex: "/scope/",
         },
         {
           to: "/blog",
@@ -208,6 +224,10 @@ const config: Config = {
             {
               label: "LLM Observability",
               href: "https://base14.io/llm-observability",
+            },
+            {
+              label: "Scope",
+              href: "https://base14.io/scope",
             },
             {
               label: "Monk",
