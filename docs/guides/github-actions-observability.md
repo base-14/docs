@@ -30,6 +30,10 @@ each job becomes a child span, and each step becomes a span within its job.
 You get the same structured observability for your pipelines that you already
 have for your applications.
 
+## Time to Complete
+
+10-15 minutes
+
 ## What You'll Accomplish
 
 - Export GitHub Actions workflows as OpenTelemetry traces to Scout
@@ -233,6 +237,12 @@ highlighted, so you can immediately spot where a pipeline broke.
 - **`service.name`** — filter by repository or project
 - **Status** — filter for failed traces to see broken builds
 - **Duration** — sort by duration to find your slowest pipelines
+
+## Verification
+
+1. Trigger a workflow run in your repository
+2. Open **traceX** in Scout and filter by your `otelServiceName`
+3. Confirm a new trace appears with the workflow name as the root span
 
 ## Practical Example: Finding Slow Steps
 

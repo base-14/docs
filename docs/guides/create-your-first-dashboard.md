@@ -22,6 +22,16 @@ This guide walks you through creating your first dashboard in Scout. You'll
 learn how to explore available metrics, build queries correctly, and visualize
 your telemetry data in Grafana.
 
+## Time to Complete
+
+15-20 minutes
+
+## What You'll Accomplish
+
+- Identify a metric to monitor
+- Build a correct query in Grafana
+- Save and organize your first dashboard
+
 ## Prerequisites
 
 - Access to Scout dashboard with Grafana
@@ -149,7 +159,9 @@ Once your panel displays data correctly:
 - **Development** - Development environment dashboards
 - **Team-specific folders** - Organized by team or service
 
-## Dashboard Creation Checklist
+## Verification
+
+Use this checklist to confirm your dashboard is ready:
 
 Before finalizing your dashboard, verify:
 
@@ -190,7 +202,7 @@ Before finalizing your dashboard, verify:
 3. Check timestamp column is correctly configured
 4. Validate SQL syntax (commas, quotes, brackets)
 
-## Related Guides
+## Next Steps
 
 - [Creating Alerts with LogX](creating-alerts-with-logx.md) - Set up alerts
   based on your dashboard queries

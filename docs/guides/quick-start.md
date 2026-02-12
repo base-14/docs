@@ -22,6 +22,10 @@ Get Scout up and running in less than 5 minutes. This guide will help you
 deploy an OpenTelemetry collector, configure it to send data to Scout, and
 start collecting telemetry from your applications and infrastructure.
 
+## Time to Complete
+
+5-10 minutes
+
 ## What You'll Accomplish
 
 - Deploy an OpenTelemetry collector in your environment
@@ -187,7 +191,7 @@ Monitor your AWS resources automatically:
 - [ElastiCache](../instrument/infra/aws/elasticache.md)
 - [VPC Flow Logs](../instrument/infra/aws/aws-vpc.md)
 
-## Step 4: Verify Data Flow
+## Verification
 
 1. Log in to your Scout dashboard
 2. Navigate to the **Traces**, **Metrics**, or **Logs** section

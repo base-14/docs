@@ -17,6 +17,22 @@ LogX provides a streamlined workflow for creating alerts based on your log
 queries. This guide walks you through the process of exporting an alert query
 from LogX and setting it up in Grafana's alerting system.
 
+## Time to Complete
+
+15-20 minutes
+
+## What You'll Accomplish
+
+- Generate an alert-ready LogX query
+- Add the query to a Grafana panel
+- Create and configure a Grafana alert rule
+
+## Prerequisites
+
+- Access to LogX and Grafana in Scout
+- Logs flowing into Scout for the service you want to alert on
+- Permissions to create dashboards and alert rules
+
 ## Overview
 
 The alert creation process involves three main steps:
@@ -138,6 +154,12 @@ The general alerting guide covers:
 - Testing and troubleshooting alerts
 - Best practices for alerting
 
+## Verification
+
+1. Use **Preview alerts** to confirm the rule evaluates successfully
+2. Set a short evaluation interval temporarily to validate behavior
+3. Trigger a known log condition and verify the alert transitions to Firing
+
 ## Best Practices
 
 ### Query Optimization
@@ -151,7 +173,16 @@ The general alerting guide covers:
    - Good: `ServiceName = 'api-service'`
    - Avoid: `ServiceName LIKE '%api%'`
 
-## Related Guides
+## Troubleshooting
+
+If the alert doesn't fire as expected:
+
+1. Confirm the panel query returns a non-zero value in the time range
+2. Verify the table is `otel_logs` and the timestamp column is `Timestamp`
+3. Ensure the rule uses the same datasource and query as the panel
+4. Check that the evaluation interval matches your log volume
+
+## Next Steps
 
 - [Dashboards and Alerts](../operate/dashboards-and-alerts.md) - General
   dashboard and alerting overview
