@@ -616,17 +616,23 @@ html:not(.blog-wrapper):not([data-theme='dark']) .navbar__link--active {
 .theme-doc-markdown h1,
 html:not(.blog-wrapper) h1[class*="title"] {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  font-size: 30px;
+  font-size: 36px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
 .theme-doc-markdown h2 {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  font-size: 24px;
+  font-size: 28px;
+  line-height: 1.3;
+  margin-top: 2.25rem;
 }
 
 .theme-doc-markdown h3 {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  font-size: 18px;
+  font-size: 20px;
+  line-height: 1.4;
+  margin-top: 1.75rem;
 }
 
 .theme-doc-markdown h4,
@@ -639,6 +645,10 @@ html:not(.blog-wrapper) h1[class*="title"] {
 html:not(.blog-wrapper) .theme-doc-markdown,
 html:not(.blog-wrapper) .markdown {
   font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 1rem;
+  line-height: 1.7;
+  max-width: 860px;
+  margin-inline: auto;
 }
 
 .theme-doc-page {
@@ -1377,5 +1387,4 @@ code {
 .tabs__item:hover:not(.tabs__item--active) {
   background: var(--ifm-menu-color-background-hover);
 }
-
 
