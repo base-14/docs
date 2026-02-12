@@ -1,24 +1,11 @@
 ---
-title: GitHub Actions Observability with OpenTelemetry
-sidebar_label: GitHub Actions Observability
-sidebar_position: 7
-description:
-  Export GitHub Actions workflows as OpenTelemetry traces to Scout. Identify
-  slow steps, track failure patterns, and gain full visibility into your CI/CD
-  pipelines.
-keywords:
-  [
-    github actions observability,
-    ci/cd observability,
-    opentelemetry traces,
-    github actions tracing,
-    pipeline monitoring,
-    scout ci/cd,
-    otel-cicd-action,
-  ]
+slug: github-actions-observability
+date: 2026-02-12
+title: GitHub Actions Observability with Scout
+description: "Export GitHub Actions workflows as OpenTelemetry traces to Scout. Identify slow steps, track failure patterns, and gain full visibility into your CI/CD pipelines."
+authors: [ranjan-sakalley]
+tags: [github-actions, ci-cd, observability, opentelemetry, devops]
 ---
-
-# GitHub Actions Observability with OpenTelemetry
 
 CI/CD pipelines are critical infrastructure. Builds slow down over weeks,
 flaky tests waste developer time, and when a pipeline breaks, diagnosing the
@@ -30,9 +17,7 @@ each job becomes a child span, and each step becomes a span within its job.
 You get the same structured observability for your pipelines that you already
 have for your applications.
 
-## Time to Complete
-
-10-15 minutes
+<!--truncate-->
 
 ## What You'll Accomplish
 
@@ -219,7 +204,7 @@ Once the action runs, your workflow traces appear in Scout's trace explorer - tr
 
 ### Reading the Trace Waterfall
 
-![GitHub Actions trace waterfall in Scout traceX](/img/github-actions/github-actions-tracex.png)
+![GitHub Actions trace waterfall in Scout traceX](./github-actions-tracex.png)
 
 The trace waterfall shows the full execution timeline:
 
@@ -237,12 +222,6 @@ highlighted, so you can immediately spot where a pipeline broke.
 - **`service.name`** — filter by repository or project
 - **Status** — filter for failed traces to see broken builds
 - **Duration** — sort by duration to find your slowest pipelines
-
-## Verification
-
-1. Trigger a workflow run in your repository
-2. Open **traceX** in Scout and filter by your `otelServiceName`
-3. Confirm a new trace appears with the workflow name as the root span
 
 ## Practical Example: Finding Slow Steps
 
@@ -317,9 +296,9 @@ the GitHub API response and won't appear as spans.
 
 ## What's Next?
 
-- [Create Your First Dashboard](create-your-first-dashboard.md) — build
+- [Create Your First Dashboard](/guides/create-your-first-dashboard) — build
   dashboards to visualize CI/CD metrics over time
-- [Creating Alerts with LogX](creating-alerts-with-logx.md) — set up alerts
+- [Creating Alerts with LogX](/guides/creating-alerts-with-logx) — set up alerts
   for pipeline failures or duration regressions
-- [Quick Start](quick-start.md) — get Scout set up for application
+- [Quick Start](/guides/quick-start) — get Scout set up for application
   observability alongside your CI/CD traces

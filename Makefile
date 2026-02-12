@@ -40,5 +40,4 @@ lint:
 test:
 	npm test
 
-check:
-	npm run build-lint
+check: typecheck lint build
