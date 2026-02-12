@@ -10,7 +10,8 @@ import TabItem from '@theme/TabItem';
 
 ## Environment Variables
 
-The SDK reads the following environment variables. Set them before creating a client.
+The SDK reads the following environment variables. Set them before creating a
+client.
 
 ### Required
 

@@ -65,14 +65,20 @@ Set up Scope in a few steps:
 5. **Promote to production**: Once satisfied, promote the tested version to your
    production environment.
 6. **Use in your app**: Integrate the Scope SDK to fetch and execute prompts at
-   runtime. See the [SDK Overview](./guides/sdk-overview.md) for language-specific
+   runtime. See the [SDK](./sdk/index.md) for
+   language-specific
    guides.
 
 ## Related Guides
 
-- [Quick Start](./guides/quick-start.md) — Get your first prompt running in
+- [Quick Start](./quick-start.md) — Get your first prompt running in
   under 5 minutes
-- [Provider Setup](./guides/provider-setup.md) — Configure LLM provider
+- [Core Concepts](./core-concepts.md) — Understand prompts, versions, variables,
+  and promotion
+- [Configure Providers](./platform/configure-providers.md) — Configure LLM provider
   credentials
-- [SDK Overview](./guides/sdk-overview.md) — Integrate Scope into your
+- [SDK](./sdk/index.md) — Integrate Scope into your
   application
+- [API Reference](./api-reference/index.md) — REST API endpoints and
+  authentication
+- [Architecture](./architecture/index.md) — System components and data flow

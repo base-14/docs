@@ -86,7 +86,8 @@ version = client.get_prompt_version("greeting", version: "v_01ABC123")
 
 ## Rendering Templates
 
-Prompt content uses `{{variable}}` placeholders. Call `render` to substitute them:
+Prompt content uses `{{variable}}` placeholders. Call `render` to substitute
+them:
 
 <Tabs groupId="sdk-language">
 <TabItem value="python" label="Python" default>
