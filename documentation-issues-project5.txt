@@ -1,0 +1,286 @@
+base-14/base14#1395 - [Docs] Configure sidebar, navbar, and navigation
+  https://github.com/base-14/base14/issues/1395
+base-14/base14#1394 - [Docs] Scaffold Docusaurus site for Scope docs
+  https://github.com/base-14/base14/issues/1394
+base-14/base14#1393 - [Docs] Write introduction and landing page
+  https://github.com/base-14/base14/issues/1393
+base-14/client-configs#169 - Ingestion - choosing the right otel deployment strategy
+  https://github.com/base-14/client-configs/issues/169
+base-14/client-configs#162 - doc to explain Key Concepts of telemetry signals
+  https://github.com/base-14/client-configs/issues/162
+base-14/client-configs#163 - Add migration guide from datadog
+  https://github.com/base-14/client-configs/issues/163
+base-14/client-configs#164 - Add migration guide from prometheus
+  https://github.com/base-14/client-configs/issues/164
+base-14/client-configs#165 - Add migration guide from jaeger
+  https://github.com/base-14/client-configs/issues/165
+base-14/client-configs#166 - Add migration guide from loki
+  https://github.com/base-14/client-configs/issues/166
+base-14/client-configs#168 - standalone instrumented sample application to the whole flow
+  https://github.com/base-14/client-configs/issues/168
+base-14/client-configs#171 - guide on performance tuning otel collector
+  https://github.com/base-14/client-configs/issues/171
+base-14/client-configs#172 - Telemetry Signals - Logs
+  https://github.com/base-14/client-configs/issues/172
+base-14/client-configs#173 - Telemetry Signals - Metrics
+  https://github.com/base-14/client-configs/issues/173
+base-14/client-configs#174 - Telemetry Signals - Traces
+  https://github.com/base-14/client-configs/issues/174
+base-14/client-configs#175 - Dashboards - Queries and macros
+  https://github.com/base-14/client-configs/issues/175
+base-14/client-configs#176 - Dashoards - visualisations
+  https://github.com/base-14/client-configs/issues/176
+base-14/client-configs#177 - Documentation for Apps - Sling
+  https://github.com/base-14/client-configs/issues/177
+base-14/client-configs#178 - Documentation for Apps - tracex
+  https://github.com/base-14/client-configs/issues/178
+base-14/client-configs#180 - Alerting - key concepts
+  https://github.com/base-14/client-configs/issues/180
+base-14/client-configs#182 - Alerting - best practices
+  https://github.com/base-14/client-configs/issues/182
+base-14/client-configs#184 - Troubleshooting - common issues
+  https://github.com/base-14/client-configs/issues/184
+base-14/client-configs#185 - Troubleshooting - performance issues
+  https://github.com/base-14/client-configs/issues/185
+base-14/client-configs#186 - Troubleshooting - data collection issues
+  https://github.com/base-14/client-configs/issues/186
+base-14/client-configs#187 - Troubleshooting - alerting issues
+  https://github.com/base-14/client-configs/issues/187
+base-14/client-configs#188 - Guides - otel deployment strategies
+  https://github.com/base-14/client-configs/issues/188
+base-14/client-configs#189 - Guides - dashboard design
+  https://github.com/base-14/client-configs/issues/189
+base-14/client-configs#190 - Guides - performance optimisation
+  https://github.com/base-14/client-configs/issues/190
+base-14/client-configs#191 - Guides - how to reduce alert fatigue
+  https://github.com/base-14/client-configs/issues/191
+base-14/client-configs#192 - Data retention policies
+  https://github.com/base-14/client-configs/issues/192
+base-14/client-configs#193 - Sharing and Collaboration
+  https://github.com/base-14/client-configs/issues/193
+base-14/client-configs#194 - Frontend monitoring
+  https://github.com/base-14/client-configs/issues/194
+base-14/client-configs#195 - Ingestion Metadata
+  https://github.com/base-14/client-configs/issues/195
+base-14/client-configs#196 - Roadmap
+  https://github.com/base-14/client-configs/issues/196
+base-14/client-configs#206 - Add migration guide from cloudwatch
+  https://github.com/base-14/client-configs/issues/206
+base-14/base14#1396 - [Docs] Add Scope branding assets
+  https://github.com/base-14/base14/issues/1396
+base-14/base14#1397 - [Docs] Write Quick Start guide
+  https://github.com/base-14/base14/issues/1397
+base-14/base14#1398 - [Docs] Write Core Concepts page
+  https://github.com/base-14/base14/issues/1398
+base-14/base14#1399 - [Docs] Guide: Create and manage prompts
+  https://github.com/base-14/base14/issues/1399
+base-14/base14#1400 - [Docs] Guide: Working with versions
+  https://github.com/base-14/base14/issues/1400
+base-14/base14#1401 - [Docs] Guide: Promote a version to production
+  https://github.com/base-14/base14/issues/1401
+base-14/base14#1402 - [Docs] Guide: Using prompt variables
+  https://github.com/base-14/base14/issues/1402
+base-14/base14#1403 - [Docs] Guide: Testing prompts with providers
+  https://github.com/base-14/base14/issues/1403
+base-14/base14#1404 - [Docs] Guide: Create a prompt from a trace
+  https://github.com/base-14/base14/issues/1404
+base-14/base14#1405 - [Docs] Guide: Configure LLM providers
+  https://github.com/base-14/base14/issues/1405
+base-14/base14#1406 - [Docs] Guide: Manage API keys
+  https://github.com/base-14/base14/issues/1406
+base-14/base14#1407 - [Docs] SDK Overview page
+  https://github.com/base-14/base14/issues/1407
+base-14/base14#1408 - [Docs] Python SDK reference and examples
+  https://github.com/base-14/base14/issues/1408
+base-14/base14#1410 - [Docs] Ruby SDK reference and examples
+  https://github.com/base-14/base14/issues/1410
+base-14/base14#1412 - [Docs] SDK integration examples (OpenAI, Anthropic, LangChain)
+  https://github.com/base-14/base14/issues/1412
+base-14/base14#1413 - [Docs] Prompts API reference
+  https://github.com/base-14/base14/issues/1413
+base-14/base14#1414 - [Docs] Providers API reference
+  https://github.com/base-14/base14/issues/1414
+base-14/base14#1415 - [Docs] API Keys API reference
+  https://github.com/base-14/base14/issues/1415
+base-14/base14#1416 - [Docs] Authentication reference
+  https://github.com/base-14/base14/issues/1416
+base-14/base14#1417 - [Docs] Settings overview
+  https://github.com/base-14/base14/issues/1417
+base-14/base14#1418 - [Docs] Viewing traces in Scope
+  https://github.com/base-14/base14/issues/1418
+base-14/base14#1419 - [Docs] User management and RBAC
+  https://github.com/base-14/base14/issues/1419
+base-14/base14#1420 - [Docs] Environment configuration reference
+  https://github.com/base-14/base14/issues/1420
+base-14/base14#1421 - [Docs] Architecture overview with diagram
+  https://github.com/base-14/base14/issues/1421
+base-14/base14#1422 - [Docs] How prompt versioning works
+  https://github.com/base-14/base14/issues/1422
+base-14/base14#1423 - [Docs] Scout integration (OTEL traces)
+  https://github.com/base-14/base14/issues/1423
+base-14/base14#1424 - [Docs] Security model
+  https://github.com/base-14/base14/issues/1424
+base-14/client-configs#492 - [Docs] Add Fluent Bit integration guide
+  https://github.com/base-14/client-configs/issues/492
+base-14/client-configs#493 - [Docs] Add Vector integration guide
+  https://github.com/base-14/client-configs/issues/493
+base-14/client-configs#494 - [Docs] Add Fluentd integration guide
+  https://github.com/base-14/client-configs/issues/494
+base-14/client-configs#495 - [Docs] Add OpenAI observability guide
+  https://github.com/base-14/client-configs/issues/495
+base-14/client-configs#496 - [Docs] Add Anthropic Claude observability guide
+  https://github.com/base-14/client-configs/issues/496
+base-14/client-configs#497 - [Docs] Add LangChain observability guide
+  https://github.com/base-14/client-configs/issues/497
+base-14/client-configs#498 - [Docs] Add LlamaIndex observability guide
+  https://github.com/base-14/client-configs/issues/498
+base-14/client-configs#499 - [Docs] Add Apache Kafka integration guide
+  https://github.com/base-14/client-configs/issues/499
+base-14/client-configs#500 - [Docs] Add MySQL integration guide
+  https://github.com/base-14/client-configs/issues/500
+base-14/client-configs#501 - [Docs] Add Amazon EKS integration guide
+  https://github.com/base-14/client-configs/issues/501
+base-14/client-configs#502 - [Docs] Add core ingestion concepts page
+  https://github.com/base-14/client-configs/issues/502
+base-14/client-configs#503 - [Docs] Add API reference for ingestion endpoints
+  https://github.com/base-14/client-configs/issues/503
+base-14/client-configs#504 - [Docs] Add Logstash integration guide
+  https://github.com/base-14/client-configs/issues/504
+base-14/client-configs#505 - [Docs] Add Filebeat integration guide
+  https://github.com/base-14/client-configs/issues/505
+base-14/client-configs#506 - [Docs] Add AutoGen observability guide
+  https://github.com/base-14/client-configs/issues/506
+base-14/client-configs#507 - [Docs] Add CrewAI observability guide
+  https://github.com/base-14/client-configs/issues/507
+base-14/client-configs#508 - [Docs] Add Google GKE integration guide
+  https://github.com/base-14/client-configs/issues/508
+base-14/client-configs#509 - [Docs] Add Azure AKS integration guide
+  https://github.com/base-14/client-configs/issues/509
+base-14/client-configs#510 - [Docs] Add GitHub Actions integration guide
+  https://github.com/base-14/client-configs/issues/510
+base-14/client-configs#511 - [Docs] Add Jenkins integration guide
+  https://github.com/base-14/client-configs/issues/511
+base-14/client-configs#512 - [Docs] Add Azure Event Hubs integration guide
+  https://github.com/base-14/client-configs/issues/512
+base-14/client-configs#513 - [Docs] Add GCP Pub/Sub integration guide
+  https://github.com/base-14/client-configs/issues/513
+base-14/client-configs#514 - [Docs] Add Promtail integration guide
+  https://github.com/base-14/client-configs/issues/514
+base-14/client-configs#515 - [Docs] Add Syslog integration guide
+  https://github.com/base-14/client-configs/issues/515
+base-14/client-configs#516 - [Docs] Add Elasticsearch migration guide
+  https://github.com/base-14/client-configs/issues/516
+base-14/client-configs#517 - [Docs] Add Redpanda integration guide
+  https://github.com/base-14/client-configs/issues/517
+base-14/client-configs#518 - [Docs] Add NATS integration guide
+  https://github.com/base-14/client-configs/issues/518
+base-14/client-configs#519 - [Docs] Add GitLab CI integration guide
+  https://github.com/base-14/client-configs/issues/519
+base-14/client-configs#520 - [Docs] Add CircleCI integration guide
+  https://github.com/base-14/client-configs/issues/520
+base-14/client-configs#521 - [Docs] Add ArgoCD integration guide
+  https://github.com/base-14/client-configs/issues/521
+base-14/client-configs#522 - [Docs] Add Terraform integration guide
+  https://github.com/base-14/client-configs/issues/522
+base-14/client-configs#523 - [Docs] Add DSPy observability guide
+  https://github.com/base-14/client-configs/issues/523
+base-14/client-configs#524 - [Docs] Add n8n workflow observability guide
+  https://github.com/base-14/client-configs/issues/524
+base-14/client-configs#525 - [Docs] Add eBPF/zero-instrumentation guide
+  https://github.com/base-14/client-configs/issues/525
+base-14/client-configs#526 - [Docs] Add Falco runtime security integration
+  https://github.com/base-14/client-configs/issues/526
+base-14/client-configs#527 - [Docs] Add Trivy vulnerability scan integration
+  https://github.com/base-14/client-configs/issues/527
+base-14/client-configs#528 - [Docs] Add SIEM export guide
+  https://github.com/base-14/client-configs/issues/528
+base-14/client-configs#529 - [Docs] Add Apache Log4j direct integration guide
+  https://github.com/base-14/client-configs/issues/529
+base-14/client-configs#530 - [Docs] Add Prometheus integration guide
+  https://github.com/base-14/client-configs/issues/530
+base-14/client-configs#531 - [Docs] Document JSON flattening behavior
+  https://github.com/base-14/client-configs/issues/531
+base-14/client-configs#532 - [Docs] Document timestamp handling
+  https://github.com/base-14/client-configs/issues/532
+base-14/client-configs#533 - [Docs] Add storage sizing guidelines
+  https://github.com/base-14/client-configs/issues/533
+base-14/client-configs#534 - [Docs] Add high-availability deployment guide
+  https://github.com/base-14/client-configs/issues/534
+base-14/client-configs#535 - [Docs] Add Apache HTTP Server integration guide
+  https://github.com/base-14/client-configs/issues/535
+base-14/client-configs#536 - [Docs] Add HAProxy integration guide
+  https://github.com/base-14/client-configs/issues/536
+base-14/client-configs#537 - [Docs] Add Envoy proxy integration guide
+  https://github.com/base-14/client-configs/issues/537
+base-14/client-configs#538 - [Docs] OpenTelemetry .NET - Getting Started Guide
+  https://github.com/base-14/client-configs/issues/538
+base-14/client-configs#540 - [Docs] HttpClient instrumentation guide
+  https://github.com/base-14/client-configs/issues/540
+base-14/client-configs#541 - [Docs] SQL Server / SqlClient instrumentation guide
+  https://github.com/base-14/client-configs/issues/541
+base-14/client-configs#542 - [Docs] Entity Framework Core instrumentation guide
+  https://github.com/base-14/client-configs/issues/542
+base-14/client-configs#543 - [Docs] .NET logging with OpenTelemetry
+  https://github.com/base-14/client-configs/issues/543
+base-14/client-configs#544 - [Docs] .NET metrics with OpenTelemetry
+  https://github.com/base-14/client-configs/issues/544
+base-14/client-configs#545 - [Docs] ASP.NET (.NET Framework) instrumentation guide
+  https://github.com/base-14/client-configs/issues/545
+base-14/client-configs#546 - [Docs] gRPC client instrumentation guide
+  https://github.com/base-14/client-configs/issues/546
+base-14/client-configs#547 - [Docs] .NET Aspire observability guide
+  https://github.com/base-14/client-configs/issues/547
+base-14/client-configs#548 - [Docs] Azure Monitor OpenTelemetry Distro guide
+  https://github.com/base-14/client-configs/issues/548
+base-14/client-configs#549 - [Docs] Azure Functions OpenTelemetry guide
+  https://github.com/base-14/client-configs/issues/549
+base-14/client-configs#550 - [Docs] PostgreSQL (Npgsql) instrumentation guide
+  https://github.com/base-14/client-configs/issues/550
+base-14/client-configs#552 - [Docs] Redis (StackExchange.Redis) instrumentation guide
+  https://github.com/base-14/client-configs/issues/552
+base-14/client-configs#553 - [Docs] RabbitMQ instrumentation guide
+  https://github.com/base-14/client-configs/issues/553
+base-14/client-configs#554 - [Docs] Apache Kafka (Confluent.Kafka) instrumentation guide
+  https://github.com/base-14/client-configs/issues/554
+base-14/client-configs#555 - [Docs] MassTransit instrumentation guide
+  https://github.com/base-14/client-configs/issues/555
+base-14/client-configs#556 - [Docs] SignalR instrumentation guide
+  https://github.com/base-14/client-configs/issues/556
+base-14/client-configs#557 - [Docs] WCF instrumentation guide
+  https://github.com/base-14/client-configs/issues/557
+base-14/client-configs#558 - [Docs] MongoDB instrumentation guide
+  https://github.com/base-14/client-configs/issues/558
+base-14/client-configs#559 - [Docs] MySQL (.NET) instrumentation guide
+  https://github.com/base-14/client-configs/issues/559
+base-14/client-configs#560 - [Docs] NServiceBus instrumentation guide
+  https://github.com/base-14/client-configs/issues/560
+base-14/client-configs#561 - [Docs] .NET runtime metrics guide
+  https://github.com/base-14/client-configs/issues/561
+base-14/client-configs#563 - [Docs] Distributed tracing patterns in .NET
+  https://github.com/base-14/client-configs/issues/563
+base-14/client-configs#564 - [Docs] log4net instrumentation guide
+  https://github.com/base-14/client-configs/issues/564
+base-14/client-configs#565 - [Docs] NLog instrumentation guide
+  https://github.com/base-14/client-configs/issues/565
+base-14/client-configs#566 - [Docs] Quartz.NET instrumentation guide
+  https://github.com/base-14/client-configs/issues/566
+base-14/client-configs#567 - [Docs] Elasticsearch (.NET) instrumentation guide
+  https://github.com/base-14/client-configs/issues/567
+base-14/client-configs#568 - [Docs] GraphQL instrumentation guide
+  https://github.com/base-14/client-configs/issues/568
+base-14/client-configs#569 - [Docs] Oracle Database instrumentation guide
+  https://github.com/base-14/client-configs/issues/569
+base-14/client-configs#570 - [Docs] Sampling strategies in .NET
+  https://github.com/base-14/client-configs/issues/570
+base-14/client-configs#571 - [Docs] Troubleshooting OpenTelemetry in .NET
+  https://github.com/base-14/client-configs/issues/571
+base-14/client-configs#572 - [Docs] Worker Service / Background Service instrumentation
+  https://github.com/base-14/client-configs/issues/572
+base-14/base14#1409 - [Docs] Node.js SDK reference and examples
+  https://github.com/base-14/base14/issues/1409
+base-14/base14#1411 - [Docs] JVM SDK reference and examples
+  https://github.com/base-14/base14/issues/1411
+base-14/base14#1426 - Add guide about Claude Code monitoring using Scout
+  https://github.com/base-14/base14/issues/1426
+base-14/base14#1427 - [Docs] Guide on MCP observability
+  https://github.com/base-14/base14/issues/1427

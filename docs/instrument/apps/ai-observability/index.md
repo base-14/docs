@@ -60,7 +60,7 @@ provider.
 
 | Guide | What It Covers |
 |-------|---------------|
-| [LLM Observability](./llm-observability) | End-to-end guide: GenAI semantic conventions, token/cost metrics, agent pipeline spans, evaluation tracking, PII scrubbing, production deployment |
+| [LLM Observability](../../../guides/llm-observability) | End-to-end guide: GenAI semantic conventions, token/cost metrics, agent pipeline spans, evaluation tracking, PII scrubbing, production deployment |
 
 ## What Gets Instrumented
 
@@ -130,7 +130,7 @@ Custom metrics for dashboards and alerting:
 
 ## Next Steps
 
-1. **Follow the [LLM Observability guide](./llm-observability)**
+1. **Follow the [LLM Observability guide](../../../guides/llm-observability)**
    for a complete setup walkthrough
 2. **Set up [auto-instrumentation](../auto-instrumentation/)** for
    your web framework if you haven't already

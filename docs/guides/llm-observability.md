@@ -3,7 +3,7 @@ title:
   LLM Observability with OpenTelemetry - Unified AI Application
   Tracing Guide | base14 Scout
 sidebar_label: LLM Observability
-sidebar_position: 2
+sidebar_position: 8
 description:
   Instrument AI and LLM apps with OpenTelemetry. Trace LLM calls,
   track tokens and costs, monitor agent pipelines with base14 Scout.
@@ -58,6 +58,8 @@ custom instrumentation for LLM calls, token tracking, cost
 attribution, and quality evaluation — all visible in a single
 trace on base14 Scout.
 
+![LLM observability dashboard in Scout](/img/docs/llm-o11y.png)
+
 ## Overview
 
 This guide demonstrates how to:
@@ -104,10 +106,10 @@ Before starting, ensure you have:
 - **Scout Collector** configured and accessible from your
   application
   - See
-    [Docker Compose Setup](../../collector-setup/docker-compose-example.md)
+    [Docker Compose Setup](../instrument/collector-setup/docker-compose-example.md)
     for local development
   - See
-    [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md)
+    [Kubernetes Helm Setup](../instrument/collector-setup/kubernetes-helm-setup.md)
     for production deployment
 - Basic understanding of OpenTelemetry concepts (traces, spans,
   metrics)
@@ -1649,27 +1651,27 @@ independently.
 
 ### Advanced Topics
 
-- [Python Custom Instrumentation](../custom-instrumentation/python.md) -
+- [Python Custom Instrumentation][py-custom] -
   Manual tracing and metrics for Python applications
-- [FastAPI Auto-Instrumentation](../auto-instrumentation/fast-api.md) -
+- [FastAPI Auto-Instrumentation][fastapi-auto] -
   Comprehensive FastAPI instrumentation guide
 
 ### Scout Platform Features
 
-- [Creating Alerts](../../../guides/creating-alerts-with-logx.md) -
+- [Creating Alerts](./creating-alerts-with-logx.md) -
   Set up alerts for LLM error rates, cost spikes, or quality
   degradation
-- [Create Your First Dashboard](../../../guides/create-your-first-dashboard.md)
+- [Create Your First Dashboard](./create-your-first-dashboard.md)
   \- Build dashboards for token usage, cost attribution, and
   evaluation scores
 
 ### Deployment and Operations
 
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
+- [Docker Compose Setup][docker-setup] -
   Local development with the OTel Collector
-- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
+- [Kubernetes Helm Setup][k8s-setup] -
   Production deployment
-- [Scout Exporter](../../collector-setup/scout-exporter.md) -
+- [Scout Exporter][scout-exporter] -
   Configure authentication with base14 Scout
 
 ## Complete Example
@@ -1725,11 +1727,17 @@ ai-sales-intelligence/
 
 ## Related Guides
 
-- [Python Custom Instrumentation](../custom-instrumentation/python.md) -
+- [Python Custom Instrumentation][py-custom] -
   Manual tracing and metrics fundamentals
-- [FastAPI Auto-Instrumentation](../auto-instrumentation/fast-api.md) -
+- [FastAPI Auto-Instrumentation][fastapi-auto] -
   Comprehensive FastAPI setup
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
+- [Docker Compose Setup][docker-setup] -
   Local collector deployment
-- [Scout Exporter](../../collector-setup/scout-exporter.md) -
+- [Scout Exporter][scout-exporter] -
   Configure base14 Scout authentication
+
+[py-custom]: ../instrument/apps/custom-instrumentation/python.md
+[fastapi-auto]: ../instrument/apps/auto-instrumentation/fast-api.md
+[docker-setup]: ../instrument/collector-setup/docker-compose-example.md
+[k8s-setup]: ../instrument/collector-setup/kubernetes-helm-setup.md
+[scout-exporter]: ../instrument/collector-setup/scout-exporter.md
