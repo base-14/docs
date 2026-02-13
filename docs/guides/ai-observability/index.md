@@ -2,8 +2,8 @@
 title:
   AI Observability Overview - LLM and Agent Instrumentation with
   OpenTelemetry | base14 Scout
-sidebar_label: Overview
-sidebar_position: 1
+sidebar_label: AI Observability
+sidebar_position: 8
 description:
   Instrument AI and LLM apps with OpenTelemetry. Trace LLM calls,
   track tokens and costs, monitor agent pipelines with base14 Scout.
@@ -53,14 +53,14 @@ provider.
 | Evaluate LLM output quality over time | AI Observability |
 | Debug slow AI requests end-to-end | AI Observability |
 | Attribute costs to agents or business operations | AI Observability |
-| Standard HTTP/database monitoring only | [Auto-instrumentation](../auto-instrumentation/) |
-| Generic custom spans and metrics | [Custom instrumentation](../custom-instrumentation/) |
+| Standard HTTP/database monitoring only | [Auto-instrumentation](../../instrument/apps/auto-instrumentation/) |
+| Generic custom spans and metrics | [Custom instrumentation](../../instrument/apps/custom-instrumentation/) |
 
 ## Guides
 
 | Guide | What It Covers |
 |-------|---------------|
-| [LLM Observability](../../../guides/llm-observability) | End-to-end guide: GenAI semantic conventions, token/cost metrics, agent pipeline spans, evaluation tracking, PII scrubbing, production deployment |
+| [LLM Observability](./llm-observability) | End-to-end guide: GenAI semantic conventions, token/cost metrics, agent pipeline spans, evaluation tracking, PII scrubbing, production deployment |
 
 ## What Gets Instrumented
 
@@ -130,10 +130,10 @@ Custom metrics for dashboards and alerting:
 
 ## Next Steps
 
-1. **Follow the [LLM Observability guide](../../../guides/llm-observability)**
+1. **Follow the [LLM Observability guide](./llm-observability)**
    for a complete setup walkthrough
-2. **Set up [auto-instrumentation](../auto-instrumentation/)** for
-   your web framework if you haven't already
+2. **Set up [auto-instrumentation](../../instrument/apps/auto-instrumentation/)**
+   for your web framework if you haven't already
 3. **Configure the
-   [OpenTelemetry Collector](../../collector-setup/docker-compose-example.md)**
+   [OpenTelemetry Collector](../../instrument/collector-setup/docker-compose-example.md)**
    to export telemetry to base14 Scout

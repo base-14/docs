@@ -106,10 +106,10 @@ Before starting, ensure you have:
 - **Scout Collector** configured and accessible from your
   application
   - See
-    [Docker Compose Setup](../instrument/collector-setup/docker-compose-example.md)
+    [Docker Compose Setup](../../instrument/collector-setup/docker-compose-example.md)
     for local development
   - See
-    [Kubernetes Helm Setup](../instrument/collector-setup/kubernetes-helm-setup.md)
+    [Kubernetes Helm Setup](../../instrument/collector-setup/kubernetes-helm-setup.md)
     for production deployment
 - Basic understanding of OpenTelemetry concepts (traces, spans,
   metrics)
@@ -1658,10 +1658,10 @@ independently.
 
 ### Scout Platform Features
 
-- [Creating Alerts](./creating-alerts-with-logx.md) -
+- [Creating Alerts](../creating-alerts-with-logx.md) -
   Set up alerts for LLM error rates, cost spikes, or quality
   degradation
-- [Create Your First Dashboard](./create-your-first-dashboard.md)
+- [Create Your First Dashboard](../create-your-first-dashboard.md)
   \- Build dashboards for token usage, cost attribution, and
   evaluation scores
 
@@ -1736,8 +1736,8 @@ ai-sales-intelligence/
 - [Scout Exporter][scout-exporter] -
   Configure base14 Scout authentication
 
-[py-custom]: ../instrument/apps/custom-instrumentation/python.md
-[fastapi-auto]: ../instrument/apps/auto-instrumentation/fast-api.md
-[docker-setup]: ../instrument/collector-setup/docker-compose-example.md
-[k8s-setup]: ../instrument/collector-setup/kubernetes-helm-setup.md
-[scout-exporter]: ../instrument/collector-setup/scout-exporter.md
+[py-custom]: ../../instrument/apps/custom-instrumentation/python.md
+[fastapi-auto]: ../../instrument/apps/auto-instrumentation/fast-api.md
+[docker-setup]: ../../instrument/collector-setup/docker-compose-example.md
+[k8s-setup]: ../../instrument/collector-setup/kubernetes-helm-setup.md
+[scout-exporter]: ../../instrument/collector-setup/scout-exporter.md

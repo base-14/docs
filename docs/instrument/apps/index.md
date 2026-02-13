@@ -28,7 +28,7 @@ choose the right approach and find documentation for your stack.
 |----------|----------|------------|-------------|
 | **[Auto-Instrumentation](./auto-instrumentation/)** | Quick start, standard frameworks | Minutes | Pre-defined spans |
 | **[Custom Instrumentation](./custom-instrumentation/)** | Business metrics, fine control | Hours | Full control |
-| **[AI Observability](./ai-observability/)** | LLM calls, agents, token/cost tracking | Hours | GenAI semantic conventions |
+| **[AI Observability](../../guides/ai-observability/)** | LLM calls, agents, token/cost tracking | Hours | GenAI semantic conventions |
 | **All three** | Production AI applications | Hours | Best of all |
 
 ## Quick Reference Matrix
