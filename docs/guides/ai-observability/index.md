@@ -61,6 +61,8 @@ provider.
 | Guide | What It Covers |
 |-------|---------------|
 | [LLM Observability](./llm-observability) | End-to-end guide: GenAI semantic conventions, token/cost metrics, agent pipeline spans, evaluation tracking, PII scrubbing, production deployment |
+| [LangGraph Instrumentation](../../instrument/apps/auto-instrumentation/langgraph) | Framework-specific: LangGraph node wrapping, conditional edge routing, tool-calling nodes, state management, pipeline traces |
+| [LlamaIndex Instrumentation](../../instrument/apps/auto-instrumentation/llamaindex) | Framework-specific: LlamaIndex structured output, self-correction loops, multi-provider LLM factory, YAML prompt management |
 
 ## What Gets Instrumented
 

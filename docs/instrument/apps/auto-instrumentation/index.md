@@ -44,6 +44,8 @@ This is the fastest way to get started with OpenTelemetry.
 | Flask | [Flask](./flask) | HTTP requests, Jinja2 templates, SQLAlchemy |
 | FastAPI | [FastAPI](./fast-api) | HTTP requests, async handlers, Pydantic validation |
 | Celery | [Celery](./celery) | Task execution, retries, worker lifecycle |
+| LangGraph | [LangGraph](./langgraph) | Agent pipelines, LLM calls, tool nodes, conditional routing, token/cost tracking |
+| LlamaIndex | [LlamaIndex](./llamaindex) | LLM calls, structured output, token/cost tracking, quality evaluation |
 
 ### Node.js
 
