@@ -35,8 +35,8 @@ Create a dedicated MongoDB user with the `clusterMonitor` role:
 ```javascript
 use admin
 db.createUser({
-  user:${MONGO_USER},
-  pwd: ${MONGO_PASSWORD},
+  user: "${MONGO_USER}",
+  pwd: "${MONGO_PASSWORD}",
   roles: [
     { role: "clusterMonitor", db: "admin" },
   ]
@@ -63,7 +63,56 @@ receivers:
     direct_connection: true # false for replica sets
 
     metrics:
+      # Disabled by default — enable for full observability
       mongodb.uptime:
+        enabled: true
+      mongodb.active.reads:
+        enabled: true
+      mongodb.active.writes:
+        enabled: true
+      mongodb.commands.rate:
+        enabled: true
+      mongodb.deletes.rate:
+        enabled: true
+      mongodb.flushes.rate:
+        enabled: true
+      mongodb.getmores.rate:
+        enabled: true
+      mongodb.health:
+        enabled: true
+      mongodb.inserts.rate:
+        enabled: true
+      mongodb.lock.acquire.count:
+        enabled: true
+      mongodb.lock.acquire.time:
+        enabled: true
+      mongodb.lock.acquire.wait_count:
+        enabled: true
+      mongodb.lock.deadlock.count:
+        enabled: true
+      mongodb.operation.latency.time:
+        enabled: true
+      mongodb.operation.repl.count:
+        enabled: true
+      mongodb.page_faults:
+        enabled: true
+      mongodb.queries.rate:
+        enabled: true
+      mongodb.repl_commands_per_sec:
+        enabled: true
+      mongodb.repl_deletes_per_sec:
+        enabled: true
+      mongodb.repl_getmores_per_sec:
+        enabled: true
+      mongodb.repl_inserts_per_sec:
+        enabled: true
+      mongodb.repl_queries_per_sec:
+        enabled: true
+      mongodb.repl_updates_per_sec:
+        enabled: true
+      mongodb.updates.rate:
+        enabled: true
+      mongodb.wtcache.bytes.read:
         enabled: true
 
 processors:
