@@ -5,7 +5,6 @@ title: "Zero-Code Instrumentation for Go with eBPF and OpenTelemetry"
 description: "How eBPF enables automatic distributed tracing for Go applications without code changes. Covers OpenTelemetry OBI, supported libraries, Kubernetes deployment, limitations, and alternatives."
 authors: [ranjan-sakalley]
 tags: [opentelemetry, ebpf, go, auto-instrumentation, observability, kubernetes]
-unlisted: true
 ---
 
 Auto-instrumentation is well-established for Java, Python, and Node.js. Runtime
