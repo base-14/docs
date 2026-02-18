@@ -24,34 +24,157 @@ This guide will walk you through collecting rich telemetry data from your nginx
 server using `nginx-module-otel` module and we'll use prometheus nginx exporter
 to collect metrics.
 
+```mdx-code-block
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+```
+
 ## Prerequisites
 
 - NGINX Server installed.
 
 ## Collecting metrics
 
-### Step 1: expose `stub_status` metrics from nginx
+### Step 1: Expose `stub_status` metrics from nginx
 
-In your Nginx config add the following config
+Add the following `server` block **inside** the `http` block of your `nginx.conf`:
 
 ```conf
-server {
-    listen       80;
-    server_name  localhost;
+http {
+    # ... your existing config ...
 
-    location /status {
-        stub_status;
-        allow 127.0.0.1;
-        deny all;
+    server {
+        listen       8080;
+        server_name  localhost;
+
+        location /status {
+            stub_status;
+            allow 127.0.0.1;
+            deny all;
+        }
     }
 }
 ```
 
-### Step 2: Run the nginx prometheus exporter using docker
+:::warning
 
-```shell
-docker run --network=host nginx/nginx-prometheus-exporter:1.4.2 \
-  --nginx.scrape-uri=http://localhost/status
+The `server` block **must** be placed inside the `http` block.
+Placing it outside will result in:
+`"server" directive is not allowed here`
+
+:::
+
+Test and reload nginx:
+
+```bash
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+Verify the status endpoint is working:
+
+```bash
+curl http://127.0.0.1:8080/status
+```
+
+### Step 2: Install and run the nginx prometheus exporter
+
+Download the exporter from the [nginx-prometheus-exporter releases page](https://github.com/nginx/nginx-prometheus-exporter/releases).
+
+```mdx-code-block
+<Tabs>
+<TabItem value="amd64" label="Linux amd64">
+```
+
+```bash
+curl -LO https://github.com/nginx/nginx-prometheus-exporter/releases/download/v1.5.1/nginx-prometheus-exporter_1.5.1_linux_amd64.tar.gz
+tar xzf nginx-prometheus-exporter_1.5.1_linux_amd64.tar.gz
+sudo mv nginx-prometheus-exporter /usr/local/bin/
+```
+
+Create a systemd service to run the exporter:
+
+```bash
+sudo tee /etc/systemd/system/nginx-prometheus-exporter.service > /dev/null <<'EOF'
+[Unit]
+Description=Nginx Prometheus Exporter
+After=network.target nginx.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/nginx-prometheus-exporter --nginx.scrape-uri=http://127.0.0.1:8080/status
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
+Start the exporter:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now nginx-prometheus-exporter
+```
+
+```mdx-code-block
+</TabItem>
+<TabItem value="arm64" label="Linux arm64">
+```
+
+```bash
+curl -LO https://github.com/nginx/nginx-prometheus-exporter/releases/download/v1.5.1/nginx-prometheus-exporter_1.5.1_linux_arm64.tar.gz
+tar xzf nginx-prometheus-exporter_1.5.1_linux_arm64.tar.gz
+sudo mv nginx-prometheus-exporter /usr/local/bin/
+```
+
+Create a systemd service to run the exporter:
+
+```bash
+sudo tee /etc/systemd/system/nginx-prometheus-exporter.service > /dev/null <<'EOF'
+[Unit]
+Description=Nginx Prometheus Exporter
+After=network.target nginx.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/nginx-prometheus-exporter --nginx.scrape-uri=http://127.0.0.1:8080/status
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
+Start the exporter:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now nginx-prometheus-exporter
+```
+
+```mdx-code-block
+</TabItem>
+<TabItem value="docker" label="Docker">
+```
+
+```bash
+docker run -d --name nginx-prometheus-exporter \
+  --network=host \
+  nginx/nginx-prometheus-exporter:1.5.1 \
+  --nginx.scrape-uri=http://127.0.0.1:8080/status
+```
+
+```mdx-code-block
+</TabItem>
+</Tabs>
+```
+
+Verify metrics are being exported:
+
+```bash
+curl http://127.0.0.1:9113/metrics
 ```
 
 ### Step 3: Add the following receiver in your Scout collector
@@ -67,170 +190,35 @@ prometheus/nginx:
           - targets: ["0.0.0.0:9113"]
 ```
 
-> Note: Make sure you use in the pipelines as well.
+> Note: Make sure you add `prometheus/nginx` to the receivers
+> in your metrics pipeline as well.
 
 Great work! Now the metrics are scraped from nginx.
 
 ## Collecting traces
 
-### Step 1: Add the nginx repository
+### Step 1: Install the nginx OTel module
 
-```mdx-code-block
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-
-<Tabs>
-<TabItem value="debian" label="Debian">
-```
-
-Install the prerequisites:
-
-```bash
-sudo apt install curl gnupg2 ca-certificates lsb-release debian-archive-keyring
-```
-
-Import an official nginx signing key so apt could verify the packages
-authenticity. Fetch the key:
-
-```bash
-curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor \
-    | sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
-```
-
-Verify that the downloaded file contains the proper key:
-
-```bash
-gpg --dry-run --quiet --no-keyring --import --import-options import-show /usr/share/keyrings/nginx-archive-keyring.gpg
-```
-
-To set up the apt repository for stable nginx packages, run the following
-command:
-
-```bash
-echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
-http://nginx.org/packages/debian `lsb_release -cs` nginx" \
-    | sudo tee /etc/apt/sources.list.d/nginx.list
-```
-
-```mdx-code-block
-</TabItem>
-<TabItem value="ubuntu" label="Ubuntu">
-```
-
-Install the prerequisites:
-
-```bash
-sudo apt install curl gnupg2 ca-certificates lsb-release ubuntu-keyring
-```
-
-Import an official nginx signing key so apt could verify the packages
-authenticity. Fetch the key:
-
-```bash
-curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor \
-    | sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
-```
-
-Verify that the downloaded file contains the proper key:
-
-```bash
-gpg --dry-run --quiet --no-keyring --import --import-options import-show /usr/share/keyrings/nginx-archive-keyring.gpg
-```
-
-To set up the apt repository for stable nginx packages, run the following
-command:
-
-```bash
-echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
-http://nginx.org/packages/ubuntu `lsb_release -cs` nginx" \
-    | sudo tee /etc/apt/sources.list.d/nginx.list
-```
-
-```mdx-code-block
-</TabItem>
-<TabItem value="alpine" label="Alpine">
-```
-
-Install the prerequisites:
-
-```bash
-sudo apk add openssl curl ca-certificates
-```
-
-To set up the apk repository for stable nginx packages, run the following
-command:
-
-```bash
-printf "%s%s%s%s\n" \
-    "@nginx " \
-    "http://nginx.org/packages/alpine/v" \
-    `egrep -o '^[0-9]+\.[0-9]+' /etc/alpine-release` \
-    "/main" \
-    | sudo tee -a /etc/apk/repositories
-```
-
-```mdx-code-block
-</TabItem>
-<TabItem value="amazon linux" label="Amazon Linux">
-```
-
-Install the prerequisites:
-
-```bash
-sudo yum install yum-utils
-```
-
-To set up the yum repository for Amazon Linux 2, create the file named
-`/etc/yum.repos.d/nginx.repo` with the following contents:
-
-```text
-[nginx-stable]
-name=nginx stable repo
-baseurl=http://nginx.org/packages/amzn2/$releasever/$basearch/
-gpgcheck=1
-enabled=1
-gpgkey=https://nginx.org/keys/nginx_signing.key
-module_hotfixes=true
-priority=9
-```
-
-To set up the yum repository for Amazon Linux 2023, create the file named
-`/etc/yum.repos.d/nginx.repo` with the following contents:
-
-```text
-[nginx-stable]
-name=nginx stable repo
-baseurl=http://nginx.org/packages/amzn/2023/$basearch/
-gpgcheck=1
-enabled=1
-gpgkey=https://nginx.org/keys/nginx_signing.key
-module_hotfixes=true
-priority=9
-```
-
-```mdx-code-block
-</TabItem>
-</Tabs>
-```
-
-### Step 2: Installing Otel module for nginx
+Download and install the pre-built `.deb` package from the [nginx-otel-build releases](https://github.com/base-14/nginx-otel-build/releases/tag/v0.1.1).
 
 ```mdx-code-block
 <Tabs>
-<TabItem value="RedHat, RHEL and Derivatives" label="RedHat, RHEL and Derivatives">
+<TabItem value="amd64" label="Ubuntu 24.04 amd64">
 ```
 
 ```bash
-sudo yum install nginx-module-otel
+curl -LO https://github.com/base-14/nginx-otel-build/releases/download/v0.1.1/ubuntu24.04-nginx1.24.0-amd64.deb
+sudo apt install ./ubuntu24.04-nginx1.24.0-amd64.deb
 ```
 
 ```mdx-code-block
 </TabItem>
-<TabItem value="Debian, Ubuntu and derivatives" label="Debian, Ubuntu and derivatives">
+<TabItem value="arm64" label="Ubuntu 24.04 arm64">
 ```
 
 ```bash
-sudo apt install nginx-module-otel
+curl -LO https://github.com/base-14/nginx-otel-build/releases/download/v0.1.1/ubuntu24.04-nginx1.24.0-arm64.deb
+sudo apt install ./ubuntu24.04-nginx1.24.0-arm64.deb
 ```
 
 ```mdx-code-block
@@ -245,7 +233,7 @@ It might be overwritten by the module installation.
 
 :::
 
-### Step 3: Configure nginx to send traces
+### Step 2: Configure nginx to send traces
 
 Add the following configs in your `nginx.conf` file:
 
@@ -273,7 +261,7 @@ Now the traces will be sent to the Scout Collector.
 
 ```yaml
 receivers:
-  filelog:
+  filelog/nginx:
     include:
       - /var/log/nginx/*.log
     start_at: beginning
