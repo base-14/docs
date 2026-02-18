@@ -134,6 +134,8 @@ const config: Config = {
       "docusaurus-plugin-llms",
       {
         includeBlog: true,
+        generateMarkdownFiles: true,
+        preserveDirectoryStructure: true,
       },
     ],
     [
