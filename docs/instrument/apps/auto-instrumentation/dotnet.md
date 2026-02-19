@@ -2,7 +2,7 @@
 title:
   ASP.NET Core OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: ASP.NET Core
-sidebar_position: 0
+sidebar_position: 25
 description:
   Complete guide to .NET ASP.NET Core OpenTelemetry instrumentation for
   application performance monitoring. Set up auto-instrumentation for traces,

@@ -3,7 +3,7 @@ title:
   LangGraph OpenTelemetry Instrumentation - Complete AI Agent Monitoring
   Guide | base14 Scout
 sidebar_label: LangGraph
-sidebar_position: 10
+sidebar_position: 6
 description:
   Complete guide to LangGraph OpenTelemetry instrumentation for AI agent
   pipeline monitoring. Trace agent nodes, conditional routing, tool calls,

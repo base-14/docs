@@ -1,7 +1,7 @@
 ---
 title: Rails OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: Ruby on Rails
-sidebar_position: 13
+sidebar_position: 19
 description:
   Complete guide to Rails OpenTelemetry instrumentation for application
   performance monitoring. Set up auto-instrumentation for traces, metrics,

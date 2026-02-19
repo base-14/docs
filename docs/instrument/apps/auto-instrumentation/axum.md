@@ -3,7 +3,7 @@ title:
   Axum OpenTelemetry Instrumentation - Complete APM Setup Guide | base14
   Scout
 sidebar_label: Axum
-sidebar_position: 1
+sidebar_position: 22
 description:
   Complete guide to Rust Axum OpenTelemetry instrumentation for application
   performance monitoring. Set up tracing, metrics, and logs for traces,

@@ -3,7 +3,7 @@ title:
   LlamaIndex OpenTelemetry Instrumentation - Complete AI App Monitoring Guide |
   base14 Scout
 sidebar_label: LlamaIndex
-sidebar_position: 9
+sidebar_position: 7
 description:
   Complete guide to LlamaIndex OpenTelemetry instrumentation for AI application
   monitoring. Trace LLM calls, track tokens and costs, monitor structured output

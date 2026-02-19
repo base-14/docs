@@ -3,7 +3,7 @@ title:
   Actix Web OpenTelemetry Instrumentation - Complete APM Setup Guide | base14
   Scout
 sidebar_label: Actix Web
-sidebar_position: 1
+sidebar_position: 21
 description:
   Complete guide to Rust Actix Web OpenTelemetry instrumentation for application
   performance monitoring. Set up tracing, metrics, and logs for distributed

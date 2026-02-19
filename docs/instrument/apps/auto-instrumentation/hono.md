@@ -1,7 +1,7 @@
 ---
 title: Hono OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: Hono
-sidebar_position: 8
+sidebar_position: 10
 description:
   Complete guide to Hono OpenTelemetry instrumentation for application
   performance monitoring. Set up auto-instrumentation for traces, metrics, and

@@ -1,7 +1,7 @@
 ---
 title: React OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: React
-sidebar_position: 15
+sidebar_position: 14
 description:
   React OpenTelemetry instrumentation for browser traces, user interactions,
   and Core Web Vitals monitoring with base14 Scout.

@@ -1,7 +1,7 @@
 ---
 title: NestJS OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: NestJS
-sidebar_position: 10
+sidebar_position: 11
 description:
   NestJS OpenTelemetry instrumentation for controllers, services, TypeORM,
   BullMQ, and WebSocket gateways with distributed tracing using base14 Scout.

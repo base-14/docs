@@ -1,7 +1,7 @@
 ---
 title: Fastify OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: Fastify
-sidebar_position: 6
+sidebar_position: 9
 description:
   Complete guide to Fastify OpenTelemetry instrumentation for application
   performance monitoring. Set up auto-instrumentation for traces, metrics, and

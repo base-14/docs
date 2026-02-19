@@ -3,7 +3,7 @@ title:
   Slim Framework OpenTelemetry Instrumentation - Complete APM Setup Guide |
   base14 Scout
 sidebar_label: Slim
-sidebar_position: 10
+sidebar_position: 24
 description:
   Slim Framework OpenTelemetry instrumentation for traces, MongoDB monitoring,
   metrics, and log correlation with base14 Scout. Covers both Slim 4

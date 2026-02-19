@@ -1,7 +1,7 @@
 ---
 title: Next.js OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
 sidebar_label: Next.js
-sidebar_position: 11
+sidebar_position: 12
 description:
   Complete guide to Next.js OpenTelemetry instrumentation for application
   performance monitoring. Set up auto-instrumentation for traces, metrics, logs,
