@@ -1,29 +1,39 @@
 ---
-title: Ruby on Rails (Legacy) OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
+title:
+  Ruby on Rails (Legacy) OpenTelemetry Instrumentation - Complete APM Setup
+  Guide | base14 Scout
 sidebar_label: Ruby on Rails (Legacy)
 sidebar_position: 14
 description:
-  Legacy Rails OpenTelemetry instrumentation for Ruby 2.7 and Rails 5.x
-  with upgrade recommendations using base14 Scout.
+  Legacy Rails OpenTelemetry instrumentation for Ruby 3.0 / Rails 6.1 and Ruby
+  2.7 / Rails 5.x with pinned SDK versions and upgrade recommendations using
+  base14 Scout.
 keywords:
   [
+    rails 6.1 opentelemetry,
+    ruby 3.0 opentelemetry,
     rails 5 opentelemetry,
     ruby 2.7 opentelemetry,
     legacy rails monitoring,
     rails 5.2 instrumentation,
     ruby 2.7 apm,
+    ruby 3.0 apm,
     old rails observability,
+    rails 6.1 instrumentation,
+    pinned otel gems ruby,
   ]
 ---
 
 # Ruby on Rails (Legacy)
 
-> This guide covers Ruby 2.7 (EOL: March 2023) and Rails 5.2 (EOL: June 2022)
+> This guide covers Ruby 3.0 (EOL: March 2024), Ruby 2.7 (EOL: March 2023),
+> Rails 6.1 (EOL: April 2024), and Rails 5.2 (EOL: June 2022)
 
 This guide covers OpenTelemetry instrumentation for legacy Rails applications
-running on end-of-life Ruby or Rails versions. While OpenTelemetry SDK
-technically supports these versions, they are no longer officially maintained
-or tested.
+running on end-of-life Ruby or Rails versions. The latest OTel Ruby gems now
+require Ruby >= 3.1, so users on older versions need pinned gem versions. While
+instrumentation works, these versions are no longer officially maintained or
+tested.
 
 > ⚠️ **Production Warning**: Legacy versions have known limitations, security
 > vulnerabilities, and reduced performance. We strongly recommend upgrading to
@@ -33,12 +43,265 @@ or tested.
 
 This guide covers:
 
+- **Ruby 3.0** (EOL: March 2024) with **Rails 6.1** (EOL: April 2024)
 - **Ruby 2.7** (EOL: March 2023)
 - **Rails 5.2** (Maintenance ended: June 2022)
 - **Rails 6.0** with Ruby 2.7
 
 **Not covered**: Ruby 2.6 or earlier, Rails 5.1 or earlier (no OpenTelemetry
 support)
+
+## Ruby 3.0 / Rails 6.1
+
+Ruby 3.0 reached EOL in March 2024 and Rails 6.1 in April 2024. Many production
+apps still run this combination. The latest OTel Ruby gems require Ruby >= 3.1,
+so you must pin gem versions to the last compatible releases.
+
+### Why Pinned Versions?
+
+Starting in late 2024, the `opentelemetry-sdk` gem and its dependencies began
+requiring Ruby >= 3.1. Running `bundle update` on a Ruby 3.0 app will pull
+incompatible versions and fail. The configuration below pins every OTel gem to
+its last Ruby 3.0–compatible release.
+
+### Known Limitations
+
+- **Gem version ceiling**: OTel gems are pinned — no new features or bug fixes
+  from upstream
+- **Logger 1.4.3 pin**: newer `logger` versions break
+  `ActiveSupport::LoggerThreadSafeLevel` in Rails 6.1
+- **Bundler 2.3.27**: required in Docker to handle default gem replacement
+  correctly
+- **Bootsnap incompatible**: latest bootsnap (1.23.0+) does not support Ruby 3.0
+
+### Working Configuration
+
+#### Gemfile
+
+Pin OTel gems to the last Ruby 3.0–compatible versions:
+
+```ruby showLineNumbers title="Gemfile"
+source "https://rubygems.org"
+
+ruby "~> 3.0.0"
+
+gem "rails", "~> 6.1.0"
+gem "mysql2", "~> 0.5"
+gem "puma", "~> 5.0"
+gem "logger", "1.4.3"
+
+# OpenTelemetry — pinned to last Ruby 3.0 compatible versions
+gem "opentelemetry-api", "1.4.0"
+gem "opentelemetry-sdk", "1.7.0"
+gem "opentelemetry-exporter-otlp", "0.29.1"
+gem "opentelemetry-instrumentation-rails", "0.34.1"
+gem "opentelemetry-instrumentation-mysql2", "0.28.0"
+```
+
+> Swap `mysql2` for `pg` or `sqlite3` as needed. The OTel core gem versions stay
+> the same.
+
+#### Initializer
+
+`use_all()` auto-instruments Rack, ActionPack, ActiveRecord, ActiveSupport, and
+your database adapter. The OTLP exporter reads its endpoint from environment
+variables, so no hardcoded URLs are needed:
+
+```ruby showLineNumbers title="config/initializers/opentelemetry.rb"
+require "opentelemetry/sdk"
+require "opentelemetry/exporter/otlp"
+
+OpenTelemetry::SDK.configure do |c|
+  c.use_all()
+end
+```
+
+Unlike Ruby 2.7, Ruby 3.0 works fine with `BatchSpanProcessor` (the SDK
+default), so there is no need to switch to `SimpleSpanProcessor`.
+
+#### Custom Spans
+
+Wrap business logic in custom spans for richer traces:
+
+```ruby showLineNumbers title="app/controllers/items_controller.rb"
+class ItemsController < ApplicationController
+  def create
+    permitted = item_params
+    tracer = OpenTelemetry.tracer_provider.tracer("items-controller")
+    item = nil
+
+    tracer.in_span("item.create",
+                   attributes: { "item.title" => permitted[:title] }) do |span|
+      item = Item.create!(permitted)
+      span.set_attribute("item.id", item.id)
+    end
+
+    render json: item, status: :created
+  end
+
+  private
+
+  def item_params
+    params.require(:item).permit(:title, :description)
+  end
+end
+```
+
+Auto-instrumented DB calls nest under the custom span automatically:
+
+```text
+HTTP POST /api/items
+  └── item.create        (custom span)
+      ├── Item query      (ActiveRecord auto)
+      ├── select          (MySQL2 auto)
+      ├── begin           (MySQL2 auto)
+      ├── insert          (MySQL2 auto)
+      └── commit          (MySQL2 auto)
+```
+
+#### Error Handling and Log Correlation
+
+Record exceptions on the current span and inject trace context into logs so you
+can jump from a log line straight to the trace:
+
+```ruby showLineNumbers title="app/controllers/application_controller.rb"
+class ApplicationController < ActionController::API
+  rescue_from ActiveRecord::RecordNotFound, with: :handle_not_found
+
+  private
+
+  def handle_not_found(exception)
+    span = OpenTelemetry::Trace.current_span
+    span.record_exception(exception)
+    span.status = OpenTelemetry::Trace::Status.error(exception.message)
+
+    trace_id = span.context.hex_trace_id
+    span_id = span.context.hex_span_id
+    Rails.logger.error(
+      "[trace_id=#{trace_id} span_id=#{span_id}] " \
+      "#{exception.class}: #{exception.message}"
+    )
+
+    render json: { error: "Not found", trace_id: trace_id },
+           status: :not_found
+  end
+end
+```
+
+### Docker Setup
+
+#### Dockerfile
+
+Pin bundler to 2.3.27 and skip bootsnap:
+
+```docker showLineNumbers title="Dockerfile"
+ARG RUBY_VERSION=3.0
+FROM docker.io/library/ruby:$RUBY_VERSION-slim
+
+WORKDIR /rails
+
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y \
+      build-essential default-libmysqlclient-dev \
+      curl git libyaml-dev pkg-config && \
+    rm -rf /var/lib/apt/lists /var/cache/apt/archives
+
+ENV RAILS_ENV="development" \
+    BUNDLE_PATH="/usr/local/bundle"
+
+RUN gem update --system 3.3.27 && gem install bundler -v 2.3.27
+
+COPY Gemfile ./
+RUN bundle install
+
+COPY . .
+EXPOSE 3000
+CMD ["bin/rails", "server", "-b", "0.0.0.0"]
+```
+
+#### Docker Compose
+
+The app, database, and OTel Collector run together. The key environment
+variables for telemetry are `OTEL_SERVICE_NAME` and
+`OTEL_EXPORTER_OTLP_ENDPOINT`:
+
+```yaml showLineNumbers title="compose.yml"
+services:
+  app:
+    build: .
+    environment:
+      OTEL_SERVICE_NAME: ruby30-rails61-app
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      DATABASE_HOST: mysql
+    depends_on:
+      mysql:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
+    ports:
+      - "3000:3000"
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.144.0
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: rails_otel_dev
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-prootpassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+```
+
+A complete working example is available at
+[ruby30-rails61-mysql](https://github.com/base-14/examples/tree/main/ruby/ruby30-rails61-mysql).
+
+### Ruby 3.0 Troubleshooting
+
+#### Issue: `logger` gem conflicts on Rails 6.1
+
+**Cause**: Newer `logger` versions remove methods that Rails 6.1's
+`ActiveSupport::LoggerThreadSafeLevel` depends on.
+
+**Solution**: Pin `logger` to `1.4.3` in your Gemfile (shown in the
+configuration above).
+
+#### Issue: Bundler fails to replace default gems
+
+**Cause**: The system bundler in the Ruby 3.0 Docker image doesn't handle
+default gem replacement correctly.
+
+**Solution**: Upgrade bundler to 2.3.27 before `bundle install`:
+
+```bash
+gem update --system 3.3.27 && gem install bundler -v 2.3.27
+```
+
+#### Issue: Bootsnap crashes on startup
+
+**Cause**: Bootsnap 1.23.0+ requires Ruby 3.1.
+
+**Solution**: Remove bootsnap from your Gemfile. Rails 6.1 runs fine without it
+— cold boot adds roughly 1–2 seconds.
+
+#### Issue: No traces appearing
+
+**Cause**: OTel gems may have been updated past the Ruby 3.0 ceiling.
+
+**Solution**: Verify pinned versions match the table in
+[Compatibility Matrix](#compatibility-matrix) and run:
+
+```bash
+bundle exec ruby -e "require 'opentelemetry/sdk'; puts OpenTelemetry::SDK::VERSION"
+# Expected: 1.7.0
+```
 
 ## Ruby 2.7 Support
 
@@ -314,25 +577,26 @@ end
 
 ## Compatibility Matrix
 
-| Ruby Version | Rails Version | OpenTelemetry SDK | Status | Notes |
-|--------------|---------------|-------------------|--------|-------|
-| 2.7 | 6.1 | 1.3.x | ⚠️ Works | Use SimpleSpanProcessor |
-| 2.7 | 6.0 | 1.3.x | ⚠️ Works | Use SimpleSpanProcessor |
-| 2.7 | 5.2 | 1.2.x | ⚠️ Limited | Manual instrumentation needed |
-| 3.0 | 6.1 | 1.4.x | ✅ Supported | See main Rails guide |
-| 3.0 | 5.2 | 1.2.x | ⚠️ Limited | Manual instrumentation needed |
+| Ruby Version | Rails Version | OpenTelemetry SDK | Status     | Notes                                      |
+| ------------ | ------------- | ----------------- | ---------- | ------------------------------------------ |
+| 3.0          | 6.1           | 1.7.0 (pinned)    | ⚠️ Works   | [Pinned gems required](#ruby-30--rails-61) |
+| 2.7          | 6.1           | 1.3.x             | ⚠️ Works   | Use SimpleSpanProcessor                    |
+| 2.7          | 6.0           | 1.3.x             | ⚠️ Works   | Use SimpleSpanProcessor                    |
+| 2.7          | 5.2           | 1.2.x             | ⚠️ Limited | Manual instrumentation needed              |
+| 3.0          | 5.2           | 1.2.x             | ⚠️ Limited | Manual instrumentation needed              |
 
 ## Feature Support Comparison
 
-| Feature | Ruby 3.0+ / Rails 6.0+ | Ruby 2.7 / Rails 6.0+ | Rails 5.2 |
-|---------|------------------------|----------------------|-----------|
-| HTTP request tracing | ✅ Automatic | ✅ Automatic | ⚠️ Manual |
-| ActiveRecord queries | ✅ Full | ✅ Full | ⚠️ Partial |
-| Background jobs | ✅ Sidekiq, DJ | ✅ Sidekiq, DJ | ❌ No support |
-| ActionCable | ✅ Automatic | ✅ Automatic | ❌ No support |
-| Custom spans | ✅ Full API | ✅ Full API | ✅ Full API |
-| BatchSpanProcessor | ✅ Recommended | ❌ Unstable | ❌ Unstable |
-| Performance overhead | 1-3ms | 5-10ms | 3-8ms |
+| Feature              | Ruby 3.1+      | Ruby 3.0 (pinned) | Ruby 2.7           | Rails 5.2          |
+| -------------------- | -------------- | ----------------- | ------------------ | ------------------ |
+| HTTP request tracing | ✅ Automatic   | ✅ Automatic      | ✅ Automatic       | ⚠️ Manual          |
+| ActiveRecord queries | ✅ Full        | ✅ Full           | ✅ Full            | ⚠️ Partial         |
+| `use_all()`          | ✅ Latest gems | ✅ Pinned gems    | ❌ Individual gems | ❌ Individual gems |
+| Background jobs      | ✅ Sidekiq, DJ | ✅ Sidekiq, DJ    | ✅ Sidekiq, DJ     | ❌ No support      |
+| ActionCable          | ✅ Automatic   | ✅ Automatic      | ✅ Automatic       | ❌ No support      |
+| Custom spans         | ✅ Full API    | ✅ Full API       | ✅ Full API        | ✅ Full API        |
+| BatchSpanProcessor   | ✅ Recommended | ✅ Works          | ❌ Unstable        | ❌ Unstable        |
+| Performance overhead | 1–3ms          | 1–3ms             | 5–10ms             | 3–8ms              |
 
 ## Migration Path
 
@@ -341,15 +605,19 @@ end
 **Priority 1: Ruby Upgrade** (Biggest impact)
 
 ```text
-Ruby 2.7 → Ruby 3.1 → Ruby 3.2
+Ruby 2.7 → Ruby 3.0 → Ruby 3.1 → Ruby 3.2+
 ```
 
-**Benefits:**
+**Key milestone — Ruby 3.1**: This is where you can drop pinned OTel gem
+versions and use the latest releases (including
+`opentelemetry-instrumentation-all`).
 
-- 2-3x better performance
+**Benefits of upgrading past 3.0:**
+
+- Latest OTel gems with new features and bug fixes
 - Security patches
-- Stable BatchSpanProcessor
-- All instrumentation gems supported
+- Stable BatchSpanProcessor (already works on 3.0)
+- All instrumentation gems supported without version pins
 
 **Rails compatibility:**
 
@@ -372,34 +640,45 @@ Rails 5.2 → Rails 6.1 (LTS) → Rails 7.1 (Current LTS)
 
 ### Incremental Migration Strategy
 
-#### Step 1: Upgrade Ruby (1-2 weeks)
+#### Step 1: Upgrade Ruby to 3.0 (if on 2.7)
 
 ```bash
-# Test with Ruby 3.1
-rbenv install 3.1.4
-rbenv local 3.1.4
-
-# Run tests
+rbenv install 3.0.7
+rbenv local 3.0.7
 bundle install
 bundle exec rspec
-
-# Deploy to staging with Ruby 3.1
-# Monitor for 1 week
 ```
 
-#### Step 2: Update OpenTelemetry
+At this point you can switch from `SimpleSpanProcessor` to `BatchSpanProcessor`
+and use `use_all()` with pinned gems (see
+[Ruby 3.0 / Rails 6.1](#ruby-30--rails-61) above).
 
-```ruby
-# After Ruby upgrade, update to latest OTel
-gem 'opentelemetry-sdk', '~> 1.4.0'
-gem 'opentelemetry-exporter-otlp', '~> 0.27.0'
-gem 'opentelemetry-instrumentation-all', '~> 0.60.0'
+#### Step 2: Upgrade Ruby to 3.1+ (1–2 weeks)
+
+```bash
+rbenv install 3.1.4
+rbenv local 3.1.4
+bundle install
+bundle exec rspec
+# Deploy to staging, monitor for 1 week
 ```
 
-#### Step 3: Switch to BatchSpanProcessor
+#### Step 3: Update OpenTelemetry
 
 ```ruby
-# Now safe to use BatchSpanProcessor
+# After Ruby 3.1 upgrade, remove version pins and use latest
+gem 'opentelemetry-sdk'
+gem 'opentelemetry-exporter-otlp'
+gem 'opentelemetry-instrumentation-all'
+```
+
+#### Step 4: Switch to BatchSpanProcessor
+
+If you were on Ruby 2.7 with `SimpleSpanProcessor`, you can now safely switch to
+`BatchSpanProcessor` (already the default when using `use_all()` without
+explicit processor config):
+
+```ruby
 c.add_span_processor(
   OpenTelemetry::SDK::Trace::Export::BatchSpanProcessor.new(
     OpenTelemetry::Exporter::OTLP::Exporter.new(
@@ -409,7 +688,7 @@ c.add_span_processor(
 )
 ```
 
-#### Step 4: Upgrade Rails (2-4 weeks)
+#### Step 5: Upgrade Rails (2–4 weeks)
 
 ```bash
 # Follow Rails upgrade guides
@@ -498,13 +777,21 @@ end
 
 ### Community Resources
 
-- **OpenTelemetry Ruby GitHub**: [Report issues](https://github.com/open-telemetry/opentelemetry-ruby/issues)
-- **Ruby Upgrade Guides**: [Rails upgrade guides](https://guides.rubyonrails.org/upgrading_ruby_on_rails.html)
+- **OpenTelemetry Ruby GitHub**:
+  [Report issues](https://github.com/open-telemetry/opentelemetry-ruby/issues)
+- **Ruby Upgrade Guides**:
+  [Rails upgrade guides](https://guides.rubyonrails.org/upgrading_ruby_on_rails.html)
 - **Scout Community**: Contact support for legacy version assistance
 
 ### Common Questions
 
-**Q: Can I use opentelemetry-instrumentation-all with Ruby 2.7?**
+**Q: Can I use `opentelemetry-instrumentation-all` with Ruby 3.0?**
+
+A: No. The `-all` meta-gem pulls latest versions that require Ruby 3.1+. Use
+individual instrumentation gems with pinned versions instead (see
+[Ruby 3.0 / Rails 6.1](#ruby-30--rails-61)).
+
+**Q: Can I use `opentelemetry-instrumentation-all` with Ruby 2.7?**
 
 A: Not recommended. Use individual instrumentation gems to avoid compatibility
 issues with gems that require Ruby 3.0+.

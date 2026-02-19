@@ -88,14 +88,15 @@ This comprehensive guide demonstrates how to:
 
 ## Prerequisites
 
-> 📦 **Using older versions?** If you're on Ruby 2.7, Rails 5.x, or other
-> legacy versions, see our [Legacy Rails Instrumentation Guide](./rails-legacy.md)
-> for version-specific configurations and known limitations.
+> 📦 **Using older versions?** If you're on Ruby 3.0, Ruby 2.7,
+> Rails 6.1, Rails 5.x, or other legacy versions, see our
+> [Legacy Rails Instrumentation Guide](./rails-legacy.md) for
+> version-specific configurations and known limitations.
 
 Before starting, ensure you have:
 
-- **Ruby 3.0 or later** (CRuby), **JRuby 9.3.2.0+**, or **TruffleRuby 22.1+**
-  - For best performance and compatibility, Ruby 3.1+ is recommended
+- **Ruby 3.1 or later** (CRuby), **JRuby 9.3.2.0+**, or **TruffleRuby 22.1+**
+  - Ruby 3.0 requires pinned gem versions — see the [Legacy Guide](./rails-legacy.md#ruby-30--rails-61)
   - JRuby users should use the latest stable release
 - **Rails 6.0 or later** installed
   - Rails 7.0+ is recommended for optimal OpenTelemetry support
@@ -111,7 +112,7 @@ Before starting, ensure you have:
 
 | Component | Minimum Version | Recommended Version |
 |-----------|----------------|---------------------|
-| Ruby (CRuby) | 3.0.0 | 3.2.0+ |
+| Ruby (CRuby) | 3.1.0 | 3.2.0+ |
 | JRuby | 9.3.2.0 | 9.4.0+ |
 | TruffleRuby | 22.1.0 | Latest stable |
 | Rails | 6.0.0 | 7.1.0+ |
@@ -1370,9 +1371,12 @@ impact is minimal and acceptable for most production workloads.
 
 ### Which Rails versions are supported?
 
-OpenTelemetry supports Rails 6.0+ with Ruby 3.0+. Rails 7.0+ with Ruby 3.1+ is
-recommended for optimal compatibility and performance. See the
-[Prerequisites](#prerequisites) section for detailed version compatibility.
+OpenTelemetry supports Rails 6.0+ with Ruby 3.1+ (latest gems). Ruby 3.0
+requires pinned gem versions — see the
+[Legacy Guide](./rails-legacy.md#ruby-30--rails-61). Rails 7.0+ with
+Ruby 3.1+ is recommended for optimal compatibility and performance. See
+the [Prerequisites](#prerequisites) section for detailed version
+compatibility.
 
 ### Can I use OpenTelemetry with Sidekiq or other background job processors?
 

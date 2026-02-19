@@ -70,8 +70,8 @@ This is the fastest way to get started with OpenTelemetry.
 
 | Framework | Guide | What's Instrumented |
 |-----------|-------|---------------------|
-| Rails 6+ | [Rails](./rails) | Controllers, ActiveRecord, ActionCable, Sidekiq |
-| Rails 5.x | [Rails Legacy](./rails-legacy) | Controllers, ActiveRecord (older SDK) |
+| Rails 6+ (Ruby 3.1+) | [Rails](./rails) | Controllers, ActiveRecord, ActionCable, Sidekiq |
+| Rails 5.x–6.1 (EOL Ruby) | [Rails Legacy](./rails-legacy) | Controllers, ActiveRecord (pinned SDK versions) |
 
 ### Go
 
@@ -85,6 +85,7 @@ This is the fastest way to get started with OpenTelemetry.
 | Framework | Guide | What's Instrumented |
 |-----------|-------|---------------------|
 | Laravel | [Laravel](./laravel) | HTTP requests, Eloquent, queues, caching |
+| Slim 4 / Slim 3 | [Slim](./slim) | HTTP requests, MongoDB, metrics, log correlation |
 
 ### .NET
 
