@@ -120,6 +120,24 @@ adding documentation articles.
 See [BLOG_GUIDELINES.md](./BLOG_GUIDELINES.md) for guidelines on adding blog
 posts.
 
+## LLM-Friendly Markdown Output
+
+The build generates individual markdown files for each doc page alongside the
+HTML output, using `docusaurus-plugin-llms`. These are discoverable via
+`/llms.txt` following the [llmstxt.org](https://llmstxt.org) standard.
+
+### Patch: docusaurus-plugin-llms
+
+We patch `docusaurus-plugin-llms@0.3.0` via `patch-package` to fix two bugs:
+
+1. `preserveDirectoryStructure` option was not passed to the plugin context,
+   so setting it to `false` had no effect.
+2. `siteUrl` construction produced a double slash (`//`) when `baseUrl` is `/`.
+
+The patch is at `patches/docusaurus-plugin-llms+0.3.0.patch` and is applied
+automatically on `npm install` via the `postinstall` script. Remove this patch
+once these fixes land upstream.
+
 ## Deployment
 
 Deployment is handled automatically via GitHub Actions when you push to the

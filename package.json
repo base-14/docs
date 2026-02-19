@@ -15,7 +15,8 @@
     "typecheck": "tsc",
     "markdownlint": "markdownlint '**/*.md' -f --ignore node_modules",
     "build-lint": "npm run typecheck && npm run markdownlint && npm run build",
-    "test": "echo \"No tests configured yet\" && exit 0"
+    "test": "echo \"No tests configured yet\" && exit 0",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@docusaurus/core": "^3.9.2",
@@ -32,6 +33,7 @@
     "@docusaurus/types": "^3.9.2",
     "docusaurus-plugin-llms": "^0.3.0",
     "markdownlint-cli": "^0.47.0",
+    "patch-package": "^8.0.1",
     "typescript": "^5.9.3"
   },
   "browserslist": {

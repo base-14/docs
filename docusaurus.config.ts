@@ -135,7 +135,7 @@ const config: Config = {
       {
         includeBlog: true,
         generateMarkdownFiles: true,
-        preserveDirectoryStructure: true,
+        preserveDirectoryStructure: false,
       },
     ],
     [

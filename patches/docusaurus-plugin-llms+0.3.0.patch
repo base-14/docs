@@ -1,0 +1,33 @@
+diff --git a/node_modules/docusaurus-plugin-llms/lib/index.js b/node_modules/docusaurus-plugin-llms/lib/index.js
+index d38989b..511219c 100644
+--- a/node_modules/docusaurus-plugin-llms/lib/index.js
++++ b/node_modules/docusaurus-plugin-llms/lib/index.js
+@@ -176,7 +176,7 @@ function docusaurusPluginLLMs(context, options = {}) {
+     // Validate options before processing
+     validatePluginOptions(options);
+     // Set default options
+-    const { generateLLMsTxt = true, generateLLMsFullTxt = true, docsDir = 'docs', ignoreFiles = [], title, description, llmsTxtFilename = 'llms.txt', llmsFullTxtFilename = 'llms-full.txt', includeBlog = false, pathTransformation, includeOrder = [], includeUnmatchedLast = true, customLLMFiles = [], excludeImports = false, removeDuplicateHeadings = false, generateMarkdownFiles = false, keepFrontMatter = [], rootContent, fullRootContent, logLevel = 'normal', } = options;
++    const { generateLLMsTxt = true, generateLLMsFullTxt = true, docsDir = 'docs', ignoreFiles = [], title, description, llmsTxtFilename = 'llms.txt', llmsFullTxtFilename = 'llms-full.txt', includeBlog = false, pathTransformation, includeOrder = [], includeUnmatchedLast = true, customLLMFiles = [], excludeImports = false, removeDuplicateHeadings = false, generateMarkdownFiles = false, preserveDirectoryStructure = true, keepFrontMatter = [], rootContent, fullRootContent, logLevel = 'normal', } = options;
+     // Initialize logging level
+     const logLevelMap = {
+         quiet: utils_1.LogLevel.QUIET,
+@@ -185,9 +185,9 @@ function docusaurusPluginLLMs(context, options = {}) {
+     };
+     (0, utils_1.setLogLevel)(logLevelMap[logLevel] || utils_1.LogLevel.NORMAL);
+     const { siteDir, siteConfig, outDir, } = context;
+-    // Normalize baseUrl: remove trailing slash unless it's root '/'
++    // Normalize baseUrl: remove trailing slash
+     let normalizedBaseUrl = siteConfig.baseUrl || '/';
+-    if (normalizedBaseUrl !== '/' && normalizedBaseUrl.endsWith('/')) {
++    if (normalizedBaseUrl.endsWith('/')) {
+         normalizedBaseUrl = normalizedBaseUrl.slice(0, -1);
+     }
+     const siteUrl = siteConfig.url + normalizedBaseUrl;
+@@ -216,6 +216,7 @@ function docusaurusPluginLLMs(context, options = {}) {
+             excludeImports,
+             removeDuplicateHeadings,
+             generateMarkdownFiles,
++            preserveDirectoryStructure,
+             keepFrontMatter,
+             rootContent,
+             fullRootContent,
