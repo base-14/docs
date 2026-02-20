@@ -1,8 +1,8 @@
 ---
-date: 2025-06-25
-id: collecting-mongodb-telemetry
 title: MongoDB Database Monitoring with OpenTelemetry
 sidebar_label: MongoDB
+id: collecting-mongodb-telemetry
+sidebar_position: 4
 description:
   Monitor MongoDB with OpenTelemetry Collector. Collect database metrics,
   replica set stats, and performance data using Scout.
@@ -15,6 +15,8 @@ keywords:
     mongodb observability,
   ]
 ---
+
+# MongoDB
 
 ## Overview
 
@@ -32,7 +34,7 @@ Collector and forward them to Scout backend.
 
 Create a dedicated MongoDB user with the `clusterMonitor` role:
 
-```javascript
+```javascript showLineNumbers
 use admin
 db.createUser({
   user: "${MONGO_USER}",
@@ -45,7 +47,7 @@ db.createUser({
 
 ## Otel Collector Configuration
 
-```yaml
+```yaml showLineNumbers title="config/otel-collector.yaml"
 receivers:
   mongodb:
     hosts:
@@ -131,7 +133,7 @@ processors:
 
 # Export to Scout Collector
 exporters:
-  otlphttp:
+  otlphttp/b14:
     endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT}
     tls:
       insecure_skip_verify: true
@@ -141,7 +143,7 @@ service:
     metrics:
       receivers: [mongodb]
       processors: [batch, resource]
-      exporters: [otlphttp]
+      exporters: [otlphttp/b14]
 ```
 
 ## Verification
@@ -150,14 +152,14 @@ service:
 2. Verify metrics in Scout dashboard
 3. Test MongoDB connectivity:
 
-   ```bash
+   ```bash showLineNumbers
    mongosh "mongodb://${MONGO_USER}:${MONGO_PASSWORD}@localhost:27017/"\
      "admin?authSource=admin" --eval "db.serverStatus().ok"
    ```
 
 ## References
 
-1. [Scout Collector Setup](https://docs.base14.io/instrument/collector-setup/otel-collector-config)
+- [Scout Collector Setup](https://docs.base14.io/instrument/collector-setup/otel-collector-config)
 
 ## Related Guides
 

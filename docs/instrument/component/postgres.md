@@ -1,8 +1,8 @@
 ---
-date: 2025-10-08
-id: collecting-postgres-telemetry
 title: PostgreSQL Database Basic Monitoring with OpenTelemetry
 sidebar_label: PostgreSQL Basic
+id: collecting-postgres-telemetry
+sidebar_position: 1
 description:
   Monitor PostgreSQL with OpenTelemetry Collector. Collect database metrics,
   query performance, connections, and stats using Scout.
@@ -15,6 +15,8 @@ keywords:
     postgres observability,
   ]
 ---
+
+# PostgreSQL Basic
 
 ## Overview
 
@@ -35,7 +37,7 @@ Collector and forward them to Scout backend.
 
 Create a dedicated PostgreSQL user with monitoring privileges:
 
-```sql
+```sql showLineNumbers
 -- Connect as superuser (postgres)
 CREATE USER postgres_exporter WITH PASSWORD '<your_password>';
 GRANT pg_monitor TO postgres_exporter;
@@ -49,7 +51,7 @@ needed for monitoring without requiring superuser privileges.
 Ensure your PostgreSQL instance allows connections and has the required
 statistics enabled:
 
-```sql
+```sql showLineNumbers
 -- Verify pg_stat_statements extension (optional but recommended)
 CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 
@@ -59,14 +61,14 @@ SELECT count(*) FROM pg_stat_activity;
 
 Test connectivity with the monitoring user:
 
-```bash
+```bash showLineNumbers
 # Test PostgreSQL connectivity
 psql -h <postgres-host> -p <port> -U postgres_exporter -d <database-name> -c "SELECT version();"
 ```
 
 ## Scout Collector Configuration
 
-```yaml
+```yaml showLineNumbers title="config/otel-collector.yaml"
 receivers:
   postgresql:
     endpoint: "<postgres-endpoint>:<port>"
@@ -163,7 +165,7 @@ processors:
 
 # Export to Base14 Scout
 exporters:
-  otlphttp:
+  otlphttp/b14:
     endpoint: ${SCOUT_EXPORTER_OTLP_ENDPOINT}
     tls:
       insecure_skip_verify: true
@@ -173,7 +175,7 @@ service:
     metrics:
       receivers: [postgresql]
       processors: [batch, resource]
-      exporters: [otlphttp]
+      exporters: [otlphttp/b14]
 ```
 
 ## Verification
@@ -182,14 +184,14 @@ service:
 2. Verify metrics in Scout dashboard
 3. Verify PostgreSQL connectivity:
 
-   ```bash
+   ```bash showLineNumbers
    # Test PostgreSQL connection
    psql -h ${POSTGRES_HOST} -p <port> -U postgres_exporter -d ${DATABASE_NAME} -c "SELECT version();"
    ```
 
 4. Check PostgreSQL statistics:
 
-   ```sql
+   ```sql showLineNumbers
    -- Check database statistics
    SELECT * FROM pg_stat_database WHERE datname = '<your-database>';
 

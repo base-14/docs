@@ -1,8 +1,8 @@
 ---
-date: 2026-02-17
-id: collecting-mysql-telemetry
 title: MySQL Database Monitoring with OpenTelemetry
 sidebar_label: MySQL
+id: collecting-mysql-telemetry
+sidebar_position: 3
 description:
   Monitor MySQL with OpenTelemetry Collector. Collect database metrics,
   query performance, connections, and InnoDB stats using Scout.
@@ -15,6 +15,8 @@ keywords:
     mysql observability,
   ]
 ---
+
+# MySQL
 
 ## Overview
 
@@ -32,7 +34,7 @@ Collector and forward them to Scout backend.
 
 Create a dedicated MySQL user with minimal monitoring privileges:
 
-```sql
+```sql showLineNumbers
 CREATE USER 'otel_monitor'@'%' IDENTIFIED BY '<your_password>';
 GRANT PROCESS, REPLICATION CLIENT ON *.* TO 'otel_monitor'@'%';
 GRANT SELECT ON performance_schema.* TO 'otel_monitor'@'%';
@@ -52,7 +54,7 @@ FLUSH PRIVILEGES;
 Ensure your MySQL instance has `performance_schema` and slow query log
 enabled for full observability:
 
-```ini
+```ini showLineNumbers title="my.cnf"
 [mysqld]
 performance_schema = ON
 slow_query_log = ON
@@ -61,13 +63,13 @@ long_query_time = 1
 
 Test connectivity with the monitoring user:
 
-```bash
+```bash showLineNumbers
 mysql -h <mysql-host> -P <port> -u otel_monitor -p -e "SELECT version();"
 ```
 
 ## Scout Collector Configuration
 
-```yaml
+```yaml showLineNumbers title="config/otel-collector.yaml"
 receivers:
   mysql:
     endpoint: <mysql-host>:3306
@@ -146,7 +148,7 @@ processors:
 
 # Export to Base14 Scout
 exporters:
-  otlphttp:
+  otlphttp/b14:
     endpoint: ${SCOUT_EXPORTER_OTLP_ENDPOINT}
     tls:
       insecure_skip_verify: true
@@ -156,7 +158,7 @@ service:
     metrics:
       receivers: [mysql]
       processors: [batch, resource]
-      exporters: [otlphttp]
+      exporters: [otlphttp/b14]
 ```
 
 ## Verification
@@ -165,14 +167,14 @@ service:
 2. Verify metrics in Scout dashboard
 3. Verify MySQL connectivity:
 
-   ```bash
+   ```bash showLineNumbers
    mysql -h ${MYSQL_HOST} -P 3306 -u otel_monitor -p \
      -e "SHOW GLOBAL STATUS LIKE 'Uptime';"
    ```
 
 4. Check MySQL statistics:
 
-   ```sql
+   ```sql showLineNumbers
    -- Check global status
    SHOW GLOBAL STATUS LIKE 'Threads_%';
 

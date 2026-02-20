@@ -1,6 +1,7 @@
 ---
 title: PostgreSQL Advanced Monitoring
 sidebar_label: PostgreSQL Advanced
+sidebar_position: 2
 description:
   Advanced PostgreSQL monitoring. Collect comprehensive database
   metrics including query statistics, table/index metrics, and replication status.
@@ -15,7 +16,7 @@ keywords:
   ]
 ---
 
-# PostgreSQL Advanced Monitoring
+# PostgreSQL Advanced
 
 Pgdashex is a PostgreSQL monitoring agent that collects comprehensive database
 metrics and exposes them in Prometheus format. This guide covers deploying
@@ -39,8 +40,8 @@ configuration settings.
 
 Create a dedicated PostgreSQL user with monitoring privileges:
 
-```sql
--- Connect as superuser (postgres) 
+```sql showLineNumbers
+-- Connect as superuser (postgres)
 CREATE USER pgdashex_monitor WITH ENCRYPTED PASSWORD '<strong_password>';
 
 GRANT pg_monitor TO pgdashex_monitor;
@@ -58,7 +59,7 @@ CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 
 Test the connection:
 
-```bash
+```bash showLineNumbers
 psql -h <postgres-host> -p 5432 -U pgdashex_user -d postgres -c "SELECT version();"
 ```
 
@@ -79,7 +80,7 @@ psql -h <postgres-host> -p 5432 -U pgdashex_user -d postgres -c "SELECT version(
 
 Pull and run the Docker image:
 
-```bash
+```bash showLineNumbers
 docker pull base14/pgdashex:v0.5.10
 
 docker run -d \
@@ -99,7 +100,7 @@ PG_HOST (Docker Desktop) or `--network host` (Linux).
 
 ### Example Docker Compose
 
-```yaml
+```yaml showLineNumbers title="docker-compose.yaml"
 version: '3.8'
 
 services:
@@ -139,7 +140,7 @@ forward to Scout.
 
 Update your Scout Collector configuration to scrape pgdashex metrics:
 
-```yaml
+```yaml showLineNumbers title="config/otel-collector.yaml"
 receivers:
   # Scrape Prometheus metrics from pgdashex
   prometheus:
@@ -241,7 +242,7 @@ environment variable:
 **Custom Groups:**
 Specify a comma-separated list of metric groups:
 
-```bash
+```bash showLineNumbers
 PGDASHEX_COLLECT_METRICS=basic,tables,indexes,queries,replication
 ```
 
@@ -268,7 +269,7 @@ PGDASHEX_COLLECT_METRICS=basic,tables,indexes,queries,replication
 
 **Examples:**
 
-```bash
+```bash showLineNumbers
 # Collect all metrics
 PGDASHEX_COLLECT_METRICS=all
 
@@ -285,7 +286,7 @@ PGDASHEX_COLLECT_METRICS=basic,tables,indexes,queries,replication,backends,locks
 
 **Check connectivity:**
 
-```bash
+```bash showLineNumbers
 # Test PostgreSQL connection
 psql -h $PG_HOST -p $PG_PORT -U $PG_USER -d $PG_DATABASE -c "SELECT version();"
 ```

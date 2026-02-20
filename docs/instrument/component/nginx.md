@@ -1,8 +1,7 @@
 ---
-date: 2025-11-19
-id: nginx
 title: NGINX Web Server Monitoring with OpenTelemetry
 sidebar_label: NGINX
+sidebar_position: 7
 description:
   Monitor NGINX with OpenTelemetry. Collect traces, metrics, and logs from NGINX
   web server with OTel module and Prometheus exporter using Scout.
@@ -14,9 +13,9 @@ keywords:
     opentelemetry nginx,
     nginx observability,
   ]
-tags: [nginx]
-sidebar_position: 2
 ---
+
+# NGINX
 
 ## Overview
 
@@ -39,7 +38,7 @@ import TabItem from '@theme/TabItem';
 
 Add the following `server` block **inside** the `http` block of your `nginx.conf`:
 
-```conf
+```conf showLineNumbers title="nginx.conf"
 http {
     # ... your existing config ...
 
@@ -66,13 +65,13 @@ Placing it outside will result in:
 
 Test and reload nginx:
 
-```bash
+```bash showLineNumbers
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
 Verify the status endpoint is working:
 
-```bash
+```bash showLineNumbers
 curl http://127.0.0.1:8080/status
 ```
 
@@ -85,7 +84,7 @@ Download the exporter from the [nginx-prometheus-exporter releases page](https:/
 <TabItem value="amd64" label="Linux amd64">
 ```
 
-```bash
+```bash showLineNumbers
 curl -LO https://github.com/nginx/nginx-prometheus-exporter/releases/download/v1.5.1/nginx-prometheus-exporter_1.5.1_linux_amd64.tar.gz
 tar xzf nginx-prometheus-exporter_1.5.1_linux_amd64.tar.gz
 sudo mv nginx-prometheus-exporter /usr/local/bin/
@@ -93,7 +92,7 @@ sudo mv nginx-prometheus-exporter /usr/local/bin/
 
 Create a systemd service to run the exporter:
 
-```bash
+```bash showLineNumbers title="/etc/systemd/system/nginx-prometheus-exporter.service"
 sudo tee /etc/systemd/system/nginx-prometheus-exporter.service > /dev/null <<'EOF'
 [Unit]
 Description=Nginx Prometheus Exporter
@@ -112,7 +111,7 @@ EOF
 
 Start the exporter:
 
-```bash
+```bash showLineNumbers
 sudo systemctl daemon-reload
 sudo systemctl enable --now nginx-prometheus-exporter
 ```
@@ -122,7 +121,7 @@ sudo systemctl enable --now nginx-prometheus-exporter
 <TabItem value="arm64" label="Linux arm64">
 ```
 
-```bash
+```bash showLineNumbers
 curl -LO https://github.com/nginx/nginx-prometheus-exporter/releases/download/v1.5.1/nginx-prometheus-exporter_1.5.1_linux_arm64.tar.gz
 tar xzf nginx-prometheus-exporter_1.5.1_linux_arm64.tar.gz
 sudo mv nginx-prometheus-exporter /usr/local/bin/
@@ -130,7 +129,7 @@ sudo mv nginx-prometheus-exporter /usr/local/bin/
 
 Create a systemd service to run the exporter:
 
-```bash
+```bash showLineNumbers title="/etc/systemd/system/nginx-prometheus-exporter.service"
 sudo tee /etc/systemd/system/nginx-prometheus-exporter.service > /dev/null <<'EOF'
 [Unit]
 Description=Nginx Prometheus Exporter
@@ -149,7 +148,7 @@ EOF
 
 Start the exporter:
 
-```bash
+```bash showLineNumbers
 sudo systemctl daemon-reload
 sudo systemctl enable --now nginx-prometheus-exporter
 ```
@@ -159,7 +158,7 @@ sudo systemctl enable --now nginx-prometheus-exporter
 <TabItem value="docker" label="Docker">
 ```
 
-```bash
+```bash showLineNumbers
 docker run -d --name nginx-prometheus-exporter \
   --network=host \
   nginx/nginx-prometheus-exporter:1.5.1 \
@@ -173,13 +172,13 @@ docker run -d --name nginx-prometheus-exporter \
 
 Verify metrics are being exported:
 
-```bash
+```bash showLineNumbers
 curl http://127.0.0.1:9113/metrics
 ```
 
 ### Step 3: Add the following receiver in your Scout collector
 
-```yaml
+```yaml showLineNumbers title="config/otel-collector.yaml"
 prometheus/nginx:
   config:
     scrape_configs:
@@ -193,7 +192,7 @@ prometheus/nginx:
 > Note: Make sure you add `prometheus/nginx` to the receivers
 > in your metrics pipeline as well.
 
-Great work! Now the metrics are scraped from nginx.
+Now the metrics are scraped from nginx.
 
 ## Collecting traces
 
@@ -206,7 +205,7 @@ Download and install the pre-built `.deb` package from the [nginx-otel-build rel
 <TabItem value="amd64" label="Ubuntu 24.04 amd64">
 ```
 
-```bash
+```bash showLineNumbers
 curl -LO https://github.com/base-14/nginx-otel-build/releases/download/v0.1.1/ubuntu24.04-nginx1.24.0-amd64.deb
 sudo apt install ./ubuntu24.04-nginx1.24.0-amd64.deb
 ```
@@ -216,7 +215,7 @@ sudo apt install ./ubuntu24.04-nginx1.24.0-amd64.deb
 <TabItem value="arm64" label="Ubuntu 24.04 arm64">
 ```
 
-```bash
+```bash showLineNumbers
 curl -LO https://github.com/base-14/nginx-otel-build/releases/download/v0.1.1/ubuntu24.04-nginx1.24.0-arm64.deb
 sudo apt install ./ubuntu24.04-nginx1.24.0-arm64.deb
 ```
@@ -237,7 +236,7 @@ It might be overwritten by the module installation.
 
 Add the following configs in your `nginx.conf` file:
 
-```conf
+```conf showLineNumbers title="nginx.conf"
 load_module modules/ngx_otel_module.so;
 
 http {
@@ -259,7 +258,7 @@ Now the traces will be sent to the Scout Collector.
 
 ### Step 1: Add the filelog receiver to collect the logs
 
-```yaml
+```yaml showLineNumbers title="config/otel-collector.yaml"
 receivers:
   filelog/nginx:
     include:
@@ -270,8 +269,7 @@ receivers:
 > Note: If you have configured log collection location to a custom directory,
 > update the `include` block with the correct path.
 
-Great work! Now we have successfully implemented nginx with OpenTelemetry
-instrumentation.
+Now we have successfully implemented nginx with OpenTelemetry instrumentation.
 
 ## Related Guides
 

@@ -1,8 +1,8 @@
 ---
-date: 2025-10-08
-id: collecting-rabbitmq-telemetry
 title: RabbitMQ Message Queue Monitoring with OpenTelemetry
 sidebar_label: RabbitMQ
+id: collecting-rabbitmq-telemetry
+sidebar_position: 6
 description:
   Monitor RabbitMQ with OpenTelemetry Collector. Collect queue metrics, message
   stats, connections, and performance data using Scout.
@@ -15,6 +15,8 @@ keywords:
     rabbitmq observability,
   ]
 ---
+
+# RabbitMQ
 
 ## Overview
 
@@ -32,7 +34,7 @@ Collector and forward them to Scout backend.
 
 Ensure the RabbitMQ management plugin is enabled:
 
-```bash
+```bash showLineNumbers
 # Enable management plugin
 rabbitmq-plugins enable rabbitmq_management
 
@@ -42,7 +44,7 @@ rabbitmq-plugins list | grep management
 
 Create a dedicated monitoring user (optional but recommended):
 
-```bash
+```bash showLineNumbers
 # Create monitoring user
 rabbitmqctl add_user rabbitmq_monitor <password>
 
@@ -56,7 +58,7 @@ curl -u rabbitmq_monitor:<password> http://localhost:15672/api/overview
 
 ## Scout Collector Configuration
 
-```yaml
+```yaml showLineNumbers title="config/otel-collector.yaml"
 receivers:
   rabbitmq:
     endpoint: ${RABBITMQ_HOST}
@@ -230,7 +232,7 @@ processors:
 
 # Export to Base14 Scout
 exporters:
-  otlphttp:
+  otlphttp/b14:
     endpoint: ${SCOUT_EXPORTER_OTLP_ENDPOINT}
     tls:
       insecure_skip_verify: true
@@ -240,7 +242,7 @@ service:
     metrics:
       receivers: [rabbitmq]
       processors: [batch, resource]
-      exporters: [otlphttp]
+      exporters: [otlphttp/b14]
 ```
 
 ## Verification
@@ -249,7 +251,7 @@ service:
 2. Verify metrics in Scout dashboard
 3. Test RabbitMQ connectivity:
 
-   ```bash
+   ```bash showLineNumbers
    # Test RabbitMQ management API
    curl -u ${RABBITMQ_USERNAME}:${RABBITMQ_PASSWORD} \
         ${RABBITMQ_HOST}:15672/api/overview
@@ -257,7 +259,7 @@ service:
 
 4. Check RabbitMQ node status:
 
-   ```bash
+   ```bash showLineNumbers
    # Check node status
    rabbitmqctl node_health_check
 

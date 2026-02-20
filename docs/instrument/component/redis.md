@@ -1,8 +1,8 @@
 ---
-date: 2025-10-08
-id: collecting-redis-telemetry
 title: Redis Cache Monitoring with OpenTelemetry
 sidebar_label: Redis
+id: collecting-redis-telemetry
+sidebar_position: 5
 description:
   Monitor Redis with OpenTelemetry Collector. Collect cache metrics, memory
   usage, connections, and performance data using Scout.
@@ -15,6 +15,8 @@ keywords:
     redis observability,
   ]
 ---
+
+# Redis
 
 ## Overview
 
@@ -34,21 +36,21 @@ have the appropriate credentials.
 
 For Redis with authentication:
 
-```bash
+```bash showLineNumbers
 # Test Redis connectivity
 redis-cli -h <redis-host> -p <redis-port> -a <password> ping
 ```
 
 For Redis without authentication:
 
-```bash
+```bash showLineNumbers
 # Test Redis connectivity
 redis-cli -h <redis-host> -p <redis-port> ping
 ```
 
 ## Scout Collector Configuration
 
-```yaml
+```yaml showLineNumbers title="config/otel-collector.yaml"
 receivers:
   redis:
     endpoint: ${REDIS_ENDPOINT}
@@ -143,7 +145,7 @@ processors:
 
 # Export to Base14 Scout
 exporters:
-  otlphttp:
+  otlphttp/b14:
     endpoint: ${SCOUT_EXPORTER_OTLP_ENDPOINT}
     tls:
       insecure_skip_verify: true
@@ -162,7 +164,7 @@ service:
 2. Verify metrics in the Scout dashboard
 3. Monitor Redis INFO command output:
 
-   ```bash
+   ```bash showLineNumbers
    redis-cli -h ${REDIS_HOST} -p ${REDIS_PORT} info
    ```
 
