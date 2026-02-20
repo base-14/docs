@@ -5,7 +5,7 @@ id: collecting-rabbitmq-telemetry
 sidebar_position: 6
 description:
   Monitor RabbitMQ with OpenTelemetry Collector. Collect queue metrics, message
-  stats, connections, and performance data using Scout.
+  stats, node health, I/O performance, and more using Scout.
 keywords:
   [
     rabbitmq monitoring,
@@ -21,12 +21,13 @@ keywords:
 ## Overview
 
 This guide explains how to set up RabbitMQ metrics collection using Scout
-Collector and forward them to Scout backend.
+Collector and forward them to Scout backend. The configuration below has been
+validated against both RabbitMQ 3.x and 4.x with identical metric output.
 
 ## Prerequisites
 
-1. RabbitMQ instance (standalone or cluster)
-2. RabbitMQ management plugin enabled
+1. RabbitMQ 3.x or 4.x instance
+2. RabbitMQ management plugin enabled (HTTP API on port 15672)
 3. RabbitMQ user with monitoring privileges
 4. Scout Collector installed
 
@@ -61,20 +62,27 @@ curl -u rabbitmq_monitor:<password> http://localhost:15672/api/overview
 ```yaml showLineNumbers title="config/otel-collector.yaml"
 receivers:
   rabbitmq:
-    endpoint: ${RABBITMQ_HOST}
+    endpoint: http://<rabbitmq-host>:15672
     username: ${RABBITMQ_USERNAME}
     password: ${RABBITMQ_PASSWORD}
     collection_interval: 10s
 
     metrics:
-      rabbitmq.node.disk_free:
+      # Queue metrics
+      rabbitmq.consumer.count:
         enabled: true
-      rabbitmq.node.disk_free_limit:
+      rabbitmq.message.acknowledged:
         enabled: true
-      rabbitmq.node.disk_free_alarm:
+      rabbitmq.message.current:
         enabled: true
-      rabbitmq.node.disk_free_details.rate:
+      rabbitmq.message.delivered:
         enabled: true
+      rabbitmq.message.dropped:
+        enabled: true
+      rabbitmq.message.published:
+        enabled: true
+
+      # Node metrics — memory
       rabbitmq.node.mem_used:
         enabled: true
       rabbitmq.node.mem_limit:
@@ -83,24 +91,42 @@ receivers:
         enabled: true
       rabbitmq.node.mem_used_details.rate:
         enabled: true
+
+      # Node metrics — disk
+      rabbitmq.node.disk_free:
+        enabled: true
+      rabbitmq.node.disk_free_limit:
+        enabled: true
+      rabbitmq.node.disk_free_alarm:
+        enabled: true
+      rabbitmq.node.disk_free_details.rate:
+        enabled: true
+
+      # Node metrics — file descriptors
       rabbitmq.node.fd_used:
         enabled: true
       rabbitmq.node.fd_total:
         enabled: true
       rabbitmq.node.fd_used_details.rate:
         enabled: true
+
+      # Node metrics — sockets
       rabbitmq.node.sockets_used:
         enabled: true
       rabbitmq.node.sockets_total:
         enabled: true
       rabbitmq.node.sockets_used_details.rate:
         enabled: true
+
+      # Node metrics — processes
       rabbitmq.node.proc_used:
         enabled: true
       rabbitmq.node.proc_total:
         enabled: true
       rabbitmq.node.proc_used_details.rate:
         enabled: true
+
+      # Node metrics — runtime
       rabbitmq.node.uptime:
         enabled: true
       rabbitmq.node.run_queue:
@@ -111,6 +137,8 @@ receivers:
         enabled: true
       rabbitmq.node.context_switches_details.rate:
         enabled: true
+
+      # Node metrics — garbage collection
       rabbitmq.node.gc_num:
         enabled: true
       rabbitmq.node.gc_num_details.rate:
@@ -119,53 +147,13 @@ receivers:
         enabled: true
       rabbitmq.node.gc_bytes_reclaimed_details.rate:
         enabled: true
+
+      # Node metrics — I/O read
       rabbitmq.node.io_read_count:
         enabled: true
       rabbitmq.node.io_read_bytes:
         enabled: true
       rabbitmq.node.io_read_avg_time:
-        enabled: true
-      rabbitmq.node.io_write_count:
-        enabled: true
-      rabbitmq.node.io_write_bytes:
-        enabled: true
-      rabbitmq.node.io_write_avg_time:
-        enabled: true
-      rabbitmq.node.io_sync_count:
-        enabled: true
-      rabbitmq.node.io_sync_avg_time:
-        enabled: true
-      rabbitmq.node.io_seek_count:
-        enabled: true
-      rabbitmq.node.io_seek_avg_time:
-        enabled: true
-      rabbitmq.node.io_reopen_count:
-        enabled: true
-      rabbitmq.node.mnesia_ram_tx_count:
-        enabled: true
-      rabbitmq.node.mnesia_disk_tx_count:
-        enabled: true
-      rabbitmq.node.msg_store_read_count:
-        enabled: true
-      rabbitmq.node.msg_store_write_count:
-        enabled: true
-      rabbitmq.node.queue_index_write_count:
-        enabled: true
-      rabbitmq.node.queue_index_read_count:
-        enabled: true
-      rabbitmq.node.connection_created:
-        enabled: true
-      rabbitmq.node.connection_closed:
-        enabled: true
-      rabbitmq.node.channel_created:
-        enabled: true
-      rabbitmq.node.channel_closed:
-        enabled: true
-      rabbitmq.node.queue_declared:
-        enabled: true
-      rabbitmq.node.queue_created:
-        enabled: true
-      rabbitmq.node.queue_deleted:
         enabled: true
       rabbitmq.node.io_read_count_details.rate:
         enabled: true
@@ -173,41 +161,97 @@ receivers:
         enabled: true
       rabbitmq.node.io_read_avg_time_details.rate:
         enabled: true
+
+      # Node metrics — I/O write
+      rabbitmq.node.io_write_count:
+        enabled: true
+      rabbitmq.node.io_write_bytes:
+        enabled: true
+      rabbitmq.node.io_write_avg_time:
+        enabled: true
       rabbitmq.node.io_write_count_details.rate:
         enabled: true
       rabbitmq.node.io_write_bytes_details.rate:
         enabled: true
       rabbitmq.node.io_write_avg_time_details.rate:
         enabled: true
+
+      # Node metrics — I/O sync and seek
+      rabbitmq.node.io_sync_count:
+        enabled: true
+      rabbitmq.node.io_sync_avg_time:
+        enabled: true
       rabbitmq.node.io_sync_count_details.rate:
         enabled: true
       rabbitmq.node.io_sync_avg_time_details.rate:
+        enabled: true
+      rabbitmq.node.io_seek_count:
+        enabled: true
+      rabbitmq.node.io_seek_avg_time:
         enabled: true
       rabbitmq.node.io_seek_count_details.rate:
         enabled: true
       rabbitmq.node.io_seek_avg_time_details.rate:
         enabled: true
+      rabbitmq.node.io_reopen_count:
+        enabled: true
       rabbitmq.node.io_reopen_count_details.rate:
+        enabled: true
+
+      # Node metrics — Mnesia transactions
+      rabbitmq.node.mnesia_ram_tx_count:
+        enabled: true
+      rabbitmq.node.mnesia_disk_tx_count:
         enabled: true
       rabbitmq.node.mnesia_ram_tx_count_details.rate:
         enabled: true
       rabbitmq.node.mnesia_disk_tx_count_details.rate:
         enabled: true
+
+      # Node metrics — message store
+      rabbitmq.node.msg_store_read_count:
+        enabled: true
+      rabbitmq.node.msg_store_write_count:
+        enabled: true
       rabbitmq.node.msg_store_read_count_details.rate:
         enabled: true
       rabbitmq.node.msg_store_write_count_details.rate:
+        enabled: true
+
+      # Node metrics — queue index
+      rabbitmq.node.queue_index_write_count:
+        enabled: true
+      rabbitmq.node.queue_index_read_count:
         enabled: true
       rabbitmq.node.queue_index_write_count_details.rate:
         enabled: true
       rabbitmq.node.queue_index_read_count_details.rate:
         enabled: true
+
+      # Node metrics — connections and channels
+      rabbitmq.node.connection_created:
+        enabled: true
+      rabbitmq.node.connection_closed:
+        enabled: true
       rabbitmq.node.connection_created_details.rate:
         enabled: true
       rabbitmq.node.connection_closed_details.rate:
         enabled: true
+      rabbitmq.node.channel_created:
+        enabled: true
+      rabbitmq.node.channel_closed:
+        enabled: true
       rabbitmq.node.channel_created_details.rate:
         enabled: true
       rabbitmq.node.channel_closed_details.rate:
+        enabled: true
+
+      # Node metrics — queue lifecycle
+      rabbitmq.node.queue_declared:
+        enabled: true
+      rabbitmq.node.queue_created:
+        enabled: true
+      rabbitmq.node.queue_deleted:
         enabled: true
       rabbitmq.node.queue_declared_details.rate:
         enabled: true
@@ -254,14 +298,14 @@ service:
    ```bash showLineNumbers
    # Test RabbitMQ management API
    curl -u ${RABBITMQ_USERNAME}:${RABBITMQ_PASSWORD} \
-        ${RABBITMQ_HOST}:15672/api/overview
+        http://<rabbitmq-host>:15672/api/overview
    ```
 
 4. Check RabbitMQ node status:
 
    ```bash showLineNumbers
    # Check node status
-   rabbitmqctl node_health_check
+   rabbitmq-diagnostics -q ping
 
    # List queues
    rabbitmqctl list_queues
@@ -273,8 +317,8 @@ service:
 ## References
 
 - [Scout Collector Setup](https://docs.base14.io/instrument/collector-setup/otel-collector-config)
-- [RabbitMQ Management Plugin](https://www.rabbitmq.com/management.html)
-- [RabbitMQ Monitoring Guide](https://www.rabbitmq.com/monitoring.html)
+- [RabbitMQ Management Plugin](https://www.rabbitmq.com/docs/management)
+- [RabbitMQ Monitoring Guide](https://www.rabbitmq.com/docs/monitoring)
 
 ## Related Guides
 
