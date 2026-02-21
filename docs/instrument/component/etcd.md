@@ -7,8 +7,8 @@ id: collecting-etcd-telemetry
 sidebar_position: 16
 description: >
   Collect etcd metrics with the OpenTelemetry Collector. Monitor Raft
-  proposals, disk latency, MVCC operations, and cluster health using
-  the Prometheus receiver and export to base14 Scout.
+  proposals, disk latency, and cluster health using the Prometheus
+  receiver and export to base14 Scout.
 keywords:
   - etcd opentelemetry
   - etcd otel collector
@@ -64,7 +64,7 @@ against your etcd instance.
 
 Verify your etcd instance is accessible:
 
-```bash showLineNumbers
+```bash showLineNumbers title="Verify access"
 # Check cluster health
 etcdctl endpoint health
 
@@ -177,7 +177,7 @@ receivers:
 
 Start the Collector and check for metrics within 60 seconds:
 
-```bash showLineNumbers
+```bash showLineNumbers title="Verify metrics collection"
 # Check Collector logs for successful scrape
 docker logs otel-collector 2>&1 | grep -i "etcd"
 
@@ -252,7 +252,7 @@ be directly accessible — check your provider's documentation.
 
 Add all member endpoints to the scrape config:
 
-```yaml
+```yaml showLineNumbers
 receivers:
   prometheus:
     config:
@@ -302,5 +302,9 @@ A large gap between the two indicates fragmentation — run
   — Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md)
   — Run the Collector locally
+- [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
+  — Production deployment
+- [Creating Alerts](../../guides/creating-alerts-with-logx.md)
+  — Alert on etcd metrics
 - [ZooKeeper Monitoring](./zookeeper.md)
   — Coordination service monitoring

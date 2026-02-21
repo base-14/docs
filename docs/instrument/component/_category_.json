@@ -2,6 +2,7 @@
   "label": "Component Instrumentation",
   "position": 4,
   "collapsed": false,
+  "description": "Monitor 21 infrastructure components — databases, caches, message queues, web servers, and more — using the OpenTelemetry Collector.",
   "link": {
     "type": "doc",
     "id": "instrument/component/index"

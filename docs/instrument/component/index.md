@@ -37,6 +37,7 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 | PostgreSQL Advanced  | [PostgreSQL Advanced](./collecting-postgres-advanced-telemetry) | Query stats, table/index sizes, replication       |
 | MySQL                | [MySQL](./collecting-mysql-telemetry)                          | Connections, queries, InnoDB, replication          |
 | MongoDB              | [MongoDB](./collecting-mongodb-telemetry)                      | Operations, connections, document metrics, cursors |
+| Cassandra            | [Cassandra](./collecting-cassandra-telemetry)                  | Client requests, compaction, storage, caches      |
 | CouchDB              | [CouchDB](./collecting-couchdb-telemetry)                      | Request rates, document operations, view stats     |
 | Elasticsearch        | [Elasticsearch](./collecting-elasticsearch-telemetry)          | Cluster health, node stats, JVM, index operations |
 
@@ -67,11 +68,18 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 | RabbitMQ  | [RabbitMQ](./collecting-rabbitmq-telemetry)     | Queue depth, message rates, node memory, I/O      |
 | Kafka     | [Kafka](./collecting-kafka-telemetry)           | Consumer lag, partition offsets, broker count      |
 
-### Coordination
+### Service Discovery & Coordination
 
 | Component | Guide                                              | Key Metrics                                      |
 | --------- | -------------------------------------------------- | ------------------------------------------------ |
+| Consul    | [Consul](./collecting-consul-telemetry)            | Raft consensus, service catalog, RPC, gossip     |
 | ZooKeeper | [ZooKeeper](./collecting-zookeeper-telemetry)      | Connections, latency, znodes, watches, packets   |
+
+### Secrets Management
+
+| Component | Guide                                         | Key Metrics                                       |
+| --------- | --------------------------------------------- | ------------------------------------------------- |
+| Vault     | [Vault](./collecting-vault-telemetry)         | Seal operations, token lifecycle, barrier, leases |
 
 ### Workflow Orchestration
 
@@ -96,8 +104,9 @@ Each component exposes metrics through one of two methods:
    Elasticsearch, CouchDB, Memcached, Apache HTTP Server, HAProxy,
    ZooKeeper, Kafka, Aerospike)
 2. **Prometheus scrape** — the component or a sidecar exporter exposes
-   a `/metrics` endpoint that the Collector scrapes (etcd, Solr,
-   Temporal, NGINX via nginx-prometheus-exporter)
+   a `/metrics` endpoint that the Collector scrapes (Cassandra via
+   JMX exporter, Consul, Vault, etcd, Solr, Temporal, NGINX via
+   nginx-prometheus-exporter)
 
 NGINX also supports **distributed traces** via `nginx-module-otel` and
 **log collection** via the filelog receiver.

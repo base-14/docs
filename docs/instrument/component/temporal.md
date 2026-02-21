@@ -7,9 +7,8 @@ id: collecting-temporal-telemetry
 sidebar_position: 20
 description: >
   Collect Temporal metrics with the OpenTelemetry Collector. Monitor
-  workflow execution, task queue depth, persistence latency, and
-  service health using the Prometheus receiver and export to base14
-  Scout.
+  workflow execution, task queue depth, and persistence latency using
+  the Prometheus receiver and export to base14 Scout.
 keywords:
   - temporal opentelemetry
   - temporal otel collector
@@ -73,7 +72,7 @@ Temporal instance.
 Enable the Prometheus metrics endpoint by setting the
 `PROMETHEUS_ENDPOINT` environment variable:
 
-```bash showLineNumbers
+```bash showLineNumbers title="Verify access"
 # Docker / Docker Compose
 PROMETHEUS_ENDPOINT=0.0.0.0:8000
 
@@ -193,7 +192,7 @@ receivers:
 
 Start the Collector and check for metrics within 60 seconds:
 
-```bash showLineNumbers
+```bash showLineNumbers title="Verify metrics collection"
 # Check Collector logs for successful scrape
 docker logs otel-collector 2>&1 | grep -i "temporal"
 
@@ -304,5 +303,9 @@ service emitted the metric. In a single-process deployment (like
   — Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md)
   — Run the Collector locally
+- [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
+  — Production deployment
 - [PostgreSQL Monitoring](./postgres.md)
   — Database monitoring (commonly used with Temporal)
+- [Creating Alerts](../../guides/creating-alerts-with-logx.md)
+  — Alert on Temporal metrics

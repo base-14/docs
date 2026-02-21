@@ -7,8 +7,8 @@ id: collecting-solr-telemetry
 sidebar_position: 17
 description: >
   Collect Solr metrics with the OpenTelemetry Collector. Monitor JVM
-  heap, GC, request rates, thread pools, and core status using the
-  Prometheus receiver and export to base14 Scout.
+  heap, request rates, and core status using the Prometheus receiver
+  and export to base14 Scout.
 keywords:
   - solr opentelemetry
   - solr otel collector
@@ -64,7 +64,7 @@ against your Solr instance.
 
 Verify your Solr instance is accessible:
 
-```bash showLineNumbers
+```bash showLineNumbers title="Verify access"
 # Check Solr status
 curl -s http://localhost:8983/solr/admin/info/system | head -20
 
@@ -181,7 +181,7 @@ Available groups: `jvm`, `jetty`, `node`, `core`, `overseer`.
 
 Start the Collector and check for metrics within 60 seconds:
 
-```bash showLineNumbers
+```bash showLineNumbers title="Verify metrics collection"
 # Check Collector logs for successful scrape
 docker logs otel-collector 2>&1 | grep -i "solr"
 
@@ -258,7 +258,7 @@ Collector can run as a sidecar or DaemonSet.
 
 Add all Solr node endpoints to the scrape config:
 
-```yaml
+```yaml showLineNumbers
 receivers:
   prometheus:
     config:
@@ -309,5 +309,9 @@ overseer metrics.
   — Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md)
   — Run the Collector locally
+- [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
+  — Production deployment
+- [Creating Alerts](../../guides/creating-alerts-with-logx.md)
+  — Alert on Solr metrics
 - [Elasticsearch Monitoring](./elasticsearch.md)
   — Search engine monitoring
