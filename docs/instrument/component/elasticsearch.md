@@ -1,39 +1,70 @@
 ---
-title: Elasticsearch Monitoring with OpenTelemetry
+title: >
+  Elasticsearch OpenTelemetry Monitoring — Cluster Health, Node Stats,
+  and Collector Setup
 sidebar_label: Elasticsearch
 id: collecting-elasticsearch-telemetry
 sidebar_position: 8
-description:
-  Monitor Elasticsearch with OpenTelemetry Collector. Collect cluster health,
-  node performance, index stats, JVM metrics, and more using Scout.
+description: >
+  Collect Elasticsearch metrics with the OpenTelemetry Collector. Monitor
+  cluster health, node performance, index stats, and JVM metrics using
+  the Elasticsearch receiver and export to base14 Scout.
 keywords:
-  [
-    elasticsearch monitoring,
-    elasticsearch metrics,
-    search engine monitoring,
-    opentelemetry elasticsearch,
-    elasticsearch observability,
-  ]
+  - elasticsearch opentelemetry
+  - elasticsearch otel collector
+  - elasticsearch metrics monitoring
+  - elasticsearch performance monitoring
+  - opentelemetry elasticsearch receiver
+  - elasticsearch observability
+  - elasticsearch cluster monitoring
+  - elasticsearch telemetry collection
 ---
 
 # Elasticsearch
 
-## Overview
+The OpenTelemetry Collector's Elasticsearch receiver collects 70+ metrics
+from Elasticsearch 8.x and 9.x, including cluster health, node
+performance, index operations, JVM heap usage, and circuit breaker
+statistics. This guide configures the receiver, verifies connectivity,
+and ships metrics to base14 Scout.
 
-This guide explains how to set up Elasticsearch metrics collection using Scout
-Collector and forward them to Scout backend.
-
-> **Note**: Elasticsearch 9.x introduced breaking changes to the stats API
-> (renamed `merges` to `merge`, removed `suggest` filter). Use OpenTelemetry
-> Collector Contrib **v0.131.0 or later** for ES 9.x compatibility.
+> **Note**: Elasticsearch 9.x introduced breaking changes to the stats
+> API (renamed `merges` to `merge`, removed `suggest` filter). Use
+> OpenTelemetry Collector Contrib **v0.131.0 or later** for ES 9.x
+> compatibility.
 
 ## Prerequisites
 
-1. Elasticsearch 8.x or 9.x instance
-2. Network access to the Elasticsearch HTTP API (port 9200)
-3. Scout Collector installed (v0.131.0+ for ES 9.x)
+| Requirement            | Minimum  | Recommended |
+| ---------------------- | -------- | ----------- |
+| Elasticsearch          | 8.x     | 9.x         |
+| OTel Collector Contrib | 0.90.0  | 0.131.0+    |
+| base14 Scout           | Any     | —           |
 
-## Elasticsearch Configuration
+Before starting:
+
+- Elasticsearch HTTP API (port 9200) must be accessible from the host
+  running the Collector
+- Credentials with access to cluster stats APIs (if security is enabled)
+- OTel Collector installed — see
+  [Docker Compose Setup](../collector-setup/docker-compose-example.md)
+
+## What You'll Monitor
+
+- **Cluster**: health status, node count, shard allocation, pending
+  tasks, state updates
+- **Nodes**: disk usage, cache stats, operations, HTTP connections,
+  thread pools
+- **Indexes**: document counts, operation times, merge activity, segment
+  memory, cache usage
+- **JVM**: heap usage, GC counts, thread count, class loading
+- **OS**: CPU usage, load averages, memory usage
+- **Circuit breakers**: estimated memory, limits, tripped counts
+
+Full metric reference:
+[OTel Elasticsearch Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/elasticsearchreceiver)
+
+## Access Setup
 
 Verify your Elasticsearch instance is accessible:
 
@@ -51,15 +82,18 @@ If Elasticsearch security is disabled (development only):
 curl http://<elasticsearch-host>:9200/_cluster/health?pretty
 ```
 
-## Scout Collector Configuration
+No special user creation is required — any user with access to the
+cluster stats APIs can be used for monitoring.
+
+## Configuration
 
 ```yaml showLineNumbers title="config/otel-collector.yaml"
 receivers:
   elasticsearch:
     endpoint: http://<elasticsearch-host>:9200
     collection_interval: 15s
-    username: ${ES_USERNAME}
-    password: ${ES_PASSWORD}
+    username: ${env:ES_USERNAME}
+    password: ${env:ES_PASSWORD}
     nodes: ["_all"]
     skip_cluster_metrics: false
     indices: ["_all"]
@@ -288,20 +322,20 @@ processors:
   resource:
     attributes:
       - key: environment
-        value: ${ENVIRONMENT}
+        value: ${env:ENVIRONMENT}
         action: upsert
       - key: service.name
-        value: ${SERVICE_NAME}
+        value: ${env:SERVICE_NAME}
         action: upsert
 
   batch:
     timeout: 10s
     send_batch_size: 1024
 
-# Export to Base14 Scout
+# Export to base14 Scout
 exporters:
   otlphttp/b14:
-    endpoint: ${SCOUT_EXPORTER_OTLP_ENDPOINT}
+    endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT}
     tls:
       insecure_skip_verify: true
 
@@ -313,46 +347,136 @@ service:
       exporters: [otlphttp/b14]
 ```
 
-## Verification
+### Environment Variables
 
-1. Check collector logs for errors
-2. Verify metrics in Scout dashboard
-3. Verify Elasticsearch connectivity:
+```bash showLineNumbers title=".env"
+ES_USERNAME=elastic
+ES_PASSWORD=your_password
+ENVIRONMENT=your_environment
+SERVICE_NAME=your_service_name
+OTEL_EXPORTER_OTLP_ENDPOINT=https://<your-tenant>.base14.io
+```
 
-   ```bash showLineNumbers
-   # Check cluster health
-   curl -u ${ES_USERNAME}:${ES_PASSWORD} \
-        http://<elasticsearch-host>:9200/_cluster/health?pretty
+## Verify the Setup
 
-   # Check node stats
-   curl -u ${ES_USERNAME}:${ES_PASSWORD} \
-        http://<elasticsearch-host>:9200/_nodes/stats?pretty
-   ```
+Start the Collector and check for metrics within 60 seconds:
 
-4. Check Elasticsearch cluster status:
+```bash showLineNumbers
+# Check Collector logs for successful connection
+docker logs otel-collector 2>&1 | grep -i "elasticsearch"
 
-   ```bash showLineNumbers
-   # Check index stats
-   curl -u ${ES_USERNAME}:${ES_PASSWORD} \
-        http://<elasticsearch-host>:9200/_stats?pretty
+# Check cluster health
+curl -u ${ES_USERNAME}:${ES_PASSWORD} \
+     http://<elasticsearch-host>:9200/_cluster/health?pretty
 
-   # Check cluster allocation
-   curl -u ${ES_USERNAME}:${ES_PASSWORD} \
-        http://<elasticsearch-host>:9200/_cat/allocation?v
-   ```
+# Check node stats
+curl -u ${ES_USERNAME}:${ES_PASSWORD} \
+     http://<elasticsearch-host>:9200/_nodes/stats?pretty
+```
 
-## References
+```bash showLineNumbers
+# Check index stats
+curl -u ${ES_USERNAME}:${ES_PASSWORD} \
+     http://<elasticsearch-host>:9200/_stats?pretty
 
-- [Scout Collector Setup](https://docs.base14.io/instrument/collector-setup/otel-collector-config)
-- [Elasticsearch Cluster Health API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-cluster-health)
-- [Elasticsearch Node Stats API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-nodes-stats)
+# Check cluster allocation
+curl -u ${ES_USERNAME}:${ES_PASSWORD} \
+     http://<elasticsearch-host>:9200/_cat/allocation?v
+```
+
+## Troubleshooting
+
+### Connection refused
+
+**Cause**: Collector cannot reach Elasticsearch at the configured
+endpoint.
+
+**Fix**:
+
+1. Verify Elasticsearch is running: `systemctl status elasticsearch` or
+   `docker ps | grep elasticsearch`
+2. Confirm the HTTP API port (default 9200) is accessible
+3. Check `network.host` in `elasticsearch.yml` if the Collector runs on
+   a separate host
+
+### Authentication failed (401)
+
+**Cause**: Credentials are incorrect or Elasticsearch security is
+enabled but credentials are not configured.
+
+**Fix**:
+
+1. Test credentials directly:
+   `curl -u user:pass http://localhost:9200/_cluster/health`
+2. Verify the user exists and has access to stats APIs
+3. Check `ES_USERNAME` and `ES_PASSWORD` environment variables
+
+### No metrics appearing in Scout
+
+**Cause**: Metrics are collected but not exported.
+
+**Fix**:
+
+1. Check Collector logs for export errors: `docker logs otel-collector`
+2. Verify `OTEL_EXPORTER_OTLP_ENDPOINT` is set correctly
+3. Confirm the pipeline includes both the receiver and exporter
+
+### Stats API errors with Elasticsearch 9.x
+
+**Cause**: Elasticsearch 9.x renamed `merges` to `merge` and removed
+the `suggest` filter in the stats API.
+
+**Fix**:
+
+1. Upgrade OTel Collector Contrib to **v0.131.0 or later**
+2. Earlier versions will log errors when parsing 9.x stats responses
+3. The receiver config does not need changes — only the Collector binary
+
+## FAQ
+
+**Does this work with Elasticsearch running in Kubernetes?**
+
+Yes. Set `endpoint` to the Elasticsearch service DNS
+(e.g., `http://elasticsearch.default.svc.cluster.local:9200`) and
+inject credentials via a Kubernetes secret. The Collector can run as a
+sidecar or DaemonSet.
+
+**How do I monitor a multi-node Elasticsearch cluster?**
+
+Set `nodes: ["_all"]` to collect metrics from all nodes through a
+single endpoint. The receiver queries the cluster stats API, which
+returns data for the entire cluster. You only need one receiver
+instance pointing to any node.
+
+**What about OpenSearch — does the same receiver work?**
+
+No. OpenSearch diverged from Elasticsearch and uses different stats API
+responses. Use the `opensearchreceiver` in OTel Collector Contrib for
+OpenSearch clusters.
+
+**Can I limit which indices are monitored?**
+
+Yes. Change `indices: ["_all"]` to a specific list:
+`indices: ["my-index-*", "logs-*"]`. This reduces the volume of
+index-level metrics for clusters with many indices.
+
+## What's Next?
+
+- **Create Dashboards**: Explore pre-built dashboards or build your own.
+  See
+  [Create Your First Dashboard](../../guides/create-your-first-dashboard.md)
+- **Monitor More Components**: Add monitoring for
+  [Redis](./redis.md), [PostgreSQL](./postgres.md),
+  and other components
+- **Fine-tune Collection**: Adjust `collection_interval` and limit
+  `indices` to reduce metric volume on large clusters
 
 ## Related Guides
 
-- [OTel Collector Configuration](../collector-setup/otel-collector-config.md) -
+- [OTel Collector Configuration](../collector-setup/otel-collector-config.md) —
   Advanced collector configuration
-- [Docker Compose Setup](../collector-setup/docker-compose-example.md) - Set up
-  collector for local development
-- [ElastiCache Monitoring](../infra/aws/elasticache.md) - AWS ElastiCache
-  monitoring guide
-- [Redis Monitoring](./redis.md) - Self-hosted Redis monitoring guide
+- [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
+  Run the Collector locally
+- [ElastiCache Monitoring](../infra/aws/elasticache.md) — AWS ElastiCache
+  monitoring
+- [Redis Monitoring](./redis.md) — Self-hosted Redis monitoring

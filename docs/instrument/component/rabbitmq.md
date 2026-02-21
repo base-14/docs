@@ -1,37 +1,65 @@
 ---
-title: RabbitMQ Message Queue Monitoring with OpenTelemetry
+title: >
+  RabbitMQ OpenTelemetry Monitoring — Queue Depth, Message Rates,
+  and Consumer Metrics
 sidebar_label: RabbitMQ
 id: collecting-rabbitmq-telemetry
 sidebar_position: 6
-description:
-  Monitor RabbitMQ with OpenTelemetry Collector. Collect queue metrics, message
-  stats, node health, I/O performance, and more using Scout.
+description: >
+  Collect RabbitMQ metrics with the OpenTelemetry Collector. Monitor
+  queue depth, message rates, node memory, and I/O performance using
+  the RabbitMQ receiver and export to base14 Scout.
 keywords:
-  [
-    rabbitmq monitoring,
-    rabbitmq metrics,
-    message queue monitoring,
-    opentelemetry rabbitmq,
-    rabbitmq observability,
-  ]
+  - rabbitmq opentelemetry
+  - rabbitmq otel collector
+  - rabbitmq metrics monitoring
+  - rabbitmq performance monitoring
+  - opentelemetry rabbitmq receiver
+  - rabbitmq observability
+  - rabbitmq queue monitoring
+  - rabbitmq telemetry collection
 ---
 
 # RabbitMQ
 
-## Overview
-
-This guide explains how to set up RabbitMQ metrics collection using Scout
-Collector and forward them to Scout backend. The configuration below has been
-validated against both RabbitMQ 3.x and 4.x with identical metric output.
+The OpenTelemetry Collector's RabbitMQ receiver collects 76+ metrics from
+RabbitMQ 3.x and 4.x, including queue depth, message rates, consumer
+counts, node memory, disk usage, I/O performance, and garbage collection
+statistics. This guide configures the receiver, sets up monitoring
+credentials, and ships metrics to base14 Scout.
 
 ## Prerequisites
 
-1. RabbitMQ 3.x or 4.x instance
-2. RabbitMQ management plugin enabled (HTTP API on port 15672)
-3. RabbitMQ user with monitoring privileges
-4. Scout Collector installed
+| Requirement            | Minimum | Recommended |
+| ---------------------- | ------- | ----------- |
+| RabbitMQ               | 3.x     | 4.x         |
+| Management plugin      | enabled | enabled     |
+| OTel Collector Contrib | 0.90.0  | latest      |
+| base14 Scout           | Any     | —           |
 
-## RabbitMQ Configuration
+Before starting:
+
+- RabbitMQ management plugin enabled (HTTP API on port 15672)
+- A user with monitoring privileges
+- OTel Collector installed — see
+  [Docker Compose Setup](../collector-setup/docker-compose-example.md)
+
+## What You'll Monitor
+
+- **Messages**: published, delivered, acknowledged, dropped, current
+  depth
+- **Node memory**: used memory, memory limit, memory alarm status
+- **Node disk**: free disk, disk limit, disk alarm status
+- **Resources**: file descriptors, sockets, Erlang processes
+- **I/O**: read/write counts, bytes, average times, sync and seek stats
+- **Runtime**: uptime, GC counts, context switches, Mnesia transactions
+- **Connections**: connection/channel created and closed rates, queue
+  lifecycle events
+
+Full metric reference:
+[OTel RabbitMQ Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/rabbitmqreceiver)
+
+## Access Setup
 
 Ensure the RabbitMQ management plugin is enabled:
 
@@ -57,14 +85,19 @@ rabbitmqctl set_user_tags rabbitmq_monitor monitoring
 curl -u rabbitmq_monitor:<password> http://localhost:15672/api/overview
 ```
 
-## Scout Collector Configuration
+**Minimum required permissions:**
+
+- `monitoring` tag — required for management API access
+- No write permissions to queues or exchanges are needed
+
+## Configuration
 
 ```yaml showLineNumbers title="config/otel-collector.yaml"
 receivers:
   rabbitmq:
     endpoint: http://<rabbitmq-host>:15672
-    username: ${RABBITMQ_USERNAME}
-    password: ${RABBITMQ_PASSWORD}
+    username: ${env:RABBITMQ_USERNAME}
+    password: ${env:RABBITMQ_PASSWORD}
     collection_interval: 10s
 
     metrics:
@@ -264,20 +297,20 @@ processors:
   resource:
     attributes:
       - key: environment
-        value: ${ENVIRONMENT}
+        value: ${env:ENVIRONMENT}
         action: upsert
       - key: service.name
-        value: ${SERVICE_NAME}
+        value: ${env:SERVICE_NAME}
         action: upsert
 
   batch:
     timeout: 10s
     send_batch_size: 1024
 
-# Export to Base14 Scout
+# Export to base14 Scout
 exporters:
   otlphttp/b14:
-    endpoint: ${SCOUT_EXPORTER_OTLP_ENDPOINT}
+    endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT}
     tls:
       insecure_skip_verify: true
 
@@ -289,41 +322,145 @@ service:
       exporters: [otlphttp/b14]
 ```
 
-## Verification
+### Environment Variables
 
-1. Check collector logs for errors
-2. Verify metrics in Scout dashboard
-3. Test RabbitMQ connectivity:
+```bash showLineNumbers title=".env"
+RABBITMQ_USERNAME=rabbitmq_monitor
+RABBITMQ_PASSWORD=your_password
+ENVIRONMENT=your_environment
+SERVICE_NAME=your_service_name
+OTEL_EXPORTER_OTLP_ENDPOINT=https://<your-tenant>.base14.io
+```
 
-   ```bash showLineNumbers
-   # Test RabbitMQ management API
-   curl -u ${RABBITMQ_USERNAME}:${RABBITMQ_PASSWORD} \
-        http://<rabbitmq-host>:15672/api/overview
-   ```
+## Verify the Setup
 
-4. Check RabbitMQ node status:
+Start the Collector and check for metrics within 60 seconds:
 
-   ```bash showLineNumbers
-   # Check node status
-   rabbitmq-diagnostics -q ping
+```bash showLineNumbers
+# Check Collector logs for successful connection
+docker logs otel-collector 2>&1 | grep -i "rabbitmq"
 
-   # List queues
-   rabbitmqctl list_queues
+# Test RabbitMQ management API
+curl -u ${RABBITMQ_USERNAME}:${RABBITMQ_PASSWORD} \
+     http://<rabbitmq-host>:15672/api/overview
+```
 
-   # Check cluster status (if clustered)
-   rabbitmqctl cluster_status
-   ```
+```bash showLineNumbers
+# Check node status
+rabbitmq-diagnostics -q ping
 
-## References
+# List queues
+rabbitmqctl list_queues
 
-- [Scout Collector Setup](https://docs.base14.io/instrument/collector-setup/otel-collector-config)
-- [RabbitMQ Management Plugin](https://www.rabbitmq.com/docs/management)
-- [RabbitMQ Monitoring Guide](https://www.rabbitmq.com/docs/monitoring)
+# Check cluster status (if clustered)
+rabbitmqctl cluster_status
+```
+
+## Troubleshooting
+
+### Connection refused on port 15672
+
+**Cause**: Management plugin is not enabled or not listening on the
+expected port.
+
+**Fix**:
+
+1. Enable the plugin: `rabbitmq-plugins enable rabbitmq_management`
+2. Verify the management port: `ss -tlnp | grep 15672`
+3. Check if RabbitMQ is running: `systemctl status rabbitmq-server` or
+   `docker ps | grep rabbitmq`
+
+### Authentication failed
+
+**Cause**: Monitoring credentials are incorrect or the user lacks the
+`monitoring` tag.
+
+**Fix**:
+
+1. Test credentials directly:
+   `curl -u user:pass http://localhost:15672/api/overview`
+2. Verify user tags: `rabbitmqctl list_users`
+3. Add the monitoring tag if missing:
+   `rabbitmqctl set_user_tags rabbitmq_monitor monitoring`
+
+### No metrics appearing in Scout
+
+**Cause**: Metrics are collected but not exported.
+
+**Fix**:
+
+1. Check Collector logs for export errors: `docker logs otel-collector`
+2. Verify `OTEL_EXPORTER_OTLP_ENDPOINT` is set correctly
+3. Confirm the pipeline includes both the receiver and exporter
+
+### Memory or disk alarm metrics showing 1
+
+**Cause**: RabbitMQ has triggered a resource alarm — this is a real
+operational issue.
+
+**Fix**:
+
+1. `rabbitmq.node.mem_alarm = 1` means memory usage exceeds the
+   threshold — publishers are blocked
+2. `rabbitmq.node.disk_free_alarm = 1` means free disk is below the
+   limit
+3. These metrics are working correctly — resolve the underlying
+   resource issue
+
+## FAQ
+
+**Does this work with RabbitMQ running in Kubernetes?**
+
+Yes. Set `endpoint` to the RabbitMQ management service DNS
+(e.g., `http://rabbitmq.default.svc.cluster.local:15672`) and inject
+credentials via a Kubernetes secret. The Collector can run as a sidecar
+or DaemonSet.
+
+**How do I monitor a RabbitMQ cluster?**
+
+The management API returns cluster-wide data from any node. Point the
+receiver at one node and you'll get metrics for all nodes. For
+redundancy, add multiple receiver blocks pointing to different nodes:
+
+```yaml
+receivers:
+  rabbitmq/node1:
+    endpoint: http://rabbitmq-1:15672
+    username: ${env:RABBITMQ_USERNAME}
+    password: ${env:RABBITMQ_PASSWORD}
+  rabbitmq/node2:
+    endpoint: http://rabbitmq-2:15672
+    username: ${env:RABBITMQ_USERNAME}
+    password: ${env:RABBITMQ_PASSWORD}
+```
+
+**What permissions does the monitoring account need?**
+
+The `monitoring` user tag is required for management API access. No
+queue read/write permissions are needed. The Collector only reads
+metrics — it does not modify RabbitMQ data.
+
+**Does this work with both RabbitMQ 3.x and 4.x?**
+
+Yes. The configuration has been validated against both RabbitMQ 3.x and
+4.x with identical metric output. The management API is stable across
+these versions.
+
+## What's Next?
+
+- **Create Dashboards**: Explore pre-built dashboards or build your own.
+  See
+  [Create Your First Dashboard](../../guides/create-your-first-dashboard.md)
+- **Monitor More Components**: Add monitoring for
+  [Redis](./redis.md), [PostgreSQL](./postgres.md),
+  and other components
+- **Fine-tune Collection**: Adjust `collection_interval` based on your
+  messaging workload
 
 ## Related Guides
 
-- [OTel Collector Configuration](../collector-setup/otel-collector-config.md) -
+- [OTel Collector Configuration](../collector-setup/otel-collector-config.md) —
   Advanced collector configuration
-- [Docker Compose Setup](../collector-setup/docker-compose-example.md) - Set up
-  collector for local development
-- [Redis Monitoring](./redis.md) - Alternative caching service monitoring guide
+- [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
+  Run the Collector locally
+- [Redis Monitoring](./redis.md) — Alternative caching service monitoring

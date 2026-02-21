@@ -1,42 +1,62 @@
 ---
-title: PostgreSQL Advanced Monitoring
+title: >
+  PostgreSQL Advanced OpenTelemetry Monitoring with pgdashex — Query Stats,
+  Replication, and Table Metrics
 sidebar_label: PostgreSQL Advanced
+id: collecting-postgres-advanced-telemetry
 sidebar_position: 2
-description:
-  Advanced PostgreSQL monitoring. Collect comprehensive database
-  metrics including query statistics, table/index metrics, and replication status.
+description: >
+  Advanced PostgreSQL monitoring with pgdashex. Collect query statistics,
+  table/index metrics, replication status, and lock information using the
+  Prometheus receiver and export to base14 Scout.
 keywords:
-  [
-    pgdashex,
-    postgresql exporter,
-    postgres metrics,
-    advanced postgresql monitoring,
-    database monitoring,
-    postgres observability,
-  ]
+  - postgresql advanced monitoring
+  - pgdashex opentelemetry
+  - postgresql query statistics
+  - postgresql replication monitoring
+  - opentelemetry postgresql metrics
+  - postgres performance monitoring
+  - postgresql table metrics
+  - pgdashex prometheus
 ---
 
 # PostgreSQL Advanced
 
-Pgdashex is a PostgreSQL monitoring agent that collects comprehensive database
-metrics and exposes them in Prometheus format. This guide covers deploying
-pgdashex to monitor your PostgreSQL databases and send metrics to Scout.
-
-## Overview
-
-Pgdashex collects PostgreSQL metrics including server information, database
-statistics, table and index metrics, replication status, WAL and archiving
-statistics, background writer statistics, connection and backend information,
-query statistics, lock information, vacuum and analyze progress, and PostgreSQL
-configuration settings.
+Pgdashex is a PostgreSQL monitoring agent that collects comprehensive
+database metrics across 17 metric groups — including query statistics,
+table/index sizes, replication lag, lock activity, and background writer
+stats — and exposes them in Prometheus format. This guide deploys pgdashex,
+configures the OTel Collector to scrape its metrics, and ships them to
+base14 Scout.
 
 ## Prerequisites
 
-- PostgreSQL instance
-- Scout account and API credentials
-- Scout Collector installed and configured (see [Quick Start](../../guides/quick-start.md))
+| Requirement            | Minimum | Recommended |
+| ---------------------- | ------- | ----------- |
+| PostgreSQL             | 9.6     | 14+         |
+| pgdashex               | v0.5.10 | v0.5.10     |
+| OTel Collector Contrib | 0.90.0  | latest      |
+| base14 Scout           | Any     | —           |
 
-## PostgreSQL User Setup
+Before starting:
+
+- PostgreSQL must be accessible from the host running pgdashex
+- Superuser access for initial monitoring user creation
+- OTel Collector installed — see
+  [Docker Compose Setup](../collector-setup/docker-compose-example.md)
+
+## What You'll Monitor
+
+- **Core**: connections, transactions, database size, backends
+- **Tables & Indexes**: table/index sizes, usage stats, sequence info
+- **Queries**: query performance via `pg_stat_statements`
+- **Replication**: lag, status, publications, subscriptions
+- **Locks & Vacuum**: lock statistics, vacuum/analyze progress
+- **System**: configuration settings, extensions, roles, tablespaces
+
+Full metric groups listed in [Configuration](#metric-groups) below.
+
+## Access Setup
 
 Create a dedicated PostgreSQL user with monitoring privileges:
 
@@ -165,7 +185,7 @@ processors:
   resource:
     attributes:
       - key: environment
-        value: production
+        value: ${env:ENVIRONMENT}
         action: upsert
 
 extensions:
@@ -282,41 +302,80 @@ PGDASHEX_COLLECT_METRICS=basic,tables,indexes,queries,replication,backends,locks
 
 ## Troubleshooting
 
-### pgdashex Can't Connect to PostgreSQL
+### pgdashex cannot connect to PostgreSQL
 
-**Check connectivity:**
+**Cause**: Network, credentials, or SSL configuration issue.
+
+**Fix**:
 
 ```bash showLineNumbers
 # Test PostgreSQL connection
 psql -h $PG_HOST -p $PG_PORT -U $PG_USER -d $PG_DATABASE -c "SELECT version();"
 ```
 
-**Common issues:**
+1. Verify hostname and port are correct
+2. Check `pg_hba.conf` allows connections from the pgdashex host
+3. Confirm SSL mode matches your PostgreSQL configuration
+4. Check firewall rules between pgdashex and PostgreSQL
 
-- Incorrect hostname or port
-- PostgreSQL not accepting connections from pgdashex host
-- Check `pg_hba.conf` for connection rules
-- Firewall blocking connection
-- Incorrect SSL mode
+### No metrics on port 9187
 
-### Metrics Issues
+**Cause**: pgdashex is not running or the port is not exposed.
 
-Check OTel Collector logs and pgdashex logs for errors.
+**Fix**:
+
+1. Check container status: `docker ps | grep pgdashex`
+2. Verify port mapping: `curl -s http://localhost:9187/metrics | head -20`
+3. Check pgdashex logs: `docker logs pgdashex`
+
+### Query statistics not appearing
+
+**Cause**: `pg_stat_statements` extension is not installed or the metric
+group is not enabled.
+
+**Fix**:
+
+1. Verify the extension: `SELECT * FROM pg_extension WHERE extname = 'pg_stat_statements';`
+2. Ensure `PGDASHEX_COLLECT_METRICS` includes `queries` or is set to `all`
+
+## FAQ
+
+**What is the difference between Basic and Advanced monitoring?**
+
+The [Basic guide](./postgres.md) uses the OTel PostgreSQL receiver for
+core database metrics (34 metrics). This Advanced guide uses pgdashex,
+which collects deeper metrics across 17 groups including query-level
+statistics, per-table I/O, and logical replication.
+
+**Can I run pgdashex alongside the Basic PostgreSQL receiver?**
+
+Yes. They collect different metrics and use different endpoints. The
+Basic receiver connects directly to PostgreSQL, while pgdashex exposes
+a Prometheus endpoint that the Collector scrapes separately.
+
+**How do I monitor multiple PostgreSQL databases?**
+
+Set `PG_ALL_DBS=true` to monitor all databases in the cluster, or use
+`PG_DATABASES=db1,db2,db3` to monitor specific databases.
 
 ## What's Next?
 
 - **Create Dashboards**: Explore pre-built dashboards or build your own. See
   [Create Your First Dashboard](../../guides/create-your-first-dashboard.md)
-- **Monitor More Components**: Add monitoring for [Redis](./redis.md),
-  [MongoDB](./mongodb.md), [RabbitMQ](./rabbitmq.md), and other components
-- **Fine-tune Collection**: Optimize metric groups based on your needs
+- **Monitor More Components**: Add monitoring for
+  [MySQL](./mysql.md), [MongoDB](./mongodb.md),
+  and other components
+- **Fine-tune Collection**: Optimize metric groups using
+  `PGDASHEX_COLLECT_METRICS` — use `basic,tables,indexes,queries` for
+  targeted monitoring or `all` for comprehensive coverage
 
 ## Related Guides
 
-- [PostgreSQL Basic Monitoring](./postgres.md) - Basic PostgreSQL monitoring
-  setup
-- [Quick Start](../../guides/quick-start.md) - Scout setup guide
-- [OTel Collector Configuration](../collector-setup/otel-collector-config.md) -
+- [PostgreSQL Basic Monitoring](./postgres.md) — Core PostgreSQL metrics
+  via OTel receiver
+- [OTel Collector Configuration](../collector-setup/otel-collector-config.md) —
   Advanced collector configuration
-- [Docker Compose Setup](../collector-setup/docker-compose-example.md) -
+- [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
   Collector setup with Docker Compose
+- [Filtering pgX Metrics](../../operate/filters-and-transformations/filtering-pgx-metrics.md)
+  — Filter and tune pgdashex metrics in the Collector pipeline

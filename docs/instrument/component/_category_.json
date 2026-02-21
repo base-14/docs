@@ -3,8 +3,7 @@
   "position": 4,
   "collapsed": false,
   "link": {
-    "type": "generated-index",
-    "title": "Database & Component Monitoring Guide",
-    "description": "Monitor PostgreSQL, MySQL, MongoDB, Redis, RabbitMQ, and NGINX with OpenTelemetry. Collect database metrics, cache performance, and message queue telemetry."
+    "type": "doc",
+    "id": "instrument/component/index"
   }
 }

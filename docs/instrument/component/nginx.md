@@ -1,36 +1,59 @@
 ---
-title: NGINX Web Server Monitoring with OpenTelemetry
+title: >
+  NGINX OpenTelemetry Monitoring — Request Rate, Connections,
+  and Collector Setup
 sidebar_label: NGINX
+id: collecting-nginx-telemetry
 sidebar_position: 7
-description:
-  Monitor NGINX with OpenTelemetry. Collect traces, metrics, and logs from NGINX
-  web server with OTel module and Prometheus exporter using Scout.
+description: >
+  Collect NGINX metrics with OpenTelemetry. Monitor active connections,
+  request rates, and worker states using the Prometheus exporter, traces
+  via nginx-module-otel, and logs via filelog. Export to base14 Scout.
 keywords:
-  [
-    nginx monitoring,
-    nginx metrics,
-    nginx traces,
-    opentelemetry nginx,
-    nginx observability,
-  ]
+  - nginx opentelemetry
+  - nginx otel collector
+  - nginx metrics monitoring
+  - nginx performance monitoring
+  - nginx traces opentelemetry
+  - nginx observability
+  - nginx web server monitoring
+  - nginx telemetry collection
 ---
 
 # NGINX
 
-## Overview
+This guide collects metrics, traces, and logs from NGINX using three
+approaches: the nginx-prometheus-exporter for `stub_status` metrics,
+`nginx-module-otel` for distributed traces, and the filelog receiver
+for access and error logs. All telemetry is shipped to base14 Scout
+through the OTel Collector.
 
-This guide will walk you through collecting rich telemetry data from your nginx
-server using `nginx-module-otel` module and we'll use prometheus nginx exporter
-to collect metrics.
+## Prerequisites
+
+| Requirement                | Minimum | Recommended |
+| -------------------------- | ------- | ----------- |
+| NGINX                      | 1.19    | 1.24+       |
+| nginx-prometheus-exporter  | 1.5.1   | latest      |
+| OTel Collector Contrib     | 0.90.0  | latest      |
+| base14 Scout               | Any     | —           |
+
+Before starting:
+
+- NGINX must be installed and running
+- OTel Collector installed — see
+  [Docker Compose Setup](../collector-setup/docker-compose-example.md)
+
+## What You'll Monitor
+
+- **Metrics**: active connections, accepted/handled connections, request
+  rate, reading/writing/waiting states
+- **Traces**: distributed request traces with upstream propagation
+- **Logs**: access logs and error logs
 
 ```mdx-code-block
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 ```
-
-## Prerequisites
-
-- NGINX Server installed.
 
 ## Collecting metrics
 
@@ -269,12 +292,100 @@ receivers:
 > Note: If you have configured log collection location to a custom directory,
 > update the `include` block with the correct path.
 
-Now we have successfully implemented nginx with OpenTelemetry instrumentation.
+## Verify the Setup
+
+After configuring all three collection methods, verify each is working:
+
+```bash showLineNumbers
+# Check metrics are being scraped from the exporter
+curl -s http://127.0.0.1:9113/metrics | head -10
+
+# Check Collector logs for nginx metrics
+docker logs otel-collector 2>&1 | grep -i "nginx"
+
+# Verify stub_status is responding
+curl http://127.0.0.1:8080/status
+```
+
+## Troubleshooting
+
+### stub_status returns 403 Forbidden
+
+**Cause**: The `allow` directive in the status location block restricts
+access.
+
+**Fix**:
+
+1. Add the Collector's IP to the `allow` list in the `location /status`
+   block
+2. For Docker setups, add the container network CIDR
+   (e.g., `allow 172.16.0.0/12;`)
+3. Reload NGINX: `sudo nginx -t && sudo systemctl reload nginx`
+
+### No metrics on port 9113
+
+**Cause**: The nginx-prometheus-exporter is not running or cannot reach
+the stub_status endpoint.
+
+**Fix**:
+
+1. Check exporter status: `systemctl status nginx-prometheus-exporter`
+   or `docker ps | grep exporter`
+2. Verify stub_status is accessible:
+   `curl http://127.0.0.1:8080/status`
+3. Check exporter logs for connection errors
+
+### Traces not appearing in Scout
+
+**Cause**: The OTel module is not loaded or the exporter endpoint is
+wrong.
+
+**Fix**:
+
+1. Verify the module is loaded: `nginx -V 2>&1 | grep otel`
+2. Confirm `otel_exporter endpoint` points to the Collector's gRPC port
+   (4317)
+3. Check Collector logs for incoming trace data:
+   `docker logs otel-collector 2>&1 | grep traces`
+
+## FAQ
+
+**Does this work with NGINX running in Kubernetes?**
+
+Yes. Deploy the nginx-prometheus-exporter as a sidecar container and
+point the Collector's Prometheus scrape config at the sidecar. For
+traces, include the OTel module in your NGINX container image.
+
+**Can I use NGINX Plus instead of open-source NGINX?**
+
+NGINX Plus provides a richer metrics API at `/api/`. Use the
+`nginxplusreceiver` in OTel Collector Contrib instead of the Prometheus
+exporter approach described here.
+
+**Why are there three separate collection methods?**
+
+NGINX does not expose all telemetry through a single interface. Metrics
+come from `stub_status` via the exporter, traces require the OTel
+module, and logs are read from files. Each requires its own receiver
+in the Collector pipeline.
+
+## What's Next?
+
+- **Create Dashboards**: Explore pre-built dashboards or build your own.
+  See
+  [Create Your First Dashboard](../../guides/create-your-first-dashboard.md)
+- **Monitor More Components**: Add monitoring for
+  [Apache HTTP Server](./apache-httpd.md), [HAProxy](./haproxy.md),
+  and other components
+- **Fine-tune Collection**: Adjust scrape intervals and log paths based
+  on your deployment
 
 ## Related Guides
 
-- [OTel Collector Configuration](../collector-setup/otel-collector-config.md) -
+- [OTel Collector Configuration](../collector-setup/otel-collector-config.md) —
   Advanced collector configuration
-- [Docker Compose Setup](../collector-setup/docker-compose-example.md) - Set up
-  collector for local development
-- [RabbitMQ Monitoring](./rabbitmq.md) - Alternative service monitoring guide
+- [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
+  Run the Collector locally
+- [Apache HTTP Server Monitoring](./apache-httpd.md) — Alternative web
+  server monitoring
+- [HAProxy Monitoring](./haproxy.md) — Load balancer monitoring

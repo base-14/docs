@@ -1,54 +1,79 @@
 ---
-title: Memcached Monitoring with OpenTelemetry
+title: >
+  Memcached OpenTelemetry Monitoring — Cache Usage, Hit Ratios,
+  and Collector Setup
 sidebar_label: Memcached
 id: collecting-memcached-telemetry
 sidebar_position: 9
-description:
-  Monitor Memcached with OpenTelemetry Collector. Collect cache usage, hit
-  ratios, connections, CPU, and memory metrics using Scout.
+description: >
+  Collect Memcached metrics with the OpenTelemetry Collector. Monitor cache
+  usage, hit ratios, connections, and CPU usage using the Memcached receiver
+  and export to base14 Scout.
 keywords:
-  [
-    memcached monitoring,
-    memcached metrics,
-    cache monitoring,
-    opentelemetry memcached,
-    memcached observability,
-  ]
+  - memcached opentelemetry
+  - memcached otel collector
+  - memcached metrics monitoring
+  - memcached performance monitoring
+  - opentelemetry memcached receiver
+  - memcached observability
+  - memcached cache monitoring
+  - memcached telemetry collection
 ---
 
 # Memcached
 
-## Overview
-
-This guide explains how to set up Memcached metrics collection using Scout
-Collector and forward them to Scout backend.
+The OpenTelemetry Collector's Memcached receiver collects 11 metrics from
+Memcached 1.6+, including cache byte usage, hit ratios, connection counts,
+CPU usage, and network throughput. This guide configures the receiver,
+verifies connectivity, and ships metrics to base14 Scout.
 
 ## Prerequisites
 
-1. Memcached 1.6.x instance
-2. Network access to the Memcached TCP port (default 11211)
-3. Scout Collector installed
+| Requirement            | Minimum | Recommended |
+| ---------------------- | ------- | ----------- |
+| Memcached              | 1.6     | 1.6.x       |
+| OTel Collector Contrib | 0.90.0  | latest      |
+| base14 Scout           | Any     | —           |
 
-## Memcached Configuration
+Before starting:
 
-Verify your Memcached instance is accessible:
+- Memcached must be accessible over TCP from the host running the Collector
+- No authentication is required — Memcached uses network-level access control
+- OTel Collector installed — see
+  [Docker Compose Setup](../collector-setup/docker-compose-example.md)
+
+## What You'll Monitor
+
+- **Cache usage**: bytes stored, current item count, evictions
+- **Operations**: command counts, operation hit ratios, operations per second
+- **Connections**: current connections, total connections
+- **Resources**: CPU usage (user/system), network bytes in/out, thread count
+
+Full metric reference:
+[OTel Memcached Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/memcachedreceiver)
+
+## Access Setup
+
+Memcached has no built-in authentication. Access control is handled at the
+network level — ensure only the Collector host can reach port 11211.
+
+Verify connectivity:
 
 ```bash showLineNumbers
-# Check Memcached stats
-echo "stats" | nc <memcached-host> 11211
-
-# Check version
-echo "version" | nc <memcached-host> 11211
+echo "stats" | nc localhost 11211
 ```
 
-## Scout Collector Configuration
+If using a firewall or container network, confirm the Collector can reach
+the Memcached host and port.
+
+## Configuration
 
 ```yaml showLineNumbers title="config/otel-collector.yaml"
 receivers:
   memcached:
-    endpoint: <memcached-host>:11211
-    transport: tcp
-    collection_interval: 10s
+    endpoint: localhost:11211           # Change to your Memcached address
+    transport: tcp                      # Required — must be explicitly set
+    collection_interval: 30s
 
     metrics:
       # Cache usage
@@ -73,7 +98,7 @@ receivers:
       memcached.connections.total:
         enabled: true
 
-      # Resource usage
+      # Resources
       memcached.cpu.usage:
         enabled: true
       memcached.network:
@@ -85,20 +110,19 @@ processors:
   resource:
     attributes:
       - key: environment
-        value: ${ENVIRONMENT}
+        value: ${env:ENVIRONMENT}
         action: upsert
       - key: service.name
-        value: ${SERVICE_NAME}
+        value: ${env:SERVICE_NAME}
         action: upsert
 
   batch:
     timeout: 10s
     send_batch_size: 1024
 
-# Export to Base14 Scout
 exporters:
   otlphttp/b14:
-    endpoint: ${SCOUT_EXPORTER_OTLP_ENDPOINT}
+    endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT}
     tls:
       insecure_skip_verify: true
 
@@ -110,32 +134,134 @@ service:
       exporters: [otlphttp/b14]
 ```
 
-## Verification
+### Environment Variables
 
-1. Check collector logs for errors
-2. Verify metrics in Scout dashboard
-3. Test Memcached connectivity:
+```bash showLineNumbers title=".env"
+ENVIRONMENT=your_environment
+SERVICE_NAME=your_service_name
+OTEL_EXPORTER_OTLP_ENDPOINT=https://<your-tenant>.base14.io
+```
 
-   ```bash showLineNumbers
-   # Check stats
-   echo "stats" | nc <memcached-host> 11211
+## Verify the Setup
 
-   # Check slab allocation
-   echo "stats slabs" | nc <memcached-host> 11211
-   ```
+Start the Collector and check for metrics within 60 seconds:
 
-## References
+```bash showLineNumbers
+# Check Collector logs for successful scrape
+docker logs otel-collector 2>&1 | grep -i "memcached"
 
-- [Scout Collector Setup](https://docs.base14.io/instrument/collector-setup/otel-collector-config)
-- [Memcached Protocol](https://github.com/memcached/memcached/blob/master/doc/protocol.txt)
-- [Memcached Wiki](https://github.com/memcached/memcached/wiki)
+# Verify Memcached is responding
+echo "stats" | nc localhost 11211
+
+# Check slab allocation
+echo "stats slabs" | nc localhost 11211
+```
+
+## Troubleshooting
+
+### Connection refused
+
+**Cause**: Collector cannot reach Memcached at the configured endpoint.
+
+**Fix**:
+
+1. Verify Memcached is running: `systemctl status memcached` or
+   `docker ps | grep memcached`
+2. Confirm the endpoint address and port in your config
+3. Check firewall rules if the Collector runs on a separate host
+
+### Invalid transport type error
+
+**Cause**: The `transport` field is missing from the receiver config.
+
+**Fix**:
+
+Add `transport: tcp` to the receiver configuration. Unlike most receivers,
+the Memcached receiver requires this field to be set explicitly:
+
+```yaml
+receivers:
+  memcached:
+    endpoint: localhost:11211
+    transport: tcp
+```
+
+### No metrics appearing in Scout
+
+**Cause**: Metrics are collected but not exported.
+
+**Fix**:
+
+1. Check Collector logs for export errors: `docker logs otel-collector`
+2. Verify `OTEL_EXPORTER_OTLP_ENDPOINT` is set correctly
+3. Confirm the pipeline includes both the receiver and exporter
+
+### Hit ratio always zero
+
+**Cause**: No `get` commands have been issued against the cache.
+
+**Fix**:
+
+1. The `memcached.operation_hit_ratio` metric requires both `get` hits and
+   misses to calculate — it stays zero until the cache is actively used
+2. Verify cache traffic with `echo "stats" | nc localhost 11211` and check
+   `get_hits` and `get_misses` counters
+
+## FAQ
+
+**Does this work with Memcached running in Kubernetes?**
+
+Yes. Set `endpoint` to the Memcached service DNS
+(e.g., `memcached.default.svc.cluster.local:11211`) and ensure the
+Collector pod can reach port 11211. The Collector can run as a sidecar
+or DaemonSet.
+
+**How do I monitor multiple Memcached instances?**
+
+Add multiple receiver blocks with distinct names:
+
+```yaml
+receivers:
+  memcached/primary:
+    endpoint: memcached-1:11211
+    transport: tcp
+  memcached/replica:
+    endpoint: memcached-2:11211
+    transport: tcp
+```
+
+Then include both in the pipeline:
+`receivers: [memcached/primary, memcached/replica]`
+
+**Why is `transport: tcp` required?**
+
+The Memcached receiver defaults to an empty transport value, which causes
+a startup error. This is a known quirk — always set `transport: tcp`
+explicitly in the config.
+
+**Can I monitor Memcached with SASL authentication?**
+
+The OTel Memcached receiver does not support SASL authentication. If your
+Memcached instance requires SASL, you need to run the Collector on a host
+that has direct network access without authentication, or use a sidecar
+deployment pattern.
+
+## What's Next?
+
+- **Create Dashboards**: Explore pre-built dashboards or build your own. See
+  [Create Your First Dashboard](../../guides/create-your-first-dashboard.md)
+- **Monitor More Components**: Add monitoring for
+  [Redis](./redis.md), [MongoDB](./mongodb.md),
+  and other components
+- **Fine-tune Collection**: Adjust `collection_interval` based on your cache
+  usage patterns
 
 ## Related Guides
 
-- [OTel Collector Configuration](../collector-setup/otel-collector-config.md) -
+- [OTel Collector Configuration](../collector-setup/otel-collector-config.md) —
   Advanced collector configuration
-- [Docker Compose Setup](../collector-setup/docker-compose-example.md) - Set up
-  collector for local development
-- [Redis Monitoring](./redis.md) - Alternative caching service monitoring guide
-- [ElastiCache Monitoring](../infra/aws/elasticache.md) - AWS ElastiCache
-  monitoring guide
+- [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
+  Run the Collector locally
+- [Redis Monitoring](./redis.md) — Alternative caching service monitoring
+- [ElastiCache Monitoring](../infra/aws/elasticache.md) — AWS ElastiCache
+  monitoring
