@@ -4,9 +4,9 @@ title:
 sidebar_label: Overview
 sidebar_position: 0
 description:
-  Monitor databases, caches, message queues, and web servers with
-  OpenTelemetry. Collect metrics from PostgreSQL, MySQL, MongoDB, Redis,
-  RabbitMQ, Elasticsearch, NGINX, and more using the OTel Collector.
+  Monitor databases, caches, message queues, proxies, and containers with
+  OpenTelemetry. Collect metrics from PostgreSQL, Redis, Kafka, NGINX,
+  Envoy, Docker, and more using the OTel Collector.
 keywords:
   [
     opentelemetry component monitoring,
@@ -23,7 +23,7 @@ keywords:
 # Component Monitoring
 
 Component monitoring collects **metrics, traces, and logs** from
-databases, caches, message queues, and web servers using the
+databases, caches, message queues, proxies, and containers using the
 OpenTelemetry Collector. Each guide configures a dedicated receiver or
 Prometheus scrape target and ships telemetry to base14 Scout.
 
@@ -31,69 +31,95 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 
 ### Databases
 
-| Component            | Guide                                        | Key Metrics                                        |
-| -------------------- | -------------------------------------------- | -------------------------------------------------- |
-| PostgreSQL Basic     | [PostgreSQL Basic](./collecting-postgres-telemetry)            | Connections, query performance, locks, WAL        |
-| PostgreSQL Advanced  | [PostgreSQL Advanced](./collecting-postgres-advanced-telemetry) | Query stats, table/index sizes, replication       |
-| MySQL                | [MySQL](./collecting-mysql-telemetry)                          | Connections, queries, InnoDB, replication          |
-| MongoDB              | [MongoDB](./collecting-mongodb-telemetry)                      | Operations, connections, document metrics, cursors |
-| Cassandra            | [Cassandra](./collecting-cassandra-telemetry)                  | Client requests, compaction, storage, caches      |
-| CouchDB              | [CouchDB](./collecting-couchdb-telemetry)                      | Request rates, document operations, view stats     |
-| Elasticsearch        | [Elasticsearch](./collecting-elasticsearch-telemetry)          | Cluster health, node stats, JVM, index operations |
+| Component           | Guide                                                          | Key Metrics                                        |
+| ------------------- | -------------------------------------------------------------- | -------------------------------------------------- |
+| PostgreSQL Basic    | [PostgreSQL Basic](./collecting-postgres-telemetry)            | Connections, query performance, locks, WAL          |
+| PostgreSQL Advanced | [PostgreSQL Advanced](./collecting-postgres-advanced-telemetry) | Query stats, table/index sizes, replication        |
+| MySQL               | [MySQL](./collecting-mysql-telemetry)                          | Connections, queries, InnoDB, replication           |
+| MongoDB             | [MongoDB](./collecting-mongodb-telemetry)                      | Operations, connections, document metrics, cursors  |
+| Cassandra           | [Cassandra](./collecting-cassandra-telemetry)                  | Client requests, compaction, storage, caches        |
+| CouchDB             | [CouchDB](./collecting-couchdb-telemetry)                      | Request rates, document operations, view stats      |
+| Elasticsearch       | [Elasticsearch](./collecting-elasticsearch-telemetry)          | Cluster health, node stats, JVM, index operations   |
+| ClickHouse          | [ClickHouse](./collecting-clickhouse-telemetry)                | Queries, inserts, memory tracking, merge operations |
+| Couchbase           | [Couchbase](./collecting-couchbase-telemetry)                  | Cluster management, KV connections, CPU, memory     |
 
 ### Key-Value & Distributed Storage
 
-| Component | Guide                                              | Key Metrics                                       |
-| --------- | -------------------------------------------------- | ------------------------------------------------- |
-| Aerospike | [Aerospike](./collecting-aerospike-telemetry)      | Connections, transactions, memory, namespace stats |
-| etcd      | [etcd](./collecting-etcd-telemetry)                | Raft proposals, disk latency, MVCC, gRPC          |
+| Component | Guide                                         | Key Metrics                                        |
+| --------- | --------------------------------------------- | -------------------------------------------------- |
+| Aerospike | [Aerospike](./collecting-aerospike-telemetry) | Connections, transactions, memory, namespace stats  |
+| etcd      | [etcd](./collecting-etcd-telemetry)           | Raft proposals, disk latency, MVCC, gRPC           |
 
 ### Search
 
-| Component | Guide                                         | Key Metrics                                     |
-| --------- | --------------------------------------------- | ----------------------------------------------- |
-| Solr      | [Solr](./collecting-solr-telemetry)           | JVM heap, GC, request rates, cores, threads     |
+| Component  | Guide                                             | Key Metrics                                         |
+| ---------- | ------------------------------------------------- | --------------------------------------------------- |
+| Solr       | [Solr](./collecting-solr-telemetry)               | JVM heap, GC, request rates, cores, threads         |
+| OpenSearch | [OpenSearch](./collecting-opensearch-telemetry)   | Cluster health, search latency, JVM, storage I/O    |
 
 ### Caching
 
-| Component  | Guide                      | Key Metrics                                     |
-| ---------- | -------------------------- | ----------------------------------------------- |
-| Redis      | [Redis](./collecting-redis-telemetry)           | Memory, keyspace, commands, clients, replication |
-| Memcached  | [Memcached](./collecting-memcached-telemetry)   | Hit ratio, memory, connections, evictions        |
+| Component | Guide                                           | Key Metrics                                          |
+| --------- | ----------------------------------------------- | ---------------------------------------------------- |
+| Redis     | [Redis](./collecting-redis-telemetry)           | Memory, keyspace, commands, clients, replication     |
+| Memcached | [Memcached](./collecting-memcached-telemetry)   | Hit ratio, memory, connections, evictions            |
 
 ### Message Queues
 
-| Component | Guide                      | Key Metrics                                       |
-| --------- | -------------------------- | ------------------------------------------------- |
-| RabbitMQ  | [RabbitMQ](./collecting-rabbitmq-telemetry)     | Queue depth, message rates, node memory, I/O      |
-| Kafka     | [Kafka](./collecting-kafka-telemetry)           | Consumer lag, partition offsets, broker count      |
+| Component | Guide                                           | Key Metrics                                          |
+| --------- | ----------------------------------------------- | ---------------------------------------------------- |
+| RabbitMQ  | [RabbitMQ](./collecting-rabbitmq-telemetry)     | Queue depth, message rates, node memory, I/O         |
+| Kafka     | [Kafka](./collecting-kafka-telemetry)           | Consumer lag, partition offsets, broker count         |
+| NATS      | [NATS](./collecting-nats-telemetry)             | Connections, subscriptions, message rates, JetStream |
+| Pulsar    | [Pulsar](./collecting-pulsar-telemetry)         | Broker throughput, backlog, managed ledger, storage  |
 
 ### Service Discovery & Coordination
 
-| Component | Guide                                              | Key Metrics                                      |
-| --------- | -------------------------------------------------- | ------------------------------------------------ |
-| Consul    | [Consul](./collecting-consul-telemetry)            | Raft consensus, service catalog, RPC, gossip     |
-| ZooKeeper | [ZooKeeper](./collecting-zookeeper-telemetry)      | Connections, latency, znodes, watches, packets   |
+| Component | Guide                                           | Key Metrics                                      |
+| --------- | ----------------------------------------------- | ------------------------------------------------ |
+| Consul    | [Consul](./collecting-consul-telemetry)         | Raft consensus, service catalog, RPC, gossip     |
+| ZooKeeper | [ZooKeeper](./collecting-zookeeper-telemetry)   | Connections, latency, znodes, watches, packets   |
 
 ### Secrets Management
 
-| Component | Guide                                         | Key Metrics                                       |
-| --------- | --------------------------------------------- | ------------------------------------------------- |
-| Vault     | [Vault](./collecting-vault-telemetry)         | Seal operations, token lifecycle, barrier, leases |
+| Component | Guide                                     | Key Metrics                                       |
+| --------- | ----------------------------------------- | ------------------------------------------------- |
+| Vault     | [Vault](./collecting-vault-telemetry)     | Seal operations, token lifecycle, barrier, leases |
 
-### Workflow Orchestration
+### Orchestration
 
-| Component | Guide                                              | Key Metrics                                       |
-| --------- | -------------------------------------------------- | ------------------------------------------------- |
-| Temporal  | [Temporal](./collecting-temporal-telemetry)        | Workflow latency, task queues, persistence, shards |
+| Component | Guide                                         | Key Metrics                                        |
+| --------- | --------------------------------------------- | -------------------------------------------------- |
+| Temporal  | [Temporal](./collecting-temporal-telemetry)   | Workflow latency, task queues, persistence, shards |
+| Nomad     | [Nomad](./collecting-nomad-telemetry)         | Raft consensus, broker, RPC, job status, autopilot |
 
 ### Web Servers & Proxies
 
-| Component          | Guide                              | Key Metrics                                          |
-| ------------------ | ---------------------------------- | ---------------------------------------------------- |
-| NGINX              | [NGINX](./collecting-nginx-telemetry)                     | Connections, request rate, worker states              |
-| Apache HTTP Server | [Apache HTTP Server](./collecting-apache-httpd-telemetry) | Workers, scoreboard, request rate, bytes transferred |
-| HAProxy            | [HAProxy](./collecting-haproxy-telemetry)                 | Sessions, request rate, backend health, queue depth  |
+| Component          | Guide                                                         | Key Metrics                                          |
+| ------------------ | ------------------------------------------------------------- | ---------------------------------------------------- |
+| NGINX              | [NGINX](./collecting-nginx-telemetry)                         | Connections, request rate, worker states              |
+| Apache HTTP Server | [Apache HTTP Server](./collecting-apache-httpd-telemetry)     | Workers, scoreboard, request rate, bytes transferred |
+| HAProxy            | [HAProxy](./collecting-haproxy-telemetry)                     | Sessions, request rate, backend health, queue depth  |
+| Traefik            | [Traefik](./collecting-traefik-telemetry)                     | Entrypoint requests, TLS, router stats, open conns   |
+| Envoy              | [Envoy](./collecting-envoy-telemetry)                         | Downstream connections, listeners, cluster manager   |
+
+### Object Storage
+
+| Component | Guide                                     | Key Metrics                                       |
+| --------- | ----------------------------------------- | ------------------------------------------------- |
+| MinIO     | [MinIO](./collecting-minio-telemetry)     | Cluster capacity, drive health, S3 requests, ILM  |
+
+### Database Proxies
+
+| Component | Guide                                             | Key Metrics                                        |
+| --------- | ------------------------------------------------- | -------------------------------------------------- |
+| PgBouncer | [PgBouncer](./collecting-pgbouncer-telemetry)     | Connection pools, query throughput, client wait time |
+
+### Containers
+
+| Component     | Guide                                           | Key Metrics                                    |
+| ------------- | ----------------------------------------------- | ---------------------------------------------- |
+| Docker Engine | [Docker Engine](./collecting-docker-telemetry)  | CPU, memory, block I/O, network per container  |
 
 ## How Component Monitoring Works
 
@@ -102,11 +128,13 @@ Each component exposes metrics through one of two methods:
 1. **Dedicated OTel receiver** — the Collector connects directly to the
    component's stats API (PostgreSQL, MySQL, MongoDB, Redis, RabbitMQ,
    Elasticsearch, CouchDB, Memcached, Apache HTTP Server, HAProxy,
-   ZooKeeper, Kafka, Aerospike)
+   ZooKeeper, Kafka, Aerospike, Docker Engine)
 2. **Prometheus scrape** — the component or a sidecar exporter exposes
    a `/metrics` endpoint that the Collector scrapes (Cassandra via
-   JMX exporter, Consul, Vault, etcd, Solr, Temporal, NGINX via
-   nginx-prometheus-exporter)
+   JMX exporter, Consul, Vault, etcd, Solr, Temporal, NGINX,
+   ClickHouse, NATS via prometheus-nats-exporter, Traefik, Envoy,
+   MinIO, OpenSearch via prometheus-exporter plugin, PgBouncer via
+   pgbouncer-exporter, Nomad, Couchbase, Pulsar)
 
 NGINX also supports **distributed traces** via `nginx-module-otel` and
 **log collection** via the filelog receiver.
