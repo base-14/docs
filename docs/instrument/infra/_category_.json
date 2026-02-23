@@ -1,11 +1,11 @@
 {
-    "label": "Infrastucture Instrumentation",
+    "label": "Infrastructure Instrumentation",
     "position": 4,
     "collapsed": false,
     "link": {
       "type": "generated-index",
       "title": "Infrastructure Monitoring Guide",
-      "description": "Collect infrastructure metrics from cloud providers and on-premise systems. Monitor CPU, memory, network, and custom infrastructure telemetry."
+      "description": "Collect infrastructure metrics from cloud providers and on-premise systems using OpenTelemetry. Monitor CPU, memory, disk, network, and custom infrastructure telemetry in base14 Scout."
     }
   }
   

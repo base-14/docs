@@ -1,4 +1,9 @@
 {
   "label": "logX",
-  "position": 6
+  "position": 6,
+  "link": {
+    "type": "generated-index",
+    "title": "Log Management with logX",
+    "description": "Query, search, and analyze logs in real time with logX in base14 Scout. Filter log streams, correlate logs with traces, and set up alerts on log patterns."
+  }
 }

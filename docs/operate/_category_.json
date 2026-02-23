@@ -5,7 +5,7 @@
     "link": {
       "type": "generated-index",
       "title": "Platform Operations & Configuration",
-      "description": "Configure Scout platform settings, manage users, set up Scout dashboards, and optimize your observability pipeline for production workloads."
+      "description": "Manage base14 Scout platform settings, users, and dashboards. Configure telemetry filters, data transformations, PostgreSQL monitoring, and log and trace pipelines for production observability."
     }
   }
   

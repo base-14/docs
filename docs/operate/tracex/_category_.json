@@ -1,4 +1,9 @@
 {
   "label": "traceX",
-  "position": 7
+  "position": 7,
+  "link": {
+    "type": "generated-index",
+    "title": "Distributed Tracing with traceX",
+    "description": "Explore distributed traces, analyze request latency, and debug performance issues with traceX in base14 Scout. Visualize end-to-end request flows across your microservices and LLM/AI applications."
+  }
 }
