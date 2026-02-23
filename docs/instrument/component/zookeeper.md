@@ -166,7 +166,7 @@ service:
   pipelines:
     metrics:
       receivers: [zookeeper]
-      processors: [batch, resource]
+      processors: [resource, batch]
       exporters: [otlphttp/b14]
 ```
 

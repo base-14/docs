@@ -124,6 +124,7 @@ processors:
     timeout: 10s
     send_batch_size: 1024
 
+# Export to base14 Scout
 exporters:
   otlphttp/b14:
     endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT}
@@ -134,7 +135,7 @@ service:
   pipelines:
     metrics:
       receivers: [couchdb]
-      processors: [batch, resource]
+      processors: [resource, batch]
       exporters: [otlphttp/b14]
 ```
 
@@ -267,5 +268,8 @@ in CouchDB 2.0. All 8 metrics are available on both CouchDB 2.3+ and
   Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
   Run the Collector locally
-- [MongoDB Monitoring](./mongodb.md) — Alternative document database
-  monitoring
+- [MongoDB Monitoring](./mongodb.md) — Alternative document database monitoring
+- [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
+  — Production deployment
+- [Creating Alerts](../../guides/creating-alerts-with-logx.md)
+  — Alert on CouchDB metrics

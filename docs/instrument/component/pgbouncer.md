@@ -6,9 +6,9 @@ sidebar_label: PgBouncer
 id: collecting-pgbouncer-telemetry
 sidebar_position: 28
 description: >
-  Collect PgBouncer metrics with the OpenTelemetry Collector.
-  Monitor connection pools, query throughput, and client wait
-  times using the pgbouncer-exporter and Prometheus receiver.
+  Collect PgBouncer metrics with the OpenTelemetry Collector. Monitor
+  connection pools, query throughput, and client wait times using the
+  pgbouncer-exporter and export to base14 Scout.
 keywords:
   - pgbouncer opentelemetry
   - pgbouncer otel collector
@@ -174,7 +174,7 @@ service:
   pipelines:
     metrics:
       receivers: [prometheus]
-      processors: [batch, resource]
+      processors: [resource, batch]
       exporters: [otlphttp/b14]
 ```
 

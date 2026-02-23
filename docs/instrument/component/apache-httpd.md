@@ -141,6 +141,7 @@ processors:
     timeout: 10s
     send_batch_size: 1024
 
+# Export to base14 Scout
 exporters:
   otlphttp/b14:
     endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT}
@@ -151,7 +152,7 @@ service:
   pipelines:
     metrics:
       receivers: [apache]
-      processors: [batch, resource]
+      processors: [resource, batch]
       exporters: [otlphttp/b14]
 ```
 
@@ -283,3 +284,7 @@ distributing work across its worker pool.
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
   Run the Collector locally
 - [NGINX Monitoring](./nginx.md) — Alternative web server monitoring
+- [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
+  — Production deployment
+- [Creating Alerts](../../guides/creating-alerts-with-logx.md)
+  — Alert on Apache HTTP metrics

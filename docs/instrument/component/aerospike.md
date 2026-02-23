@@ -141,7 +141,7 @@ service:
   pipelines:
     metrics:
       receivers: [aerospike]
-      processors: [batch, resource]
+      processors: [resource, batch]
       exporters: [otlphttp/b14]
 ```
 
@@ -283,5 +283,8 @@ zero if geospatial features are not used.
   — Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md)
   — Run the Collector locally
-- [Redis Monitoring](./redis.md) — Alternative key-value store
-  monitoring
+- [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
+  — Production deployment
+- [Redis Monitoring](./redis.md) — Alternative key-value store monitoring
+- [Creating Alerts](../../guides/creating-alerts-with-logx.md)
+  — Alert on Aerospike metrics

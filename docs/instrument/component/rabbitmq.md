@@ -63,7 +63,7 @@ Full metric reference:
 
 Ensure the RabbitMQ management plugin is enabled:
 
-```bash showLineNumbers
+```bash showLineNumbers title="Enable RabbitMQ management plugin"
 # Enable management plugin
 rabbitmq-plugins enable rabbitmq_management
 
@@ -73,7 +73,7 @@ rabbitmq-plugins list | grep management
 
 Create a dedicated monitoring user (optional but recommended):
 
-```bash showLineNumbers
+```bash showLineNumbers title="Create monitoring user"
 # Create monitoring user
 rabbitmqctl add_user rabbitmq_monitor <password>
 
@@ -318,7 +318,7 @@ service:
   pipelines:
     metrics:
       receivers: [rabbitmq]
-      processors: [batch, resource]
+      processors: [resource, batch]
       exporters: [otlphttp/b14]
 ```
 
@@ -336,7 +336,7 @@ OTEL_EXPORTER_OTLP_ENDPOINT=https://<your-tenant>.base14.io
 
 Start the Collector and check for metrics within 60 seconds:
 
-```bash showLineNumbers
+```bash showLineNumbers title="Verify metrics collection"
 # Check Collector logs for successful connection
 docker logs otel-collector 2>&1 | grep -i "rabbitmq"
 
@@ -345,7 +345,7 @@ curl -u ${RABBITMQ_USERNAME}:${RABBITMQ_PASSWORD} \
      http://<rabbitmq-host>:15672/api/overview
 ```
 
-```bash showLineNumbers
+```bash showLineNumbers title="Check RabbitMQ node status"
 # Check node status
 rabbitmq-diagnostics -q ping
 
@@ -422,7 +422,7 @@ The management API returns cluster-wide data from any node. Point the
 receiver at one node and you'll get metrics for all nodes. For
 redundancy, add multiple receiver blocks pointing to different nodes:
 
-```yaml
+```yaml showLineNumbers title="config/otel-collector.yaml (multi-node)"
 receivers:
   rabbitmq/node1:
     endpoint: http://rabbitmq-1:15672

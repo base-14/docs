@@ -68,7 +68,7 @@ Full metric reference:
 
 Verify your Elasticsearch instance is accessible:
 
-```bash showLineNumbers
+```bash showLineNumbers title="Verify Elasticsearch access"
 # Check cluster health
 curl -u ${ES_USERNAME}:${ES_PASSWORD} http://<elasticsearch-host>:9200/_cluster/health?pretty
 
@@ -78,7 +78,7 @@ curl -u ${ES_USERNAME}:${ES_PASSWORD} http://<elasticsearch-host>:9200/_nodes?pr
 
 If Elasticsearch security is disabled (development only):
 
-```bash showLineNumbers
+```bash showLineNumbers title="Verify access (no auth)"
 curl http://<elasticsearch-host>:9200/_cluster/health?pretty
 ```
 
@@ -343,7 +343,7 @@ service:
   pipelines:
     metrics:
       receivers: [elasticsearch]
-      processors: [batch, resource]
+      processors: [resource, batch]
       exporters: [otlphttp/b14]
 ```
 
@@ -361,7 +361,7 @@ OTEL_EXPORTER_OTLP_ENDPOINT=https://<your-tenant>.base14.io
 
 Start the Collector and check for metrics within 60 seconds:
 
-```bash showLineNumbers
+```bash showLineNumbers title="Verify metrics collection"
 # Check Collector logs for successful connection
 docker logs otel-collector 2>&1 | grep -i "elasticsearch"
 
@@ -374,7 +374,7 @@ curl -u ${ES_USERNAME}:${ES_PASSWORD} \
      http://<elasticsearch-host>:9200/_nodes/stats?pretty
 ```
 
-```bash showLineNumbers
+```bash showLineNumbers title="Check index and cluster stats"
 # Check index stats
 curl -u ${ES_USERNAME}:${ES_PASSWORD} \
      http://<elasticsearch-host>:9200/_stats?pretty

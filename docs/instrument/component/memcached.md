@@ -59,7 +59,7 @@ network level — ensure only the Collector host can reach port 11211.
 
 Verify connectivity:
 
-```bash showLineNumbers
+```bash showLineNumbers title="Verify Memcached connectivity"
 echo "stats" | nc localhost 11211
 ```
 
@@ -120,6 +120,7 @@ processors:
     timeout: 10s
     send_batch_size: 1024
 
+# Export to base14 Scout
 exporters:
   otlphttp/b14:
     endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT}
@@ -130,7 +131,7 @@ service:
   pipelines:
     metrics:
       receivers: [memcached]
-      processors: [batch, resource]
+      processors: [resource, batch]
       exporters: [otlphttp/b14]
 ```
 
@@ -146,7 +147,7 @@ OTEL_EXPORTER_OTLP_ENDPOINT=https://<your-tenant>.base14.io
 
 Start the Collector and check for metrics within 60 seconds:
 
-```bash showLineNumbers
+```bash showLineNumbers title="Verify metrics collection"
 # Check Collector logs for successful scrape
 docker logs otel-collector 2>&1 | grep -i "memcached"
 
@@ -179,7 +180,7 @@ echo "stats slabs" | nc localhost 11211
 Add `transport: tcp` to the receiver configuration. Unlike most receivers,
 the Memcached receiver requires this field to be set explicitly:
 
-```yaml
+```yaml showLineNumbers title="config/otel-collector.yaml (transport fix)"
 receivers:
   memcached:
     endpoint: localhost:11211

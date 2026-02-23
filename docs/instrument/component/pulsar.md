@@ -6,9 +6,9 @@ sidebar_label: Pulsar
 id: collecting-pulsar-telemetry
 sidebar_position: 31
 description: >
-  Collect Pulsar metrics with the OpenTelemetry Collector.
-  Monitor broker throughput, message backlog, and managed
-  ledger latency using the Prometheus receiver.
+  Collect Pulsar metrics with the OpenTelemetry Collector. Monitor
+  broker throughput, message backlog, and managed ledger latency
+  using the Prometheus receiver and export to base14 Scout.
 keywords:
   - pulsar opentelemetry
   - pulsar otel collector
@@ -108,7 +108,7 @@ service:
   pipelines:
     metrics:
       receivers: [prometheus]
-      processors: [batch, resource]
+      processors: [resource, batch]
       exporters: [otlphttp/b14]
 ```
 

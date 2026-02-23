@@ -161,7 +161,7 @@ service:
   pipelines:
     metrics:
       receivers: [kafkametrics]
-      processors: [batch, resource]
+      processors: [resource, batch]
       exporters: [otlphttp/b14]
 ```
 

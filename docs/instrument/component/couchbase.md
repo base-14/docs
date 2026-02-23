@@ -1,14 +1,14 @@
 ---
 title: >
-  Couchbase OpenTelemetry Monitoring — CPU, Memory,
-  and Collector Setup
+  Couchbase OpenTelemetry Monitoring — Data Service,
+  Cluster Health, and Collector Setup
 sidebar_label: Couchbase
 id: collecting-couchbase-telemetry
 sidebar_position: 30
 description: >
-  Collect Couchbase metrics with the OpenTelemetry
-  Collector. Monitor CPU utilization, memory usage,
-  and active connections using the Prometheus receiver.
+  Collect Couchbase metrics with the OpenTelemetry Collector. Monitor
+  data service connections, cluster health, and CPU usage using the
+  Prometheus receiver and export to base14 Scout.
 keywords:
   - couchbase opentelemetry
   - couchbase otel collector
@@ -68,6 +68,30 @@ Full metric list: run
 against your Couchbase instance.
 
 ## Access Setup
+
+### Initialize the cluster
+
+Fresh Couchbase Community Edition deployments require cluster
+initialization before metrics are available. Skip this step
+if connecting to an existing cluster.
+
+```bash showLineNumbers title="Initialize cluster via REST API"
+# Initialize the cluster (run once on fresh install)
+curl -s -X POST http://localhost:8091/clusterInit \
+  -d "hostname=127.0.0.1" \
+  -d "username=Administrator" \
+  -d "password=your_admin_password" \
+  -d "services=kv,n1ql,index" \
+  -d "storageMode=plasma" \
+  -d "memoryQuota=512"
+
+# Create a bucket (required for kv_* metrics to appear)
+curl -s -X POST http://localhost:8091/pools/default/buckets \
+  -u Administrator:your_admin_password \
+  -d "name=default&ramQuota=256&bucketType=couchbase&replicaNumber=0"
+```
+
+### Create a monitoring user
 
 Create a dedicated monitoring user with the External Stats
 Reader role. This grants read-only access to the `/metrics`
@@ -148,7 +172,7 @@ service:
   pipelines:
     metrics:
       receivers: [prometheus]
-      processors: [batch, resource]
+      processors: [resource, batch]
       exporters: [otlphttp/b14]
 ```
 

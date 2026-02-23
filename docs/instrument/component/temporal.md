@@ -40,6 +40,8 @@ ships metrics to base14 Scout.
 
 Before starting:
 
+- Temporal Server requires PostgreSQL as its persistence backend —
+  the `auto-setup` Docker image does not support SQLite
 - Temporal must be configured with `PROMETHEUS_ENDPOINT` to expose
   metrics (not enabled by default)
 - The metrics port (commonly 8000) must be accessible from the host
@@ -121,7 +123,7 @@ service:
   pipelines:
     metrics:
       receivers: [prometheus]
-      processors: [batch, resource]
+      processors: [resource, batch]
       exporters: [otlphttp/b14]
 ```
 

@@ -6,9 +6,9 @@ sidebar_label: Docker Engine
 id: collecting-docker-telemetry
 sidebar_position: 32
 description: >
-  Collect Docker container metrics with the OpenTelemetry
-  Collector. Monitor CPU, memory, block I/O, and network
-  per container using the docker_stats receiver.
+  Collect Docker container metrics with the OpenTelemetry Collector.
+  Monitor CPU, memory, block I/O, and network per container using
+  the docker_stats receiver and export to base14 Scout.
 keywords:
   - docker opentelemetry
   - docker otel collector
@@ -132,7 +132,7 @@ service:
   pipelines:
     metrics:
       receivers: [docker_stats]
-      processors: [batch, resource]
+      processors: [resource, batch]
       exporters: [otlphttp/b14]
 ```
 

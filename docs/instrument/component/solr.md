@@ -80,6 +80,11 @@ No authentication is required by default. For clusters with
 authentication enabled, see [Authentication](#authentication)
 below.
 
+The Collector's Prometheus receiver must use a custom `metrics_path`
+and `params` to scrape Solr — the default `/metrics` path does not
+work. Both are configured in the [Configuration](#configuration)
+section below.
+
 ## Configuration
 
 ```yaml showLineNumbers title="config/otel-collector.yaml"
@@ -121,7 +126,7 @@ service:
   pipelines:
     metrics:
       receivers: [prometheus]
-      processors: [batch, resource]
+      processors: [resource, batch]
       exporters: [otlphttp/b14]
 ```
 

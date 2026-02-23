@@ -79,6 +79,13 @@ No authentication is required for the `/metrics` endpoint by default.
 For TLS-enabled clusters, see [Authentication](#authentication)
 below.
 
+:::note Port conflict in Kubernetes
+etcd uses port 2379, which conflicts with the Kubernetes control-plane
+etcd. If running both, remap the host port in Docker Compose
+(e.g., `2380:2379`) or target the non-Kubernetes etcd address
+directly.
+:::
+
 ## Configuration
 
 ```yaml showLineNumbers title="config/otel-collector.yaml"
@@ -117,7 +124,7 @@ service:
   pipelines:
     metrics:
       receivers: [prometheus]
-      processors: [batch, resource]
+      processors: [resource, batch]
       exporters: [otlphttp/b14]
 ```
 

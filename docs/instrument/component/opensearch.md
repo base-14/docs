@@ -7,8 +7,8 @@ id: collecting-opensearch-telemetry
 sidebar_position: 27
 description: >
   Collect OpenSearch metrics with the OpenTelemetry Collector. Monitor
-  cluster health, search query latency, and JVM heap usage using the
-  Prometheus receiver.
+  cluster health, search latency, and JVM heap usage using the
+  Prometheus receiver and export to base14 Scout.
 keywords:
   - opensearch opentelemetry
   - opensearch otel collector
@@ -136,7 +136,7 @@ service:
   pipelines:
     metrics:
       receivers: [prometheus]
-      processors: [batch, resource]
+      processors: [resource, batch]
       exporters: [otlphttp/b14]
 ```
 

@@ -181,6 +181,7 @@ processors:
     timeout: 10s
     send_batch_size: 1024
 
+# Export to base14 Scout
 exporters:
   otlphttp/b14:
     endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT}
@@ -191,7 +192,7 @@ service:
   pipelines:
     metrics:
       receivers: [haproxy]
-      processors: [batch, resource]
+      processors: [resource, batch]
       exporters: [otlphttp/b14]
 ```
 
