@@ -1,5 +1,5 @@
 ---
-title: Spring Boot Alternatives OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
+title: Spring Boot Alternatives OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Spring Boot Alternatives
 sidebar_position: 17
 description:

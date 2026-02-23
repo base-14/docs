@@ -1,5 +1,5 @@
 ---
-title: Laravel OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
+title: Laravel OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Laravel
 sidebar_position: 23
 description:

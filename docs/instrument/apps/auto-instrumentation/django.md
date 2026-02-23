@@ -1,5 +1,5 @@
 ---
-title: Django OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
+title: Django OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Django
 sidebar_position: 3
 description:

@@ -1,5 +1,5 @@
 ---
-title: Node.js Custom OpenTelemetry Instrumentation - Manual Tracing Guide | base14 Scout
+title: Node.js Custom OpenTelemetry Instrumentation - Manual Tracing Guide
 sidebar_label: Node.js
 sidebar_position: 4
 description:

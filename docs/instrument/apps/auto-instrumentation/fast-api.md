@@ -1,5 +1,5 @@
 ---
-title: FastAPI OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
+title: FastAPI OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: FastAPI
 sidebar_position: 4
 description:

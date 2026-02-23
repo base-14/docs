@@ -1,5 +1,5 @@
 ---
-title: Next.js OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
+title: Next.js OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Next.js
 sidebar_position: 12
 description:

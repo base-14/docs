@@ -1,5 +1,5 @@
 ---
-title: Elixir Phoenix OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
+title: Elixir Phoenix OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Elixir Phoenix
 sidebar_position: 26
 description:

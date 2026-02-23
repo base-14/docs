@@ -1,5 +1,5 @@
 ---
-title: Quarkus OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
+title: Quarkus OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Quarkus
 sidebar_position: 15
 description:

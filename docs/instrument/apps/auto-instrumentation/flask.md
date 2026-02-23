@@ -1,5 +1,5 @@
 ---
-title: Flask OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
+title: Flask OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Flask
 sidebar_position: 5
 description:

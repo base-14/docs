@@ -1,5 +1,5 @@
 ---
-title: Spring Boot OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
+title: Spring Boot OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Spring Boot
 sidebar_position: 16
 description:

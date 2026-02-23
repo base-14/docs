@@ -1,5 +1,5 @@
 ---
-title: Java Custom OpenTelemetry Instrumentation - Manual Tracing Guide | base14 Scout
+title: Java Custom OpenTelemetry Instrumentation - Manual Tracing Guide
 sidebar_label: Java
 sidebar_position: 3
 description:

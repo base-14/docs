@@ -1,5 +1,5 @@
 ---
-title: Application Instrumentation - OpenTelemetry Setup Guide | base14 Scout
+title: Application Instrumentation - OpenTelemetry Setup Guide
 sidebar_label: Overview
 sidebar_position: 1
 description:

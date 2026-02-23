@@ -1,5 +1,5 @@
 ---
-title: Ruby Custom OpenTelemetry Instrumentation - Manual Tracing Guide | base14 Scout
+title: Ruby Custom OpenTelemetry Instrumentation - Manual Tracing Guide
 sidebar_label: Ruby
 sidebar_position: 7
 description:

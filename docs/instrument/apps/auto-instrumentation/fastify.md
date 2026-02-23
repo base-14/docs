@@ -1,5 +1,5 @@
 ---
-title: Fastify OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
+title: Fastify OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Fastify
 sidebar_position: 9
 description:

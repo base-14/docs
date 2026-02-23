@@ -1,5 +1,5 @@
 ---
-title: Go OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
+title: Go OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Go
 sidebar_position: 18
 description:

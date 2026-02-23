@@ -1,5 +1,5 @@
 ---
-title: Celery OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
+title: Celery OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Celery
 sidebar_position: 2
 description:

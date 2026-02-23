@@ -1,5 +1,5 @@
 ---
-title: Express.js OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
+title: Express.js OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Express.js
 sidebar_position: 8
 description:

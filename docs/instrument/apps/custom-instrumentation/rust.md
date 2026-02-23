@@ -1,5 +1,5 @@
 ---
-title: Rust Custom OpenTelemetry Instrumentation - Manual Tracing Guide | base14 Scout
+title: Rust Custom OpenTelemetry Instrumentation - Manual Tracing Guide
 sidebar_label: Rust
 sidebar_position: 8
 description:

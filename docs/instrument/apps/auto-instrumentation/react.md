@@ -1,5 +1,5 @@
 ---
-title: React OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
+title: React OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: React
 sidebar_position: 14
 description:

@@ -1,5 +1,5 @@
 ---
-title: Python Custom OpenTelemetry Instrumentation - Manual Tracing Guide | base14 Scout
+title: Python Custom OpenTelemetry Instrumentation - Manual Tracing Guide
 sidebar_label: Python
 sidebar_position: 6
 description:

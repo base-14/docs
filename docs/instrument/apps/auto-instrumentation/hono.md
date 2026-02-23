@@ -1,5 +1,5 @@
 ---
-title: Hono OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
+title: Hono OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Hono
 sidebar_position: 10
 description:

@@ -1,5 +1,5 @@
 ---
-title: Custom Instrumentation Overview - Manual OpenTelemetry Tracing | base14 Scout
+title: Custom Instrumentation Overview - Manual OpenTelemetry Tracing
 sidebar_label: Overview
 sidebar_position: 1
 description:

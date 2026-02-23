@@ -1,5 +1,5 @@
 ---
-title: C# Custom OpenTelemetry Instrumentation - Manual Tracing Guide | base14 Scout
+title: C# Custom OpenTelemetry Instrumentation - Manual Tracing Guide
 sidebar_label: C#
 sidebar_position: 1
 description:

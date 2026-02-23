@@ -1,5 +1,5 @@
 ---
-title: Go Custom OpenTelemetry Instrumentation - Manual Tracing Guide | base14 Scout
+title: Go Custom OpenTelemetry Instrumentation - Manual Tracing Guide
 sidebar_label: Go
 sidebar_position: 2
 description:

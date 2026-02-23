@@ -1,5 +1,5 @@
 ---
-title: Node.js OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
+title: Node.js OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Node.js
 sidebar_position: 13
 description:

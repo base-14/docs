@@ -1,5 +1,5 @@
 ---
-title: NestJS OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
+title: NestJS OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: NestJS
 sidebar_position: 11
 description:
