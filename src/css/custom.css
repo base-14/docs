@@ -1167,6 +1167,193 @@ nav[aria-label="Breadcrumbs"] li:last-child span {
   border: 2px solid var(--ifm-color-primary) !important;
 }
 
+/* ========================================
+   Local Search (@easyops-cn/docusaurus-search-local)
+   Styled to match base14 design system
+   ======================================== */
+
+/* Search input - pill shape with orange gradient, matching Algolia button */
+.navbar__search-input {
+  background: linear-gradient(135deg,
+    var(--base14-orange-glass-light),
+    var(--base14-orange-glass)) !important;
+  border: 1px solid var(--base14-orange-glass-border) !important;
+  border-radius: var(--base14-radius-pill) !important;
+  transition: var(--base14-transition-medium) !important;
+  font-family: var(--ifm-font-family-base);
+  color: var(--ifm-font-color-base);
+  padding: 0.4rem 2.5rem 0.4rem 2rem;
+}
+
+.navbar__search-input::placeholder {
+  color: var(--base14-orange-dark);
+  opacity: 0.7;
+}
+
+.navbar__search-input:focus {
+  background: var(--base14-white-glass-strong) !important;
+  border-color: var(--ifm-color-primary) !important;
+  box-shadow: 0 0 0 3px var(--base14-emerald-shadow-light);
+  outline: none !important;
+}
+
+.navbar__search-input:hover:not(:focus) {
+  background: linear-gradient(135deg,
+    var(--base14-orange-glass-hover),
+    var(--base14-orange-glass-light)) !important;
+  transform: translateY(-1px);
+}
+
+/* Dropdown menu - glass effect with gradient */
+.navbar__search .dropdownMenu {
+  background: linear-gradient(135deg,
+    var(--base14-orange-lightest),
+    var(--base14-amber-lightest)) !important;
+  border: 1px solid var(--base14-orange-glass-border) !important;
+  border-radius: var(--ifm-card-border-radius) !important;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+  backdrop-filter: blur(var(--base14-glass-blur));
+  -webkit-backdrop-filter: blur(var(--base14-glass-blur));
+  padding: var(--search-local-spacing, 12px) !important;
+  overflow: hidden;
+}
+
+/* Search result items */
+.navbar__search .dropdownMenu .suggestion {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border: 1px solid var(--ifm-color-primary-lightest) !important;
+  border-radius: var(--ifm-card-border-radius) !important;
+  box-shadow: none !important;
+  transition: var(--base14-transition-fast);
+  margin-bottom: 4px;
+}
+
+.navbar__search .dropdownMenu .suggestion:hover {
+  border-color: var(--ifm-color-primary-light) !important;
+  box-shadow: var(--base14-shadow-emerald) !important;
+  transform: translateY(-1px);
+}
+
+/* Active/cursor suggestion */
+.navbar__search .dropdownMenu .suggestion.cursor {
+  background: linear-gradient(135deg,
+    var(--ifm-color-primary),
+    var(--ifm-color-primary-dark)) !important;
+  border-color: var(--ifm-color-primary-dark) !important;
+  box-shadow: var(--base14-shadow-emerald) !important;
+}
+
+/* Highlight matched text */
+.navbar__search .dropdownMenu .suggestion mark {
+  color: var(--base14-orange-dark) !important;
+  background: none;
+  font-weight: 600;
+}
+
+.navbar__search .dropdownMenu .suggestion.cursor mark {
+  color: #fff !important;
+  text-decoration: underline;
+}
+
+/* Muted text (path, icons) */
+.navbar__search .hitPath,
+.navbar__search .hitTree,
+.navbar__search .hitIcon {
+  color: var(--base14-orange-dark) !important;
+  opacity: 0.7;
+}
+
+.navbar__search .suggestion.cursor .hitPath,
+.navbar__search .suggestion.cursor .hitTree,
+.navbar__search .suggestion.cursor .hitIcon {
+  color: rgba(255, 255, 255, 0.8) !important;
+  opacity: 1;
+}
+
+/* Footer link */
+.navbar__search .hitFooter a {
+  color: var(--ifm-color-primary) !important;
+  font-weight: 500;
+}
+
+/* No results state */
+.navbar__search .noResults {
+  color: var(--base14-orange-dark);
+}
+
+.navbar__search .noResultsIcon {
+  color: var(--base14-orange-dark) !important;
+  opacity: 0.6;
+}
+
+/* ---- Dark mode ---- */
+[data-theme='dark'] .navbar__search-input {
+  background: linear-gradient(135deg,
+    rgba(249, 115, 22, 0.15),
+    rgba(249, 115, 22, 0.08)) !important;
+  border-color: var(--base14-dark-border) !important;
+  color: var(--base14-dark-text);
+}
+
+[data-theme='dark'] .navbar__search-input::placeholder {
+  color: var(--base14-dark-text-secondary);
+}
+
+[data-theme='dark'] .navbar__search-input:focus {
+  background: var(--base14-dark-surface) !important;
+  border-color: var(--ifm-color-primary) !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+[data-theme='dark'] .navbar__search .dropdownMenu {
+  background: linear-gradient(135deg,
+    var(--base14-dark-surface),
+    var(--base14-dark-bg)) !important;
+  border-color: var(--base14-dark-border) !important;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-theme='dark'] .navbar__search .dropdownMenu .suggestion {
+  background: var(--base14-dark-surface) !important;
+  border-color: var(--base14-dark-border) !important;
+}
+
+[data-theme='dark'] .navbar__search .dropdownMenu .suggestion:hover {
+  border-color: var(--ifm-color-primary) !important;
+}
+
+[data-theme='dark'] .navbar__search .dropdownMenu .suggestion.cursor {
+  background: linear-gradient(135deg,
+    var(--ifm-color-primary-dark),
+    var(--ifm-color-primary-darker)) !important;
+  border-color: var(--ifm-color-primary) !important;
+}
+
+[data-theme='dark'] .navbar__search .dropdownMenu .suggestion mark {
+  color: var(--ifm-color-primary-light) !important;
+}
+
+[data-theme='dark'] .navbar__search .hitPath,
+[data-theme='dark'] .navbar__search .hitTree,
+[data-theme='dark'] .navbar__search .hitIcon {
+  color: var(--base14-dark-text-secondary) !important;
+}
+
+[data-theme='dark'] .navbar__search .hitFooter a {
+  color: var(--ifm-color-primary-light) !important;
+}
+
+[data-theme='dark'] .navbar__search .noResults,
+[data-theme='dark'] .navbar__search .noResultsIcon {
+  color: var(--base14-dark-text-secondary) !important;
+}
+
 /* Blog */
 article .blog-cover,
 .markdown .blog-cover {

@@ -148,6 +148,19 @@ const config: Config = {
         sidebarCollapsed: false,
       },
     ],
+    [
+      require.resolve("@easyops-cn/docusaurus-search-local"),
+      {
+        hashed: true,
+        indexDocs: true,
+        indexBlog: true,
+        indexPages: false,
+        docsRouteBasePath: ["/", "/scope"],
+        blogRouteBasePath: "/blog",
+        language: ["en"],
+        searchBarShortcutHint: false,
+      },
+    ],
   ],
 
   themeConfig: {
