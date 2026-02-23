@@ -63,6 +63,7 @@ provider.
 | [LLM Observability](./llm-observability) | End-to-end guide: GenAI semantic conventions, token/cost metrics, agent pipeline spans, evaluation tracking, PII scrubbing, production deployment |
 | [LangGraph Instrumentation](../../instrument/apps/auto-instrumentation/langgraph) | Framework-specific: LangGraph node wrapping, conditional edge routing, tool-calling nodes, state management, pipeline traces |
 | [LlamaIndex Instrumentation](../../instrument/apps/auto-instrumentation/llamaindex) | Framework-specific: LlamaIndex structured output, self-correction loops, multi-provider LLM factory, YAML prompt management |
+| [Vercel AI SDK Instrumentation](../../instrument/apps/auto-instrumentation/vercel-ai-sdk) | Framework-specific: Vercel AI SDK v6 LanguageModelV3Middleware, multi-stage pipeline spans, concurrent stage execution, Bun + Hono + pgvector |
 
 ## What Gets Instrumented
 

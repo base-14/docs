@@ -38,23 +38,23 @@ keywords:
 
 Implement OpenTelemetry instrumentation for LlamaIndex applications to enable
 comprehensive AI application monitoring, LLM cost tracking, and quality
-evaluation. This guide shows you how to instrument a LlamaIndex-powered
-content quality agent with custom GenAI semantic convention spans, multi-provider
-LLM support, structured output with self-correction, token and cost metrics,
-PII scrubbing, and eval-driven development with Promptfoo.
+evaluation. This guide shows you how to instrument a LlamaIndex-powered content
+quality agent with custom GenAI semantic convention spans, multi-provider LLM
+support, structured output with self-correction, token and cost metrics, PII
+scrubbing, and eval-driven development with Promptfoo.
 
-This guide intentionally uses **custom OpenTelemetry GenAI semantic conventions**
-rather than OpenInference or LlamaIndex auto-instrumentation. OpenInference
-produces non-standard attributes (`llm.*`, `input.*`, `output.*`) that pollute
-telemetry with framework-specific data outside the OTel GenAI semconv. Custom
-instrumentation gives you full control over what gets recorded and ensures
-your telemetry works with any OpenTelemetry-compatible backend.
+This guide intentionally uses **custom OpenTelemetry GenAI semantic
+conventions** rather than OpenInference or LlamaIndex auto-instrumentation.
+OpenInference produces non-standard attributes (`llm.*`, `input.*`, `output.*`)
+that pollute telemetry with framework-specific data outside the OTel GenAI
+semconv. Custom instrumentation gives you full control over what gets recorded
+and ensures your telemetry works with any OpenTelemetry-compatible backend.
 
-Whether you're building AI agents, content analysis pipelines, RAG systems,
-or multi-provider LLM applications, this guide provides production-ready
-patterns for unified AI observability where LLM spans, token metrics, cost
-attribution, and evaluation scores live alongside your standard HTTP and
-database telemetry in a single trace.
+Whether you're building AI agents, content analysis pipelines, RAG systems, or
+multi-provider LLM applications, this guide provides production-ready patterns
+for unified AI observability where LLM spans, token metrics, cost attribution,
+and evaluation scores live alongside your standard HTTP and database telemetry
+in a single trace.
 
 > **Note:** For general LLM observability patterns applicable to any Python
 > framework, see the
@@ -80,10 +80,11 @@ This documentation is designed for:
 
 This guide demonstrates how to:
 
-- Set up unified OpenTelemetry for a LlamaIndex application
-  (traces + metrics + logs)
+- Set up unified OpenTelemetry for a LlamaIndex application (traces + metrics +
+  logs)
 - Create custom LLM spans following OpenTelemetry GenAI semantic conventions
-- Support multiple LLM providers (OpenAI, Anthropic, Google) through a single interface
+- Support multiple LLM providers (OpenAI, Anthropic, Google) through a single
+  interface
 - Implement structured output with JSON self-correction loops
 - Track token usage and calculate cost per LLM call with a pricing table
 - Record evaluation metrics for content quality tracking
@@ -99,24 +100,23 @@ Before starting, ensure you have:
 - **Python 3.12 or later** installed (3.14+ recommended)
 - **An LLM API key** from at least one provider (OpenAI, Anthropic, or Google)
 - **Scout Collector** configured and accessible
-  - See
-    [Docker Compose Setup](../../collector-setup/docker-compose-example.md)
+  - See [Docker Compose Setup](../../collector-setup/docker-compose-example.md)
     for local development
 - Basic understanding of OpenTelemetry concepts (traces, spans, metrics)
 
 ### Compatibility Matrix
 
-| Component               | Minimum Version | Recommended     |
-| ----------------------- | --------------- | --------------- |
-| Python                  | 3.12            | 3.14+           |
-| opentelemetry-sdk       | 1.39.0          | 1.39.1+         |
-| opentelemetry-api       | 1.39.0          | 1.39.1+         |
-| FastAPI                 | 0.115+          | 0.128+          |
-| llama-index-core        | 0.14.0          | 0.14.13+        |
-| llama-index-llms-openai | 0.6.0           | 0.6.18+         |
-| llama-index-llms-anthropic | 0.10.0       | 0.10.8+         |
-| llama-index-llms-google-genai | 0.8.0     | 0.8.7+          |
-| Pydantic                | 2.0             | 2.12.5+         |
+| Component                     | Minimum Version | Recommended |
+| ----------------------------- | --------------- | ----------- |
+| Python                        | 3.12            | 3.14+       |
+| opentelemetry-sdk             | 1.39.0          | 1.39.1+     |
+| opentelemetry-api             | 1.39.0          | 1.39.1+     |
+| FastAPI                       | 0.115+          | 0.128+      |
+| llama-index-core              | 0.14.0          | 0.14.13+    |
+| llama-index-llms-openai       | 0.6.0           | 0.6.18+     |
+| llama-index-llms-anthropic    | 0.10.0          | 0.10.8+     |
+| llama-index-llms-google-genai | 0.8.0           | 0.8.7+      |
+| Pydantic                      | 2.0             | 2.12.5+     |
 
 ## Installation
 
@@ -334,9 +334,9 @@ OTEL_SDK_DISABLED=false
 SCOUT_ENVIRONMENT=production
 ```
 
-The Pydantic `Settings` class reads all environment variables
-automatically (see the Pydantic Settings tab). No code changes
-needed — set the variables and the application picks them up.
+The Pydantic `Settings` class reads all environment variables automatically (see
+the Pydantic Settings tab). No code changes needed — set the variables and the
+application picks them up.
 
 ```mdx-code-block
 </TabItem>
@@ -478,8 +478,8 @@ CMD ["uv", "run", "uvicorn", "content_quality.main:app", \
 
 ## Multi-Provider LLM Support
 
-Create a provider-agnostic LLM factory that works with OpenAI, Anthropic,
-and Google:
+Create a provider-agnostic LLM factory that works with OpenAI, Anthropic, and
+Google:
 
 ```python showLineNumbers title="src/content_quality/services/llm.py"
 from llama_index.core.llms import LLM
@@ -531,7 +531,7 @@ The `generate_structured` function is the core instrumented LLM call. It
 requests JSON output matching a Pydantic schema and retries with self-correction
 if validation fails:
 
-```python showLineNumbers title="src/content_quality/services/llm.py"
+````python showLineNumbers title="src/content_quality/services/llm.py"
 import json
 import re
 import time
@@ -667,7 +667,7 @@ async def generate_structured(
                 "error.type": type(e).__name__,
             })
             raise
-```
+````
 
 ## Custom GenAI Metrics
 
@@ -889,8 +889,8 @@ def scrub_pii(text: str) -> str:
 
 ### Content Capture Toggle
 
-Content capture is opt-in via environment variable. When enabled, prompts
-and completions are scrubbed and truncated before recording:
+Content capture is opt-in via environment variable. When enabled, prompts and
+completions are scrubbed and truncated before recording:
 
 ```python showLineNumbers title="src/content_quality/services/llm.py"
 def _is_content_capture_enabled() -> bool:
@@ -1121,9 +1121,10 @@ logging.getLogger("opentelemetry").setLevel(logging.DEBUG)
 
 **Solutions:**
 
-1. Verify your `PRICING` dictionary contains the exact model ID string
-   returned by the provider (e.g., `gpt-4.1-nano`, not `gpt-4.1`)
-2. Check that cost is calculated with `/1_000_000` (pricing is per million tokens)
+1. Verify your `PRICING` dictionary contains the exact model ID string returned
+   by the provider (e.g., `gpt-4.1-nano`, not `gpt-4.1`)
+2. Check that cost is calculated with `/1_000_000` (pricing is per million
+   tokens)
 
 #### Issue: Structured output validation fails repeatedly
 
@@ -1145,11 +1146,11 @@ logging.getLogger("opentelemetry").setLevel(logging.DEBUG)
 
 ### Protecting Sensitive Data
 
-- **Never record raw prompts** that may contain user data, API keys,
-  or credentials in span attributes or events
+- **Never record raw prompts** that may contain user data, API keys, or
+  credentials in span attributes or events
 - **Truncate content** to 500 characters to avoid oversized spans
-- **Disable content capture** in production if compliance requires
-  it — set `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=false`
+- **Disable content capture** in production if compliance requires it — set
+  `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=false`
 - **Scrub PII** before recording any content in telemetry (see
   [PII Scrubbing](#pii-scrubbing) for the regex patterns used)
 
@@ -1160,13 +1161,13 @@ For applications handling regulated data (GDPR, HIPAA, PCI-DSS):
 - Use opt-in content capture — disabled by default in this guide
 - Record only token counts and model metadata, not prompt content
 - Audit span attributes regularly for sensitive data leaks
-- Use the OTel Collector `attributes` processor to redact fields
-  before export if additional filtering is needed
+- Use the OTel Collector `attributes` processor to redact fields before export
+  if additional filtering is needed
 
 ## Performance Considerations
 
-OpenTelemetry overhead is negligible relative to LLM API latency. A typical
-LLM call takes 1-5 seconds; span creation adds microseconds.
+OpenTelemetry overhead is negligible relative to LLM API latency. A typical LLM
+call takes 1-5 seconds; span creation adds microseconds.
 
 ### Optimization Strategies
 
@@ -1200,32 +1201,32 @@ OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=false
 
 ### Why use custom instrumentation instead of OpenInference?
 
-OpenInference produces non-standard attributes (`llm.*`, `input.*`,
-`output.*`) that are specific to LlamaIndex and don't follow the
-OpenTelemetry GenAI semantic conventions. Custom instrumentation gives you
-standard attributes (`gen_ai.*`) that work with any OTel-compatible backend.
+OpenInference produces non-standard attributes (`llm.*`, `input.*`, `output.*`)
+that are specific to LlamaIndex and don't follow the OpenTelemetry GenAI
+semantic conventions. Custom instrumentation gives you standard attributes
+(`gen_ai.*`) that work with any OTel-compatible backend.
 
 ### Does OpenTelemetry add latency to LLM calls?
 
-No. Span creation takes microseconds. LLM API calls take seconds. The
-overhead is unmeasurable. `BatchSpanProcessor` exports in a background thread.
+No. Span creation takes microseconds. LLM API calls take seconds. The overhead
+is unmeasurable. `BatchSpanProcessor` exports in a background thread.
 
 ### How do I track cost across multiple LLM providers?
 
 Use the `gen_ai.client.cost` counter metric with `gen_ai.provider.name` and
-`gen_ai.request.model` attributes. Define pricing per model and calculate
-from token counts.
+`gen_ai.request.model` attributes. Define pricing per model and calculate from
+token counts.
 
 ### How does structured output self-correction work?
 
-When the LLM returns invalid JSON, the system appends the validation error
-to the conversation and asks the LLM to retry. This happens up to
+When the LLM returns invalid JSON, the system appends the validation error to
+the conversation and asks the LLM to retry. This happens up to
 `MAX_PARSE_RETRIES` times (default 2) before raising an error.
 
 ### Can I see prompts and completions in traces?
 
-Yes, if `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true`. Content
-is PII-scrubbed and truncated to 500 characters. Disable in production for
+Yes, if `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true`. Content is
+PII-scrubbed and truncated to 500 characters. Disable in production for
 compliance.
 
 ### How do I add a new LLM provider?
@@ -1247,14 +1248,14 @@ from the project root. Results can be viewed with `npx promptfoo view`.
 ### How does PII scrubbing work?
 
 Regex patterns detect and replace emails, phone numbers, SSNs, credit card
-numbers, and LinkedIn URLs with safe placeholders before any content is
-recorded in span events.
+numbers, and LinkedIn URLs with safe placeholders before any content is recorded
+in span events.
 
 ### Can I use this with RAG systems?
 
-Yes. The patterns here (GenAI spans, token tracking, cost metrics) apply to
-any LlamaIndex application. For RAG, add spans around your retrieval step
-with attributes like `retrieval.document_count` and `retrieval.strategy`.
+Yes. The patterns here (GenAI spans, token tracking, cost metrics) apply to any
+LlamaIndex application. For RAG, add spans around your retrieval step with
+attributes like `retrieval.document_count` and `retrieval.strategy`.
 
 ## What's Next?
 
@@ -1262,16 +1263,20 @@ with attributes like `retrieval.document_count` and `retrieval.strategy`.
 
 - [LLM Observability](../../../guides/ai-observability/llm-observability.md) -
   Comprehensive GenAI observability patterns
+- [LangGraph Instrumentation](./langgraph.md) - Python agent pipeline
+  instrumentation
+- [Vercel AI SDK Instrumentation](./vercel-ai-sdk.md) - TypeScript/Bun AI
+  pipeline instrumentation
 - [FastAPI Auto-Instrumentation](./fast-api.md) - FastAPI-specific setup
-- [Python Custom Instrumentation](../custom-instrumentation/python.md) -
-  Manual tracing fundamentals
+- [Python Custom Instrumentation](../custom-instrumentation/python.md) - Manual
+  tracing fundamentals
 
 ### Scout Platform Features
 
-- [Creating Alerts](../../../guides/creating-alerts-with-logx.md) -
-  Alert on cost spikes, error rates, or quality degradation
-- [Dashboard Creation](../../../guides/create-your-first-dashboard.md) -
-  Build dashboards for token usage, cost attribution, and evaluation scores
+- [Creating Alerts](../../../guides/creating-alerts-with-logx.md) - Alert on
+  cost spikes, error rates, or quality degradation
+- [Dashboard Creation](../../../guides/create-your-first-dashboard.md) - Build
+  dashboards for token usage, cost attribution, and evaluation scores
 
 ### Deployment and Operations
 
@@ -1282,7 +1287,7 @@ with attributes like `retrieval.document_count` and `retrieval.strategy`.
 
 ### Project Structure
 
-```text
+```text showLineNumbers
 ai-content-quality/
 ├── src/content_quality/
 │   ├── main.py              # FastAPI app with lifespan
@@ -1315,8 +1320,8 @@ ai-content-quality/
 
 ### Key Files
 
-| File           | Demonstrates                                      |
-| -------------- | ------------------------------------------------- |
+| File           | Demonstrates                                       |
+| -------------- | -------------------------------------------------- |
 | `telemetry.py` | OTel setup (traces + metrics + logs)               |
 | `llm.py`       | GenAI spans, token/cost metrics, structured output |
 | `analyzer.py`  | Evaluation events and quality metrics              |
@@ -1342,6 +1347,10 @@ repository.
 
 - [LLM Observability](../../../guides/ai-observability/llm-observability.md) -
   Comprehensive GenAI observability guide
+- [LangGraph Instrumentation](./langgraph.md) - Python agent pipeline
+  instrumentation
+- [Vercel AI SDK Instrumentation](./vercel-ai-sdk.md) - TypeScript/Bun AI
+  pipeline instrumentation
 - [FastAPI Auto-Instrumentation](./fast-api.md) - FastAPI-specific setup
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
   Local collector deployment

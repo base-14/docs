@@ -1,13 +1,13 @@
 ---
 title:
-  LangGraph OpenTelemetry Instrumentation - Complete AI Agent Monitoring
-  Guide | base14 Scout
+  LangGraph OpenTelemetry Instrumentation - Complete AI Agent Monitoring Guide |
+  base14 Scout
 sidebar_label: LangGraph
 sidebar_position: 6
 description:
   Complete guide to LangGraph OpenTelemetry instrumentation for AI agent
-  pipeline monitoring. Trace agent nodes, conditional routing, tool calls,
-  track tokens and costs, monitor state transitions with base14 Scout.
+  pipeline monitoring. Trace agent nodes, conditional routing, tool calls, track
+  tokens and costs, monitor state transitions with base14 Scout.
 keywords:
   [
     langgraph opentelemetry instrumentation,
@@ -34,33 +34,31 @@ keywords:
 
 # LangGraph
 
-Implement OpenTelemetry instrumentation for LangGraph applications to
-enable comprehensive AI agent pipeline monitoring, LLM cost tracking,
-and end-to-end trace visibility. This guide shows you how to instrument
-a LangGraph-powered agent pipeline with custom GenAI semantic convention
-spans, conditional edge routing observability, tool-calling node traces,
-multi-provider LLM support, token and cost metrics, PII scrubbing, and
-production deployment with Docker Compose.
+Implement OpenTelemetry instrumentation for LangGraph applications to enable
+comprehensive AI agent pipeline monitoring, LLM cost tracking, and end-to-end
+trace visibility. This guide shows you how to instrument a LangGraph-powered
+agent pipeline with custom GenAI semantic convention spans, conditional edge
+routing observability, tool-calling node traces, multi-provider LLM support,
+token and cost metrics, PII scrubbing, and production deployment with Docker
+Compose.
 
-LangGraph applications present unique observability challenges beyond
-standard LLM calls. An agent pipeline involves multiple nodes executing
-sequentially or conditionally, each potentially making LLM calls,
-database queries, or tool invocations. Without instrumentation, you
-cannot see which node is slow, which routing decision was taken, or how
-much each agent step costs. OpenTelemetry bridges this gap by letting
-you wrap every node, edge, and tool call with spans that carry
-LangGraph-specific context alongside standard HTTP and database
+LangGraph applications present unique observability challenges beyond standard
+LLM calls. An agent pipeline involves multiple nodes executing sequentially or
+conditionally, each potentially making LLM calls, database queries, or tool
+invocations. Without instrumentation, you cannot see which node is slow, which
+routing decision was taken, or how much each agent step costs. OpenTelemetry
+bridges this gap by letting you wrap every node, edge, and tool call with spans
+that carry LangGraph-specific context alongside standard HTTP and database
 telemetry.
 
-Whether you're building multi-step agent pipelines, sales automation
-workflows, RAG systems with agent orchestration, or any application
-that uses LangGraph's StateGraph for complex control flow, this guide
-provides production-ready patterns for unified AI agent observability
-where every node execution, routing decision, LLM call, and database
-query lives in a single trace on base14 Scout.
+Whether you're building multi-step agent pipelines, sales automation workflows,
+RAG systems with agent orchestration, or any application that uses LangGraph's
+StateGraph for complex control flow, this guide provides production-ready
+patterns for unified AI agent observability where every node execution, routing
+decision, LLM call, and database query lives in a single trace on base14 Scout.
 
-> **Note:** For general LLM observability patterns applicable to any
-> Python framework, see the
+> **Note:** For general LLM observability patterns applicable to any Python
+> framework, see the
 > [LLM Observability guide](../../../guides/ai-observability/llm-observability.md).
 > This guide focuses specifically on LangGraph integration patterns.
 
@@ -68,14 +66,14 @@ query lives in a single trace on base14 Scout.
 
 This documentation is designed for:
 
-- **AI/ML engineers**: building LangGraph agent pipelines and needing
-  visibility into node performance, routing decisions, and cost
+- **AI/ML engineers**: building LangGraph agent pipelines and needing visibility
+  into node performance, routing decisions, and cost
 - **Backend developers**: adding agent orchestration to existing FastAPI
   applications and wanting unified tracing across all layers
-- **Platform teams**: standardizing observability across AI agent
-  services and traditional microservices
-- **Engineering teams**: migrating from LangSmith tracing to
-  OpenTelemetry for vendor-neutral observability
+- **Platform teams**: standardizing observability across AI agent services and
+  traditional microservices
+- **Engineering teams**: migrating from LangSmith tracing to OpenTelemetry for
+  vendor-neutral observability
 - **DevOps engineers**: deploying LangGraph applications with production
   monitoring, cost alerting, and pipeline health tracking
 
@@ -83,19 +81,17 @@ This documentation is designed for:
 
 This guide demonstrates how to:
 
-- Set up unified OpenTelemetry for a LangGraph application
-  (traces + metrics + logs)
+- Set up unified OpenTelemetry for a LangGraph application (traces + metrics +
+  logs)
 - Wrap LangGraph nodes with `wrap_agent` for automatic span creation
-- Instrument conditional edge routing with span attributes for
-  routing decisions
+- Instrument conditional edge routing with span attributes for routing decisions
 - Trace tool-calling nodes with dedicated tool spans
 - Create a pipeline-level parent span for aggregate metrics
-- Track token usage and calculate cost per LLM call with a pricing
-  table
+- Track token usage and calculate cost per LLM call with a pricing table
 - Record evaluation metrics for agent output quality tracking
 - Scrub PII from prompts and completions before recording in telemetry
-- Support multiple LLM providers (Anthropic, OpenAI, Google) through
-  a single interface
+- Support multiple LLM providers (Anthropic, OpenAI, Google) through a single
+  interface
 - Deploy with Docker Compose and the OpenTelemetry Collector
 
 ## Prerequisites
@@ -103,30 +99,28 @@ This guide demonstrates how to:
 Before starting, ensure you have:
 
 - **Python 3.12 or later** installed (3.13+ recommended)
-- **An LLM API key** from at least one provider (Anthropic, OpenAI,
-  or Google)
+- **An LLM API key** from at least one provider (Anthropic, OpenAI, or Google)
 - **Scout Collector** configured and accessible
-  - See
-    [Docker Compose Setup](../../collector-setup/docker-compose-example.md)
+  - See [Docker Compose Setup](../../collector-setup/docker-compose-example.md)
     for local development
 - Basic understanding of OpenTelemetry concepts (traces, spans, metrics)
 - Familiarity with LangGraph's StateGraph API
 
 ### Compatibility Matrix
 
-| Component               | Minimum Version | Recommended     |
-| ----------------------- | --------------- | --------------- |
-| Python                  | 3.12            | 3.13+           |
-| LangGraph               | 0.2             | 1.0.6+          |
-| langgraph-core          | 0.2             | 0.3.38+         |
-| langchain-core          | 0.3             | 0.3.63+         |
-| opentelemetry-sdk       | 1.39.0          | 1.39.1+         |
-| opentelemetry-api       | 1.39.0          | 1.39.1+         |
-| FastAPI                 | 0.115+          | 0.128+          |
-| SQLAlchemy              | 2.0             | 2.0.45+         |
-| Anthropic SDK           | 0.40+           | 0.76+           |
-| OpenAI SDK              | 1.0+            | 1.60+           |
-| Google GenAI SDK        | 1.0+            | 1.59+           |
+| Component         | Minimum Version | Recommended |
+| ----------------- | --------------- | ----------- |
+| Python            | 3.12            | 3.13+       |
+| LangGraph         | 0.2             | 1.0.6+      |
+| langgraph-core    | 0.2             | 0.3.38+     |
+| langchain-core    | 0.3             | 0.3.63+     |
+| opentelemetry-sdk | 1.39.0          | 1.39.1+     |
+| opentelemetry-api | 1.39.0          | 1.39.1+     |
+| FastAPI           | 0.115+          | 0.128+      |
+| SQLAlchemy        | 2.0             | 2.0.45+     |
+| Anthropic SDK     | 0.40+           | 0.76+       |
+| OpenAI SDK        | 1.0+            | 1.60+       |
+| Google GenAI SDK  | 1.0+            | 1.59+       |
 
 ## Installation
 
@@ -392,9 +386,9 @@ OTEL_SDK_DISABLED=false
 SCOUT_ENVIRONMENT=production
 ```
 
-The Pydantic `Settings` class reads all environment variables
-automatically (see the Pydantic Settings tab). No code changes
-needed — set the variables and the application picks them up.
+The Pydantic `Settings` class reads all environment variables automatically (see
+the Pydantic Settings tab). No code changes needed — set the variables and the
+application picks them up.
 
 ```mdx-code-block
 </TabItem>
@@ -440,7 +434,7 @@ processors:
         action: upsert
 
 exporters:
-  otlphttp/b14:
+  otlp_http/b14:
     endpoint: ${SCOUT_ENDPOINT}
     auth:
       authenticator: oauth2client
@@ -457,15 +451,15 @@ service:
     traces:
       receivers: [otlp]
       processors: [memory_limiter, attributes, batch]
-      exporters: [otlphttp/b14, debug]
+      exporters: [otlp_http/b14, debug]
     metrics:
       receivers: [otlp]
       processors: [memory_limiter, attributes, batch]
-      exporters: [otlphttp/b14, debug]
+      exporters: [otlp_http/b14, debug]
     logs:
       receivers: [otlp]
       processors: [memory_limiter, attributes, batch]
-      exporters: [otlphttp/b14, debug]
+      exporters: [otlp_http/b14, debug]
 ```
 
 ### Docker Compose
@@ -550,16 +544,15 @@ CMD ["uv", "run", "uvicorn", "sales_intelligence.main:app", \
 
 ## Framework-Specific Features
 
-This section covers LangGraph-specific instrumentation patterns that
-go beyond generic LLM observability. These patterns give you visibility
-into the agent orchestration layer — which nodes executed, what routing
-decisions were made, how state flowed through the pipeline, and where
-time was spent.
+This section covers LangGraph-specific instrumentation patterns that go beyond
+generic LLM observability. These patterns give you visibility into the agent
+orchestration layer — which nodes executed, what routing decisions were made,
+how state flowed through the pipeline, and where time was spent.
 
 ### State Definition
 
-Define the pipeline state as a TypedDict. LangGraph passes this state
-object between nodes, and each node returns updates to merge back:
+Define the pipeline state as a TypedDict. LangGraph passes this state object
+between nodes, and each node returns updates to merge back:
 
 ```python showLineNumbers title="src/sales_intelligence/state.py"
 from dataclasses import dataclass, field
@@ -598,9 +591,9 @@ class AgentState(TypedDict, total=False):
 
 ### Node Instrumentation with `wrap_agent`
 
-Create a wrapper function that adds an OTel span around each
-LangGraph node. Every node execution becomes a child span of
-the pipeline span, carrying the agent name and business context:
+Create a wrapper function that adds an OTel span around each LangGraph node.
+Every node execution becomes a child span of the pipeline span, carrying the
+agent name and business context:
 
 ```python showLineNumbers title="src/sales_intelligence/graph.py"
 from opentelemetry import trace
@@ -652,9 +645,8 @@ def wrap_agent(name, agent_fn, needs_session=False):
 
 ### Conditional Edge Routing
 
-LangGraph's conditional edges let you branch the pipeline based
-on state. Instrument the routing function to record which path
-was taken and why:
+LangGraph's conditional edges let you branch the pipeline based on state.
+Instrument the routing function to record which path was taken and why:
 
 ```python showLineNumbers title="src/sales_intelligence/graph.py"
 def route_after_score(state: AgentState) -> str:
@@ -741,8 +733,8 @@ def create_pipeline(session):
 
 ### Tool-Calling Nodes
 
-When agent nodes invoke tools (database searches, API calls,
-calculations), wrap each tool invocation with a dedicated span:
+When agent nodes invoke tools (database searches, API calls, calculations), wrap
+each tool invocation with a dedicated span:
 
 ```python showLineNumbers title="src/sales_intelligence/agents/research.py"
 from opentelemetry import trace
@@ -801,8 +793,8 @@ async def research_agent(state, session):
 
 ### Pipeline-Level Parent Span
 
-Wrap the entire pipeline run in a parent span to capture
-aggregate metrics. All node spans become children of this span:
+Wrap the entire pipeline run in a parent span to capture aggregate metrics. All
+node spans become children of this span:
 
 ```python showLineNumbers title="src/sales_intelligence/graph.py"
 async def run_pipeline(
@@ -859,7 +851,7 @@ async def run_pipeline(
 
 The resulting trace looks like this:
 
-```text title="Unified trace for POST /campaigns/{id}/run"
+```text showLineNumbers title="Unified trace for POST /campaigns/{id}/run"
 POST /campaigns/{id}/run                           8.4s  [auto: FastAPI]
 ├─ db.query SELECT connections                    12ms   [auto: SQLAlchemy]
 ├─ pipeline.run                                    8.3s  [custom: pipeline]
@@ -883,10 +875,9 @@ POST /campaigns/{id}/run                           8.4s  [auto: FastAPI]
 
 ### Multi-Provider LLM Factory
 
-Support multiple LLM providers through a single interface. Each
-provider's API calls are automatically captured by the httpx
-auto-instrumentor, while custom GenAI spans add model-specific
-context:
+Support multiple LLM providers through a single interface. Each provider's API
+calls are automatically captured by the httpx auto-instrumentor, while custom
+GenAI spans add model-specific context:
 
 ```python showLineNumbers title="src/sales_intelligence/llm.py"
 from anthropic import AsyncAnthropic
@@ -949,17 +940,16 @@ async def call_provider(
     raise ValueError(f"Unknown provider: {provider!r}")
 ```
 
-For detailed provider-specific handling including Google Gemini,
-see the
+For detailed provider-specific handling including Google Gemini, see the
 [LLM Observability guide](../../../guides/ai-observability/llm-observability.md#custom-llm-instrumentation).
 
 ## Custom Manual Instrumentation
 
 ### GenAI Span Attributes
 
-Create LLM spans following OpenTelemetry GenAI semantic conventions.
-Each LLM call within an agent node becomes a child span with model,
-token, and cost attributes:
+Create LLM spans following OpenTelemetry GenAI semantic conventions. Each LLM
+call within an agent node becomes a child span with model, token, and cost
+attributes:
 
 ```python showLineNumbers title="src/sales_intelligence/llm.py"
 import time
@@ -1086,8 +1076,8 @@ error_counter = meter.create_counter(
 
 ### Token and Cost Tracking
 
-Define pricing per model and record cost metrics with business
-context for attribution by agent and campaign:
+Define pricing per model and record cost metrics with business context for
+attribution by agent and campaign:
 
 ```python showLineNumbers title="src/sales_intelligence/llm.py"
 MODEL_PRICING = {
@@ -1153,8 +1143,7 @@ def _record_token_metrics(
 
 ### Evaluation Metrics
 
-Track agent output quality as OpenTelemetry metrics and span
-events:
+Track agent output quality as OpenTelemetry metrics and span events:
 
 ```python showLineNumbers title="src/sales_intelligence/agents/evaluate.py"
 from opentelemetry import metrics, trace
@@ -1252,8 +1241,8 @@ def scrub_pii(text: str) -> str:
 
 ### Error Handling with Trace IDs
 
-Include trace IDs in API error responses so users can reference
-them when reporting issues:
+Include trace IDs in API error responses so users can reference them when
+reporting issues:
 
 ```python showLineNumbers title="src/sales_intelligence/main.py"
 from fastapi import Request
@@ -1343,48 +1332,42 @@ logging.getLogger("opentelemetry").setLevel(logging.DEBUG)
 
 **Solutions:**
 
-1. Confirm the OTel Collector is running:
-   `curl http://localhost:13133`
-2. Check collector logs:
-   `docker compose logs otel-collector`
-3. Verify `OTLP_ENDPOINT` points to the collector, not directly
-   to Scout
-4. Ensure `SCOUT_CLIENT_ID` and `SCOUT_CLIENT_SECRET` are set
-   in the collector environment
+1. Confirm the OTel Collector is running: `curl http://localhost:13133`
+2. Check collector logs: `docker compose logs otel-collector`
+3. Verify `OTLP_ENDPOINT` points to the collector, not directly to Scout
+4. Ensure `SCOUT_CLIENT_ID` and `SCOUT_CLIENT_SECRET` are set in the collector
+   environment
 
 #### Issue: Token counts are zero
 
 **Solutions:**
 
-1. Check your LLM SDK version — older versions may not expose
-   `usage` on the response object
-2. Verify the provider response has `input_tokens` and
-   `output_tokens` (naming varies by provider)
-3. For Google GenAI, check `response.usage_metadata` instead
-   of `response.usage`
+1. Check your LLM SDK version — older versions may not expose `usage` on the
+   response object
+2. Verify the provider response has `input_tokens` and `output_tokens` (naming
+   varies by provider)
+3. For Google GenAI, check `response.usage_metadata` instead of `response.usage`
 
 #### Issue: Agent spans not nested under pipeline span
 
 **Solutions:**
 
-1. Ensure `wrap_agent` creates spans inside the pipeline span
-   context — call `pipeline.ainvoke()` within the
-   `pipeline.run` span (see
+1. Ensure `wrap_agent` creates spans inside the pipeline span context — call
+   `pipeline.ainvoke()` within the `pipeline.run` span (see
    [Pipeline-Level Parent Span](#pipeline-level-parent-span))
-2. Verify `setup_telemetry()` is called **before** creating
-   the FastAPI app
-3. Check that async context propagation is working — LangGraph
-   preserves the OTel context across `await` boundaries
+2. Verify `setup_telemetry()` is called **before** creating the FastAPI app
+3. Check that async context propagation is working — LangGraph preserves the
+   OTel context across `await` boundaries
 
 #### Issue: Cost metrics not accurate
 
 **Solutions:**
 
-1. Verify your `MODEL_PRICING` dictionary contains the exact
-   model ID string returned by the provider (e.g.,
-   `claude-sonnet-4-20250514`, not `claude-sonnet-4`)
-2. Check that cost is calculated with `/1_000_000` (pricing is
-   per million tokens)
+1. Verify your `MODEL_PRICING` dictionary contains the exact model ID string
+   returned by the provider (e.g., `claude-sonnet-4-20250514`, not
+   `claude-sonnet-4`)
+2. Check that cost is calculated with `/1_000_000` (pricing is per million
+   tokens)
 
 #### Issue: Conditional edge routing not visible in traces
 
@@ -1392,25 +1375,25 @@ logging.getLogger("opentelemetry").setLevel(logging.DEBUG)
 
 1. Ensure the routing function reads the current span with
    `trace.get_current_span()` and sets routing attributes
-2. Verify the routing function is called within the span
-   context of the preceding node
+2. Verify the routing function is called within the span context of the
+   preceding node
 
 ## Security Considerations
 
 ### Protecting Sensitive Data
 
-- **Never record raw prompts** that may contain user data, API
-  keys, or credentials in span attributes or events
+- **Never record raw prompts** that may contain user data, API keys, or
+  credentials in span attributes or events
 - **Truncate content** to 500 characters to avoid oversized spans
-- **Disable content capture** in production if compliance requires
-  it — set `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=false`
+- **Disable content capture** in production if compliance requires it — set
+  `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=false`
 - **Scrub PII** before recording any content in telemetry (see
   [PII Scrubbing](#pii-scrubbing) for the regex patterns used)
 
 ### SQL Query Obfuscation
 
-The SQLAlchemy auto-instrumentor captures SQL statements by default.
-For sensitive queries, disable enhanced reporting:
+The SQLAlchemy auto-instrumentor captures SQL statements by default. For
+sensitive queries, disable enhanced reporting:
 
 ```python showLineNumbers
 SQLAlchemyInstrumentor().instrument(
@@ -1426,14 +1409,13 @@ For applications handling regulated data (GDPR, HIPAA, PCI-DSS):
 - Use opt-in content capture — disabled by default in this guide
 - Record only token counts and model metadata, not prompt content
 - Audit span attributes regularly for sensitive data leaks
-- Use the OTel Collector `attributes` processor to redact fields
-  before export if additional filtering is needed
+- Use the OTel Collector `attributes` processor to redact fields before export
+  if additional filtering is needed
 
 ## Performance Considerations
 
-OpenTelemetry overhead is negligible relative to LLM API latency.
-A typical LLM call takes 1-5 seconds; span creation adds
-microseconds.
+OpenTelemetry overhead is negligible relative to LLM API latency. A typical LLM
+call takes 1-5 seconds; span creation adds microseconds.
 
 ### Optimization Strategies
 
@@ -1451,8 +1433,7 @@ trace_provider.add_span_processor(
 
 #### 2. Truncate Content Events
 
-Always truncate prompts and completions to keep span sizes
-reasonable:
+Always truncate prompts and completions to keep span sizes reasonable:
 
 ```python showLineNumbers
 scrub_pii(prompt)[:500]
@@ -1478,77 +1459,68 @@ FastAPIInstrumentor.instrument_app(
 
 ### Does OpenTelemetry add latency to LLM calls?
 
-No. Span creation takes microseconds. LLM API calls take seconds.
-The overhead is unmeasurable. `BatchSpanProcessor` exports spans
-in a background thread.
+No. Span creation takes microseconds. LLM API calls take seconds. The overhead
+is unmeasurable. `BatchSpanProcessor` exports spans in a background thread.
 
 ### How does this differ from LangSmith tracing?
 
-LangSmith provides deep LangGraph-specific tracing but operates
-in isolation from your HTTP and database telemetry. OpenTelemetry
-gives you a single trace that spans all layers — you can see that
-a slow HTTP response was caused by a specific agent node making an
-LLM call, and that the same request also ran database queries.
-LangSmith cannot show that correlation.
+LangSmith provides deep LangGraph-specific tracing but operates in isolation
+from your HTTP and database telemetry. OpenTelemetry gives you a single trace
+that spans all layers — you can see that a slow HTTP response was caused by a
+specific agent node making an LLM call, and that the same request also ran
+database queries. LangSmith cannot show that correlation.
 
 ### Which LangGraph versions are supported?
 
-This guide supports LangGraph 0.2+ and recommends 1.0.6+. The
-`StateGraph` API and `add_conditional_edges` have been stable since
-0.2. The `wrap_agent` pattern works with any version that supports
-async node functions.
+This guide supports LangGraph 0.2+ and recommends 1.0.6+. The `StateGraph` API
+and `add_conditional_edges` have been stable since 0.2. The `wrap_agent` pattern
+works with any version that supports async node functions.
 
 ### How do I instrument conditional edges?
 
-Use `trace.get_current_span()` inside your routing function to
-record attributes like `routing.decision` and
-`routing.qualified_count`. See
-[Conditional Edge Routing](#conditional-edge-routing) for the
-full pattern.
+Use `trace.get_current_span()` inside your routing function to record attributes
+like `routing.decision` and `routing.qualified_count`. See
+[Conditional Edge Routing](#conditional-edge-routing) for the full pattern.
 
 ### How do I track cost across multiple providers?
 
-Use the `gen_ai.client.cost` counter metric with
-`gen_ai.provider.name` and `gen_ai.request.model` attributes.
-Define pricing per model and calculate from token counts. This
-enables `sum(gen_ai.client.cost) by (gen_ai.agent.name)` in
+Use the `gen_ai.client.cost` counter metric with `gen_ai.provider.name` and
+`gen_ai.request.model` attributes. Define pricing per model and calculate from
+token counts. This enables `sum(gen_ai.client.cost) by (gen_ai.agent.name)` in
 your dashboards.
 
 ### Can I see prompts and completions in traces?
 
-Yes, if you set
-`OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true`. Content
-is PII-scrubbed and truncated to 500 characters. Disable in
-production for compliance.
+Yes, if you set `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true`.
+Content is PII-scrubbed and truncated to 500 characters. Disable in production
+for compliance.
 
 ### How do I add a new agent node?
 
-Create the agent function, wrap it with `wrap_agent("name", fn)`,
-add the node to the `StateGraph` with `graph.add_node()`, and
-connect it with `add_edge` or `add_conditional_edges`. The
-`wrap_agent` wrapper automatically handles span creation.
+Create the agent function, wrap it with `wrap_agent("name", fn)`, add the node
+to the `StateGraph` with `graph.add_node()`, and connect it with `add_edge` or
+`add_conditional_edges`. The `wrap_agent` wrapper automatically handles span
+creation.
 
 ### How does trace propagation work across subgraphs?
 
-LangGraph subgraphs execute within the same Python async context.
-OpenTelemetry automatically propagates the trace context across
-`await` boundaries, so subgraph node spans appear as children of
-the parent graph's span without additional configuration.
+LangGraph subgraphs execute within the same Python async context. OpenTelemetry
+automatically propagates the trace context across `await` boundaries, so
+subgraph node spans appear as children of the parent graph's span without
+additional configuration.
 
 ### How do I instrument tool-calling nodes?
 
 Wrap each tool invocation with a dedicated span using
-`tracer.start_as_current_span("tool.<name>")`. Set
-`gen_ai.operation.name` to `"tool"` and `tool.name` to the
-specific tool. See [Tool-Calling Nodes](#tool-calling-nodes)
-for the full pattern.
+`tracer.start_as_current_span("tool.<name>")`. Set `gen_ai.operation.name` to
+`"tool"` and `tool.name` to the specific tool. See
+[Tool-Calling Nodes](#tool-calling-nodes) for the full pattern.
 
 ### Can I use this with LangChain alongside LangGraph?
 
-Yes. LangGraph builds on top of `langchain-core`. The
-`wrap_agent` pattern works regardless of whether your node
-functions use LangChain components internally. The GenAI spans
-capture the LLM calls at the provider SDK level, not the
+Yes. LangGraph builds on top of `langchain-core`. The `wrap_agent` pattern works
+regardless of whether your node functions use LangChain components internally.
+The GenAI spans capture the LLM calls at the provider SDK level, not the
 framework level.
 
 ## What's Next?
@@ -1557,20 +1529,19 @@ framework level.
 
 - [LLM Observability](../../../guides/ai-observability/llm-observability.md) -
   Comprehensive GenAI observability patterns
-- [LlamaIndex Instrumentation](./llamaindex.md) -
-  LlamaIndex-specific setup
-- [FastAPI Auto-Instrumentation](./fast-api.md) -
-  FastAPI-specific setup
-- [Python Custom Instrumentation](../custom-instrumentation/python.md) -
-  Manual tracing fundamentals
+- [LlamaIndex Instrumentation](./llamaindex.md) - LlamaIndex-specific setup
+- [Vercel AI SDK Instrumentation](./vercel-ai-sdk.md) - TypeScript/Bun AI
+  pipeline instrumentation
+- [FastAPI Auto-Instrumentation](./fast-api.md) - FastAPI-specific setup
+- [Python Custom Instrumentation](../custom-instrumentation/python.md) - Manual
+  tracing fundamentals
 
 ### Scout Platform Features
 
-- [Creating Alerts](../../../guides/creating-alerts-with-logx.md) -
-  Alert on cost spikes, error rates, or quality degradation
-- [Dashboard Creation](../../../guides/create-your-first-dashboard.md) -
-  Build dashboards for token usage, cost attribution, and
-  evaluation scores
+- [Creating Alerts](../../../guides/creating-alerts-with-logx.md) - Alert on
+  cost spikes, error rates, or quality degradation
+- [Dashboard Creation](../../../guides/create-your-first-dashboard.md) - Build
+  dashboards for token usage, cost attribution, and evaluation scores
 
 ### Deployment and Operations
 
@@ -1581,7 +1552,7 @@ framework level.
 
 ### Project Structure
 
-```text
+```text showLineNumbers
 ai-sales-intelligence/
 ├── src/sales_intelligence/
 │   ├── main.py              # FastAPI app with lifespan
@@ -1607,22 +1578,22 @@ ai-sales-intelligence/
 
 ### Key Files
 
-| File           | Demonstrates                                    |
-| -------------- | ----------------------------------------------- |
-| `telemetry.py` | OTel setup (traces + metrics + logs)             |
-| `llm.py`       | GenAI spans, token/cost metrics, retry/fallback  |
+| File           | Demonstrates                                        |
+| -------------- | --------------------------------------------------- |
+| `telemetry.py` | OTel setup (traces + metrics + logs)                |
+| `llm.py`       | GenAI spans, token/cost metrics, retry/fallback     |
 | `graph.py`     | LangGraph pipeline, `wrap_agent`, conditional edges |
-| `state.py`     | TypedDict state flowing through nodes            |
-| `evaluate.py`  | Evaluation events and quality metrics            |
-| `research.py`  | Tool-calling node with database search           |
-| `pii.py`       | PII scrubbing before telemetry recording         |
-| `config.py`    | Provider-agnostic settings with Pydantic         |
-| `compose.yml`  | Docker deployment with OTel Collector            |
+| `state.py`     | TypedDict state flowing through nodes               |
+| `evaluate.py`  | Evaluation events and quality metrics               |
+| `research.py`  | Tool-calling node with database search              |
+| `pii.py`       | PII scrubbing before telemetry recording            |
+| `config.py`    | Provider-agnostic settings with Pydantic            |
+| `compose.yml`  | Docker deployment with OTel Collector               |
 
 ### GitHub Repository
 
 For a complete working example, see the
-[AI Sales Intelligence](https://github.com/base14/examples/tree/main/python/ai-sales-intelligence)
+[AI Sales Intelligence](https://github.com/base-14/examples/tree/main/python/ai-sales-intelligence)
 repository.
 
 ## References
@@ -1636,9 +1607,9 @@ repository.
 
 - [LLM Observability](../../../guides/ai-observability/llm-observability.md) -
   Comprehensive GenAI observability guide
-- [LlamaIndex Instrumentation](./llamaindex.md) -
-  LlamaIndex-specific setup
-- [FastAPI Auto-Instrumentation](./fast-api.md) -
-  FastAPI-specific setup
+- [LlamaIndex Instrumentation](./llamaindex.md) - LlamaIndex-specific setup
+- [Vercel AI SDK Instrumentation](./vercel-ai-sdk.md) - TypeScript/Bun AI
+  pipeline instrumentation
+- [FastAPI Auto-Instrumentation](./fast-api.md) - FastAPI-specific setup
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
   Local collector deployment
