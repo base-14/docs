@@ -49,5 +49,3 @@ jobs:
 
       - name: Build
         run: npm run build
-        env:
-          ENABLE_ALGOLIA_CRAWLER: false

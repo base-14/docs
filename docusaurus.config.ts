@@ -343,20 +343,6 @@ const config: Config = {
       theme: prismThemes.vsLight,
       darkTheme: prismThemes.dracula,
     },
-    // Only enable Algolia if ENABLE_ALGOLIA_CRAWLER is set to 'true'
-    ...(process.env.ENABLE_ALGOLIA_CRAWLER === "true" &&
-    process.env.ALGOLIA_APP_ID &&
-    process.env.ALGOLIA_SEARCH_API_KEY &&
-    process.env.ALGOLIA_DOCSEARCH_INDEX_NAME
-      ? {
-          algolia: {
-            appId: process.env.ALGOLIA_APP_ID,
-            apiKey: process.env.ALGOLIA_SEARCH_API_KEY,
-            indexName: process.env.ALGOLIA_DOCSEARCH_INDEX_NAME,
-            contextualSearch: true,
-          },
-        }
-      : {}),
   } satisfies Preset.ThemeConfig,
 };
 export default config;
