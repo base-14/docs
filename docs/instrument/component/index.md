@@ -136,6 +136,12 @@ Each component exposes metrics through one of two methods:
    MinIO, OpenSearch via prometheus-exporter plugin, PgBouncer via
    pgbouncer-exporter, Nomad, Couchbase, Pulsar)
 
+Java applications using JMX have two collection approaches: the OTel
+JMX Scraper (remote, OTLP-native) and the Prometheus JMX Exporter
+(in-process agent). See
+[JMX Metrics Collection Guide](../collector-setup/jmx-metrics-collection-guide.md)
+for a detailed comparison.
+
 NGINX also supports **distributed traces** via `nginx-module-otel` and
 **log collection** via the filelog receiver.
 

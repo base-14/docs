@@ -15,7 +15,7 @@ keywords:
     aws fargate monitoring,
   ]
 tags: [ecs, opentelemetry, base14 scout]
-sidebar_position: 7
+sidebar_position: 8
 ---
 
 # AWS ECS

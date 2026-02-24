@@ -391,6 +391,8 @@ jmx-scraper-replica:
 
 ## Related Guides
 
+- [JMX Metrics Collection Guide](../collector-setup/jmx-metrics-collection-guide.md)
+  — Compare JMX Scraper vs JMX Exporter
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
   — Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md)
