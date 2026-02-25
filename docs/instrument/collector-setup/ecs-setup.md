@@ -427,8 +427,8 @@ instrumentation
 Download the required files:
 
 ```shell
-curl -o task-definition.json \
-  https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/ec2/task-definition.json
+curl -o agent-task-definition.json \
+  https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/ec2/agent-task-definition.json
 
 curl -o scout-agent-collector-config.yaml \
   https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/ec2/scout-agent-collector-config.yaml
@@ -439,6 +439,8 @@ curl -o scout-agent-collector-config.yaml \
 - Use PostgreSQL, Redis, RabbitMQ, AWS Firehose, etc., receivers in the agent
   collector to avoid data duplication.
 - Review the configuration to remove or add new pipelines before proceeding.
+- The agent collector uses host ports 4327 (gRPC) and 4328 (HTTP) to avoid
+  conflicts with the daemon collector's standard ports (4317/4318).
 - Visit
   [docs.base14.io](https://docs.base14.io/instrument/collector-setup/otel-collector-config)
   for more details on the configuration.
@@ -498,7 +500,7 @@ AWS_TASK_EXECUTION_ROLE='<task execution role ARN>' \
 TASK_NAME='Scout_agent_collector' \
 SERVICE_NAME='Scout_agent_collector' \
 SECRET_ARN='<secret ARN from previous step>' \
-envsubst < task-definition.json > scout-agent-collector-task-definition.json
+envsubst < agent-task-definition.json > scout-agent-collector-task-definition.json
 ```
 
 :::tip
@@ -554,8 +556,8 @@ aws ecs describe-services \
 Download the required files:
 
 ```shell
-curl -o task-definition.json \
-  https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/ec2/task-definition.json
+curl -o daemon-task-definition.json \
+  https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/ec2/daemon-task-definition.json
 
 curl -o scout-daemon-collector-config.yaml \
   https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/ec2/scout-daemon-collector-config.yaml
@@ -625,7 +627,7 @@ AWS_TASK_EXECUTION_ROLE='<task execution role ARN>' \
 TASK_NAME='Scout_daemon_collector' \
 SERVICE_NAME='Scout_daemon_collector' \
 SECRET_ARN='<secret ARN from previous step>' \
-envsubst < task-definition.json > scout-daemon-collector-task-definition.json
+envsubst < daemon-task-definition.json > scout-daemon-collector-task-definition.json
 ```
 
 :::tip
@@ -685,8 +687,11 @@ monitoring.
 Download all required files:
 
 ```shell
-curl -o task-definition.json \
-  https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/ec2/task-definition.json
+curl -o daemon-task-definition.json \
+  https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/ec2/daemon-task-definition.json
+
+curl -o agent-task-definition.json \
+  https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/ec2/agent-task-definition.json
 
 curl -o scout-daemon-collector-config.yaml \
   https://raw.githubusercontent.com/base-14/docs/main/configs/ecs/ec2/scout-daemon-collector-config.yaml
@@ -774,14 +779,14 @@ AWS_TASK_EXECUTION_ROLE='<task execution role ARN>' \
 TASK_NAME='Scout_daemon_collector' \
 SERVICE_NAME='Scout_daemon_collector' \
 SECRET_ARN='<daemon secret ARN from previous step>' \
-envsubst < task-definition.json > scout-daemon-collector-task-definition.json
+envsubst < daemon-task-definition.json > scout-daemon-collector-task-definition.json
 
 # Generate agent collector task definition
 AWS_TASK_EXECUTION_ROLE='<task execution role ARN>' \
 TASK_NAME='Scout_agent_collector' \
 SERVICE_NAME='Scout_agent_collector' \
 SECRET_ARN='<agent secret ARN from previous step>' \
-envsubst < task-definition.json > scout-agent-collector-task-definition.json
+envsubst < agent-task-definition.json > scout-agent-collector-task-definition.json
 ```
 
 :::tip
