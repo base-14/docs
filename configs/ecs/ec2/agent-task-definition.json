@@ -1,0 +1,47 @@
+{
+  "executionRoleArn": "${AWS_TASK_EXECUTION_ROLE}",
+  "containerDefinitions": [
+    {
+      "portMappings": [
+        {
+          "name": "grpc-port",
+          "containerPort": 4317,
+          "hostPort": 4327,
+          "protocol": "tcp"
+        },
+        {
+          "name": "http-port",
+          "containerPort": 4318,
+          "hostPort": 4328,
+          "protocol": "tcp"
+        }
+      ],
+      "cpu": 256,
+      "memory": 512,
+      "image": "otel/opentelemetry-collector-contrib:0.130.0",
+      "essential": true,
+      "command": [
+        "--config=env:SCOUT_CONFIG_CONTENT"
+      ],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "user": "0",
+      "privileged": false,
+      "readonlyRootFilesystem": true,
+      "name": "${TASK_NAME}",
+      "secrets": [
+        {
+          "name": "SCOUT_CONFIG_CONTENT",
+          "valueFrom": "${SECRET_ARN}"
+        }
+      ],
+      "systemControls": []
+    }
+  ],
+  "family": "${SERVICE_NAME}",
+  "requiresCompatibilities": [
+    "EC2"
+  ],
+  "networkMode": "bridge",
+  "volumes": []
+}
