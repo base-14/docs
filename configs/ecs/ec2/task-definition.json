@@ -62,6 +62,9 @@
         }
       ],
       "volumesFrom": [],
+      "user": "0",
+      "privileged": false,
+      "readonlyRootFilesystem": true,
       "name": "${TASK_NAME}",
       "secrets": [
         {
