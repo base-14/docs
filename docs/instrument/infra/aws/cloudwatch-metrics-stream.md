@@ -121,23 +121,93 @@ zip -r dependencies.zip ../python
 ![lambda functions page](/img/cloudwatch-kinesis-stream/lambda-functions-page.png)
 
 - Select `Author from scratch`.
-- Give a function name.
-- Choose `python x.x` as the runtime.
+- Give a function name (e.g., `cloudwatch-metrics-to-scout`).
+- Choose `Python 3.12` as the runtime.
 - Select `x86_64` as the Architecture.
+- Click `Create function`.
 
-- Once the function is created, follow the below steps to configure it,
+### 5. Configure the Lambda function
 
-- Click on the `Configuration` tab and then click on `permissions`.
-- Click on the Role name and give S3 Full access for the above created bucket.
-- Click on `Code` and scroll to add a new layer.
-- Click on `Add Layer`.
-- Select `Custom Layer` and choose the layer that we created.
-- Navigate back to the code and click on `Add trigger`.
-- Select `S3` as the source and select the bucket from dropdown.
-- Click on `Add`.
-- Navigate to `Configuration` and then to `Environment variables`.
-- Click on `edit` and these two environment variables with correct values.
-  (`OTEL_COLLECTOR_URL`, `S3_BUCKET_NAME`, `OTEL_SERVICE_NAME`).
+Once the function is created, follow the steps below to configure it.
+
+#### Add S3 permissions
+
+The Lambda execution role needs access to read objects from the
+S3 bucket where Firehose writes metrics.
+
+1. Click on the `Configuration` tab and then click on `Permissions`.
+2. Click on the **Role name** link to open the IAM role in a new tab.
+3. Click `Add permissions` → `Create inline policy`.
+4. Switch to the `JSON` tab and paste the following policy:
+
+```json showLineNumbers title="s3-read-policy.json"
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowListBucket",
+      "Effect": "Allow",
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws:s3:::cloudwatch-metrics-stream-bucket"
+    },
+    {
+      "Sid": "AllowGetObject",
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::cloudwatch-metrics-stream-bucket/*"
+    }
+  ]
+}
+```
+
+> Replace `cloudwatch-metrics-stream-bucket` with your actual
+> bucket name if you chose a different name in Step 1.
+
+1. Click `Next`, give the policy a name (e.g.,
+   `cloudwatch-stream-s3-read`), and click `Create policy`.
+
+#### Set the timeout
+
+The default Lambda timeout of 3 seconds is too short for
+reading S3 objects and forwarding metrics over HTTP.
+
+1. In the `Configuration` tab, click on `General configuration`.
+2. Click `Edit`.
+3. Set **Timeout** to `1 min 0 sec`.
+4. Click `Save`.
+
+#### Add the dependencies layer
+
+1. Click on `Code` and scroll down to the **Layers** section.
+2. Click `Add a layer`.
+3. Select `Custom layers` and choose the layer created in step 1.
+4. Click `Add`.
+
+#### Add the S3 trigger
+
+1. Navigate back to the function overview and click `Add trigger`.
+2. Select `S3` as the source.
+3. Select the bucket (`cloudwatch-metrics-stream-bucket`) from the
+   dropdown.
+4. Leave the event type as `All object create events`.
+5. Click `Add`.
+
+#### Set environment variables
+
+The Lambda code reads four environment variables for
+authentication and endpoint configuration.
+
+1. In the `Configuration` tab, click on `Environment variables`.
+2. Click `Edit` and add the following variables:
+
+| Key             | Value                                           |
+| --------------- | ----------------------------------------------- |
+| `CLIENT_ID`     | Your Scout OAuth client ID                      |
+| `CLIENT_SECRET` | Your Scout OAuth client secret                  |
+| `TOKEN_URL`     | Your Scout token endpoint URL                   |
+| `ENDPOINT_URL`  | Your Scout OTLP metrics endpoint (HTTP)         |
+
+1. Click `Save`.
 
 Now the actual part, copy the below code into the `code source` in your lambda
 function.
