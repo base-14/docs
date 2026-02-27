@@ -93,6 +93,12 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 | Temporal  | [Temporal](./collecting-temporal-telemetry)   | Workflow latency, task queues, persistence, shards |
 | Nomad     | [Nomad](./collecting-nomad-telemetry)         | Raft consensus, broker, RPC, job status, autopilot |
 
+### Continuous Delivery
+
+| Component | Guide                                       | Key Metrics                                           |
+| --------- | ------------------------------------------- | ----------------------------------------------------- |
+| ArgoCD    | [ArgoCD](./collecting-argocd-telemetry)     | App sync status, health, reconciliation, Git ops      |
+
 ### Web Servers & Proxies
 
 | Component          | Guide                                                         | Key Metrics                                          |
@@ -134,7 +140,7 @@ Each component exposes metrics through one of two methods:
    JMX exporter, Consul, Vault, etcd, Solr, Temporal, NGINX,
    ClickHouse, NATS via prometheus-nats-exporter, Traefik, Envoy,
    MinIO, OpenSearch via prometheus-exporter plugin, PgBouncer via
-   pgbouncer-exporter, Nomad, Couchbase, Pulsar)
+   pgbouncer-exporter, Nomad, Couchbase, Pulsar, ArgoCD)
 
 Java applications using JMX have two collection approaches: the OTel
 JMX Scraper (remote, OTLP-native) and the Prometheus JMX Exporter
