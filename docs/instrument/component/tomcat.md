@@ -147,6 +147,43 @@ OTEL_METRIC_EXPORT_INTERVAL=10000 \
 java -jar opentelemetry-jmx-scraper-1.54.0-alpha.jar
 ```
 
+Move the JAR to a permanent location:
+
+```bash showLineNumbers
+sudo mkdir -p /opt/otel
+sudo mv opentelemetry-jmx-scraper-1.54.0-alpha.jar /opt/otel/
+```
+
+Create a systemd service to run the scraper as a managed service:
+
+```bash showLineNumbers title="/etc/systemd/system/otel-jmx-scraper.service"
+sudo tee /etc/systemd/system/otel-jmx-scraper.service > /dev/null <<'EOF'
+[Unit]
+Description=OpenTelemetry JMX Scraper for Tomcat
+After=network.target tomcat.service
+
+[Service]
+Type=simple
+Environment=OTEL_JMX_SERVICE_URL=service:jmx:rmi:///jndi/rmi://localhost:9010/jmxrmi
+Environment=OTEL_JMX_TARGET_SYSTEM=jvm,tomcat
+Environment=OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
+Environment=OTEL_METRIC_EXPORT_INTERVAL=10000
+ExecStart=/usr/bin/java -jar /opt/otel/opentelemetry-jmx-scraper-1.54.0-alpha.jar
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
+Start the scraper:
+
+```bash showLineNumbers
+sudo systemctl daemon-reload
+sudo systemctl enable --now otel-jmx-scraper
+```
+
 For Docker, build a simple image with the scraper JAR:
 
 ```dockerfile showLineNumbers title="jmx-scraper/Dockerfile"
