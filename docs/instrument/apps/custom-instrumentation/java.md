@@ -1004,3 +1004,7 @@ public class TraceContextExtractor {
   up Scout Collector for local development
 - [Creating Alerts](../../../guides/creating-alerts-with-logx.md) - Set up
   alerts for your telemetry data
+- [Spring AI LLM Observability][spring-ai] — Spring AI with
+  three-layer OTel instrumentation
+
+[spring-ai]: ../../../guides/ai-observability/spring-ai-llm-observability.md

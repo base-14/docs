@@ -1,12 +1,12 @@
 ---
 title:
-  AI Observability Overview - LLM and Agent Instrumentation with
-  OpenTelemetry | base14 Scout
+  AI Observability Overview - LLM and Agent Instrumentation with OpenTelemetry |
+  base14 Scout
 sidebar_label: AI Observability
 sidebar_position: 8
 description:
-  Instrument AI and LLM apps with OpenTelemetry. Trace LLM calls,
-  track tokens and costs, monitor agent pipelines with base14 Scout.
+  Instrument AI and LLM apps with OpenTelemetry. Trace LLM calls, track tokens
+  and costs, monitor agent pipelines with base14 Scout.
 keywords:
   [
     ai observability,
@@ -23,61 +23,64 @@ keywords:
 
 # AI Observability
 
-Instrument AI and LLM applications with OpenTelemetry to get
-**unified traces** that connect HTTP requests, agent orchestration,
-LLM API calls, and database queries in a single view.
+Instrument AI and LLM applications with OpenTelemetry to get **unified traces**
+that connect HTTP requests, agent orchestration, LLM API calls, and database
+queries in a single view.
 
 ## The Problem
 
-Traditional APM tools (Datadog, New Relic) capture HTTP and
-database telemetry. Specialized AI tools (LangSmith, Weights &
-Biases) capture LLM traces. Neither shows the full picture:
+Traditional APM tools (Datadog, New Relic) capture HTTP and database telemetry.
+Specialized AI tools (LangSmith, Weights & Biases) capture LLM traces. Neither
+shows the full picture:
 
-| Tool Type | Captures | Misses |
-|-----------|----------|--------|
-| Traditional APM | HTTP requests, DB queries, latency | Model name, tokens, cost, prompt content |
+| Tool Type         | Captures                           | Misses                                   |
+| ----------------- | ---------------------------------- | ---------------------------------------- |
+| Traditional APM   | HTTP requests, DB queries, latency | Model name, tokens, cost, prompt content |
 | AI-specific tools | LLM calls, prompts, model metadata | HTTP context, DB queries, infrastructure |
-| **OpenTelemetry** | **All of the above in one trace** | — |
+| **OpenTelemetry** | **All of the above in one trace**  | —                                        |
 
-With OpenTelemetry, a single trace shows that a slow HTTP response
-was caused by a specific LLM call in a specific agent, which also
-triggered 3 database queries and a fallback to a different
-provider.
+With OpenTelemetry, a single trace shows that a slow HTTP response was caused by
+a specific LLM call in a specific agent, which also triggered 3 database queries
+and a fallback to a different provider.
 
 ## When to Use AI Observability
 
-| Use Case | Recommendation |
-|----------|----------------|
-| Track LLM token usage and costs | AI Observability |
-| Monitor agent pipeline performance | AI Observability |
-| Evaluate LLM output quality over time | AI Observability |
-| Debug slow AI requests end-to-end | AI Observability |
-| Attribute costs to agents or business operations | AI Observability |
-| Standard HTTP/database monitoring only | [Auto-instrumentation](../../instrument/apps/auto-instrumentation/) |
-| Generic custom spans and metrics | [Custom instrumentation](../../instrument/apps/custom-instrumentation/) |
+| Use Case                                         | Recommendation                                                          |
+| ------------------------------------------------ | ----------------------------------------------------------------------- |
+| Track LLM token usage and costs                  | AI Observability                                                        |
+| Monitor agent pipeline performance               | AI Observability                                                        |
+| Evaluate LLM output quality over time            | AI Observability                                                        |
+| Debug slow AI requests end-to-end                | AI Observability                                                        |
+| Attribute costs to agents or business operations | AI Observability                                                        |
+| Standard HTTP/database monitoring only           | [Auto-instrumentation](../../instrument/apps/auto-instrumentation/)     |
+| Generic custom spans and metrics                 | [Custom instrumentation](../../instrument/apps/custom-instrumentation/) |
 
 ## Guides
 
-| Guide | What It Covers |
-|-------|---------------|
-| [LLM Observability](./llm-observability) | End-to-end guide: GenAI semantic conventions, token/cost metrics, agent pipeline spans, evaluation tracking, PII scrubbing, production deployment |
-| [LangGraph Instrumentation](../../instrument/apps/auto-instrumentation/langgraph) | Framework-specific: LangGraph node wrapping, conditional edge routing, tool-calling nodes, state management, pipeline traces |
-| [LlamaIndex Instrumentation](../../instrument/apps/auto-instrumentation/llamaindex) | Framework-specific: LlamaIndex structured output, self-correction loops, multi-provider LLM factory, YAML prompt management |
-| [Vercel AI SDK Instrumentation](../../instrument/apps/auto-instrumentation/vercel-ai-sdk) | Framework-specific: Vercel AI SDK v6 LanguageModelV3Middleware, multi-stage pipeline spans, concurrent stage execution, Bun + Hono + pgvector |
+| Guide                                                                                     | What It Covers                                                                                                                                                                |
+| ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [LLM Observability](./llm-observability)                                                  | End-to-end guide (Python): GenAI semantic conventions, token/cost metrics, agent pipeline spans, evaluation tracking, PII scrubbing, production deployment                    |
+| [Rust LLM Observability](./rust-llm-observability)                                        | End-to-end guide (Rust): GenAI semantic conventions, multi-provider LLM with fallback, token/cost metrics, multi-stage pipeline spans, retry observability, Docker deployment |
+| [Spring AI LLM Observability](./spring-ai-llm-observability)                                    | End-to-end guide (Java): Three-layer instrumentation (Java Agent + Spring AI + manual OTel), GenAI semantic conventions, tool calling, RAG, domain metrics, Docker deployment |
+| [LangGraph Instrumentation](../../instrument/apps/auto-instrumentation/langgraph)         | Framework-specific: LangGraph node wrapping, conditional edge routing, tool-calling nodes, state management, pipeline traces                                                  |
+| [LlamaIndex Instrumentation](../../instrument/apps/auto-instrumentation/llamaindex)       | Framework-specific: LlamaIndex structured output, self-correction loops, multi-provider LLM factory, YAML prompt management                                                   |
+| [Vercel AI SDK Instrumentation](../../instrument/apps/auto-instrumentation/vercel-ai-sdk) | Framework-specific: Vercel AI SDK v6 LanguageModelV3Middleware, multi-stage pipeline spans, concurrent stage execution, Bun + Hono + pgvector                                 |
 
 ## What Gets Instrumented
 
-AI observability builds on top of auto and custom instrumentation,
-adding an LLM-specific layer:
+AI observability builds on top of auto and custom instrumentation, adding an
+LLM-specific layer:
 
 ### Auto-Instrumentation Layer (zero code changes)
 
-- **HTTP requests** via FastAPI/Django/Flask instrumentors
-- **Database queries** via SQLAlchemy/Django ORM instrumentors
-- **Outbound HTTP** via httpx/requests instrumentors (captures raw
-  LLM API calls)
-- **Log correlation** via logging instrumentor (adds trace_id to
-  logs)
+- **HTTP requests** via FastAPI/Django/Flask instrumentors (Python), tower-http
+  TraceLayer (Rust), Java Agent (Spring WebFlux)
+- **Database queries** via SQLAlchemy/Django ORM instrumentors (Python), SQLx
+  tracing (Rust), Java Agent (JDBC/R2DBC)
+- **Outbound HTTP** via httpx/requests instrumentors (Python), Java Agent
+  (captures raw LLM API calls)
+- **Log correlation** via logging instrumentor (Python),
+  OpenTelemetryTracingBridge (Rust), Java Agent (Logback/Log4j)
 
 ### Custom AI Layer (GenAI semantic conventions)
 
@@ -110,33 +113,38 @@ OpenTelemetry defines
 [GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/)
 for standardized LLM telemetry. Key attributes:
 
-| Attribute | Example | Purpose |
-|-----------|---------|---------|
-| `gen_ai.operation.name` | `"chat"` | Operation type |
-| `gen_ai.provider.name` | `"anthropic"` | LLM provider |
-| `gen_ai.request.model` | `"claude-sonnet-4"` | Model used |
-| `gen_ai.usage.input_tokens` | `1240` | Tokens consumed |
-| `gen_ai.usage.output_tokens` | `320` | Tokens generated |
-| `gen_ai.agent.name` | `"draft"` | Agent in pipeline |
+| Attribute                    | Example             | Purpose           |
+| ---------------------------- | ------------------- | ----------------- |
+| `gen_ai.operation.name`      | `"chat"`            | Operation type    |
+| `gen_ai.provider.name`       | `"anthropic"`       | LLM provider      |
+| `gen_ai.request.model`       | `"claude-sonnet-4"` | Model used        |
+| `gen_ai.usage.input_tokens`  | `1240`              | Tokens consumed   |
+| `gen_ai.usage.output_tokens` | `320`               | Tokens generated  |
+| `gen_ai.agent.name`          | `"draft"`           | Agent in pipeline |
 
 ### GenAI Metrics
 
 Custom metrics for dashboards and alerting:
 
-| Metric | Type | Purpose |
-|--------|------|---------|
-| `gen_ai.client.token.usage` | Histogram | Token consumption by model/agent |
-| `gen_ai.client.operation.duration` | Histogram | LLM call latency |
-| `gen_ai.client.cost` | Counter | Cost in USD by model/agent |
-| `gen_ai.evaluation.score` | Histogram | Output quality scores |
-| `gen_ai.client.error.count` | Counter | Errors by provider/type |
+| Metric                             | Type      | Purpose                          |
+| ---------------------------------- | --------- | -------------------------------- |
+| `gen_ai.client.token.usage`        | Histogram | Token consumption by model/agent |
+| `gen_ai.client.operation.duration` | Histogram | LLM call latency                 |
+| `gen_ai.client.cost`               | Counter   | Cost in USD by model/agent       |
+| `gen_ai.evaluation.score`          | Histogram | Output quality scores            |
+| `gen_ai.client.error.count`        | Counter   | Errors by provider/type          |
 
 ## Next Steps
 
-1. **Follow the [LLM Observability guide](./llm-observability)**
-   for a complete setup walkthrough
-2. **Set up [auto-instrumentation](../../instrument/apps/auto-instrumentation/)**
-   for your web framework if you haven't already
-3. **Configure the
+1. **Follow the [LLM Observability guide](./llm-observability)** for a complete
+   Python setup walkthrough
+2. **Follow the [Rust LLM Observability guide](./rust-llm-observability)** for
+   Rust AI applications with manual GenAI instrumentation
+3. **Follow the [Spring AI LLM Observability guide](./spring-ai-llm-observability)**
+   for Java Spring AI applications with three-layer instrumentation
+4. **Set up
+   [auto-instrumentation](../../instrument/apps/auto-instrumentation/)** for
+   your web framework if you haven't already
+5. **Configure the
    [OpenTelemetry Collector](../../instrument/collector-setup/docker-compose-example.md)**
    to export telemetry to base14 Scout
