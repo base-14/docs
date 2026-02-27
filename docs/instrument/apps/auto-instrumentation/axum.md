@@ -1643,6 +1643,11 @@ This complete example is available in our
 
 ## Related Guides
 
+- [Rust LLM Observability][rust-llm] - GenAI semantic conventions,
+  token/cost tracking, multi-provider LLM with fallback for Rust AI apps
+
+[rust-llm]: ../../../guides/ai-observability/rust-llm-observability
+
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
   up collector for local development
 - [Go Instrumentation](./go.md) - Another systems programming language
