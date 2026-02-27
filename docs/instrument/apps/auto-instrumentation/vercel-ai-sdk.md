@@ -5,9 +5,9 @@ title:
 sidebar_label: Vercel AI SDK
 sidebar_position: 8
 description:
-  Complete guide to Vercel AI SDK OpenTelemetry instrumentation for AI pipeline
-  monitoring. Trace LLM calls, track tokens and costs, monitor multi-stage
-  pipelines with GenAI semantic conventions and base14 Scout.
+  Trace LLM calls, track tokens and costs, and monitor multi-stage AI pipelines.
+  Instrument Vercel AI SDK with OpenTelemetry GenAI semantic conventions and
+  base14 Scout.
 keywords:
   [
     vercel ai sdk opentelemetry,
@@ -58,6 +58,16 @@ uses Vercel AI SDK for LLM orchestration, this guide provides production-ready
 patterns for unified AI observability where every pipeline stage, LLM call, and
 database query lives in a single trace on base14 Scout.
 
+:::tip TL;DR
+
+Instrument Vercel AI SDK v6 applications with OpenTelemetry by implementing a
+`LanguageModelV3Middleware` that attaches GenAI semantic convention attributes
+to every LLM call. This gives you unified traces spanning HTTP requests,
+pipeline stages, LLM completions, and database queries, with per-model token and
+cost tracking.
+
+:::
+
 > **Note:** For general LLM observability patterns applicable to any framework,
 > see the
 > [LLM Observability guide](../../../guides/ai-observability/llm-observability.md).
@@ -79,7 +89,7 @@ This documentation is designed for:
 - **DevOps engineers**: deploying AI applications with production monitoring,
   cost alerting, and pipeline health tracking
 
-## Overview
+## Vercel AI SDK OpenTelemetry Overview
 
 This guide demonstrates how to:
 
@@ -1251,12 +1261,12 @@ For applications handling regulated data (GDPR, HIPAA, PCI-DSS):
 OpenTelemetry overhead is negligible relative to LLM API latency. A typical LLM
 call takes 1-5 seconds; span creation adds microseconds.
 
-| Metric                 | Typical Impact     |
-| ---------------------- | ------------------ |
-| Span creation overhead | < 0.05 ms per span |
-| CPU overhead           | < 0.5%             |
-| Memory (OTel SDK)      | ~5-10 MB           |
-| Network (batch export) | ~50 KB/min         |
+| Metric                 | Typical Impact        |
+| ---------------------- | --------------------- |
+| Span creation overhead | &lt; 0.05 ms per span |
+| CPU overhead           | &lt; 0.5%             |
+| Memory (OTel SDK)      | ~5-10 MB              |
+| Network (batch export) | ~50 KB/min            |
 
 ### Optimization Strategies
 
@@ -1308,7 +1318,7 @@ filter/noisy:
 No. Span creation takes microseconds. LLM API calls take seconds. The overhead
 is unmeasurable. `BatchSpanProcessor` exports spans in a background thread.
 
-### Why use `LanguageModelV3Middleware` instead of Traceloop?
+### How do I add OpenTelemetry to Vercel AI SDK without Traceloop?
 
 Traceloop's `@traceloop/node-server-sdk` provides auto- instrumentation but
 produces attributes that may not align with the OpenTelemetry GenAI semantic
@@ -1322,7 +1332,7 @@ This guide requires AI SDK v6+ (`ai@6.0.0`). The `LanguageModelV3Middleware`
 interface and `wrapLanguageModel` API were introduced in v6. Earlier versions
 used a different middleware signature.
 
-### How does the `--preload` flag work?
+### How do I initialize OpenTelemetry before my Bun application starts?
 
 Bun's `--preload` flag runs the specified file before the application entry
 point. This ensures `NodeSDK.start()` and `PgInstrumentation` initialize before
@@ -1342,14 +1352,14 @@ Yes. The middleware records `gen_ai.user.message` and `gen_ai.assistant.message`
 span events with truncated content. Remove these `span.addEvent` calls in
 production for compliance.
 
-### How do I add a new LLM provider?
+### How do I add OpenAI, Anthropic, or other providers to Vercel AI SDK?
 
 Add the provider SDK package (e.g., `@ai-sdk/mistral`), add its entry to
 `PROVIDER_META` with the semconv name and server address, add model pricing to
 `MODEL_PRICING`, and create a case in `buildRawModel`. The semconv middleware
 wraps it automatically.
 
-### How does fallback work?
+### How does LLM provider fallback appear in OpenTelemetry traces?
 
 When all retries are exhausted for the primary model, the fallback middleware
 catches the error and calls the secondary model's `doGenerate` directly. The
