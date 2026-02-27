@@ -1,12 +1,13 @@
 ---
 title:
-  LLM Observability with OpenTelemetry - Unified AI Application
-  Tracing Guide | base14 Scout
+  LLM Observability with OpenTelemetry - Unified AI Application Tracing Guide |
+  base14 Scout
 sidebar_label: LLM Observability
 sidebar_position: 8
 description:
-  Instrument AI and LLM apps with OpenTelemetry. Trace LLM calls,
-  track tokens and costs, monitor agent pipelines with base14 Scout.
+  Trace LLM calls, track token usage and costs, and monitor AI agent pipelines
+  end-to-end with OpenTelemetry GenAI semantic conventions in Python and base14
+  Scout.
 keywords:
   [
     llm observability,
@@ -31,52 +32,52 @@ keywords:
 
 # LLM Observability
 
-Implement unified observability for AI and LLM applications using
-OpenTelemetry. This guide shows you how to trace every layer of
-an AI application — from HTTP requests through agent orchestration
-to LLM API calls and database queries — in a single correlated
-trace using the OpenTelemetry Python SDK and base14 Scout.
+Implement unified observability for AI and LLM applications using OpenTelemetry.
+This guide shows you how to trace every layer of an AI application — from HTTP
+requests through agent orchestration to LLM API calls and database queries — in
+a single correlated trace using the OpenTelemetry Python SDK and base14 Scout.
 
-AI applications introduce observability challenges that traditional
-APM tools were not designed for. An LLM call is not just an HTTP
-request — it carries semantic meaning: which model was used, how
-many tokens were consumed, what it cost, whether the output passed
-quality evaluation. Tools like LangSmith or Weights & Biases
-capture LLM-specific telemetry but operate in isolation, creating
-blind spots between your application layer (HTTP, database) and
-your AI layer (prompts, models, agents). OpenTelemetry bridges
-this gap with GenAI semantic conventions that let you capture
-LLM-specific context alongside standard application telemetry.
+AI applications introduce observability challenges that traditional APM tools
+were not designed for. An LLM call is not just an HTTP request — it carries
+semantic meaning: which model was used, how many tokens were consumed, what it
+cost, whether the output passed quality evaluation. Tools like LangSmith or
+Weights & Biases capture LLM-specific telemetry but operate in isolation,
+creating blind spots between your application layer (HTTP, database) and your AI
+layer (prompts, models, agents). OpenTelemetry bridges this gap with GenAI
+semantic conventions that let you capture LLM-specific context alongside
+standard application telemetry.
 
-Whether you are building AI agents with LangGraph, LangChain, or
-custom orchestration, instrumenting LLM calls from Anthropic,
-OpenAI, or Google, or trying to understand why your AI pipeline
-is slow and expensive, this guide provides production-ready
-patterns for unified AI observability. You will learn how to
-combine auto-instrumentation for HTTP and database layers with
-custom instrumentation for LLM calls, token tracking, cost
-attribution, and quality evaluation — all visible in a single
-trace on base14 Scout.
+Whether you are building AI agents with LangGraph, LangChain, or custom
+orchestration, instrumenting LLM calls from Anthropic, OpenAI, or Google, or
+trying to understand why your AI pipeline is slow and expensive, this guide
+provides production-ready patterns for unified AI observability. You will learn
+how to combine auto-instrumentation for HTTP and database layers with custom
+instrumentation for LLM calls, token tracking, cost attribution, and quality
+evaluation — all visible in a single trace on base14 Scout.
 
 ![LLM observability dashboard in Scout](/img/docs/llm-o11y.png)
 
-## Overview
+:::tip TL;DR
+
+Use OpenTelemetry GenAI semantic conventions to trace LLM calls with model,
+token, and cost attributes alongside auto-instrumented HTTP and database spans.
+This gives you a single trace from HTTP request through agent orchestration to
+LLM completion, with token tracking and cost attribution per provider and model.
+
+:::
+
+## LLM Observability Overview
 
 This guide demonstrates how to:
 
-- Set up unified OpenTelemetry for an AI application (traces +
-  metrics)
-- Use auto-instrumentation for HTTP, database, and external API
-  layers
-- Create custom LLM spans following OpenTelemetry GenAI semantic
-  conventions
+- Set up unified OpenTelemetry for an AI application (traces + metrics)
+- Use auto-instrumentation for HTTP, database, and external API layers
+- Create custom LLM spans following OpenTelemetry GenAI semantic conventions
 - Track token usage and calculate cost per LLM call
 - Attribute costs to specific agents and business operations
-- Instrument agent pipelines (LangGraph or custom) with
-  parent-child spans
+- Instrument agent pipelines (LangGraph or custom) with parent-child spans
 - Record evaluation metrics for LLM output quality tracking
-- Scrub PII from prompts and completions before recording in
-  telemetry
+- Scrub PII from prompts and completions before recording in telemetry
 - Deploy with Docker Compose and the OpenTelemetry Collector
 - Export traces and metrics to base14 Scout
 
@@ -84,55 +85,51 @@ This guide demonstrates how to:
 
 This documentation is designed for:
 
-- **AI/ML engineers**: building LLM-powered features and needing
-  visibility into model performance, cost, and quality
-- **Backend developers**: adding AI capabilities (chat, agents,
-  RAG) to existing applications and wanting unified tracing
-- **Platform teams**: standardizing observability across AI
-  services and traditional microservices
-- **Engineering teams**: migrating from LangSmith, Weights &
-  Biases, or Helicone to open-standard observability with
-  OpenTelemetry
-- **DevOps engineers**: deploying AI applications with production
-  monitoring, cost alerting, and quality tracking
+- **AI/ML engineers**: building LLM-powered features and needing visibility into
+  model performance, cost, and quality
+- **Backend developers**: adding AI capabilities (chat, agents, RAG) to existing
+  applications and wanting unified tracing
+- **Platform teams**: standardizing observability across AI services and
+  traditional microservices
+- **Engineering teams**: migrating from LangSmith, Weights & Biases, or Helicone
+  to open-standard observability with OpenTelemetry
+- **DevOps engineers**: deploying AI applications with production monitoring,
+  cost alerting, and quality tracking
 
 ## Prerequisites
 
 Before starting, ensure you have:
 
 - **Python 3.12 or later** installed (3.13+ recommended)
-- **An LLM API key** from at least one provider (Anthropic,
-  OpenAI, or Google)
-- **Scout Collector** configured and accessible from your
-  application
+- **An LLM API key** from at least one provider (Anthropic, OpenAI, or Google)
+- **Scout Collector** configured and accessible from your application
   - See
     [Docker Compose Setup](../../instrument/collector-setup/docker-compose-example.md)
     for local development
   - See
     [Kubernetes Helm Setup](../../instrument/collector-setup/kubernetes-helm-setup.md)
     for production deployment
-- Basic understanding of OpenTelemetry concepts (traces, spans,
-  metrics)
+- Basic understanding of OpenTelemetry concepts (traces, spans, metrics)
 
 ### Compatibility Matrix
 
-| Component         | Minimum Version | Recommended     |
-| ----------------- | --------------- | --------------- |
-| Python            | 3.12            | 3.13+           |
-| opentelemetry-sdk | 1.39.0          | 1.39.1+         |
-| opentelemetry-api | 1.39.0          | 1.39.1+         |
-| FastAPI           | 0.115+          | 0.128+          |
-| SQLAlchemy        | 2.0             | 2.0.45+         |
-| LangGraph         | 0.2+            | 1.0.6+          |
-| Anthropic SDK     | 0.40+           | 0.76+           |
-| OpenAI SDK        | 1.0+            | 1.60+           |
-| Google GenAI SDK  | 1.0+            | 1.59+           |
+| Component         | Minimum Version | Recommended |
+| ----------------- | --------------- | ----------- |
+| Python            | 3.12            | 3.13+       |
+| opentelemetry-sdk | 1.39.0          | 1.39.1+     |
+| opentelemetry-api | 1.39.0          | 1.39.1+     |
+| FastAPI           | 0.115+          | 0.128+      |
+| SQLAlchemy        | 2.0             | 2.0.45+     |
+| LangGraph         | 0.2+            | 1.0.6+      |
+| Anthropic SDK     | 0.40+           | 0.76+       |
+| OpenAI SDK        | 1.0+            | 1.60+       |
+| Google GenAI SDK  | 1.0+            | 1.59+       |
 
 ## The Unified Trace
 
-The core value of OpenTelemetry for AI applications is the
-**unified trace** — a single trace ID that connects every layer
-of a request, from HTTP entry to LLM completion and back.
+The core value of OpenTelemetry for AI applications is the **unified trace** — a
+single trace ID that connects every layer of a request, from HTTP entry to LLM
+completion and back.
 
 Here is what a trace looks like for an AI pipeline request:
 
@@ -159,24 +156,22 @@ POST /campaigns/{id}/run                           8.4s  [auto: FastAPI]
 
 Three types of spans work together:
 
-- **Auto-instrumented spans** (no code changes): FastAPI HTTP
-  requests, SQLAlchemy database queries, httpx outbound HTTP calls
-- **Custom LLM spans**: Model name, token counts, cost, prompt/
-  completion events following GenAI semantic conventions
-- **Custom agent spans**: Pipeline orchestration, agent names,
-  business context like campaign ID
+- **Auto-instrumented spans** (no code changes): FastAPI HTTP requests,
+  SQLAlchemy database queries, httpx outbound HTTP calls
+- **Custom LLM spans**: Model name, token counts, cost, prompt/ completion
+  events following GenAI semantic conventions
+- **Custom agent spans**: Pipeline orchestration, agent names, business context
+  like campaign ID
 
 The auto-instrumented `httpx` span captures the raw HTTP call to
-`api.anthropic.com`. The custom `gen_ai.chat` span wraps it,
-adding LLM-specific context: which model, how many tokens, what
-it cost. The custom `invoke_agent` span wraps both, adding
-business context: which agent, which campaign. All three are
-children of the same trace.
+`api.anthropic.com`. The custom `gen_ai.chat` span wraps it, adding LLM-specific
+context: which model, how many tokens, what it cost. The custom `invoke_agent`
+span wraps both, adding business context: which agent, which campaign. All three
+are children of the same trace.
 
 ## Installation
 
-Install the core OpenTelemetry packages and auto-instrumentation
-libraries:
+Install the core OpenTelemetry packages and auto-instrumentation libraries:
 
 ```mdx-code-block
 import Tabs from '@theme/Tabs';
@@ -234,16 +229,16 @@ poetry add \
 </Tabs>
 ```
 
-> **Note**: The `httpx` instrumentor is key for AI applications.
-> Most Python LLM SDKs (Anthropic, OpenAI) use httpx internally,
-> so this instrumentor automatically captures all LLM API calls
-> at the HTTP level without any changes to your LLM code.
+> **Note**: The `httpx` instrumentor is key for AI applications. Most Python LLM
+> SDKs (Anthropic, OpenAI) use httpx internally, so this instrumentor
+> automatically captures all LLM API calls at the HTTP level without any changes
+> to your LLM code.
 
 ## Auto-Instrumentation Setup
 
-Auto-instrumentation provides the foundation layer: HTTP spans,
-database spans, outbound API call spans, and log correlation.
-Set this up first — it requires no changes to your business logic.
+Auto-instrumentation provides the foundation layer: HTTP spans, database spans,
+outbound API call spans, and log correlation. Set this up first — it requires no
+changes to your business logic.
 
 ### Telemetry Initialization
 
@@ -340,35 +335,33 @@ FastAPIInstrumentor.instrument_app(app)
 
 ### What Auto-Instrumentation Captures
 
-| Instrumentor | Captures                                    |
-| ------------ | ------------------------------------------- |
-| `FastAPI`    | HTTP method, path, status code, duration    |
-| `SQLAlchemy` | SQL statement, parameters, query duration   |
-| `httpx`      | Outbound URL, status, headers, duration     |
+| Instrumentor | Captures                                     |
+| ------------ | -------------------------------------------- |
+| `FastAPI`    | HTTP method, path, status code, duration     |
+| `SQLAlchemy` | SQL statement, parameters, query duration    |
+| `httpx`      | Outbound URL, status, headers, duration      |
 | `Logging`    | Adds `trace_id` and `span_id` to log records |
 
-Auto-instrumentation alone gives you visibility into the
-application and infrastructure layers. But an LLM API call
-appears as a generic `HTTP POST` to `api.anthropic.com` —
-you cannot see the model name, token count, or cost. Custom
-instrumentation fills this gap.
+Auto-instrumentation alone gives you visibility into the application and
+infrastructure layers. But an LLM API call appears as a generic `HTTP POST` to
+`api.anthropic.com` — you cannot see the model name, token count, or cost.
+Custom instrumentation fills this gap.
 
 ## Custom LLM Instrumentation
 
-Custom instrumentation adds LLM-specific context to spans using
-OpenTelemetry GenAI semantic conventions. This is where AI
-observability diverges from standard APM.
+Custom instrumentation adds LLM-specific context to spans using OpenTelemetry
+GenAI semantic conventions. This is where AI observability diverges from
+standard APM.
 
 ### GenAI Span Attributes
 
-The OpenTelemetry GenAI semantic conventions define standard
-attributes for LLM operations. Using them ensures your telemetry
-works with any OpenTelemetry-compatible backend.
+The OpenTelemetry GenAI semantic conventions define standard attributes for LLM
+operations. Using them ensures your telemetry works with any
+OpenTelemetry-compatible backend.
 
-The following example shows a provider-agnostic `generate` function
-with full GenAI span instrumentation. Each LLM provider returns
-token counts differently — the tabs below show the provider-specific
-response handling:
+The following example shows a provider-agnostic `generate` function with full
+GenAI span instrumentation. Each LLM provider returns token counts differently —
+the tabs below show the provider-specific response handling:
 
 ```python showLineNumbers title="llm.py - span setup (common to all providers)"
 from opentelemetry import trace
@@ -581,25 +574,24 @@ async def call_google(
 
 ### GenAI Span Attribute Reference
 
-| Attribute                         | Type     | Required    | Description                |
-| --------------------------------- | -------- | ----------- | -------------------------- |
-| `gen_ai.operation.name`           | string   | Yes         | Operation type: `"chat"`   |
+| Attribute                        | Type     | Required    | Description                   |
+| -------------------------------- | -------- | ----------- | ----------------------------- |
+| `gen_ai.operation.name`          | string   | Yes         | Operation type: `"chat"`      |
 | `gen_ai.provider.name`           | string   | Yes         | Provider: `"anthropic"`, etc. |
-| `gen_ai.request.model`           | string   | Conditional | Model requested            |
-| `gen_ai.response.model`          | string   | Recommended | Model actually used        |
-| `gen_ai.usage.input_tokens`      | int      | Recommended | Input tokens consumed      |
-| `gen_ai.usage.output_tokens`     | int      | Recommended | Output tokens generated    |
-| `gen_ai.request.temperature`     | float    | Recommended | Sampling temperature       |
-| `gen_ai.request.max_tokens`      | int      | Recommended | Max tokens requested       |
-| `gen_ai.response.id`             | string   | Recommended | Provider response ID       |
-| `gen_ai.response.finish_reasons` | string[] | Recommended | Why generation stopped     |
-| `server.address`                 | string   | Recommended | Provider API host          |
+| `gen_ai.request.model`           | string   | Conditional | Model requested               |
+| `gen_ai.response.model`          | string   | Recommended | Model actually used           |
+| `gen_ai.usage.input_tokens`      | int      | Recommended | Input tokens consumed         |
+| `gen_ai.usage.output_tokens`     | int      | Recommended | Output tokens generated       |
+| `gen_ai.request.temperature`     | float    | Recommended | Sampling temperature          |
+| `gen_ai.request.max_tokens`      | int      | Recommended | Max tokens requested          |
+| `gen_ai.response.id`             | string   | Recommended | Provider response ID          |
+| `gen_ai.response.finish_reasons` | string[] | Recommended | Why generation stopped        |
+| `server.address`                 | string   | Recommended | Provider API host             |
 
 ### Prompt and Completion Events
 
-Record prompts and completions as span events for debugging.
-Always scrub PII before recording (see
-[PII and Security](#pii-and-security)):
+Record prompts and completions as span events for debugging. Always scrub PII
+before recording (see [PII and Security](#pii-and-security)):
 
 ```python showLineNumbers title="llm.py - recording events"
 # Before calling the LLM
@@ -607,7 +599,7 @@ span.add_event(
     "gen_ai.user.message",
     attributes={
         "gen_ai.prompt": scrub_prompt(prompt)[:1000],
-        "gen_ai.system": scrub_prompt(system)[:500],
+        "gen_ai.system_instructions": scrub_prompt(system)[:500],
     },
 )
 
@@ -622,9 +614,8 @@ span.add_event(
 )
 ```
 
-> **Note**: Truncate prompts and completions to keep span sizes
-> reasonable. 1000 characters for prompts and 2000 for
-> completions is a practical limit.
+> **Note**: Truncate prompts and completions to keep span sizes reasonable. 1000
+> characters for prompts and 2000 for completions is a practical limit.
 
 ### Error Handling
 
@@ -655,9 +646,9 @@ except Exception as e:
 
 ## Token and Cost Tracking
 
-Token usage and cost are the most critical metrics for AI
-applications. Auto-instrumentation cannot capture these — the
-information is inside the LLM SDK response, not in HTTP headers.
+Token usage and cost are the most critical metrics for AI applications.
+Auto-instrumentation cannot capture these — the information is inside the LLM
+SDK response, not in HTTP headers.
 
 ### Defining GenAI Metrics
 
@@ -713,8 +704,7 @@ operation_duration.record(duration_seconds, base_attrs)
 
 ### Cost Calculation and Attribution
 
-Define pricing per model and record costs with business context
-for attribution:
+Define pricing per model and record costs with business context for attribution:
 
 ```mdx-code-block
 <Tabs groupId="llm-provider">
@@ -780,8 +770,8 @@ MODEL_PRICING = {
 </Tabs>
 ```
 
-All pricing is per million tokens. The cost calculation and
-metric recording is the same regardless of provider:
+All pricing is per million tokens. The cost calculation and metric recording is
+the same regardless of provider:
 
 ```python showLineNumbers title="llm.py - cost calculation"
 def calculate_cost(
@@ -829,15 +819,14 @@ sum(gen_ai.client.cost) by (campaign_id)
 
 ## Agent Pipeline Observability
 
-Agent orchestration frameworks like LangGraph do not have
-OpenTelemetry auto-instrumentation. Custom spans are required
-to track which agent is executing, how long each step takes,
-and where errors occur.
+Agent orchestration frameworks like LangGraph do not have OpenTelemetry
+auto-instrumentation. Custom spans are required to track which agent is
+executing, how long each step takes, and where errors occur.
 
 ### Wrapping Agent Nodes
 
-Create a wrapper function that adds an OTel span around each
-agent in your pipeline:
+Create a wrapper function that adds an OTel span around each agent in your
+pipeline:
 
 ```python showLineNumbers title="graph.py"
 from opentelemetry import trace
@@ -922,8 +911,7 @@ def create_pipeline(session):
 
 ### Pipeline-Level Span
 
-Wrap the entire pipeline run in a parent span to capture
-aggregate metrics:
+Wrap the entire pipeline run in a parent span to capture aggregate metrics:
 
 ```python showLineNumbers title="graph.py - pipeline run"
 async def run_pipeline(
@@ -971,9 +959,9 @@ async def run_pipeline(
 
 ## Evaluation and Quality Metrics
 
-LLM output quality is a first-class observability concern. The
-OpenTelemetry GenAI semantic conventions define evaluation events
-and metrics for tracking quality over time.
+LLM output quality is a first-class observability concern. The OpenTelemetry
+GenAI semantic conventions define evaluation events and metrics for tracking
+quality over time.
 
 ### Recording Evaluation Events
 
@@ -1045,19 +1033,18 @@ async def evaluate_draft(draft, campaign_id, threshold):
 
 ### GenAI Evaluation Event Attributes
 
-| Attribute                        | Type   | Description                              |
-| -------------------------------- | ------ | ---------------------------------------- |
+| Attribute                       | Type   | Description                               |
+| ------------------------------- | ------ | ----------------------------------------- |
 | `gen_ai.evaluation.name`        | string | Evaluation name (e.g., `"email_quality"`) |
-| `gen_ai.evaluation.score.value` | number | Raw score value                          |
-| `gen_ai.evaluation.score.label` | string | `"passed"` or `"failed"`                 |
-| `gen_ai.evaluation.explanation` | string | Human-readable feedback                  |
+| `gen_ai.evaluation.score.value` | number | Raw score value                           |
+| `gen_ai.evaluation.score.label` | string | `"passed"` or `"failed"`                  |
+| `gen_ai.evaluation.explanation` | string | Human-readable feedback                   |
 
 ## PII and Security
 
-LLM prompts and completions often contain personally identifiable
-information. Recording raw prompts in telemetry creates a
-compliance risk. Scrub PII before adding prompt or completion
-events to spans.
+LLM prompts and completions often contain personally identifiable information.
+Recording raw prompts in telemetry creates a compliance risk. Scrub PII before
+adding prompt or completion events to spans.
 
 ### PII Scrubbing
 
@@ -1126,7 +1113,7 @@ span.add_event(
     "gen_ai.user.message",
     attributes={
         "gen_ai.prompt": scrub_pii(prompt)[:1000],
-        "gen_ai.system": scrub_pii(system)[:500],
+        "gen_ai.system_instructions": scrub_pii(system)[:500],
     },
 )
 
@@ -1143,17 +1130,17 @@ span.add_event(
 
 ### Security Considerations
 
-- **Never record raw prompts** that may contain user data, API
-  keys, or credentials in span attributes or events
-- **Truncate content** to avoid oversized spans (1000 chars for
-  prompts, 2000 for completions)
-- **Disable prompt recording** in production if compliance
-  requirements prohibit it — the GenAI span attributes (model,
-  tokens, cost) still provide full operational visibility
-- **Use the OTel Collector `attributes` processor** to redact
-  sensitive fields before export if additional filtering is needed
-- **GDPR/HIPAA**: If prompts may contain regulated data, consider
-  recording only token counts and model metadata, not content
+- **Never record raw prompts** that may contain user data, API keys, or
+  credentials in span attributes or events
+- **Truncate content** to avoid oversized spans (1000 chars for prompts, 2000
+  for completions)
+- **Disable prompt recording** in production if compliance requirements prohibit
+  it — the GenAI span attributes (model, tokens, cost) still provide full
+  operational visibility
+- **Use the OTel Collector `attributes` processor** to redact sensitive fields
+  before export if additional filtering is needed
+- **GDPR/HIPAA**: If prompts may contain regulated data, consider recording only
+  token counts and model metadata, not content
 
 ## Production Configuration
 
@@ -1234,23 +1221,19 @@ exporters:
     sampling_thereafter: 200
 
 service:
-  extensions:
-    [health_check, zpages, oauth2client]
+  extensions: [health_check, zpages, oauth2client]
   pipelines:
     traces:
       receivers: [otlp]
-      processors:
-        [memory_limiter, attributes, batch]
+      processors: [memory_limiter, attributes, batch]
       exporters: [otlphttp/b14, debug]
     metrics:
       receivers: [otlp]
-      processors:
-        [memory_limiter, attributes, batch]
+      processors: [memory_limiter, attributes, batch]
       exporters: [otlphttp/b14, debug]
     logs:
       receivers: [otlp]
-      processors:
-        [memory_limiter, attributes, batch]
+      processors: [memory_limiter, attributes, batch]
       exporters: [otlphttp/b14, debug]
 ```
 
@@ -1275,8 +1258,7 @@ services:
       otel-collector:
         condition: service_started
     healthcheck:
-      test:
-        ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 60s
       timeout: 5s
       retries: 3
@@ -1294,7 +1276,7 @@ services:
       retries: 5
 
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.127.0
+    image: otel/opentelemetry-collector-contrib:0.144.0
     command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
@@ -1302,6 +1284,7 @@ services:
       - "4317:4317"
       - "4318:4318"
       - "13133:13133"
+      - "55679:55679"
     environment:
       - SCOUT_CLIENT_ID=${SCOUT_CLIENT_ID:-}
       - SCOUT_CLIENT_SECRET=${SCOUT_CLIENT_SECRET:-}
@@ -1312,9 +1295,8 @@ services:
 
 ## Retry and Fallback Observability
 
-LLM APIs are inherently unreliable. Retries and provider
-fallbacks should be observable so you can track error rates,
-retry frequency, and fallback triggers.
+LLM APIs are inherently unreliable. Retries and provider fallbacks should be
+observable so you can track error rates, retry frequency, and fallback triggers.
 
 ### Retry Metrics
 
@@ -1383,8 +1365,8 @@ async def generate(self, model, system, prompt, **kw):
 
 ### Fallback Instrumentation
 
-When the primary provider fails, record the fallback trigger
-on both the span and as a metric:
+When the primary provider fails, record the fallback trigger on both the span
+and as a metric:
 
 ```python showLineNumbers title="llm.py - fallback tracking"
 except Exception as e:
@@ -1448,73 +1430,66 @@ logging.getLogger("opentelemetry").setLevel(
 
 #### Issue: LLM spans not appearing in traces
 
-The custom `gen_ai.chat` span exists but is not connected to
-the HTTP request trace.
+The custom `gen_ai.chat` span exists but is not connected to the HTTP request
+trace.
 
 **Solutions:**
 
-1. Ensure `setup_telemetry()` is called **before** creating
-   the FastAPI app
-2. Verify `HTTPXClientInstrumentor().instrument()` is called
-   during setup — this creates the parent HTTP span that the
-   custom span nests under
-3. Check that the `gen_ai.chat` span is created inside an
-   async context where the trace context is propagated
+1. Ensure `setup_telemetry()` is called **before** creating the FastAPI app
+2. Verify `HTTPXClientInstrumentor().instrument()` is called during setup — this
+   creates the parent HTTP span that the custom span nests under
+3. Check that the `gen_ai.chat` span is created inside an async context where
+   the trace context is propagated
 
 #### Issue: Token counts are zero
 
 **Solutions:**
 
-1. Check your LLM SDK version — older versions may not expose
-   `usage` on the response object
-2. Verify the provider response object has `input_tokens` and
-   `output_tokens` fields (naming varies by provider)
-3. For Google GenAI, check `response.usage_metadata` instead
-   of `response.usage`
+1. Check your LLM SDK version — older versions may not expose `usage` on the
+   response object
+2. Verify the provider response object has `input_tokens` and `output_tokens`
+   fields (naming varies by provider)
+3. For Google GenAI, check `response.usage_metadata` instead of `response.usage`
 
 #### Issue: Cost metrics not accurate
 
 **Solutions:**
 
-1. Verify your `MODEL_PRICING` dictionary contains the exact
-   model ID string returned by the provider (e.g.,
-   `claude-sonnet-4-20250514`, not `claude-sonnet-4`)
-2. Check that cost is calculated with `/1_000_000` (pricing is
-   per million tokens)
+1. Verify your `MODEL_PRICING` dictionary contains the exact model ID string
+   returned by the provider (e.g., `claude-sonnet-4-20250514`, not
+   `claude-sonnet-4`)
+2. Check that cost is calculated with `/1_000_000` (pricing is per million
+   tokens)
 
 #### Issue: Spans not exported to Scout
 
 **Solutions:**
 
-1. Confirm the OTel Collector is running:
-   `curl http://localhost:13133`
-2. Check collector logs:
-   `docker compose logs otel-collector`
-3. Verify `OTEL_EXPORTER_OTLP_ENDPOINT` points to the
-   collector, not directly to Scout
-4. Ensure `SCOUT_CLIENT_ID` and `SCOUT_CLIENT_SECRET` are set
-   in the collector environment
+1. Confirm the OTel Collector is running: `curl http://localhost:13133`
+2. Check collector logs: `docker compose logs otel-collector`
+3. Verify `OTEL_EXPORTER_OTLP_ENDPOINT` points to the collector, not directly to
+   Scout
+4. Ensure `SCOUT_CLIENT_ID` and `SCOUT_CLIENT_SECRET` are set in the collector
+   environment
 
 ## Performance Considerations
 
-OpenTelemetry overhead is negligible relative to LLM API
-latency. A typical LLM call takes 1-5 seconds; span creation
-and metric recording add microseconds.
+OpenTelemetry overhead is negligible relative to LLM API latency. A typical LLM
+call takes 1-5 seconds; span creation and metric recording add microseconds.
 
 ### Impact Factors
 
 - **Span creation**: ~1-5 microseconds per span
 - **Attribute setting**: ~0.5 microseconds per attribute
 - **Metric recording**: ~1 microsecond per record
-- **Batch export**: Happens in background thread, no request
-  impact
+- **Batch export**: Happens in background thread, no request impact
 
 ### Optimization Strategies
 
 #### 1. Use BatchSpanProcessor in Production
 
-The `BatchSpanProcessor` batches spans before export, avoiding
-per-span network calls:
+The `BatchSpanProcessor` batches spans before export, avoiding per-span network
+calls:
 
 ```python showLineNumbers title="Production trace setup"
 trace_provider.add_span_processor(
@@ -1529,8 +1504,7 @@ trace_provider.add_span_processor(
 
 #### 2. Truncate Prompt and Completion Events
 
-Long prompts and completions increase span payload size. Always
-truncate:
+Long prompts and completions increase span payload size. Always truncate:
 
 ```python showLineNumbers title="Truncation"
 span.add_event(
@@ -1543,8 +1517,8 @@ span.add_event(
 
 #### 3. Disable Prompt Recording in High-Volume Scenarios
 
-If you process thousands of LLM calls per minute and do not
-need prompt data in traces, skip the event recording:
+If you process thousands of LLM calls per minute and do not need prompt data in
+traces, skip the event recording:
 
 ```python showLineNumbers title="Conditional recording"
 if settings.record_prompts:
@@ -1558,8 +1532,8 @@ if settings.record_prompts:
 
 #### 4. Use the Collector Memory Limiter
 
-The OTel Collector `memory_limiter` processor prevents
-out-of-memory issues under heavy load:
+The OTel Collector `memory_limiter` processor prevents out-of-memory issues
+under heavy load:
 
 ```yaml showLineNumbers title="otel-collector-config.yaml"
 processors:
@@ -1573,114 +1547,101 @@ processors:
 
 ### Does OpenTelemetry add latency to LLM calls?
 
-No. Span creation takes microseconds. LLM API calls take
-seconds. The overhead is unmeasurable in practice.
-`BatchSpanProcessor` exports spans in a background thread, so
-export does not block request handling.
+No. Span creation takes microseconds. LLM API calls take seconds. The overhead
+is unmeasurable in practice. `BatchSpanProcessor` exports spans in a background
+thread, so export does not block request handling.
 
 ### How do I track cost across multiple LLM providers?
 
-Use the `gen_ai.client.cost` counter metric with
-`gen_ai.provider.name` and `gen_ai.request.model` attributes.
-Define a pricing dictionary per model and calculate cost from
-token counts. This gives you `sum(cost) by (provider)` in
+Use the `gen_ai.client.cost` counter metric with `gen_ai.provider.name` and
+`gen_ai.request.model` attributes. Define a pricing dictionary per model and
+calculate cost from token counts. This gives you `sum(cost) by (provider)` in
 your dashboards.
 
 ### Can I see the actual prompts and completions in traces?
 
-Yes, if you record them as `gen_ai.user.message` and
-`gen_ai.assistant.message` span events. Always scrub PII first.
-You can disable prompt recording in production for compliance.
+Yes, if you record them as `gen_ai.user.message` and `gen_ai.assistant.message`
+span events. Always scrub PII first. You can disable prompt recording in
+production for compliance.
 
 ### How does this compare to LangSmith?
 
-LangSmith provides deep LLM-specific tracing but operates in
-isolation from your HTTP and database telemetry. OpenTelemetry
-gives you a single trace that spans all layers. You can see
-that a slow HTTP response was caused by a specific LLM call in
-a specific agent, and that the same request also ran 3 database
-queries. LangSmith cannot show that correlation.
+LangSmith provides deep LLM-specific tracing but operates in isolation from your
+HTTP and database telemetry. OpenTelemetry gives you a single trace that spans
+all layers. You can see that a slow HTTP response was caused by a specific LLM
+call in a specific agent, and that the same request also ran 3 database queries.
+LangSmith cannot show that correlation.
 
 ### Do I need to instrument each LLM provider separately?
 
-No. Use a provider-agnostic abstraction (like the `LLMClient`
-pattern shown in this guide) that wraps all providers with the
-same span structure. The `gen_ai.provider.name` attribute
-identifies which provider handled each call.
+No. Use a provider-agnostic abstraction (like the `LLMClient` pattern shown in
+this guide) that wraps all providers with the same span structure. The
+`gen_ai.provider.name` attribute identifies which provider handled each call.
 
 ### How do I monitor LLM evaluation quality over time?
 
 Record `gen_ai.evaluation.score` as a histogram metric with
-`gen_ai.evaluation.name` and
-`gen_ai.evaluation.score.label` attributes. This lets you
-track pass rates, score distributions, and quality trends per
+`gen_ai.evaluation.name` and `gen_ai.evaluation.score.label` attributes. This
+lets you track pass rates, score distributions, and quality trends per
 evaluation type in your dashboards.
 
 ### What if my agent framework supports tracing natively?
 
-Some frameworks (e.g., LangChain) have their own tracing. You
-can still use OpenTelemetry alongside or instead. The key
-advantage of OpenTelemetry is portability — your traces work
-with any backend (base14 Scout, Jaeger, Grafana Tempo, etc.)
-without vendor lock-in.
+Some frameworks (e.g., LangChain) have their own tracing. You can still use
+OpenTelemetry alongside or instead. The key advantage of OpenTelemetry is
+portability — your traces work with any backend (base14 Scout, Jaeger, Grafana
+Tempo, etc.) without vendor lock-in.
 
 ### How do I reduce trace volume for high-throughput AI apps?
 
-Use head-based sampling in the OTel Collector or SDK. For AI
-applications, a practical approach is to sample 100% of error
-traces and a percentage of successful traces. The
-`probabilistic_sampler` processor in the collector handles
-this.
+Use head-based sampling in the OTel Collector or SDK. For AI applications, a
+practical approach is to sample 100% of error traces and a percentage of
+successful traces. The `probabilistic_sampler` processor in the collector
+handles this.
 
 ### Can I track which agent is the most expensive?
 
-Yes. Set `gen_ai.agent.name` as an attribute on both the
-`gen_ai.chat` span and the `gen_ai.client.cost` metric. This
-enables `sum(gen_ai.client.cost) by (gen_ai.agent.name)` in
-your dashboards.
+Yes. Set `gen_ai.agent.name` as an attribute on both the `gen_ai.chat` span and
+the `gen_ai.client.cost` metric. This enables
+`sum(gen_ai.client.cost) by (gen_ai.agent.name)` in your dashboards.
 
 ### How do I add observability to an existing AI app?
 
-Start with auto-instrumentation (FastAPI, SQLAlchemy, httpx)
-— this requires no code changes. Then add custom LLM spans in
-your LLM client layer. Finally, add agent-level spans if you
-use an orchestration framework. Each layer adds value
+Start with auto-instrumentation (FastAPI, SQLAlchemy, httpx) — this requires no
+code changes. Then add custom LLM spans in your LLM client layer. Finally, add
+agent-level spans if you use an orchestration framework. Each layer adds value
 independently.
 
 ## What's Next?
 
 ### Advanced Topics
 
-- [Python Custom Instrumentation][py-custom] -
-  Manual tracing and metrics for Python applications
-- [FastAPI Auto-Instrumentation][fastapi-auto] -
-  Comprehensive FastAPI instrumentation guide
+- [Python Custom Instrumentation][py-custom] - Manual tracing and metrics for
+  Python applications
+- [FastAPI Auto-Instrumentation][fastapi-auto] - Comprehensive FastAPI
+  instrumentation guide
 
 ### Scout Platform Features
 
-- [Creating Alerts](../creating-alerts-with-logx.md) -
-  Set up alerts for LLM error rates, cost spikes, or quality
-  degradation
-- [Create Your First Dashboard](../create-your-first-dashboard.md)
-  \- Build dashboards for token usage, cost attribution, and
-  evaluation scores
+- [Creating Alerts](../creating-alerts-with-logx.md) - Set up alerts for LLM
+  error rates, cost spikes, or quality degradation
+- [Create Your First Dashboard](../create-your-first-dashboard.md) \- Build
+  dashboards for token usage, cost attribution, and evaluation scores
 
 ### Deployment and Operations
 
-- [Docker Compose Setup][docker-setup] -
-  Local development with the OTel Collector
-- [Kubernetes Helm Setup][k8s-setup] -
-  Production deployment
-- [Scout Exporter][scout-exporter] -
-  Configure authentication with base14 Scout
+- [Docker Compose Setup][docker-setup] - Local development with the OTel
+  Collector
+- [Kubernetes Helm Setup][k8s-setup] - Production deployment
+- [Scout Exporter][scout-exporter] - Configure authentication with base14 Scout
 
 ## Complete Example
 
 The
 [AI Sales Intelligence](https://github.com/base14/examples/tree/main/python/ai-sales-intelligence)
-example application implements every pattern described in this
-guide. It is a FastAPI + LangGraph + multi-provider LLM
-application with full OpenTelemetry instrumentation.
+example application implements every pattern described in this guide. It is a
+FastAPI + LangGraph + multi-provider LLM application with full OpenTelemetry
+instrumentation.
 
 ### Project Structure
 
@@ -1727,14 +1688,11 @@ ai-sales-intelligence/
 
 ## Related Guides
 
-- [Python Custom Instrumentation][py-custom] -
-  Manual tracing and metrics fundamentals
-- [FastAPI Auto-Instrumentation][fastapi-auto] -
-  Comprehensive FastAPI setup
-- [Docker Compose Setup][docker-setup] -
-  Local collector deployment
-- [Scout Exporter][scout-exporter] -
-  Configure base14 Scout authentication
+- [Python Custom Instrumentation][py-custom] - Manual tracing and metrics
+  fundamentals
+- [FastAPI Auto-Instrumentation][fastapi-auto] - Comprehensive FastAPI setup
+- [Docker Compose Setup][docker-setup] - Local collector deployment
+- [Scout Exporter][scout-exporter] - Configure base14 Scout authentication
 
 [py-custom]: ../../instrument/apps/custom-instrumentation/python.md
 [fastapi-auto]: ../../instrument/apps/auto-instrumentation/fast-api.md
