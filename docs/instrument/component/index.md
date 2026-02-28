@@ -42,6 +42,13 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 | Elasticsearch       | [Elasticsearch](./collecting-elasticsearch-telemetry)          | Cluster health, node stats, JVM, index operations   |
 | ClickHouse          | [ClickHouse](./collecting-clickhouse-telemetry)                | Queries, inserts, memory tracking, merge operations |
 | Couchbase           | [Couchbase](./collecting-couchbase-telemetry)                  | Cluster management, KV connections, CPU, memory     |
+| MariaDB             | [MariaDB](./collecting-mariadb-telemetry)                      | Connections, queries, InnoDB, replication            |
+
+### Time-Series Databases
+
+| Component | Guide                                             | Key Metrics                                            |
+| --------- | ------------------------------------------------- | ------------------------------------------------------ |
+| InfluxDB  | [InfluxDB](./collecting-influxdb-telemetry)       | Write throughput, query duration, storage, cardinality  |
 
 ### Key-Value & Distributed Storage
 
@@ -63,6 +70,7 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 | --------- | ----------------------------------------------- | ---------------------------------------------------- |
 | Redis     | [Redis](./collecting-redis-telemetry)           | Memory, keyspace, commands, clients, replication     |
 | Memcached | [Memcached](./collecting-memcached-telemetry)   | Hit ratio, memory, connections, evictions            |
+| Varnish   | [Varnish](./collecting-varnish-telemetry)       | Cache hit/miss, backend health, connections          |
 
 ### Message Queues
 
@@ -99,6 +107,7 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 | Component | Guide                                       | Key Metrics                                           |
 | --------- | ------------------------------------------- | ----------------------------------------------------- |
 | ArgoCD    | [ArgoCD](./collecting-argocd-telemetry)     | App sync status, health, reconciliation, Git ops      |
+| Jenkins   | [Jenkins](./collecting-jenkins-telemetry)   | Build results, executor usage, queue depth            |
 
 ### Web Servers & Proxies
 
@@ -109,6 +118,7 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 | HAProxy            | [HAProxy](./collecting-haproxy-telemetry)                     | Sessions, request rate, backend health, queue depth  |
 | Traefik            | [Traefik](./collecting-traefik-telemetry)                     | Entrypoint requests, TLS, router stats, open conns   |
 | Envoy              | [Envoy](./collecting-envoy-telemetry)                         | Downstream connections, listeners, cluster manager   |
+| Caddy              | [Caddy](./collecting-caddy-telemetry)                         | Request rates, response codes, TLS handshakes        |
 
 ### Object Storage
 
@@ -141,15 +151,17 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 Each component exposes metrics through one of three methods:
 
 1. **Dedicated OTel receiver** — the Collector connects directly to the
-   component's stats API (PostgreSQL, MySQL, MongoDB, Redis, RabbitMQ,
-   Elasticsearch, CouchDB, Memcached, Apache HTTP Server, HAProxy,
-   ZooKeeper, Kafka, Aerospike, Docker Engine)
+   component's stats API (PostgreSQL, MySQL, MariaDB, MongoDB, Redis,
+   RabbitMQ, Elasticsearch, CouchDB, Memcached, Apache HTTP Server,
+   HAProxy, ZooKeeper, Kafka, Aerospike, Docker Engine)
 2. **Prometheus scrape** — the component or a sidecar exporter exposes
    a `/metrics` endpoint that the Collector scrapes (Cassandra via
    JMX exporter, Consul, Vault, etcd, Solr, Temporal, NGINX,
    ClickHouse, NATS via prometheus-nats-exporter, Traefik, Envoy,
    MinIO, OpenSearch via prometheus-exporter plugin, PgBouncer via
-   pgbouncer-exporter, Nomad, Couchbase, Pulsar, ArgoCD)
+   pgbouncer-exporter, Nomad, Couchbase, Pulsar, ArgoCD, Jenkins via
+   Prometheus Metrics plugin, InfluxDB, Caddy, Varnish via
+   prometheus_varnish_exporter)
 3. **JMX Scraper** — a standalone process connects to the application's
    JMX port via RMI, converts MBeans to OpenTelemetry metrics, and
    exports OTLP to the Collector (Tomcat, ActiveMQ, Jetty, WildFly).
