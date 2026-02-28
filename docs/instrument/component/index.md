@@ -72,6 +72,7 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 | Kafka     | [Kafka](./collecting-kafka-telemetry)           | Consumer lag, partition offsets, broker count         |
 | NATS      | [NATS](./collecting-nats-telemetry)             | Connections, subscriptions, message rates, JetStream |
 | Pulsar    | [Pulsar](./collecting-pulsar-telemetry)         | Broker throughput, backlog, managed ledger, storage  |
+| ActiveMQ  | [ActiveMQ](./collecting-activemq-telemetry)     | Queue depth, enqueue/dequeue, producers, consumers   |
 
 ### Service Discovery & Coordination
 
@@ -127,9 +128,17 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 | ------------- | ----------------------------------------------- | ---------------------------------------------- |
 | Docker Engine | [Docker Engine](./collecting-docker-telemetry)  | CPU, memory, block I/O, network per container  |
 
+### Java Application Servers
+
+| Component | Guide                                           | Key Metrics                                          |
+| --------- | ----------------------------------------------- | ---------------------------------------------------- |
+| Tomcat    | [Tomcat](./collecting-tomcat-telemetry)         | Request rates, thread pools, sessions, network I/O   |
+| Jetty     | [Jetty](./collecting-jetty-telemetry)           | Threads, I/O selects, sessions, request queue        |
+| WildFly   | [WildFly](./collecting-wildfly-telemetry)       | Undertow requests, datasource pools, transactions    |
+
 ## How Component Monitoring Works
 
-Each component exposes metrics through one of two methods:
+Each component exposes metrics through one of three methods:
 
 1. **Dedicated OTel receiver** — the Collector connects directly to the
    component's stats API (PostgreSQL, MySQL, MongoDB, Redis, RabbitMQ,
@@ -141,6 +150,10 @@ Each component exposes metrics through one of two methods:
    ClickHouse, NATS via prometheus-nats-exporter, Traefik, Envoy,
    MinIO, OpenSearch via prometheus-exporter plugin, PgBouncer via
    pgbouncer-exporter, Nomad, Couchbase, Pulsar, ArgoCD)
+3. **JMX Scraper** — a standalone process connects to the application's
+   JMX port via RMI, converts MBeans to OpenTelemetry metrics, and
+   exports OTLP to the Collector (Tomcat, ActiveMQ, Jetty, WildFly).
+   See [JMX Metrics Collection Guide](../collector-setup/jmx-metrics-collection-guide.md).
 
 Java applications using JMX have two collection approaches: the OTel
 JMX Scraper (remote, OTLP-native) and the Prometheus JMX Exporter

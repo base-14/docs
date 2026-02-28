@@ -292,6 +292,12 @@ tables) should use exporter `blacklist` rules to limit cardinality.
 
 - [Tomcat Monitoring](../component/tomcat.md)
   — Full JMX Scraper setup for Apache Tomcat
+- [ActiveMQ Monitoring](../component/activemq.md)
+  — Full JMX Scraper setup for Apache ActiveMQ Classic
+- [Jetty Monitoring](../component/jetty.md)
+  — Full JMX Scraper setup for Eclipse Jetty
+- [WildFly Monitoring](../component/wildfly.md)
+  — Full JMX Scraper setup for WildFly / JBoss EAP
 - [Cassandra Monitoring](../component/cassandra.md)
   — Full JMX Exporter setup for Apache Cassandra
 - [OTel Collector Configuration](./otel-collector-config.md)
