@@ -5,9 +5,9 @@ title:
 sidebar_label: LangGraph
 sidebar_position: 6
 description:
-  Complete guide to LangGraph OpenTelemetry instrumentation for AI agent
-  pipeline monitoring. Trace agent nodes, conditional routing, tool calls, track
-  tokens and costs, monitor state transitions with base14 Scout.
+  Trace LangGraph agent nodes, conditional routing, and tool calls with
+  OpenTelemetry. Monitor token usage, LLM costs, and state transitions in
+  production with base14 Scout.
 keywords:
   [
     langgraph opentelemetry instrumentation,
@@ -56,6 +56,15 @@ RAG systems with agent orchestration, or any application that uses LangGraph's
 StateGraph for complex control flow, this guide provides production-ready
 patterns for unified AI agent observability where every node execution, routing
 decision, LLM call, and database query lives in a single trace on base14 Scout.
+
+:::tip TL;DR
+
+Install `opentelemetry-sdk` and wrap each LangGraph node with a custom span
+using the GenAI semantic conventions. Configure the OTLP exporter to send
+traces to base14 Scout, and use span attributes to capture token counts, LLM
+costs, and routing decisions at every node and conditional edge.
+
+:::
 
 > **Note:** For general LLM observability patterns applicable to any Python
 > framework, see the
@@ -1476,7 +1485,7 @@ This guide supports LangGraph 0.2+ and recommends 1.0.6+. The `StateGraph` API
 and `add_conditional_edges` have been stable since 0.2. The `wrap_agent` pattern
 works with any version that supports async node functions.
 
-### How do I instrument conditional edges?
+### How do I trace conditional routing in LangGraph with OpenTelemetry?
 
 Use `trace.get_current_span()` inside your routing function to record attributes
 like `routing.decision` and `routing.qualified_count`. See
@@ -1495,21 +1504,21 @@ Yes, if you set `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true`.
 Content is PII-scrubbed and truncated to 500 characters. Disable in production
 for compliance.
 
-### How do I add a new agent node?
+### How do I add and trace a new agent node in LangGraph?
 
 Create the agent function, wrap it with `wrap_agent("name", fn)`, add the node
 to the `StateGraph` with `graph.add_node()`, and connect it with `add_edge` or
 `add_conditional_edges`. The `wrap_agent` wrapper automatically handles span
 creation.
 
-### How does trace propagation work across subgraphs?
+### How does OpenTelemetry trace propagation work in LangGraph subgraphs?
 
 LangGraph subgraphs execute within the same Python async context. OpenTelemetry
 automatically propagates the trace context across `await` boundaries, so
 subgraph node spans appear as children of the parent graph's span without
 additional configuration.
 
-### How do I instrument tool-calling nodes?
+### How do I trace tool calls in a LangGraph agent with OpenTelemetry?
 
 Wrap each tool invocation with a dedicated span using
 `tracer.start_as_current_span("tool.<name>")`. Set `gen_ai.operation.name` to

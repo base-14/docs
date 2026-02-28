@@ -3,10 +3,9 @@ title: Spring Boot OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Spring Boot
 sidebar_position: 16
 description:
-  Comprehensive guide to auto-instrument Spring Boot applications with
-  OpenTelemetry for production APM. Includes distributed tracing, metrics,
-  custom instrumentation, and base14 Scout integration with full Java 8-25
-  compatibility.
+  Trace HTTP requests, database queries, and Spring beans in Spring Boot apps
+  with OpenTelemetry auto-instrumentation. Export traces and metrics to base14
+  Scout with Java 8-25 support.
 keywords:
   [
     spring boot monitoring,
@@ -64,6 +63,18 @@ overhead, and troubleshooting missing spans. By the end of this guide, you'll
 have a fully instrumented Spring Boot application sending rich telemetry data to
 base14 Scout, enabling fast root cause analysis and proactive performance
 optimization.
+
+:::tip TL;DR
+
+Add the `opentelemetry-spring-boot-starter` dependency to your `pom.xml` or
+`build.gradle` and configure `management.otlp.tracing.endpoint` in
+`application.properties` — the starter auto-instruments Spring MVC, Spring
+Data JPA, RestTemplate, WebClient, and Kafka with zero code changes. For
+fine-grained control over specific operations, inject `Tracer` via the
+OpenTelemetry API and use `startActiveSpan` to add custom spans alongside the
+automatic instrumentation.
+
+:::
 
 ## Overview
 

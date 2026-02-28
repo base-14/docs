@@ -3,8 +3,9 @@ title: Go OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Go
 sidebar_position: 18
 description:
-  Go OpenTelemetry instrumentation for Echo, Fiber, Chi frameworks with GORM,
-  sqlx, Redis, and background job tracing using base14 Scout.
+  Trace Go HTTP requests and monitor database queries across Echo, Fiber, and
+  Chi with OpenTelemetry. Covers GORM, sqlx, Redis, background jobs, and gRPC
+  with Base14 Scout.
 keywords:
   [
     go opentelemetry instrumentation,
@@ -62,6 +63,16 @@ commercial APM solutions like New Relic or Datadog, troubleshooting performance
 issues in production, or building high-throughput microservices, this guide
 provides production-ready configurations and best practices for Go OpenTelemetry
 instrumentation with Base14 Scout.
+
+:::tip TL;DR
+
+Initialize a `TracerProvider` once in `main`, set it as the global provider,
+then add the framework middleware (e.g., `otelecho`, `otelfiber`, `otelhttp`)
+to automatically trace every incoming request. Pass `context.Context` explicitly
+through your call stack so database, Redis, and background-job spans attach to
+the same trace.
+
+:::
 
 ## Who This Guide Is For
 
@@ -1302,12 +1313,12 @@ goroutines make OpenTelemetry very lightweight.
 Yes, use `otelgorm` for GORM, `otelsql` for sqlx and database/sql. All SQL
 queries are automatically traced.
 
-### How do I trace goroutines?
+### How do I propagate OpenTelemetry trace context across goroutines in Go?
 
 Pass context to goroutines: `go func(ctx context.Context) { ... }(ctx)` to
 maintain trace hierarchy.
 
-### Does it work with gRPC?
+### Does OpenTelemetry work with gRPC in Go?
 
 Yes, use `go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc`
 for automatic gRPC tracing.

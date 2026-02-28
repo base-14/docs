@@ -50,6 +50,18 @@ commercial APM solutions, or troubleshooting production issues with distributed
 task queues, this guide provides production-ready configurations and best
 practices for Celery OpenTelemetry instrumentation.
 
+:::tip TL;DR
+
+Install `opentelemetry-instrumentation-celery` and initialize the SDK with
+`CeleryInstrumentor().instrument()` before starting your workers. Set
+`OTEL_EXPORTER_OTLP_ENDPOINT` and `OTEL_SERVICE_NAME`, then use
+`opentelemetry-instrument celery worker` to auto-inject context propagation
+across task producers and consumers. Traces flow end-to-end from HTTP request
+through the broker (RabbitMQ or Redis) to worker execution with no changes to
+your task code.
+
+:::
+
 > **Note:** This guide provides a practical Celery-focused overview based on the
 > official OpenTelemetry documentation. For complete Python language
 > information, please consult the

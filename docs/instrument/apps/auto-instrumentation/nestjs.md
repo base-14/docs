@@ -3,8 +3,8 @@ title: NestJS OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: NestJS
 sidebar_position: 11
 description:
-  NestJS OpenTelemetry instrumentation for controllers, services, TypeORM,
-  BullMQ, and WebSocket gateways with distributed tracing using base14 Scout.
+  Trace NestJS controllers, TypeORM queries, BullMQ jobs, and WebSocket gateways
+  with OpenTelemetry auto-instrumentation and distributed tracing via base14 Scout.
 keywords:
   [
     nestjs opentelemetry instrumentation,
@@ -66,6 +66,15 @@ New Relic or Datadog, troubleshooting performance issues in production, or
 building enterprise-grade monitoring for microservices, this guide provides
 production-ready configurations and best practices for NestJS OpenTelemetry
 instrumentation with Base14 Scout.
+
+:::tip TL;DR
+
+Add a `TracingModule` that initializes the OpenTelemetry Node.js SDK and import
+it first in your `AppModule` — controllers, TypeORM queries, and HTTP calls are
+then traced automatically. Use `trace.getTracer()` directly in guards,
+interceptors, and BullMQ processors for custom span coverage.
+
+:::
 
 ## Who This Guide Is For
 
@@ -1170,7 +1179,7 @@ Database queries are automatically traced with parameters.
 BullMQ jobs are automatically traced. Add custom spans in processors using
 `trace.getTracer()` for detailed business logic tracing.
 
-### Does it work with WebSocket gateways?
+### Does OpenTelemetry work with NestJS WebSocket gateways?
 
 WebSocket connections and messages require manual instrumentation. Use
 `trace.getTracer()` in gateway methods as shown in the WebSocket section.

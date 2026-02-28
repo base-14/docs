@@ -5,9 +5,9 @@ title:
 sidebar_label: Actix Web
 sidebar_position: 21
 description:
-  Complete guide to Rust Actix Web OpenTelemetry instrumentation for application
-  performance monitoring. Set up tracing, metrics, and logs for distributed
-  tracing and production deployments with base14 Scout in minutes.
+  Trace HTTP requests, database queries, and background jobs in Rust Actix Web
+  apps with OpenTelemetry. Production-ready APM setup with distributed tracing
+  in base14 Scout.
 keywords:
   [
     rust opentelemetry instrumentation,
@@ -53,6 +53,15 @@ Whether you're implementing observability for the first time, migrating from
 other monitoring solutions, or troubleshooting performance issues in
 production, this guide provides production-ready configurations and best
 practices for Rust Actix Web OpenTelemetry instrumentation.
+
+:::tip TL;DR
+
+Add `tracing-actix-web` middleware with `tracing-opentelemetry` to export spans
+via OTLP. SQLx queries and HTTP requests are traced automatically. Use
+`BatchSpanProcessor` for production and export to base14 Scout via the
+OpenTelemetry Collector.
+
+:::
 
 > **Note:** This guide provides a practical Actix Web-focused overview based
 > on the official OpenTelemetry documentation. For complete Rust language
@@ -1518,7 +1527,7 @@ For applications handling regulated data (GDPR, HIPAA, PCI-DSS):
 OpenTelemetry instrumentation adds minimal overhead to Rust Actix Web
 applications:
 
-- **Average latency increase**: < 1ms per request
+- **Average latency increase**: &lt; 1ms per request
 - **CPU overhead**: Less than 1% in production with batch processor
 - **Memory overhead**: ~20-50MB depending on queue size and traffic
 
@@ -1560,7 +1569,7 @@ processors:
 
 ### Does OpenTelemetry impact Rust application performance?
 
-OpenTelemetry adds approximately < 1ms of latency per request in typical
+OpenTelemetry adds approximately &lt; 1ms of latency per request in typical
 Actix Web applications. Rust's zero-cost abstractions and the efficient
 `tracing` crate minimize overhead. With batch processing, the performance
 impact is negligible for most production workloads.

@@ -3,10 +3,9 @@ title: Next.js OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Next.js
 sidebar_position: 12
 description:
-  Complete guide to Next.js OpenTelemetry instrumentation for application
-  performance monitoring. Set up auto-instrumentation for traces, metrics, logs,
-  and production deployments with base14 Scout. Supports Next.js 16+, App Router,
-  MongoDB, Redis, BullMQ workers.
+  Trace server components, API routes, and database queries in Next.js apps with
+  OpenTelemetry auto-instrumentation. Export traces, metrics, and logs to base14
+  Scout with App Router support.
 keywords:
   [
     nextjs opentelemetry instrumentation,
@@ -66,6 +65,15 @@ provides production-ready configurations and best practices for Next.js
 OpenTelemetry instrumentation with base14 Scout. You'll learn how to set up
 auto-instrumentation, configure custom spans for business logic, implement
 distributed tracing for background workers, and deploy with Docker.
+
+:::tip TL;DR
+
+Create an `instrumentation.ts` file in your Next.js project root and initialize
+the OpenTelemetry Node.js SDK there — Next.js calls it automatically before your
+app starts. Add `@opentelemetry/auto-instrumentations-node` to capture HTTP,
+MongoDB, Redis, and database spans with no manual wrapping required.
+
+:::
 
 ## Who This Guide Is For
 
@@ -1402,7 +1410,7 @@ Traces show individual request flows with timing (e.g., "this API call took
 150ms with 3 database queries"). Metrics aggregate measurements over time (e.g.,
 "average response time is 120ms"). Use both together for complete observability.
 
-### How do I trace server components?
+### How do I trace Next.js server components with OpenTelemetry?
 
 Server components execute during rendering and are traced via HTTP
 instrumentation. For specific component tracing, create custom spans within the

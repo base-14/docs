@@ -47,6 +47,18 @@ counters — all with minimal application code. Whether you are building a new A
 on Slim 4 or maintaining a legacy Slim 3 service, this guide provides
 production-ready configurations for PHP-FPM deployments with base14 Scout.
 
+:::tip TL;DR
+
+Install the `opentelemetry` and `mongodb` PECL extensions, then set
+`OTEL_PHP_AUTOLOAD_ENABLED=true` — this single env var activates the
+`opentelemetry-auto-slim` package, which automatically instruments every Slim 4
+route with no middleware code. For Slim 3, add a `TelemetryMiddleware` manually
+since `opentelemetry-auto-slim` only supports Slim 4+. Register a shutdown
+handler in both cases to ensure PHP-FPM workers flush telemetry before
+recycling.
+
+:::
+
 > **Note:** This guide provides a practical Slim-focused overview based on the
 > official OpenTelemetry documentation. For complete PHP language information,
 > please consult the

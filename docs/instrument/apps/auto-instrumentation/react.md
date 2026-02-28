@@ -3,8 +3,9 @@ title: React OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: React
 sidebar_position: 14
 description:
-  React OpenTelemetry instrumentation for browser traces, user interactions,
-  and Core Web Vitals monitoring with base14 Scout.
+  Trace browser interactions, HTTP requests, and Core Web Vitals in React apps
+  using OpenTelemetry auto instrumentation — export spans to base14 Scout with
+  minimal setup.
 keywords:
   [
     react monitoring,
@@ -19,6 +20,16 @@ keywords:
 
 Implement OpenTelemetry auto instrumentation for `React` applications to collect
 traces using the JavaScript OTel SDK.
+
+:::tip TL;DR
+
+Install the `@opentelemetry/auto-instrumentations-web` package, call
+`setupTelemetry()` before your React app renders, and point the OTLP exporter
+at your Scout Collector endpoint. This gives you automatic tracing for fetch/XHR
+requests, document load timing, and user interactions with no manual span code
+required.
+
+:::
 
 ## Overview
 

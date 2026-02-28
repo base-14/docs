@@ -4,9 +4,9 @@ title:
 sidebar_label: ASP.NET Core
 sidebar_position: 25
 description:
-  Complete guide to .NET ASP.NET Core OpenTelemetry instrumentation for
-  application performance monitoring. Set up auto-instrumentation for traces,
-  metrics, logs, and production deployments with base14 Scout in minutes.
+  Trace HTTP requests, database queries, and background jobs in ASP.NET Core
+  apps with OpenTelemetry auto-instrumentation. Export traces, metrics, and logs
+  to base14 Scout.
 keywords:
   [
     dotnet opentelemetry instrumentation,
@@ -50,6 +50,18 @@ Whether you're implementing observability for the first time, migrating from
 commercial APM solutions like Application Insights, or troubleshooting
 performance issues in production, this guide provides production-ready
 configurations and best practices for .NET OpenTelemetry instrumentation.
+
+:::tip TL;DR
+
+Add the `OpenTelemetry.Extensions.Hosting` and
+`OpenTelemetry.AutoInstrumentation` NuGet packages, then wire up
+`builder.Services.AddOpenTelemetry()` in `Program.cs` to register ASP.NET
+Core, Entity Framework Core, and HttpClient instrumentation in one call.
+Configure the OTLP exporter with your Scout collector endpoint and set
+`OTEL_SERVICE_NAME` — no additional code is needed for HTTP request traces,
+database spans, or outbound call tracking.
+
+:::
 
 > **Note:** This guide provides a practical ASP.NET Core-focused overview based
 > on the official OpenTelemetry documentation. For complete .NET language

@@ -3,10 +3,9 @@ title: Rails OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Ruby on Rails
 sidebar_position: 19
 description:
-  Complete guide to Rails OpenTelemetry instrumentation for application
-  performance monitoring. Set up auto-instrumentation for traces, metrics,
-  ActiveRecord database monitoring, and production deployments with
-  base14 Scout in minutes.
+  Trace HTTP requests, ActiveRecord queries, and Sidekiq background jobs in
+  Rails apps with OpenTelemetry auto-instrumentation. Export traces and metrics
+  to base14 Scout.
 keywords:
   [
     rails opentelemetry instrumentation,
@@ -50,6 +49,17 @@ Whether you're implementing observability for the first time, migrating from
 commercial APM solutions, or troubleshooting performance issues in production,
 this guide provides production-ready configurations and best practices for
 Rails OpenTelemetry instrumentation.
+
+:::tip TL;DR
+
+Add `opentelemetry-sdk` and `opentelemetry-instrumentation-all` to your
+Gemfile, then call `OpenTelemetry::SDK.configure` with `use_all` in a Rails
+initializer — this automatically instruments ActiveRecord, ActionPack, Redis,
+Sidekiq, and most popular gems. Set `OTEL_SERVICE_NAME` and
+`OTEL_EXPORTER_OTLP_ENDPOINT` as environment variables, and configure the OTLP
+exporter to point at your Scout collector with no additional code changes.
+
+:::
 
 > **Note:** This guide provides a practical Rails-focused overview based on the
 official OpenTelemetry documentation. For complete Ruby language information,

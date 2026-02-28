@@ -5,9 +5,9 @@ title:
 sidebar_label: Axum
 sidebar_position: 22
 description:
-  Complete guide to Rust Axum OpenTelemetry instrumentation for application
-  performance monitoring. Set up tracing, metrics, and logs for traces,
-  distributed tracing, and production deployments with base14 Scout in minutes.
+  Trace HTTP requests, database queries, and background jobs in Rust Axum apps
+  with OpenTelemetry. Production-ready APM setup with tower middleware,
+  distributed tracing in base14 Scout.
 keywords:
   [
     rust opentelemetry instrumentation,
@@ -49,6 +49,15 @@ Whether you're implementing observability for the first time, migrating from
 other monitoring solutions, or troubleshooting performance issues in production,
 this guide provides production-ready configurations and best practices for Rust
 Axum OpenTelemetry instrumentation.
+
+:::tip TL;DR
+
+Add `tower-http` TraceLayer with `tracing-opentelemetry` to export spans via
+OTLP. SQLx queries and HTTP requests are traced automatically through tower
+middleware. Use `BatchSpanProcessor` for production and export to base14 Scout
+via the OpenTelemetry Collector.
+
+:::
 
 > **Note:** This guide provides a practical Axum-focused overview based on the
 > official OpenTelemetry documentation. For complete Rust language information,
@@ -1307,8 +1316,8 @@ For applications handling regulated data (GDPR, HIPAA, PCI-DSS):
 
 OpenTelemetry instrumentation adds minimal overhead to Rust Axum applications:
 
-- **Average latency increase**: < 1ms per request
-- **CPU overhead**: Less than 1% in production with batch processor
+- **Average latency increase**: &lt; 1ms per request
+- **CPU overhead**: &lt; 1% in production with batch processor
 - **Memory overhead**: ~20-50MB depending on queue size and traffic
 
 **Impact varies based on:**
@@ -1378,7 +1387,7 @@ tracing::info!(request.body = %truncated_body);
 
 ### Does OpenTelemetry impact Rust application performance?
 
-OpenTelemetry adds approximately < 1ms of latency per request in typical Axum
+OpenTelemetry adds approximately &lt; 1ms of latency per request in typical Axum
 applications. Rust's zero-cost abstractions and the efficient `tracing` crate
 minimize overhead. With proper configuration (batch processor), the performance
 impact is negligible for most production workloads.

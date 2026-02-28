@@ -3,10 +3,9 @@ title: Fastify OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Fastify
 sidebar_position: 9
 description:
-  Complete guide to Fastify OpenTelemetry instrumentation for application
-  performance monitoring. Set up auto-instrumentation for traces, metrics, and
-  production deployments with base14 Scout in minutes. Supports Fastify 5.x,
-  PostgreSQL, Redis, BullMQ background jobs.
+  Trace HTTP requests, PostgreSQL queries, Redis calls, and background jobs in
+  Fastify apps with OpenTelemetry auto-instrumentation. Export traces and
+  metrics to base14 Scout.
 keywords:
   [
     fastify opentelemetry instrumentation,
@@ -57,6 +56,18 @@ performance issues in production, this guide provides production-ready
 configurations and best practices for Fastify OpenTelemetry instrumentation.
 You'll learn how to set up auto-instrumentation, configure custom spans for
 business logic, optimize performance, and deploy with Docker.
+
+:::tip TL;DR
+
+Create a `telemetry.ts` file that initializes `NodeSDK` with
+`getNodeAutoInstrumentations()` and import it as the very first line of your
+entry point — this auto-instruments Fastify routes, PostgreSQL (`pg`), Redis
+(IORedis), and HTTP clients without touching route code. Set
+`OTEL_SERVICE_NAME` and `OTEL_EXPORTER_OTLP_ENDPOINT`, and propagate trace
+context explicitly into BullMQ job data so worker spans link back to the
+originating request.
+
+:::
 
 ## Overview
 

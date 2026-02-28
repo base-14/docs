@@ -3,8 +3,9 @@ title: Node.js OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Node.js
 sidebar_position: 13
 description:
-  Node.js OpenTelemetry instrumentation for Express, NestJS, Fastify with
-  database, Redis, and message queue tracing using base14 Scout.
+  Gain full observability across Node.js apps — auto-instrument Express,
+  NestJS, Fastify, databases, Redis, and message queues with zero code changes
+  using the OpenTelemetry SDK and base14 Scout.
 keywords:
   [
     nodejs opentelemetry instrumentation,
@@ -62,6 +63,16 @@ Whether you're implementing observability for the first time, migrating from
 commercial APM solutions like New Relic or Datadog, or troubleshooting async
 performance issues in production, this guide provides framework-agnostic patterns
 and best practices for Node.js OpenTelemetry instrumentation with Base14 Scout.
+
+:::tip TL;DR
+
+Install `@opentelemetry/sdk-node` and `@opentelemetry/auto-instrumentations-node`,
+create an `instrumentation.js` file that initializes `NodeSDK`, then start your
+app with `node --require ./instrumentation.js server.js`. Express, NestJS,
+databases, Redis, and message queues are all traced automatically with no
+per-route code changes.
+
+:::
 
 ## Who This Guide Is For
 

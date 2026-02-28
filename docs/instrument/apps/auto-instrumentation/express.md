@@ -3,10 +3,9 @@ title: Express.js OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Express.js
 sidebar_position: 8
 description:
-  Complete guide to Express.js OpenTelemetry instrumentation for application
-  performance monitoring. Set up auto-instrumentation for traces, metrics, and
-  production deployments with base14 Scout in minutes. Supports Express 5.x,
-  MongoDB, Redis, BullMQ, Socket.IO.
+  Trace HTTP requests, MongoDB queries, Redis calls, and background jobs in
+  Express.js apps with OpenTelemetry auto-instrumentation. Export traces and
+  metrics to base14 Scout.
 keywords:
   [
     express opentelemetry instrumentation,
@@ -56,6 +55,17 @@ performance issues in production, this guide provides production-ready
 configurations and best practices for Express.js OpenTelemetry instrumentation.
 You'll learn how to set up auto-instrumentation, configure custom spans for
 business logic, optimize performance, and deploy with Docker.
+
+:::tip TL;DR
+
+Create a `telemetry.ts` file that initializes `NodeSDK` with
+`getNodeAutoInstrumentations()` and import it as the very first line of your
+entry point — this single step auto-instruments Express routes, MongoDB
+(Mongoose), Redis, and HTTP clients. Set `OTEL_SERVICE_NAME` and
+`OTEL_EXPORTER_OTLP_ENDPOINT` to point at your Scout collector, and use
+`BatchSpanProcessor` in production to minimize request latency overhead.
+
+:::
 
 ## Overview
 

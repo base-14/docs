@@ -39,6 +39,15 @@ tested.
 > vulnerabilities, and reduced performance. We strongly recommend upgrading to
 > supported versions. See [Migration Path](#migration-path) below.
 
+:::tip TL;DR
+
+For Ruby 3.0 and Rails 6.1, pin every OTel gem to its last compatible release
+and use `use_all()` with `BatchSpanProcessor`. For Ruby 2.7, skip the all-in-one
+gem, use individual instrumentation gems with older pinned versions, and switch
+to `SimpleSpanProcessor` to avoid threading issues.
+
+:::
+
 ## Supported Legacy Versions
 
 This guide covers:
@@ -785,13 +794,13 @@ end
 
 ### Common Questions
 
-**Q: Can I use `opentelemetry-instrumentation-all` with Ruby 3.0?**
+**Q: Can I use the all-in-one instrumentation gem with Ruby 3.0?**
 
 A: No. The `-all` meta-gem pulls latest versions that require Ruby 3.1+. Use
 individual instrumentation gems with pinned versions instead (see
 [Ruby 3.0 / Rails 6.1](#ruby-30--rails-61)).
 
-**Q: Can I use `opentelemetry-instrumentation-all` with Ruby 2.7?**
+**Q: Can I use the all-in-one instrumentation gem with Ruby 2.7?**
 
 A: Not recommended. Use individual instrumentation gems to avoid compatibility
 issues with gems that require Ruby 3.0+.

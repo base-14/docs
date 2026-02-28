@@ -3,8 +3,9 @@ title: Quarkus OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Quarkus
 sidebar_position: 15
 description:
-  Quarkus OpenTelemetry instrumentation with native GraalVM compilation for
-  traces, Hibernate Panache, and production deployments using base14 Scout.
+  Instrument Quarkus apps using the built-in OTel extension — trace REST
+  endpoints, Hibernate Panache queries, and native GraalVM images with minimal
+  config and zero agent overhead using base14 Scout.
 keywords:
   [
     quarkus opentelemetry instrumentation,
@@ -68,6 +69,16 @@ unique performance characteristics. The example application includes JWT
 authentication, PostgreSQL integration with Hibernate ORM with Panache, and
 RESTful API endpoints—all automatically instrumented through Quarkus
 extensions.
+
+:::tip TL;DR
+
+Add the `quarkus-opentelemetry` extension via `./mvnw quarkus:add-extension`,
+then set `quarkus.otel.exporter.otlp.endpoint` in `application.properties`.
+REST endpoints, Hibernate Panache queries, and reactive Mutiny pipelines are
+traced automatically — no Java agent needed, and native GraalVM images are
+fully supported.
+
+:::
 
 ## Who This Guide Is For
 

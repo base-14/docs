@@ -5,10 +5,9 @@ title:
 sidebar_label: LlamaIndex
 sidebar_position: 7
 description:
-  Complete guide to LlamaIndex OpenTelemetry instrumentation for AI application
-  monitoring. Trace LLM calls, track tokens and costs, monitor structured output
-  with self-correction, evaluate content quality, and scrub PII with base14
-  Scout.
+  Trace LlamaIndex LLM calls and monitor token costs, structured output quality,
+  and PII scrubbing using custom OpenTelemetry GenAI semantic conventions with
+  base14 Scout.
 keywords:
   [
     llamaindex opentelemetry instrumentation,
@@ -60,6 +59,17 @@ in a single trace.
 > framework, see the
 > [LLM Observability guide](../../../guides/ai-observability/llm-observability.md).
 > This guide focuses specifically on LlamaIndex integration patterns.
+
+:::tip TL;DR
+
+Use custom OpenTelemetry spans with GenAI semantic conventions to instrument
+LlamaIndex — not OpenInference or the built-in auto-instrumentation. Wrap each
+LLM call in a span that records model, token counts, and cost using a pricing
+table, then attach a PII scrubber before recording prompts and completions. Pair
+this with versioned YAML prompt templates and Promptfoo evaluations for a full
+production observability setup.
+
+:::
 
 ## Who This Guide Is For
 
@@ -1217,7 +1227,7 @@ Use the `gen_ai.client.cost` counter metric with `gen_ai.provider.name` and
 `gen_ai.request.model` attributes. Define pricing per model and calculate from
 token counts.
 
-### How does structured output self-correction work?
+### How does structured output retry work in LlamaIndex with OpenTelemetry?
 
 When the LLM returns invalid JSON, the system appends the validation error to
 the conversation and asks the LLM to retry. This happens up to
@@ -1229,23 +1239,23 @@ Yes, if `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true`. Content is
 PII-scrubbed and truncated to 500 characters. Disable in production for
 compliance.
 
-### How do I add a new LLM provider?
+### How do I add a custom LLM provider to a LlamaIndex application?
 
 Add the provider to `create_llm()`, add its server address to
 `PROVIDER_SERVERS`, and add its model pricing to the `PRICING` dictionary.
 
-### How do I version prompts?
+### How do I version and manage prompts in a LlamaIndex project?
 
 Prompts are stored as YAML files in the `prompts/` directory with version
 suffixes (e.g., `review_v1.yaml`, `review_v2.yaml`). The active version is
 configured via `REVIEW_PROMPT_VERSION` environment variable.
 
-### How do I run Promptfoo evaluations?
+### How do I evaluate LLM prompts with Promptfoo and LlamaIndex?
 
 Install Promptfoo (`npm install -g promptfoo`), then run `npx promptfoo eval`
 from the project root. Results can be viewed with `npx promptfoo view`.
 
-### How does PII scrubbing work?
+### How do I remove PII from OpenTelemetry traces in Python?
 
 Regex patterns detect and replace emails, phone numbers, SSNs, credit card
 numbers, and LinkedIn URLs with safe placeholders before any content is recorded

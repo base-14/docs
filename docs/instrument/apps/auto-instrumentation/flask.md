@@ -3,8 +3,9 @@ title: Flask OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Flask
 sidebar_position: 5
 description:
-  Flask OpenTelemetry instrumentation guide for APM, distributed tracing,
-  SQLAlchemy monitoring, and Celery task tracing with base14 Scout.
+  Trace Flask routes, SQLAlchemy queries, and Celery tasks with OpenTelemetry
+  auto-instrumentation. Monitor distributed services and API performance using
+  base14 Scout.
 keywords:
   [
     flask opentelemetry instrumentation,
@@ -65,6 +66,15 @@ what gets traced and how, making it ideal for microservices architectures where
 minimal overhead is critical. We'll explore both automatic and custom
 instrumentation patterns, including Flask-specific considerations like request
 context propagation, blueprint isolation, and extension compatibility.
+
+:::tip TL;DR
+
+Initialize `FlaskInstrumentor` inside your `create_app()` factory, then
+instrument SQLAlchemy and Celery separately after each extension is initialized.
+Use the OTLP exporter to send spans to base14 Scout with no changes to your
+route logic.
+
+:::
 
 ## Who This Guide Is For
 
@@ -1715,7 +1725,7 @@ Blueprints are automatically instrumented when registered before calling
 **Yes.** Flask-RESTful resources are automatically instrumented through Flask's
 route system. Each resource method creates a span.
 
-### 4. How do I trace SQLAlchemy queries?
+### 4. How do I trace SQLAlchemy queries in a Flask app with OpenTelemetry?
 
 Install `opentelemetry-instrumentation-sqlalchemy` and instrument the engine
 after `db.init_app(app)`:
@@ -1744,7 +1754,7 @@ propagates from Flask to Celery.
 FlaskInstrumentor().instrument_app(app, excluded_urls="health,metrics")
 ```
 
-### 8. What's the performance overhead?
+### 8. What is the performance overhead of OpenTelemetry tracing in Flask?
 
 With 10% sampling, overhead is typically &lt;1% for latency and ~8% for memory.
 Without sampling (100% tracing), expect ~12% latency increase.

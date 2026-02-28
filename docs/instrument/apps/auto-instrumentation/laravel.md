@@ -3,8 +3,9 @@ title: Laravel OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Laravel
 sidebar_position: 23
 description:
-  Laravel OpenTelemetry instrumentation for traces, Eloquent database
-  monitoring, and queue tracing with base14 Scout.
+  Get full visibility into Laravel apps — automatically trace HTTP requests,
+  Eloquent queries, Redis, and queue jobs without code changes using the
+  OpenTelemetry PHP SDK with base14 Scout.
 keywords:
   [
     laravel opentelemetry instrumentation,
@@ -52,6 +53,16 @@ Laravel OpenTelemetry instrumentation.
 > **Note:** This guide provides a practical Laravel-focused overview based on the
 > official OpenTelemetry documentation. For complete PHP language information,
 > please consult the [official OpenTelemetry PHP documentation](https://opentelemetry.io/docs/languages/php/).
+
+:::tip TL;DR
+
+Install the OpenTelemetry PHP extension and SDK packages via Composer, then
+register the `OtelSdkServiceProvider` in your Laravel app. HTTP requests,
+Eloquent queries, Redis, and queue jobs are traced automatically — no
+per-route or per-model code changes required. Export traces to base14 Scout
+via OTLP.
+
+:::
 
 ## Who This Guide Is For
 

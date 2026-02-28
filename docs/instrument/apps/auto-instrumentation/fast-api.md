@@ -3,9 +3,9 @@ title: FastAPI OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: FastAPI
 sidebar_position: 4
 description:
-  Complete guide to FastAPI OpenTelemetry instrumentation for application
-  performance monitoring. Set up auto-instrumentation for traces, metrics, and
-  production deployments with base14 Scout in minutes.
+  Auto-instrument FastAPI with OpenTelemetry to capture traces, metrics, and
+  database query spans. Get production-ready APM with base14 Scout using
+  minimal code changes.
 keywords:
   [
     fastapi opentelemetry instrumentation,
@@ -54,6 +54,16 @@ performance issues in production, this guide provides production-ready
 configurations and best practices for FastAPI OpenTelemetry instrumentation.
 You'll learn how to set up auto-instrumentation, configure custom spans for
 business logic, optimize performance, and deploy with Docker.
+
+:::tip TL;DR
+
+Install `opentelemetry-instrumentation-fastapi` and call
+`FastAPIInstrumentor().instrument_app(app)` at startup. SQLAlchemy, Redis, and
+HTTP client libraries are instrumented automatically via the bootstrap command.
+Use `BatchSpanProcessor` with the OTLP exporter to send traces and metrics to
+base14 Scout with no changes to your route handlers.
+
+:::
 
 ## Overview
 
@@ -1669,7 +1679,7 @@ Yes, OpenTelemetry fully supports FastAPI's async/await patterns. Context
 propagation works automatically across async operations, ensuring parent-child
 span relationships are maintained correctly.
 
-### What is the performance impact of instrumentation?
+### What is the performance impact of OpenTelemetry on FastAPI?
 
 Typical overhead is 0.5-2ms added latency per request, 2-5% CPU increase, and
 10-50MB additional memory. This impact is minimal and acceptable for most
@@ -1709,7 +1719,7 @@ entire system.
 Use both: traces for debugging specific issues, metrics for monitoring overall
 health.
 
-### How do I debug N+1 database query problems?
+### How do I detect N+1 database queries in FastAPI with OpenTelemetry?
 
 View the span hierarchy in base14 Scout. N+1 queries appear as many sequential
 database spans under a single parent span. The trace visualization clearly shows
@@ -1730,7 +1740,7 @@ section). For Celery, install `opentelemetry-instrumentation-celery`:
 pip install opentelemetry-instrumentation-celery
 ```
 
-### Does instrumentation affect WebSocket connections?
+### Does OpenTelemetry instrumentation affect FastAPI WebSocket connections?
 
 FastAPI WebSocket connections are automatically traced. Each WebSocket
 connection creates a long-lived span that tracks the entire connection duration

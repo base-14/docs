@@ -3,8 +3,9 @@ title: Spring Boot Alternatives OpenTelemetry Instrumentation - Complete APM Set
 sidebar_label: Spring Boot Alternatives
 sidebar_position: 17
 description:
-  Spring Boot alternative OpenTelemetry approaches using Java Agent and
-  Native Starter with base14 Scout.
+  Monitor Spring Boot apps using Java Agent zero-code instrumentation or the
+  Spring Boot 4.0 Native Starter as alternatives to the recommended
+  OpenTelemetry SDK integration approach.
 keywords:
   [
     opentelemetry java agent,
@@ -28,6 +29,17 @@ instrumentation beyond the recommended OpenTelemetry SDK Integration approach.
 > See [Spring Boot OpenTelemetry Instrumentation](./spring-boot.md) for the
 > **OpenTelemetry SDK Integration** approach, which provides the best balance of
 > features, stability, and flexibility for most production use cases.
+
+:::tip TL;DR
+
+Attach the OpenTelemetry Java Agent JAR at JVM startup with
+`-javaagent:opentelemetry-javaagent.jar` for zero-code instrumentation of 150+
+libraries — no dependency changes needed. If you're on Spring Boot 4.0
+(currently preview), the native `spring-boot-starter-opentelemetry` starter
+offers Spring-managed OTel via Micrometer. For production, the recommended path
+remains the OpenTelemetry SDK Integration.
+
+:::
 
 ## Overview
 

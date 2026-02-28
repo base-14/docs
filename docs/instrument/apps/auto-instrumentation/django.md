@@ -3,8 +3,8 @@ title: Django OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Django
 sidebar_position: 3
 description:
-  Django OpenTelemetry instrumentation guide for APM, distributed tracing,
-  ORM monitoring, and Celery task tracing with base14 Scout.
+  Trace Django requests and ORM queries, detect N+1 patterns, instrument Celery
+  background tasks, and monitor performance with OpenTelemetry and base14 Scout APM.
 keywords:
   [
     django opentelemetry instrumentation,
@@ -66,6 +66,17 @@ HTTP requests, cache operations, and asynchronous task execution. We'll explore
 both automatic and custom instrumentation patterns, including Django-specific
 considerations like N+1 query detection, PII masking for GDPR compliance, and
 management command tracing.
+
+:::tip TL;DR
+
+Install `opentelemetry-instrumentation-django` and
+`opentelemetry-instrumentation-psycopg2`, then initialize tracing in
+`manage.py` or your WSGI/ASGI entry point using
+`DjangoInstrumentor().instrument()`. Django's ORM queries, views, middleware,
+and Celery tasks are traced automatically with no per-view code changes
+required.
+
+:::
 
 ## Who This Guide Is For
 
@@ -1954,7 +1965,7 @@ class Command(BaseCommand):
 through Django's middleware. Each API endpoint creates a span with the HTTP
 method and path (e.g., `GET /api/orders/`).
 
-### 4. How do I detect N+1 database queries?
+### 4. How do I detect N+1 queries in Django with OpenTelemetry tracing?
 
 Check span attributes for `db.query_count`. High counts (>10 queries per request)
 often indicate N+1 issues. Use the custom decorator shown in the
@@ -1979,7 +1990,7 @@ and attributes before export.
 `asgi.py` file before creating the ASGI application, and async views will be
 traced automatically.
 
-### 8. What's the performance overhead of tracing?
+### 8. What is the performance overhead of OpenTelemetry tracing in Django?
 
 With 10% sampling, overhead is typically &lt;1% for latency and ~8% for memory.
 Without sampling (100% tracing), expect ~6% latency increase and ~30% memory

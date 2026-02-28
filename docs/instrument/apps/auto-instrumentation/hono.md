@@ -3,10 +3,9 @@ title: Hono OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Hono
 sidebar_position: 10
 description:
-  Complete guide to Hono OpenTelemetry instrumentation for application
-  performance monitoring. Set up auto-instrumentation for traces, metrics, and
-  production deployments with base14 Scout in minutes. Supports Hono 4.x,
-  PostgreSQL, Redis, BullMQ background jobs.
+  Trace HTTP requests, PostgreSQL queries, Redis calls, and background jobs in
+  Hono apps with OpenTelemetry auto-instrumentation. Export traces and metrics
+  to base14 Scout.
 keywords:
   [
     hono opentelemetry instrumentation,
@@ -54,6 +53,16 @@ Whether you're implementing observability for the first time, migrating from
 commercial APM solutions like DataDog or New Relic, or troubleshooting
 performance issues in production, this guide provides production-ready
 configurations and best practices for Hono OpenTelemetry instrumentation.
+
+:::tip TL;DR
+
+Create a `telemetry.ts` file, initialize the OpenTelemetry Node.js SDK there,
+and import it as the very first line of your entry point before any other
+module. Add `@hono/otel` middleware and `@opentelemetry/auto-instrumentations-node`
+to get automatic HTTP, PostgreSQL, and Redis spans with no additional
+instrumentation code.
+
+:::
 
 ## Overview
 
@@ -1163,7 +1172,7 @@ This guide focuses on Hono 4.x with `@hono/otel` middleware. The same
 auto-instrumentation approach works with any Hono version since HTTP-level
 instrumentation is framework-agnostic.
 
-### How does @hono/otel differ from @fastify/otel?
+### How does Hono OpenTelemetry middleware compare to Fastify?
 
 `@hono/otel` is a Hono middleware that creates spans with route-parameterized
 names. Fastify uses hooks and plugins. Both achieve the same result —
