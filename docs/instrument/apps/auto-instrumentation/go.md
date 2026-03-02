@@ -1390,6 +1390,11 @@ require (
 Complete working examples:
 [GitHub: base-14/examples/go](https://github.com/base-14/examples/tree/main/go)
 
+With traces flowing, you can
+[explore Go service traces in Scout](https://base14.io/scout/traces)
+— follow requests across HTTP handlers, gRPC calls, and database
+operations with full distributed context.
+
 ## References
 
 - [Official OpenTelemetry Go Documentation](https://opentelemetry.io/docs/languages/go/)

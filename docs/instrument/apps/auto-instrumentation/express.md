@@ -2017,6 +2017,11 @@ For complete production-ready configuration files, see the example repository:
 [example-dockerfile]: https://github.com/base-14/examples/tree/main/nodejs/express-typescript-mongodb/Dockerfile
 [example-compose]: https://github.com/base-14/examples/tree/main/nodejs/express-typescript-mongodb/compose.yml
 
+With instrumentation configured, you can
+[track Express.js endpoints in Scout APM](https://base14.io/scout/apm)
+— monitor route latency, middleware performance, and downstream service
+calls in real time.
+
 ## References
 
 - [Official OpenTelemetry Node.js Documentation](https://opentelemetry.io/docs/languages/js/)

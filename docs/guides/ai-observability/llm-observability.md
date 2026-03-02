@@ -1623,6 +1623,9 @@ independently.
 
 ### Scout Platform Features
 
+- [Monitor LLM costs and latency in Scout](https://base14.io/scout/llm-observability)
+  \- Track token usage, provider costs, and response quality across all
+  your LLM operations
 - [Creating Alerts](../creating-alerts-with-logx.md) - Set up alerts for LLM
   error rates, cost spikes, or quality degradation
 - [Create Your First Dashboard](../create-your-first-dashboard.md) \- Build

@@ -331,6 +331,10 @@ No write permissions are needed.
 - **Go Deeper**: Start with the
   [Advanced monitoring guide](./postgres-advanced.md) for query-level
   statistics and per-table metrics
+- **Analyze in Scout**: Get
+  [deep PostgreSQL analysis with pgX](https://base14.io/scout/pgx)
+  — correlate query performance with application traces and
+  infrastructure metrics
 
 ## Related Guides
 

@@ -1727,6 +1727,11 @@ Configure tenant-based filtering as needed.
 
 ## What's Next
 
+Once instrumented, you can
+[view Spring Boot traces and metrics in Scout](https://base14.io/scout/apm)
+— monitor REST endpoints, JPA queries, and async operations from a
+single dashboard.
+
 ### Advanced Topics
 
 - **[Custom Java Instrumentation](../custom-instrumentation/java.md)** - Deep

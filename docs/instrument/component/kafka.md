@@ -314,6 +314,10 @@ tool.
   and other components
 - **Fine-tune Collection**: Use `topic_match` and `group_match` to
   limit metric volume on large clusters
+- **Visualize in Scout**: Once metrics are flowing, you can
+  [monitor Kafka broker metrics in Scout](https://base14.io/scout/metrics)
+  — track consumer lag, partition health, and throughput from a single
+  dashboard
 
 ## Related Guides
 

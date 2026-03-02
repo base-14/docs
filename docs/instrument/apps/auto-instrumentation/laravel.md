@@ -1530,6 +1530,11 @@ OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
 
 Complete working examples are available in our [GitHub examples repository](https://github.com/base-14/examples/tree/main/php).
 
+Once telemetry is flowing, you can
+[monitor Laravel request performance in Scout](https://base14.io/scout/apm)
+— track Eloquent queries, queue throughput, and HTTP latency from a
+unified dashboard.
+
 ## References
 
 - [Official OpenTelemetry PHP Documentation](https://opentelemetry.io/docs/languages/php/)

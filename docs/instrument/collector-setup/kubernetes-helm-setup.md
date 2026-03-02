@@ -766,6 +766,10 @@ scout:
 5. Sets up a local otlp endpoint for apps to send traces which are then
    forwarded to Scout.
 
+Once deployed, your cluster telemetry flows into
+[base14 Scout](https://base14.io/scout) — unified logs, metrics, and
+traces from every node and pod in a single platform.
+
 ## Related Guides
 
 - [Scout Exporter Configuration](./scout-exporter.md) - Configure authentication

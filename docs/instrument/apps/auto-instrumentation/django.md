@@ -2233,6 +2233,11 @@ deployments.
 
 :::
 
+Once telemetry is flowing, you can
+[analyze Django request traces in Scout](https://base14.io/scout/apm)
+— monitor view performance, ORM query patterns, and Celery task execution
+from a single pane.
+
 ## References
 
 ### Official Documentation

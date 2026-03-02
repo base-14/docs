@@ -1973,6 +1973,11 @@ instrumentation is available at:
 
 [GitHub: base-14/examples/python/fastapi-postgres](https://github.com/base-14/examples/tree/main/python/fastapi-postgres)
 
+Once telemetry is flowing, you can
+[monitor FastAPI performance in Scout APM](https://base14.io/scout/apm)
+— track request latency, error rates, and database query traces across
+all your endpoints.
+
 ## References
 
 - [Official OpenTelemetry Python Documentation](https://opentelemetry.io/docs/languages/python/)

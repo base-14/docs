@@ -1536,6 +1536,11 @@ SCOUT_CLIENT_SECRET=your-client-secret
 SCOUT_TOKEN_URL=https://auth.example.com/oauth/token
 ```
 
+Once telemetry reaches the collector, you can
+[monitor Next.js server actions in Scout](https://base14.io/scout/apm)
+— trace SSR render times, API route performance, and database calls
+across your application.
+
 ## References
 
 - [Official OpenTelemetry Node.js Documentation](https://opentelemetry.io/docs/languages/js/)

@@ -896,6 +896,11 @@ configurations are available at:
 
 :::
 
+Once instrumented, you can
+[monitor Node.js services with Scout APM](https://base14.io/scout/apm)
+— track event loop latency, async operation traces, and HTTP handler
+performance across your applications.
+
 ## References
 
 - [Official OpenTelemetry Node.js Documentation](https://opentelemetry.io/docs/languages/js/)

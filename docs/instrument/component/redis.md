@@ -298,6 +298,10 @@ this is expected.
   and other components
 - **Fine-tune Collection**: Adjust `collection_interval` based on your
   cache usage patterns
+- **Visualize in Scout**: Once metrics are flowing, you can
+  [track Redis performance metrics in Scout](https://base14.io/scout/metrics)
+  — build dashboards for hit ratios, memory usage, and connection
+  patterns
 
 ## Related Guides
 
