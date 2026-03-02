@@ -1,11 +1,10 @@
 ---
-title: Celery OpenTelemetry Instrumentation - Complete APM Setup Guide
+title: Celery OpenTelemetry — Distributed Task Tracing with Context Propagation
 sidebar_label: Celery
 sidebar_position: 2
 description:
-  Complete guide to Celery OpenTelemetry instrumentation for distributed task
-  queue monitoring. Set up auto-instrumentation for traces, metrics, and
-  production deployments with base14 Scout in minutes.
+  Instrument Celery workers with OpenTelemetry. Trace distributed tasks across
+  RabbitMQ and Redis with full context propagation. Production config included.
 keywords:
   [
     celery opentelemetry instrumentation,
@@ -28,6 +27,15 @@ keywords:
     async task monitoring,
     celery observability,
   ]
+head:
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does OpenTelemetry impact Celery task performance?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry adds approximately 0.5-2ms overhead per task with proper configuration using BatchSpanProcessor. This is negligible for most workloads. For high-frequency tasks over 1000 per second, consider using sampling."}},{"@type":"Question","name":"Which Celery versions are supported?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry supports Celery 5.3+ with Python 3.9+. Celery 5.4+ with Python 3.11+ is recommended for optimal compatibility and performance."}},{"@type":"Question","name":"How do I trace tasks across multiple services?","acceptedAnswer":{"@type":"Answer","text":"Use inject() when publishing tasks and ensure all services send telemetry to the same Scout Collector. The trace context is automatically propagated through Celery task headers."}},{"@type":"Question","name":"Can I use OpenTelemetry with Celery Beat (scheduled tasks)?","acceptedAnswer":{"@type":"Answer","text":"Yes, Celery Beat scheduled tasks are automatically instrumented. Each scheduled execution creates a new trace."}},{"@type":"Question","name":"How do I correlate Celery logs with traces?","acceptedAnswer":{"@type":"Answer","text":"Enable log instrumentation by setting OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED=true. Logs will include trace_id and span_id for correlation in Scout Dashboard."}},{"@type":"Question","name":"What is the difference between task traces and worker metrics?","acceptedAnswer":{"@type":"Answer","text":"Task traces show individual task execution with timing and attributes for debugging specific failures. Worker metrics provide aggregated statistics like queue depth and task rate for monitoring overall system health."}},{"@type":"Question","name":"Can I use both RabbitMQ and Redis as brokers?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry instruments both brokers. The rabbitmq and redis receiver components in the collector can gather infrastructure metrics from both."}}]}
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"HowTo","name":"How to instrument Celery with OpenTelemetry","step":[{"@type":"HowToStep","name":"Install required packages","text":"Install opentelemetry-api, opentelemetry-sdk, opentelemetry-exporter-otlp, and opentelemetry-instrumentation-celery via pip or add them to requirements.txt."},{"@type":"HowToStep","name":"Configure the OpenTelemetry SDK","text":"Set up TracerProvider with CeleryInstrumentor().instrument(), configure environment variables for OTEL_SERVICE_NAME and OTEL_EXPORTER_OTLP_ENDPOINT."},{"@type":"HowToStep","name":"Enable distributed tracing across async boundaries","text":"Configure context propagation from HTTP requests through message brokers (RabbitMQ or Redis) to Celery worker execution using inject() and extract()."},{"@type":"HowToStep","name":"Run and verify instrumentation","text":"Start the Celery worker with opentelemetry-instrument celery -A myapp.tasks worker and verify traces flow end-to-end from task producer to worker in base14 Scout."}]}
 ---
 
 # Celery

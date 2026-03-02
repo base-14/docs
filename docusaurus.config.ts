@@ -130,6 +130,7 @@ const config: Config = {
   ],
 
   plugins: [
+    require.resolve('./src/plugins/noindex-thin-pages.ts'),
     [
       "docusaurus-plugin-llms",
       {

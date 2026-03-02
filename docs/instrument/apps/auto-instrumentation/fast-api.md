@@ -1,11 +1,10 @@
 ---
-title: FastAPI OpenTelemetry Instrumentation - Complete APM Setup Guide
+title: Instrument FastAPI with OpenTelemetry — Traces, Metrics & Logs in 5 Min
 sidebar_label: FastAPI
 sidebar_position: 4
 description:
-  Auto-instrument FastAPI with OpenTelemetry to capture traces, metrics, and
-  database query spans. Get production-ready APM with base14 Scout using
-  minimal code changes.
+  Auto-instrument FastAPI with OpenTelemetry. Capture traces from HTTP requests,
+  SQLAlchemy queries, and async operations. Production-ready config included.
 keywords:
   [
     fastapi opentelemetry instrumentation,
@@ -29,6 +28,15 @@ keywords:
     fastapi observability platform,
     fastapi otlp exporter,
   ]
+head:
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does FastAPI instrumentation work with async/await?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry fully supports FastAPI's async/await patterns. Context propagation works automatically across async operations, ensuring parent-child span relationships are maintained correctly."}},{"@type":"Question","name":"What is the performance impact of OpenTelemetry on FastAPI?","acceptedAnswer":{"@type":"Answer","text":"Typical overhead is 0.5-2ms added latency per request, 2-5% CPU increase, and 10-50MB additional memory. This impact is minimal and acceptable for most production applications."}},{"@type":"Question","name":"Which Python and FastAPI versions are supported?","acceptedAnswer":{"@type":"Answer","text":"Python 3.9+ minimum (3.13+ recommended), FastAPI 0.100.0+ (0.115.6+ recommended), and OpenTelemetry SDK 1.20.0+ (1.29.0+ recommended)."}},{"@type":"Question","name":"How do I instrument SQLAlchemy database queries?","acceptedAnswer":{"@type":"Answer","text":"Install opentelemetry-instrumentation-sqlalchemy and instrument your engine with SQLAlchemyInstrumentor().instrument(engine=engine). All queries will automatically be traced with full SQL details."}},{"@type":"Question","name":"How does distributed tracing work across microservices?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry uses W3C Trace Context headers (traceparent, tracestate) to propagate trace context between services. FastAPI instrumentation automatically extracts and injects these headers."}},{"@type":"Question","name":"How do I detect N+1 database queries in FastAPI with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"View the span hierarchy in base14 Scout. N+1 queries appear as many sequential database spans under a single parent span, making the query pattern obvious."}},{"@type":"Question","name":"Can I use OpenTelemetry with Pydantic v2?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry works with both Pydantic v1 and v2. FastAPI automatically handles Pydantic model serialization, and instrumentation captures the HTTP layer regardless of Pydantic version."}},{"@type":"Question","name":"Does OpenTelemetry instrumentation affect FastAPI WebSocket connections?","acceptedAnswer":{"@type":"Answer","text":"Yes, FastAPI WebSocket connections are automatically traced. Each WebSocket connection creates a long-lived span that tracks the entire connection duration and messages exchanged."}}]}
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"HowTo","name":"How to instrument FastAPI with OpenTelemetry","step":[{"@type":"HowToStep","name":"Install OpenTelemetry packages","text":"Install opentelemetry-api, opentelemetry-sdk, opentelemetry-instrumentation-fastapi, and opentelemetry-exporter-otlp via pip."},{"@type":"HowToStep","name":"Configure the OpenTelemetry SDK","text":"Set up TracerProvider with BatchSpanProcessor and OTLP exporter, configure resource attributes like service name and version, and call FastAPIInstrumentor().instrument_app(app)."},{"@type":"HowToStep","name":"Add custom spans and metrics","text":"Implement custom spans for business logic and external API calls, and collect HTTP metrics using custom middleware."},{"@type":"HowToStep","name":"Run and verify instrumentation","text":"Start the FastAPI application with uvicorn, set OTEL_SERVICE_NAME and OTEL_EXPORTER_OTLP_ENDPOINT environment variables, and verify traces appear in base14 Scout."}]}
 ---
 
 # FastAPI

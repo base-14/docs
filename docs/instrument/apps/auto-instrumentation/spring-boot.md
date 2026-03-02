@@ -1,11 +1,10 @@
 ---
-title: Spring Boot OpenTelemetry Instrumentation - Complete APM Setup Guide
+title: Spring Boot OpenTelemetry Setup — SDK, Java Agent & Spring Boot 4 Starter
 sidebar_label: Spring Boot
 sidebar_position: 16
 description:
-  Trace HTTP requests, database queries, and Spring beans in Spring Boot apps
-  with OpenTelemetry auto-instrumentation. Export traces and metrics to base14
-  Scout with Java 8-25 support.
+  Instrument Spring Boot with OpenTelemetry using SDK, Java agent, or Spring
+  Boot 4 starter. Covers MVC, JPA, WebClient, and Kafka. Java 8-25 supported.
 keywords:
   [
     spring boot monitoring,
@@ -29,6 +28,15 @@ keywords:
     spring boot performance monitoring,
     java 25 instrumentation,
   ]
+head:
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Should I use the Java Agent, OpenTelemetry SDK Integration, or Spring Boot 4.0 Native?","acceptedAnswer":{"@type":"Answer","text":"Use the Java Agent for quick start and legacy apps with zero code changes. Use OpenTelemetry SDK Integration for production with full API access and GraalVM support. Consider Spring Boot 4.0 Native after it reaches GA."}},{"@type":"Question","name":"What is the minimum Spring Boot version required for OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Spring Boot 2.7.0 is the minimum version, but Spring Boot 3.0+ is recommended for the best compatibility and features."}},{"@type":"Question","name":"Does OpenTelemetry work with Java 25?","acceptedAnswer":{"@type":"Answer","text":"Java 25 support is experimental. There are known ByteBuddy compatibility issues. For production deployments, Java 21 LTS is recommended."}},{"@type":"Question","name":"How much performance overhead does OpenTelemetry add?","acceptedAnswer":{"@type":"Answer","text":"Typical overhead is 1-5ms per request, 2-5% CPU usage, and 50-200MB memory. Impact varies based on instrumentation scope and collector network latency."}},{"@type":"Question","name":"Can I use multiple instrumentation approaches together?","acceptedAnswer":{"@type":"Answer","text":"No, you should use only one approach. They provide overlapping functionality and using multiple approaches will cause conflicts."}},{"@type":"Question","name":"Does the Java Agent work with GraalVM native-image?","acceptedAnswer":{"@type":"Answer","text":"No, the Java Agent has poor support for GraalVM native-image due to bytecode manipulation incompatibilities. Use the OpenTelemetry SDK Integration or Spring Boot 4.0 Native starter instead."}},{"@type":"Question","name":"Can I use OpenTelemetry with Spring WebFlux?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry fully supports reactive Spring WebFlux applications with automatic context propagation across reactive operators."}},{"@type":"Question","name":"Why are my database queries not appearing in traces?","acceptedAnswer":{"@type":"Answer","text":"Enable JDBC instrumentation with otel.instrumentation.jdbc.enabled=true and verify DataSource is created after OpenTelemetry initialization."}}]}
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"HowTo","name":"How to instrument Spring Boot with OpenTelemetry","step":[{"@type":"HowToStep","name":"Choose your instrumentation approach","text":"Select between Java Agent (zero code changes), OpenTelemetry SDK Integration (full API access with Spring config), or Spring Boot 4.0 Native starter based on your requirements."},{"@type":"HowToStep","name":"Add dependencies","text":"Add opentelemetry-spring-boot-starter and micrometer-registry-otlp to your pom.xml or build.gradle with the OpenTelemetry Instrumentation BOM."},{"@type":"HowToStep","name":"Configure OpenTelemetry","text":"Set management.otlp.tracing.endpoint in application.properties or application.yml, configure service name, and set resource attributes for your environment."},{"@type":"HowToStep","name":"Run and verify instrumentation","text":"Start the application with mvn spring-boot:run or as a JAR, set OTEL_SERVICE_NAME and OTEL_EXPORTER_OTLP_ENDPOINT, and verify traces appear in base14 Scout."}]}
 ---
 
 # Spring Boot

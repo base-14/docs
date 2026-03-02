@@ -1,11 +1,10 @@
 ---
-title: Laravel OpenTelemetry Instrumentation - Complete APM Setup Guide
+title: Laravel OpenTelemetry — Auto-Instrument Eloquent, Queues & HTTP Client
 sidebar_label: Laravel
 sidebar_position: 23
 description:
-  Get full visibility into Laravel apps — automatically trace HTTP requests,
-  Eloquent queries, Redis, and queue jobs without code changes using the
-  OpenTelemetry PHP SDK with base14 Scout.
+  Auto-instrument Laravel with OpenTelemetry PHP SDK. Capture Eloquent queries,
+  queue jobs, Redis, and HTTP calls with zero code changes. Laravel 8-11.
 keywords:
   [
     laravel opentelemetry instrumentation,
@@ -29,6 +28,15 @@ keywords:
     laravel telemetry,
     laravel cache monitoring,
   ]
+head:
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does OpenTelemetry impact Laravel performance?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry adds approximately 2-4ms of latency per request in typical Laravel applications. With proper configuration using batch processing and GZIP compression, the performance impact is minimal."}},{"@type":"Question","name":"Which Laravel versions are supported?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry supports Laravel 8.0+ with PHP 8.0+. Laravel 10.x or 11.x with PHP 8.2+ is recommended for optimal compatibility and performance."}},{"@type":"Question","name":"Can I use OpenTelemetry with Laravel queues and job workers?","acceptedAnswer":{"@type":"Answer","text":"Yes, the opentelemetry-auto-laravel package includes automatic instrumentation for Laravel queue workers. Background jobs are traced automatically with complete request-to-job traces visible in Scout Dashboard."}},{"@type":"Question","name":"Is OpenTelemetry compatible with Laravel middleware?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry instruments at the HTTP request level, making it compatible with all Laravel middleware. Custom middleware will appear in traces automatically."}},{"@type":"Question","name":"How do I monitor Eloquent N+1 queries?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry traces automatically expose N+1 queries as multiple database spans within a single request trace. In Scout Dashboard, look for repeated query patterns or high span counts for simple operations."}},{"@type":"Question","name":"Can I use OpenTelemetry with Laravel Octane?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry is compatible with Laravel Octane using Swoole or RoadRunner. Ensure the extension is loaded in your Octane worker process."}},{"@type":"Question","name":"Can I use OpenTelemetry alongside other APM tools?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry can run alongside tools like New Relic or DataDog during migration periods. However, running multiple APM agents simultaneously will multiply the performance overhead."}}]}
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"HowTo","name":"How to instrument Laravel with OpenTelemetry","step":[{"@type":"HowToStep","name":"Install the OpenTelemetry PHP extension","text":"Install build dependencies (gcc, make, autoconf), then install the OpenTelemetry PHP extension via PECL and enable it in php.ini."},{"@type":"HowToStep","name":"Install required Composer packages","text":"Install open-telemetry/sdk, open-telemetry/exporter-otlp, and open-telemetry/opentelemetry-auto-laravel via Composer."},{"@type":"HowToStep","name":"Configure OpenTelemetry","text":"Set environment variables for OTEL_PHP_AUTOLOAD_ENABLED, OTEL_SERVICE_NAME, and OTEL_EXPORTER_OTLP_ENDPOINT, or configure via Laravel .env file."},{"@type":"HowToStep","name":"Run and verify instrumentation","text":"Start the Laravel application with php artisan serve, make test requests, and verify traces for HTTP requests, Eloquent queries, and queue jobs appear in base14 Scout."}]}
 ---
 
 # Laravel

@@ -2,21 +2,30 @@ base14team:
   name: base14 Team
   title: Engineering Team at base14
   url: https://base14.io/about
+  socials:
+    linkedin: https://www.linkedin.com/company/base14-io
+    github: https://github.com/base-14
 
 ranjan-sakalley:
   name: Ranjan Sakalley
-  title: Founder at base14
+  title: Founder & CPO at base14
   url: https://base14.io/about
   image_url: /img/blog/authors/ranjan-sakalley.jpeg
+  socials:
+    linkedin: https://www.linkedin.com/in/rnjns/
 
 irfan-shah:
   name: Irfan Shah
-  title: Founder at base14
+  title: Founder & CTO at base14
   url: https://base14.io/about
   image_url: /img/blog/authors/irfan-shah.jpeg
+  socials:
+    linkedin: https://www.linkedin.com/in/irfan-shah-4536076/
 
 nimisha-gj:
   name: Nimisha G J
   title: Consultant at base14
-  url: https://www.linkedin.com/in/nimishgj/
+  url: https://base14.io/about
   image_url: /img/blog/authors/nimisha-gj.jpeg
+  socials:
+    linkedin: https://www.linkedin.com/in/nimishgj/
