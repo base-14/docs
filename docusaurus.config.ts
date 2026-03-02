@@ -21,6 +21,7 @@ const config: Config = {
   projectName: "docs.base14.io", // Usually your repo name.
 
   onBrokenLinks: "throw",
+  trailingSlash: true,
 
   headTags: [
     {

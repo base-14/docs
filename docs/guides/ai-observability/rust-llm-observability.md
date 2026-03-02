@@ -74,7 +74,7 @@ with token and cost tracking per provider and model.
 :::
 
 > **Note:** For general LLM observability patterns applicable to any language,
-> see the [LLM Observability guide](./llm-observability). This guide focuses
+> see the [LLM Observability guide](../llm-observability). This guide focuses
 > specifically on Rust integration patterns. For basic Axum instrumentation
 > without AI, see the
 > [Axum guide](../../instrument/apps/auto-instrumentation/axum.md).
@@ -2111,7 +2111,7 @@ it supports streaming and has lower overhead for high-volume telemetry.
 
 ### Advanced Topics
 
-- [LLM Observability (Python)](./llm-observability) — Python equivalent with
+- [LLM Observability (Python)](../llm-observability) — Python equivalent with
   auto-instrumentation patterns
 - [Axum Instrumentation](../../instrument/apps/auto-instrumentation/axum.md) —
   General Axum APM without AI-specific patterns
@@ -2207,7 +2207,7 @@ src/
 
 ## Related Guides
 
-- [LLM Observability (Python)](./llm-observability) — Python equivalent of this
+- [LLM Observability (Python)](../llm-observability) — Python equivalent of this
   guide with auto-instrumentation patterns
 - [Axum Instrumentation](../../instrument/apps/auto-instrumentation/axum.md) —
   General Axum APM setup

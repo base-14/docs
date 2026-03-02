@@ -1105,7 +1105,7 @@ pub async fn transfer_funds(
 - [Rust LLM Observability][rust-llm] - GenAI semantic conventions,
   token/cost tracking, multi-provider LLM instrumentation for Rust AI apps
 
-[rust-llm]: ../../../guides/ai-observability/rust-llm-observability
+[rust-llm]: ../../../../guides/ai-observability/rust-llm-observability
 
 - [Axum Auto-Instrumentation Guide](../auto-instrumentation/axum.md)
 - [Creating Alerts with LogX](../../../guides/creating-alerts-with-logx.md)

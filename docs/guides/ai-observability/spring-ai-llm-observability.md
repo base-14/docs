@@ -76,12 +76,12 @@ the OpenTelemetry Collector — all visible in a single trace on base14 Scout.
 :::info Cross-references
 
 For general LLM observability patterns applicable to any language, see the
-[LLM Observability guide](./llm-observability). This guide focuses specifically
+[LLM Observability guide](../llm-observability). This guide focuses specifically
 on Java and Spring AI integration patterns. For Rust AI applications, see the
-[Rust LLM Observability guide](./rust-llm-observability). For non-AI Java web
+[Rust LLM Observability guide](../rust-llm-observability). For non-AI Java web
 application instrumentation, check if a Spring Boot auto-instrumentation guide
 is available under
-[auto-instrumentation](../../instrument/apps/auto-instrumentation/).
+[auto-instrumentation](../../../instrument/apps/auto-instrumentation/).
 
 :::
 
@@ -2831,9 +2831,9 @@ instrumentation). Check these in order:
   — manual spans and metrics for non-AI Java applications
 - [Spring Boot Auto-Instrumentation](../../instrument/apps/auto-instrumentation/spring-boot.md)
   — zero-code instrumentation for Spring Boot web applications
-- [LLM Observability](./llm-observability) — Python patterns for LLM
+- [LLM Observability](../llm-observability) — Python patterns for LLM
   observability
-- [Rust LLM Observability](./rust-llm-observability) — Rust patterns with manual
+- [Rust LLM Observability](../rust-llm-observability) — Rust patterns with manual
   GenAI instrumentation
 
 ### Scout Platform Features
@@ -3058,9 +3058,9 @@ and `memory_limiter`.
 
 ## Related Guides
 
-- [LLM Observability](./llm-observability) — Python patterns for AI application
+- [LLM Observability](../llm-observability) — Python patterns for AI application
   tracing
-- [Rust LLM Observability](./rust-llm-observability) — Rust patterns with manual
+- [Rust LLM Observability](../rust-llm-observability) — Rust patterns with manual
   GenAI instrumentation
 - [Spring Boot Auto-Instrumentation](../../instrument/apps/auto-instrumentation/spring-boot.md)
   — zero-code OpenTelemetry for Spring Boot web applications
