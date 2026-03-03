@@ -151,17 +151,19 @@ dependencies:
   provider: ^6.1.2
   path_provider: ^2.1.4
   crypto: ^3.0.3
+  device_info_plus: ^11.3.3
 ```
 
-| Package          | Purpose                                                                                 |
-| ---------------- | --------------------------------------------------------------------------------------- |
-| `opentelemetry`  | OpenTelemetry Dart SDK providing tracer API, span creation, and attribute management    |
-| `http`           | HTTP client used for OTLP export and API calls with span instrumentation                |
-| `uuid`           | Generates unique session IDs and trace identifiers                                      |
-| `flutter_dotenv` | Loads environment variables from `.env` files for endpoint and credential configuration |
-| `provider`       | State management for propagating service instances through the widget tree              |
-| `path_provider`  | Access to device filesystem paths for image caching and local storage                   |
-| `crypto`         | Cryptographic hashing for cache keys and data integrity checks                          |
+| Package            | Purpose                                                                                 |
+| ------------------ | --------------------------------------------------------------------------------------- |
+| `opentelemetry`    | OpenTelemetry Dart SDK providing tracer API, span creation, and attribute management    |
+| `http`             | HTTP client used for OTLP export and API calls with span instrumentation                |
+| `uuid`             | Generates unique session IDs and trace identifiers                                      |
+| `flutter_dotenv`   | Loads environment variables from `.env` files for endpoint and credential configuration |
+| `provider`         | State management for propagating service instances through the widget tree              |
+| `path_provider`    | Access to device filesystem paths for image caching and local storage                   |
+| `crypto`           | Cryptographic hashing for cache keys and data integrity checks                          |
+| `device_info_plus` | Retrieves device manufacturer, model name, and model identifier per platform            |
 
 Run `flutter pub get` after updating your `pubspec.yaml` to install all
 dependencies.
@@ -631,6 +633,15 @@ List<Map<String, dynamic>> getResourceAttributes() {
       'key': 'session.id',
       'value': {'stringValue': _sessionId},
     },
+    {
+      'key': 'app.build_id',
+      'value': {'stringValue': serviceVersion},
+    },
+    if (_installationId.isNotEmpty)
+      {
+        'key': 'app.installation.id',
+        'value': {'stringValue': _installationId},
+      },
     for (final entry in _deviceInfo.entries)
       {
         'key': entry.key,
@@ -641,22 +652,27 @@ List<Map<String, dynamic>> getResourceAttributes() {
 ```
 
 The `_deviceInfo` map is populated during initialization with platform-specific
-values:
+values using `device_info_plus` for manufacturer and model details:
 
-| Attribute                | Source                            | Example Value           |
-| ------------------------ | --------------------------------- | ----------------------- |
-| `service.name`           | `SERVICE_NAME` env var            | `astronomy-shop-mobile` |
-| `service.version`        | `SERVICE_VERSION` env var         | `0.0.1`                 |
-| `deployment.environment` | `ENVIRONMENT` env var             | `production`            |
-| `telemetry.sdk.name`     | Hardcoded                         | `flutter-opentelemetry` |
-| `telemetry.sdk.version`  | Hardcoded                         | `0.18.10`               |
-| `session.id`             | Generated UUID v4                 | `a1b2c3d4-...`          |
-| `os.name`                | `Platform.operatingSystem`        | `ios`                   |
-| `os.version`             | `Platform.operatingSystemVersion` | `17.4`                  |
-| `device.locale`          | `Platform.localeName`             | `en_US`                 |
-| `device.screen.width`    | `PlatformDispatcher`              | `393`                   |
-| `device.screen.height`   | `PlatformDispatcher`              | `852`                   |
-| `device.screen.density`  | `PlatformDispatcher`              | `3.0`                   |
+| Attribute                  | Source                            | Example Value           |
+| -------------------------- | --------------------------------- | ----------------------- |
+| `service.name`             | `SERVICE_NAME` env var            | `astronomy-shop-mobile` |
+| `service.version`          | `SERVICE_VERSION` env var         | `0.0.1`                 |
+| `deployment.environment`   | `ENVIRONMENT` env var             | `production`            |
+| `telemetry.sdk.name`       | Hardcoded                         | `flutter-opentelemetry` |
+| `telemetry.sdk.version`    | Hardcoded                         | `0.18.10`               |
+| `session.id`               | Generated UUID v4                 | `a1b2c3d4-...`          |
+| `app.build_id`             | `SERVICE_VERSION` env var         | `0.0.1`                 |
+| `app.installation.id`      | Persisted UUID v4                 | `e5f6g7h8-...`          |
+| `os.name`                  | `Platform.operatingSystem`        | `ios`                   |
+| `os.version`               | `Platform.operatingSystemVersion` | `17.4`                  |
+| `device.locale`            | `Platform.localeName`             | `en_US`                 |
+| `device.manufacturer`      | `DeviceInfoPlugin`                | `Apple`                 |
+| `device.model.identifier`  | `DeviceInfoPlugin`                | `iPhone16,2`            |
+| `device.model.name`        | `DeviceInfoPlugin`                | `iPhone`                |
+| `device.screen.width`      | `PlatformDispatcher`              | `393`                   |
+| `device.screen.height`     | `PlatformDispatcher`              | `852`                   |
+| `device.screen.density`    | `PlatformDispatcher`              | `3.0`                   |
 
 ## Mobile-Specific Instrumentation
 
@@ -813,9 +829,10 @@ block records the exception on the span and sets error status:
 ### Screen Navigation and User Interaction Events
 
 Tracking which screens users visit and what they interact with is essential for
-understanding user behavior and diagnosing issues. The app records a
-`screen_view` event after loading product data, and a `product_tap` event when a
-user selects a product from the list.
+understanding user behavior and diagnosing issues. All interaction events use
+semconv-compatible attribute names: `app.screen.name` for the current screen,
+and `app.widget.click` with `app.widget.id` and `app.widget.name` for widget
+taps.
 
 The `screen_view` event fires after the product list loads successfully,
 capturing how many products were returned and their data source:
@@ -824,7 +841,7 @@ capturing how many products were returned and their data source:
 TelemetryService.instance.recordEvent(
   'screen_view',
   attributes: {
-    'screen_name': 'product_list',
+    'app.screen.name': 'product_list',
     'product_count': products.length,
     'data_source': 'api',
   },
@@ -833,7 +850,7 @@ TelemetryService.instance.recordEvent(
 ```
 
 When a user taps a product card, the app starts a trace for the navigation flow
-and records a `product_tap` event with product details:
+and records an `app.widget.click` event with widget and product details:
 
 ```dart showLineNumbers title="lib/main.dart"
 void _onProductTapped(Product product) {
@@ -841,12 +858,15 @@ void _onProductTapped(Product product) {
       .startTrace('view_product');
 
   TelemetryService.instance.recordEvent(
-    'product_tap',
+    'app.widget.click',
     attributes: {
+      'app.widget.id':
+          'product_card_${product.id}',
+      'app.widget.name': 'Product Card',
       'product_id': product.id,
       'product_name': product.name,
       'product_price': product.priceUsd,
-      'screen_name': 'product_list',
+      'app.screen.name': 'product_list',
     },
     parentOperation: 'view_product',
   );
@@ -861,9 +881,10 @@ void _onProductTapped(Product product) {
 }
 ```
 
-Other interaction events follow the same pattern. For example, tapping the cart
-badge records `cart_badge_tapped` with the current cart state, and tapping the
-search icon records `search_button_tapped` with the current screen name.
+Other interaction events follow the same `app.widget.click` pattern with
+`app.widget.id` and `app.widget.name` attributes. For example, tapping the cart
+badge records `app.widget.click` with `app.widget.id: 'cart_badge'`, and tapping
+the search icon records `app.widget.click` with `app.widget.id: 'search_button'`.
 
 ### Business Event Telemetry
 
@@ -1327,10 +1348,12 @@ breadcrumb trails, force-flush on fatal errors, and error boundary widgets.
 
 ### App Lifecycle Tracking
 
-The `AppLifecycleObserver` extends `WidgetsBindingObserver` to create a span for
-every lifecycle state transition. This gives you visibility into how your app
-behaves across foreground/background cycles and ensures telemetry is flushed
-before the OS kills the process.
+The `AppLifecycleObserver` extends `WidgetsBindingObserver` to record a
+`device.app.lifecycle` event for every lifecycle state transition, using
+platform-specific state keys (`ios.app.state` or `android.app.state`) with
+semconv-compatible values. This gives you visibility into how your app behaves
+across foreground/background cycles and ensures telemetry is flushed before the
+OS kills the process.
 
 ```dart showLineNumbers title="lib/services/app_lifecycle_observer.dart"
 class AppLifecycleObserver
@@ -1341,7 +1364,6 @@ class AppLifecycleObserver
 
   final TelemetryService _telemetryService =
       TelemetryService.instance;
-  late final otel.Tracer _tracer;
 
   @override
   void didChangeAppLifecycleState(
@@ -1349,70 +1371,69 @@ class AppLifecycleObserver
   ) {
     super.didChangeAppLifecycleState(state);
 
-    final span =
-        _tracer.startSpan('app_lifecycle_change');
-    span.setAttributes([
-      otel.Attribute.fromString(
-        'lifecycle.state', state.name,
-      ),
-      otel.Attribute.fromString(
-        'session.id',
-        _telemetryService.sessionId,
-      ),
-      otel.Attribute.fromInt(
-        'timestamp',
-        DateTime.now().millisecondsSinceEpoch,
-      ),
-    ]);
+    final stateKey = _platformStateKey();
+    final stateValue =
+        _mapLifecycleState(state);
+
+    _telemetryService.recordEvent(
+      'device.app.lifecycle',
+      attributes: {
+        stateKey: stateValue,
+        'session.id':
+            _telemetryService.sessionId,
+      },
+    );
 
     switch (state) {
       case AppLifecycleState.resumed:
-        span.setAttributes([
-          otel.Attribute.fromString(
-            'lifecycle.action', 'app_resumed',
-          ),
-        ]);
         PerformanceService.instance
             .recordMemoryUsage();
         _telemetryService.updateBatteryStatus();
         break;
 
       case AppLifecycleState.paused:
-        span.setAttributes([
-          otel.Attribute.fromString(
-            'lifecycle.action', 'app_paused',
-          ),
-        ]);
         _telemetryService.flush();
         break;
 
       case AppLifecycleState.detached:
-        span.setAttributes([
-          otel.Attribute.fromString(
-            'lifecycle.action', 'app_detached',
-          ),
-        ]);
         _telemetryService.shutdown();
         break;
 
       case AppLifecycleState.inactive:
-        span.setAttributes([
-          otel.Attribute.fromString(
-            'lifecycle.action', 'app_inactive',
-          ),
-        ]);
-        break;
-
       case AppLifecycleState.hidden:
-        span.setAttributes([
-          otel.Attribute.fromString(
-            'lifecycle.action', 'app_hidden',
-          ),
-        ]);
         break;
     }
+  }
 
-    span.end();
+  String _platformStateKey() {
+    if (kIsWeb) return 'android.app.state';
+    if (Platform.isIOS) return 'ios.app.state';
+    return 'android.app.state';
+  }
+
+  String _mapLifecycleState(
+    AppLifecycleState state,
+  ) {
+    if (!kIsWeb && Platform.isIOS) {
+      return switch (state) {
+        AppLifecycleState.resumed => 'active',
+        AppLifecycleState.inactive =>
+          'inactive',
+        AppLifecycleState.paused =>
+          'background',
+        AppLifecycleState.detached =>
+          'terminate',
+        AppLifecycleState.hidden =>
+          'background',
+      };
+    }
+    return switch (state) {
+      AppLifecycleState.resumed => 'foreground',
+      AppLifecycleState.inactive => 'created',
+      AppLifecycleState.paused => 'background',
+      AppLifecycleState.detached => 'background',
+      AppLifecycleState.hidden => 'background',
+    };
   }
 }
 ```
@@ -1623,7 +1644,7 @@ void _recordError(
         .difference(TelemetryService
             .instance.sessionStartTime)
         .inMilliseconds,
-    'screen.current': _currentScreen,
+    'app.screen.name': _currentScreen,
     'user.last_action': _lastUserAction,
     'breadcrumbs': _breadcrumbs.join(' > '),
     'has_stack_trace':
@@ -1644,7 +1665,7 @@ void _recordError(
       'error.type':
           (errorDetails.metadata['error_type']
               as String?) ?? 'unknown',
-      'screen.name': _currentScreen,
+      'app.screen.name': _currentScreen,
     },
   );
 
@@ -1973,9 +1994,6 @@ there is zero overhead in production.
 
    ```dart showLineNumbers title="lib/services/app_lifecycle_observer.dart"
    case AppLifecycleState.paused:
-     span.setAttributes([
-       otel.Attribute.fromString('lifecycle.action', 'app_paused'),
-     ]);
      _telemetryService.flush();
      break;
    ```
@@ -2045,6 +2063,9 @@ Good (safe device context):
 _deviceInfo['os.name'] = Platform.operatingSystem;
 _deviceInfo['os.version'] = Platform.operatingSystemVersion;
 _deviceInfo['device.locale'] = Platform.localeName;
+_deviceInfo['device.manufacturer'] = iosInfo.manufacturer;
+_deviceInfo['device.model.identifier'] = iosInfo.utsname.machine;
+_deviceInfo['device.model.name'] = iosInfo.model;
 _deviceInfo['device.screen.width'] = (size.width / ratio).round().toString();
 _deviceInfo['device.screen.height'] = (size.height / ratio).round().toString();
 _deviceInfo['device.screen.density'] = ratio.toStringAsFixed(1);
