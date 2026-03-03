@@ -36,7 +36,7 @@ npm start
 | `make typecheck`| `npm run typecheck`   | Run TypeScript type checking         |
 | `make lint`     | `npm run markdownlint`| Run markdown linting                 |
 | `make test`     | `npm test`            | Run tests                            |
-| `make check`    | `npm run build-lint`  | Run all checks (typecheck, lint, build) |
+| `make check`    | `npm run check`       | Run all checks (typecheck, lint, build) |
 
 Run `make help` to see all available targets.
 
