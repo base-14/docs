@@ -109,6 +109,12 @@ This is the fastest way to get started with OpenTelemetry.
 | --------- | --------------------------- | ----------------------------------- |
 | Phoenix   | [Phoenix](./elixir-phoenix) | Controllers, Ecto, LiveView, PubSub |
 
+### Mobile / Cross-Platform
+
+| Framework | Guide                | What's Instrumented                                                                          |
+| --------- | -------------------- | -------------------------------------------------------------------------------------------- |
+| Flutter   | [Flutter](./flutter) | HTTP requests, crash handling, app lifecycle, distributed tracing |
+
 ## How Auto-Instrumentation Works
 
 import ThemedImage from '@theme/ThemedImage';
