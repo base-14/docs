@@ -2371,3 +2371,5 @@ and session health across all your mobile endpoints.
   for running a local OTel Collector alongside the OpenTelemetry Demo
 - [Debugging OTel pipelines](/operate/debugging-otel-pipelines/) when
   telemetry is not reaching your backend or data looks incomplete
+- [Flutter Mobile Observability guide](/guides/flutter-mobile-observability/)
+  for choosing between the manual SDK and Flutterific RUM approaches

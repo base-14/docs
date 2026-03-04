@@ -1254,3 +1254,14 @@ lib/
 - [ ] Add `OTelConfig.interactionTracker.trackButtonClick(...)` to key buttons
 - [ ] Run with `flutter run --target=lib/main_otel.dart`
 - [ ] Verify spans in your collector/backend
+
+## Next Steps
+
+- [Flutter Mobile Observability guide](/guides/flutter-mobile-observability/)
+  for comparing this approach with the manual SDK
+- [Create Your First Dashboard](/guides/create-your-first-dashboard/) to
+  build dashboards from your mobile telemetry data
+- [Creating Alerts with LogX](/guides/creating-alerts-with-logx/) to set up
+  alerts on crash rates, ANR counts, or slow screen loads
+- [Troubleshooting Missing Telemetry Data](/guides/troubleshooting-missing-data/)
+  if spans are not arriving at your collector
