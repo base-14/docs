@@ -4,7 +4,7 @@ title: "Flutter Mobile Observability with OpenTelemetry"
 description: "Two approaches to instrumenting Flutter apps with OpenTelemetry, automatic RUM with Flutterific and direct SDK control, and how to choose between them."
 authors: [nimisha-gj]
 tags: [flutter, opentelemetry, mobile, rum, observability, dart]
-unlisted: true
+unlisted: false
 date: 2026-03-04
 ---
 
@@ -65,9 +65,12 @@ Here's how they compare:
 | **Screen load/dwell times** | Automatic | Not included |
 | **Cold start measurement** | Automatic | Manual |
 | **Jank/ANR detection** | Automatic | Not included |
-| **HTTP tracing** | Via `RumHttpClient` wrapper | Via `HttpService` with W3C propagation |
-| **W3C trace context propagation** | Not included | Automatic |
-| **Battery-aware sampling** | Not included | Automatic |
+| **HTTP tracing** | Via `RumHttpClient` wrapper | Via `HttpService` wrapper |
+| **W3C trace context propagation** | Automatic (`traceparent` header) | Automatic |
+| **Battery-aware sampling** | Automatic (4-tier adaptive) | Automatic |
+| **Breadcrumb trail** | Automatic (last 20 actions on error spans) | Not included |
+| **Error boundary widget** | Included | Not included |
+| **Flush on background** | Automatic (`AppLifecycleListener`) | Manual |
 | **Conversion funnel tracking** | Not included | Via `FunnelTrackingService` |
 | **Custom spans and events** | Supported | Supported |
 | **Best for** | RUM dashboards, UX monitoring | Backend correlation, fine-grained control |
@@ -75,16 +78,77 @@ Here's how they compare:
 The Flutterific setup is minimal. Here's the entry point:
 
 ```dart title="lib/main_otel.dart"
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutterrific_opentelemetry/flutterrific_opentelemetry.dart';
+
 import 'main.dart';
 import 'otel/otel_config.dart';
 import 'otel/rum_cold_start.dart';
+import 'otel/rum_session.dart';
 
 Future<void> main() async {
   RumColdStart.markMainStart();
+
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    RumSession.instance.forceNextSample();
+    RumSession.instance.recordBreadcrumb(
+      'error',
+      'flutter_error: ${details.exceptionAsString()}',
+    );
+    FlutterOTel.reportError(
+      details.exceptionAsString(),
+      details.exception,
+      details.stack,
+      attributes: {
+        'app.screen.name': RumSession.instance.currentScreen,
+        'session.id': RumSession.instance.sessionId,
+        'error.breadcrumbs': RumSession.instance.getBreadcrumbString(),
+      },
+    );
+    OTelConfig.flush();
+  };
+
+  PlatformDispatcher.instance.onError = (error, stack) {
+    RumSession.instance.forceNextSample();
+    RumSession.instance.recordBreadcrumb(
+      'error',
+      'uncaught_error: ${error.runtimeType}',
+    );
+    FlutterOTel.reportError(
+      'Uncaught error',
+      error,
+      stack,
+      attributes: {
+        'app.screen.name': RumSession.instance.currentScreen,
+        'session.id': RumSession.instance.sessionId,
+        'error.breadcrumbs': RumSession.instance.getBreadcrumbString(),
+      },
+    );
+    OTelConfig.flush();
+    return true;
+  };
+
   await OTelConfig.initialize();
   WidgetsBinding.instance.addObserver(OTelConfig.lifecycleObserver);
+
+  AppLifecycleListener(
+    onPause: () {
+      OTelConfig.flush();
+      OTelConfig.pauseJankDetection();
+    },
+    onResume: () {
+      OTelConfig.resumeJankDetection();
+      RumSession.instance.refreshBatteryState();
+    },
+    onExitRequested: () async {
+      await OTelConfig.shutdown();
+      return AppExitResponse.exit;
+    },
+  );
+
   runApp(const MyApp());
   RumColdStart.measureFirstFrame();
 }
@@ -103,9 +167,10 @@ you wire up the route observer and lifecycle observer:
 | Signal | What's Captured |
 | :--- | :--- |
 | **Session** | `session.id`, `session.start`, `session.duration_ms` on every span |
-| **Device** | `device.model`, `device.id`, `os.type`, `os.version` |
-| **App** | `app.version`, `app.build_number`, `app.package_name` |
+| **Device** | `device.model.identifier`, `device.model.name`, `device.manufacturer`, `os.type`, `os.version` |
+| **App** | `service.version`, `app.build_id`, `app.installation.id` |
 | **Network** | `network.type` (wifi / cellular / none), live updates |
+| **Battery** | `device.battery.level`, `device.battery.state` with 4-tier adaptive sampling |
 | **Cold Start** | `app.cold_start` span with duration histogram |
 | **Screen Load** | `screen.load` span with timing histogram |
 | **Screen Dwell** | `screen.dwell` span with duration histogram |
@@ -113,6 +178,10 @@ you wire up the route observer and lifecycle observer:
 | **Jank** | `jank.frame` spans for frames exceeding 16ms |
 | **ANR** | `anr.detected` spans when the main thread blocks for 5+ seconds |
 | **Lifecycle** | `app_lifecycle.changed` spans (active, inactive, paused) |
+| **Breadcrumbs** | Last 20 user actions attached to error spans as `error.breadcrumbs` |
+| **W3C Propagation** | `traceparent` header injected on outgoing HTTP requests |
+| **Flush on Background** | Pending spans flushed via `AppLifecycleListener` on pause/exit |
+| **Error Boundary** | `ErrorBoundaryWidget` catches render errors with fallback UI and retry |
 
 Additional signals like user identity, button clicks, rage click detection,
 HTTP requests, and custom business events are available with a few lines of
@@ -129,9 +198,10 @@ minutes.
 The decision framework is straightforward:
 
 - **Use Flutterific RUM** if you want session-level UX monitoring (jank,
-  screen times, navigation patterns) with minimal boilerplate.
-- **Use the Direct SDK** if you need W3C trace propagation to correlate mobile
-  and backend spans, or if you want full control over sampling and batching.
+  screen times, navigation, breadcrumbs, battery-aware sampling) with minimal
+  boilerplate.
+- **Use the Direct SDK** if you need conversion funnel tracking or full control
+  over span creation and batching.
 
 The full reference docs cover everything from directory structure to production
 deployment:
