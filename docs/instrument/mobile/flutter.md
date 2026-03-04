@@ -121,7 +121,7 @@ Before starting, ensure you have:
 - **Dart SDK 3.9.2 or later** (included with Flutter)
 - **Xcode 15+** for iOS builds, or **Android Studio** with API 24+ for Android
 - **Scout Collector** configured and accessible
-  - See [Docker Compose Setup](../../../collector-setup/docker-compose-example/)
+  - See [Docker Compose Setup](/instrument/collector-setup/docker-compose-example/)
     for local development
 - Basic understanding of OpenTelemetry concepts (traces, spans, attributes)
 
@@ -2300,21 +2300,7 @@ language features used in this guide.
 
 - [Custom instrumentation](/instrument/apps/custom-instrumentation/) for
   business-specific spans tailored to your app's domain
-- React Native, iOS (Swift), and Android (Kotlin) guides (coming soon)
-
-### Scout Platform Features
-
-- Creating alerts for crash rates and error thresholds in
-  [Dashboards and Alerts](../../../../operate/dashboards-and-alerts/)
-- Building mobile observability dashboards for session health and request
-  latency
-
-### Deployment and Operations
-
-- [Docker Compose collector setup](../../../collector-setup/docker-compose-example/)
-  for local development and staging environments
-- [Debugging OTel pipelines](../../../../operate/debugging-otel-pipelines/) when
-  telemetry is not reaching your backend
+- (coming soon) React Native, iOS (Swift), and Android (Kotlin) guides
 
 ## Complete Example
 
@@ -2337,10 +2323,8 @@ The example includes:
 - Error boundary widgets with automatic recovery and telemetry recording
 - Conversion funnel tracking for product browse through checkout
 
-Once telemetry is flowing, you can
-[monitor Flutter app performance in Scout APM](https://base14.io/scout/apm) --
-track request latency, crash rates, and session health across all your mobile
-endpoints.
+Once telemetry is flowing, you can track request latency, crash rates,
+and session health across all your mobile endpoints.
 
 ## References
 
@@ -2355,9 +2339,9 @@ endpoints.
 
 ## Related Guides
 
-- [Node.js auto-instrumentation](./nodejs.md) for backend service traces that
-  connect to mobile app spans
-- [Docker Compose collector setup](../../../collector-setup/docker-compose-example/)
+- [Node.js auto-instrumentation](../apps/auto-instrumentation/nodejs.md)
+  for backend service traces that connect to mobile app spans
+- [Docker Compose collector setup](/instrument/collector-setup/docker-compose-example/)
   for running a local OTel Collector alongside the OpenTelemetry Demo
-- [Debugging OTel pipelines](../../../../operate/debugging-otel-pipelines/) when
+- [Debugging OTel pipelines](/operate/debugging-otel-pipelines/) when
   telemetry is not reaching your backend or data looks incomplete

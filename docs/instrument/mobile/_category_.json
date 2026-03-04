@@ -1,0 +1,8 @@
+{
+  "label": "Mobile",
+  "position": 4,
+  "link": {
+    "type": "generated-index",
+    "description": "Instrument mobile applications with OpenTelemetry for distributed tracing, crash monitoring, and real-time observability across iOS and Android."
+  }
+}

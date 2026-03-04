@@ -113,7 +113,7 @@ This is the fastest way to get started with OpenTelemetry.
 
 | Framework | Guide                | What's Instrumented                                                                          |
 | --------- | -------------------- | -------------------------------------------------------------------------------------------- |
-| Flutter   | [Flutter](./flutter) | HTTP requests, crash handling, app lifecycle, distributed tracing |
+| Flutter   | [Flutter](../../mobile/flutter) | HTTP requests, crash handling, app lifecycle, distributed tracing |
 
 ## How Auto-Instrumentation Works
 
