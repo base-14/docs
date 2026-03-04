@@ -1665,7 +1665,5 @@ lib/
   for comparing this approach with the manual SDK
 - [Create Your First Dashboard](/guides/create-your-first-dashboard/) to
   build dashboards from your mobile telemetry data
-- [Creating Alerts with LogX](/guides/creating-alerts-with-logx/) to set up
-  alerts on crash rates, ANR counts, or slow screen loads
 - [Troubleshooting Missing Telemetry Data](/guides/troubleshooting-missing-data/)
   if spans are not arriving at your collector
