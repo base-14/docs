@@ -75,6 +75,32 @@ seconds, with sampling automatically reduced when battery drops below 20%.
 
 :::
 
+:::info Want automatic RUM with less boilerplate?
+Check out the [Flutter RUM with Flutterific](./flutter-rum-flutterific.md) guide,
+which uses `flutterrific_opentelemetry` to provide automatic session tracking,
+jank/ANR detection, screen load/dwell times, and navigation spans with minimal
+setup.
+:::
+
+## What You Get
+
+| Signal | Span / Event | How |
+| :--- | :--- | :--- |
+| HTTP Tracing | `{METHOD} {path}` spans with W3C `traceparent` propagation | Automatic via `HttpService` wrapper |
+| Screen Navigation | `screen_view` events with `app.screen.name` | Manual per navigation call |
+| Widget Interactions | `app.widget.click` events with `app.widget.id`, `app.widget.name` | Manual per `onTap` / `onPressed` |
+| Business Events | `cart_add_item`, `cart_update_quantity`, `cart_remove_item`, etc. | Manual per business action |
+| Conversion Funnel | Funnel stage events from app launch through order confirmation | Manual via `FunnelTrackingService` |
+| App Lifecycle | `device.app.lifecycle` events with platform-specific state keys | Automatic via `AppLifecycleObserver` |
+| Crash Handling | Error spans with severity classification and breadcrumb trail | Automatic via `runZonedGuarded` |
+| Battery-Aware Sampling | Adaptive sampling rate based on device battery level | Automatic via `PerformanceService` |
+| Span Batching | Buffered export (50 spans / 30 s flush) via OTLP/HTTP | Automatic via `TelemetryService` |
+| Resource Attributes | `service.name`, `service.version`, `device.model.name`, `device.manufacturer` | Automatic at initialization |
+| Custom Spans | Any manual span via the OTel Tracer API | Manual |
+| Custom Events | Fire-and-forget events via `recordEvent()` | Manual |
+| Error Recording | Error details attached to spans with `StatusCode.error` | Manual or automatic |
+| Scout Auth | OIDC client credentials for production collectors | Configuration |
+
 ## Overview
 
 This guide demonstrates how to:
