@@ -48,6 +48,46 @@ your collector.
   for local development)
 - An existing Flutter app to instrument
 
+## Telemetry Architecture
+
+Before instrumenting your app, decide how telemetry gets from the device to
+Base14. There are two deployment models.
+
+### Recommended: OTel Collector with API Gateway
+
+![Flutter RUM Architecture](/img/docs/flutter-rum-architecture.png)
+
+Devices send OTLP data to a load balancer or API gateway, which handles
+authentication and rate limiting. The gateway forwards traffic to an OTel
+collector that applies server-side sampling before exporting to Base14.
+
+### Alternative: Direct to Base14
+
+Devices send OTLP data directly to the Base14 ingestion endpoint, authenticating
+with OAuth tokens that the app manages.
+
+### Comparison
+
+| | Collector + API Gateway | Direct to Base14 |
+| :--- | :--- | :--- |
+| **Authentication** | API gateway handles auth centrally — app only needs an API key or static token | App must manage OAuth token lifecycle (acquire, refresh, retry on 401) |
+| **Credential security** | Credentials stay on your infra — app ships a lightweight key that the gateway validates | OAuth client secret must be embedded or fetched at runtime — risk of extraction from APK/IPA |
+| **Rate limiting** | API gateway enforces per-device or per-app rate limits — protects backend from traffic spikes | No rate limiting — a buggy release can flood Base14 with telemetry |
+| **Server-side sampling** | OTel collector applies tail sampling (e.g. keep all errors, sample 10% of healthy spans) — reduces cost without losing signal | All sampling must happen on-device — you lose the ability to make sampling decisions with full context |
+| **Buffering and retry** | Collector buffers and retries on export failure — device fire-and-forget | App must handle retry logic and local buffering if Base14 is unreachable |
+| **Schema evolution** | Collector processors can rename attributes, drop PII, or add resource attributes without app updates | Any schema change requires an app release and user update |
+| **Network efficiency** | Gateway can terminate TLS at the edge, compress, and batch — lower overhead per device | Each device opens its own TLS connection to Base14 — more overhead at scale |
+| **Operational cost** | Requires running a collector and gateway (but these are standard infra components) | No additional infra to manage |
+| **Deployment complexity** | Moderate — collector + gateway config | Low — just configure the Base14 endpoint in the app |
+| **Best for** | Production apps with multiple devices, teams that want control over sampling and PII | Prototypes, internal tools, or apps with a small user base |
+
+:::tip Recommendation
+Use the **Collector + API Gateway** approach for production apps. The ability to
+rate limit, sample server-side, strip PII, and rotate credentials without app
+updates far outweighs the small infra cost. Reserve **Direct to Base14** for
+prototypes or internal tools where simplicity matters more than control.
+:::
+
 ## Step 1: Choose Your Approach
 
 Two instrumentation paths are available. Pick the one that fits your needs.
@@ -61,18 +101,20 @@ Two instrumentation paths are available. Pick the one that fits your needs.
 | **Screen load/dwell times** | Automatic | Not included |
 | **Cold start measurement** | Automatic | Manual |
 | **Jank/ANR detection** | Automatic | Not included |
-| **HTTP tracing** | Via `RumHttpClient` wrapper | Via `HttpService` with W3C propagation |
-| **W3C trace context propagation** | Not included | Automatic |
-| **Battery-aware sampling** | Not included | Automatic |
+| **HTTP tracing** | Via `RumHttpClient` wrapper | Via `HttpService` wrapper |
+| **W3C trace context propagation** | Automatic (`traceparent` header) | Automatic |
+| **Battery-aware sampling** | Automatic (4-tier adaptive) | Automatic |
+| **Breadcrumb trail** | Automatic (last 20 actions on error spans) | Not included |
+| **Error boundary widget** | Included | Not included |
+| **Flush on background** | Automatic (`AppLifecycleListener`) | Manual |
 | **Conversion funnel tracking** | Not included | Via `FunnelTrackingService` |
 | **Custom spans and events** | Supported | Supported |
 | **Best for** | RUM dashboards, UX monitoring | Backend correlation, fine-grained control |
 
 > **Decision guide**: Use **Flutterific RUM** if you want session-level UX
-> monitoring (jank, screen times, navigation) with minimal code. Use the
-> **Manual SDK** if you need W3C trace propagation to correlate mobile spans
-> with backend traces, or if you want full control over sampling, batching,
-> and span creation.
+> monitoring (jank, screen times, navigation, breadcrumbs, battery-aware
+> sampling) with minimal code. Use the **Manual SDK** if you need conversion
+> funnel tracking or full control over span creation and batching.
 
 Full reference docs:
 
@@ -91,6 +133,7 @@ dependencies:
   device_info_plus: ^11.0.0
   package_info_plus: ^8.0.0
   connectivity_plus: ^6.0.0
+  battery_plus: ^6.0.0
 ```
 
 **Manual SDK:**

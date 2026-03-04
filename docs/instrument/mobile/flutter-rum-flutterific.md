@@ -5,7 +5,9 @@ sidebar_position: 2
 description:
   Add Real User Monitoring to Flutter apps with flutterrific_opentelemetry.
   Automatic session tracking, jank detection, ANR monitoring, screen
-  load/dwell times, and navigation spans — all exported via OTLP.
+  load/dwell times, navigation spans, breadcrumb trails, W3C trace
+  propagation, battery-aware sampling, and error boundary widgets — all
+  exported via OTLP using OTel semantic conventions.
 keywords:
   [
     flutter rum,
@@ -22,18 +24,25 @@ keywords:
     flutter cold start,
     flutter rage click,
     flutter otlp exporter,
+    flutter breadcrumbs,
+    flutter error boundary,
+    flutter w3c trace context,
+    flutter battery aware sampling,
   ]
 ---
 
 # Flutter RUM with Flutterific OpenTelemetry
 
 Full Real User Monitoring (RUM) for Flutter apps using OpenTelemetry. Traces
-and metrics are exported to any OTLP-compatible collector endpoint.
+and metrics are exported to any OTLP-compatible collector endpoint. Attribute
+names follow
+[OTel semantic conventions](https://opentelemetry.io/docs/specs/semconv/).
 
 :::tip TL;DR
 Add `flutterrific_opentelemetry`, create a `lib/otel/` directory with the files
 below, wrap your `main.dart`, and you get automatic session, device, navigation,
-cold start, jank, and ANR telemetry on every span.
+cold start, jank, ANR, breadcrumbs, battery-aware sampling, W3C trace
+propagation, and flush-on-background telemetry on every span.
 :::
 
 :::info Looking for the manual SDK approach?
@@ -41,28 +50,42 @@ If you prefer lower-level control with the `opentelemetry` Dart SDK, see the
 [Flutter OpenTelemetry guide](./flutter.md).
 :::
 
+## Architecture
+
+![Flutter RUM Architecture](/img/docs/flutter-rum-architecture.png)
+
+Mobile devices send OTLP telemetry through a load balancer / API gateway (with
+authentication and rate limiting) to an OTel collector (with server-side
+sampling), which forwards to Base14.
+
 ## What You Get
 
 | Signal | Span / Metric | Automatic? |
 | :--- | :--- | :--- |
 | Session | `session.id`, `session.start`, `session.duration_ms` on **every** span | Yes |
-| Device | `device.model`, `device.id`, `device.physical`, `os.type`, `os.version` | Yes |
-| App | `app.version`, `app.build_number`, `app.package_name` | Yes |
+| Device | `device.model.identifier`, `device.model.name`, `device.manufacturer`, `device.id` | Yes |
+| Battery | `device.battery.level`, `device.battery.state` on **every** span | Yes |
+| App | `service.version`, `app.build_id`, `app.installation.id`, `service.name` | Yes |
 | Network | `network.type` (wifi / cellular / ethernet / none) — live updates | Yes |
-| Current Screen | `view.name` on **every** span | Yes |
+| Current Screen | `app.screen.name` on **every** span | Yes |
 | Cold Start | `app.cold_start` span + `app.cold_start_ms` histogram | Yes |
 | Screen Load | `screen.load` span + `screen.load_time_ms` histogram | Yes |
 | Screen Dwell | `screen.dwell` span + `screen.dwell_time_ms` histogram | Yes |
 | Navigation | `navigation.push` / `pop` / `replace` / `remove` spans | Yes |
+| Breadcrumbs | Last 20 user actions attached to error spans as `error.breadcrumbs` | Yes |
 | App Lifecycle | `app_lifecycle.changed` spans (active, inactive, paused, etc.) | Yes |
 | Jank / ANR | `jank.frame` spans + `anr.detected` spans + counters + histograms | Yes |
-| Flutter Errors | Error spans with screen context and session ID | Yes |
-| User Identity | `user.id`, `user.email`, `user.role` on all spans (when set) | Manual |
+| Flutter Errors | Error spans with screen context, session ID, and breadcrumbs | Yes |
+| Flush on Background | Pending spans flushed when app enters background | Yes |
+| Battery-Aware Sampling | Reduces telemetry when battery is low (50% at 10–20%, 20% below 10%) | Yes |
+| W3C Trace Context | `traceparent` header injected on all HTTP requests | Yes |
+| Error Boundary | Catches render-time errors with retry UI + `error_boundary.caught` span | Manual |
+| User Identity | `enduser.id`, `enduser.email`, `enduser.role` on all spans (when set) | Manual |
 | Button Clicks | `interaction.*.click` spans | Manual |
 | List Selections | `interaction.*.list_selection` spans | Manual |
 | Rage Clicks | `rage_click.detected` spans + `rage_click.count` counter | Manual |
 | Custom Events | `custom_event.*` spans | Manual |
-| HTTP Requests | `http.*` spans with URL, status code, size | Manual |
+| HTTP Requests | `http.*` spans with URL, status code, size, traceparent | Manual |
 
 ## Add Dependencies
 
@@ -72,6 +95,7 @@ dependencies:
   device_info_plus: ^11.0.0
   package_info_plus: ^8.0.0
   connectivity_plus: ^6.0.0
+  battery_plus: ^6.0.0
 ```
 
 ```bash
@@ -84,12 +108,22 @@ All instrumentation code lives in `lib/otel/`. Create these files:
 
 ### `rum_session.dart` — Central RUM State
 
-Singleton that holds session, user, device, app, screen, and network context.
-Every span gets a snapshot of this state via `getCommonAttributes()`.
+Singleton that holds session, user, device, app, screen, network, battery, and
+breadcrumb context. Every span gets a snapshot of this state via
+`getCommonAttributes()`.
+
+Attribute names follow OTel semantic conventions:
+
+- [session.*](https://opentelemetry.io/docs/specs/semconv/general/session/)
+- [device.*](https://opentelemetry.io/docs/specs/semconv/resource/device/)
+- [app.*](https://opentelemetry.io/docs/specs/semconv/registry/attributes/app/)
 
 ```dart title="lib/otel/rum_session.dart"
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
+import 'package:battery_plus/battery_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutterrific_opentelemetry/flutterrific_opentelemetry.dart';
@@ -99,7 +133,7 @@ class RumSession {
   RumSession._();
   static final RumSession instance = RumSession._();
 
-  // --- Session ---
+  // --- Session (semconv: session.*) ---
   String sessionId = 'pending';
   DateTime sessionStart = DateTime.now();
 
@@ -108,19 +142,21 @@ class RumSession {
   String? _userEmail;
   String? _userRole;
 
-  // --- Current Screen ---
+  // --- Current Screen (semconv: app.screen.*) ---
   String _currentScreen = '/';
   DateTime _screenEnteredAt = DateTime.now();
 
-  // --- Device ---
-  String _deviceModel = 'unknown';
-  bool _isPhysicalDevice = false;
+  // --- Device (semconv: device.*) ---
+  String _deviceModelIdentifier = 'unknown';
+  String _deviceModelName = 'unknown';
+  String _deviceManufacturer = 'unknown';
   String _deviceId = 'unknown';
 
-  // --- App ---
+  // --- App (semconv: app.*, service.*) ---
   String _appVersion = 'unknown';
-  String _appBuildNumber = 'unknown';
+  String _appBuildId = 'unknown';
   String _appPackageName = 'unknown';
+  String _appInstallationId = 'unknown';
 
   // --- Network ---
   String _networkType = 'unknown';
@@ -129,13 +165,28 @@ class RumSession {
   // --- Cold Start ---
   Duration? coldStartDuration;
 
+  // --- Breadcrumbs ---
+  static const int _maxBreadcrumbs = 20;
+  final List<Map<String, String>> _breadcrumbs = [];
+
+  // --- Battery ---
+  final Battery _battery = Battery();
+  int _batteryLevel = 100;
+  String _batteryState = 'unknown';
+  StreamSubscription<BatteryState>? _batterySub;
+  bool _forceSample = false;
+  final Random _random = Random();
+
   Future<void> initialize() async {
     sessionId = DateTime.now().microsecondsSinceEpoch.toRadixString(36);
     sessionStart = DateTime.now();
     await _loadDeviceInfo();
     await _loadPackageInfo();
     await _initConnectivity();
+    await _initBattery();
   }
+
+  // --- User identification API ---
 
   void setUser({String? id, String? email, String? role}) {
     _userId = id;
@@ -149,6 +200,8 @@ class RumSession {
     _userRole = null;
   }
 
+  // --- Screen tracking ---
+
   void setCurrentScreen(String screen) {
     _currentScreen = screen;
     _screenEnteredAt = DateTime.now();
@@ -159,27 +212,92 @@ class RumSession {
   Duration get currentScreenDwellTime =>
       DateTime.now().difference(_screenEnteredAt);
 
+  // --- Breadcrumb API ---
+
+  /// Records a breadcrumb. Keeps the last [_maxBreadcrumbs] entries (FIFO).
+  void recordBreadcrumb(String type, String label,
+      [Map<String, String>? data]) {
+    final crumb = <String, String>{
+      'ts': DateTime.now().toIso8601String(),
+      'type': type,
+      'label': label,
+    };
+    if (data != null) crumb.addAll(data);
+
+    _breadcrumbs.add(crumb);
+    if (_breadcrumbs.length > _maxBreadcrumbs) {
+      _breadcrumbs.removeAt(0);
+    }
+  }
+
+  /// Returns JSON-encoded breadcrumb list for attaching to error spans.
+  String getBreadcrumbString() => jsonEncode(_breadcrumbs);
+
+  // --- Battery-aware sampling ---
+
+  /// Returns true if this span should be sampled based on battery level.
+  /// Error spans should call [forceNextSample] beforehand to guarantee capture.
+  bool shouldSample() {
+    if (_forceSample) {
+      _forceSample = false;
+      return true;
+    }
+    if (_batteryState == 'charging' || _batteryLevel > 20) {
+      return true; // 100% sampling
+    }
+    if (_batteryLevel > 10) {
+      return _random.nextDouble() < 0.5; // 50% sampling
+    }
+    return _random.nextDouble() < 0.2; // 20% sampling
+  }
+
+  /// Ensures the next call to [shouldSample] returns true.
+  void forceNextSample() => _forceSample = true;
+
+  /// Refreshes battery level on demand (e.g. when app resumes).
+  Future<void> refreshBatteryState() async {
+    _batteryLevel = await _battery.batteryLevel;
+  }
+
+  // --- Common attributes for every span (OTel semconv) ---
+
   Attributes getCommonAttributes() {
     final map = <String, Object>{
+      // Session — semconv: session.*
       'session.id': sessionId,
       'session.start': sessionStart.toIso8601String(),
       'session.duration_ms':
           DateTime.now().difference(sessionStart).inMilliseconds,
-      'view.name': _currentScreen,
-      'device.model': _deviceModel,
-      'device.physical': _isPhysicalDevice.toString(),
+
+      // Current screen — semconv: app.screen.*
+      'app.screen.name': _currentScreen,
+
+      // Device — semconv: device.*
+      'device.model.identifier': _deviceModelIdentifier,
+      'device.model.name': _deviceModelName,
+      'device.manufacturer': _deviceManufacturer,
       'device.id': _deviceId,
       'os.type': Platform.operatingSystem,
       'os.version': Platform.operatingSystemVersion,
-      'app.version': _appVersion,
-      'app.build_number': _appBuildNumber,
-      'app.package_name': _appPackageName,
+
+      // App — semconv: app.*, service.*
+      'service.version': _appVersion,
+      'app.build_id': _appBuildId,
+      'app.installation.id': _appInstallationId,
+      'service.name': _appPackageName,
+
+      // Network
       'network.type': _networkType,
+
+      // Battery
+      'device.battery.level': _batteryLevel,
+      'device.battery.state': _batteryState,
     };
 
-    if (_userId != null) map['user.id'] = _userId!;
-    if (_userEmail != null) map['user.email'] = _userEmail!;
-    if (_userRole != null) map['user.role'] = _userRole!;
+    if (_userId != null) map['enduser.id'] = _userId!;
+    if (_userEmail != null) map['enduser.email'] = _userEmail!;
+    if (_userRole != null) map['enduser.role'] = _userRole!;
+
     if (coldStartDuration != null) {
       map['app.cold_start_ms'] = coldStartDuration!.inMilliseconds;
     }
@@ -191,21 +309,25 @@ class RumSession {
     final deviceInfo = DeviceInfoPlugin();
     if (Platform.isAndroid) {
       final android = await deviceInfo.androidInfo;
-      _deviceModel = android.model;
-      _isPhysicalDevice = android.isPhysicalDevice;
+      _deviceModelIdentifier = android.model;
+      _deviceModelName = android.model;
+      _deviceManufacturer = android.manufacturer;
       _deviceId = android.id;
+      _appInstallationId = android.id;
     } else if (Platform.isIOS) {
       final ios = await deviceInfo.iosInfo;
-      _deviceModel = ios.utsname.machine;
-      _isPhysicalDevice = ios.isPhysicalDevice;
+      _deviceModelIdentifier = ios.utsname.machine;
+      _deviceModelName = ios.name;
+      _deviceManufacturer = 'Apple';
       _deviceId = ios.identifierForVendor ?? 'unknown';
+      _appInstallationId = ios.identifierForVendor ?? 'unknown';
     }
   }
 
   Future<void> _loadPackageInfo() async {
     final info = await PackageInfo.fromPlatform();
     _appVersion = info.version;
-    _appBuildNumber = info.buildNumber;
+    _appBuildId = info.buildNumber;
     _appPackageName = info.packageName;
   }
 
@@ -231,17 +353,52 @@ class RumSession {
     }
   }
 
+  Future<void> _initBattery() async {
+    try {
+      _batteryLevel = await _battery.batteryLevel;
+      final state = await _battery.batteryState;
+      _updateBatteryState(state);
+      _batterySub =
+          _battery.onBatteryStateChanged.listen(_updateBatteryState);
+    } catch (_) {
+      // Battery info unavailable (e.g. emulator) — keep defaults.
+    }
+  }
+
+  void _updateBatteryState(BatteryState state) {
+    switch (state) {
+      case BatteryState.charging:
+        _batteryState = 'charging';
+      case BatteryState.discharging:
+        _batteryState = 'discharging';
+      case BatteryState.full:
+        _batteryState = 'full';
+      case BatteryState.connectedNotCharging:
+        _batteryState = 'connected_not_charging';
+      case BatteryState.unknown:
+        _batteryState = 'unknown';
+    }
+  }
+
   void dispose() {
     _connectivitySub?.cancel();
+    _batterySub?.cancel();
   }
 }
 ```
 
-### `rum_span_processor.dart` — Span Enrichment
+### `rum_span_processor.dart` — Span Enrichment + Battery-Aware Sampling
 
 Wraps the real `BatchSpanProcessor` and injects RUM context into **every** span
-at `onStart`. This is the key mechanism — you don't need to manually add
-session/device/screen attributes to each span.
+at `onStart`. Also implements battery-aware sampling: when battery is low,
+non-error spans may be dropped to conserve power.
+
+| Battery State | Sampling Rate |
+| :--- | :--- |
+| Charging or above 20% | 100% |
+| 10–20% | 50% |
+| Below 10% | 20% |
+| Error spans | Always 100% (use `forceNextSample()`) |
 
 ```dart title="lib/otel/rum_span_processor.dart"
 // ignore: depend_on_referenced_packages
@@ -252,17 +409,30 @@ import 'rum_session.dart';
 
 class RumSpanProcessor implements sdk.SpanProcessor {
   RumSpanProcessor(this._delegate);
+
   final sdk.SpanProcessor _delegate;
+  final Set<int> _droppedSpans = {};
 
   @override
   Future<void> onStart(sdk.Span span, Context? parentContext) async {
+    // Battery-aware sampling — drop non-essential spans when battery is low.
+    if (!RumSession.instance.shouldSample()) {
+      _droppedSpans.add(span.hashCode);
+      return;
+    }
+
     final rumAttributes = RumSession.instance.getCommonAttributes();
     span.addAttributes(rumAttributes);
     return _delegate.onStart(span, parentContext);
   }
 
   @override
-  Future<void> onEnd(sdk.Span span) => _delegate.onEnd(span);
+  Future<void> onEnd(sdk.Span span) {
+    if (_droppedSpans.remove(span.hashCode)) {
+      return Future.value();
+    }
+    return _delegate.onEnd(span);
+  }
 
   @override
   Future<void> onNameUpdate(sdk.Span span, String newName) =>
@@ -276,13 +446,14 @@ class RumSpanProcessor implements sdk.SpanProcessor {
 }
 ```
 
-### `rum_route_observer.dart` — Navigation + Screen Load/Dwell
+### `rum_route_observer.dart` — Navigation + Screen Load/Dwell + Breadcrumbs
 
 Attach to `MaterialApp.navigatorObservers`. Automatically tracks:
 
 - `navigation.push` / `pop` / `replace` / `remove` spans with route names
 - `screen.load` — time from `Navigator.push` to first frame rendered
 - `screen.dwell` — time user spent on each screen
+- **Breadcrumbs** — records every navigation event for crash context
 
 ```dart title="lib/otel/rum_route_observer.dart"
 import 'package:flutter/scheduler.dart';
@@ -302,13 +473,16 @@ class RumRouteObserver extends NavigatorObserver {
     _endDwellSpan(previousName);
 
     RumSession.instance.setCurrentScreen(routeName);
+    RumSession.instance.recordBreadcrumb('navigation', 'push $routeName');
+
     _screenPushTimes[routeName] = DateTime.now();
 
     final span = _tracer.startSpan('navigation.push');
-    span.setStringAttribute<String>('nav.action', 'push');
-    span.setStringAttribute<String>('nav.route', routeName);
+    span.setStringAttribute<String>('app.navigation.action', 'push');
+    span.setStringAttribute<String>('app.screen.name', routeName);
     if (previousName != null) {
-      span.setStringAttribute<String>('nav.previous_route', previousName);
+      span.setStringAttribute<String>(
+          'app.screen.previous_name', previousName);
     }
     span.end();
 
@@ -325,16 +499,19 @@ class RumRouteObserver extends NavigatorObserver {
     _endDwellSpan(routeName);
     _screenPushTimes.remove(routeName);
 
+    RumSession.instance.recordBreadcrumb('navigation', 'pop $routeName');
+
     if (previousName != null) {
       RumSession.instance.setCurrentScreen(previousName);
       _startDwellTracking(previousName);
     }
 
     final span = _tracer.startSpan('navigation.pop');
-    span.setStringAttribute<String>('nav.action', 'pop');
-    span.setStringAttribute<String>('nav.route', routeName);
+    span.setStringAttribute<String>('app.navigation.action', 'pop');
+    span.setStringAttribute<String>('app.screen.name', routeName);
     if (previousName != null) {
-      span.setStringAttribute<String>('nav.previous_route', previousName);
+      span.setStringAttribute<String>(
+          'app.screen.previous_name', previousName);
     }
     span.end();
   }
@@ -347,12 +524,13 @@ class RumRouteObserver extends NavigatorObserver {
 
     RumSession.instance.setCurrentScreen(newName);
     _startDwellTracking(newName);
+    RumSession.instance.recordBreadcrumb('navigation', 'replace to $newName');
 
     final span = _tracer.startSpan('navigation.replace');
-    span.setStringAttribute<String>('nav.action', 'replace');
-    span.setStringAttribute<String>('nav.route', newName);
+    span.setStringAttribute<String>('app.navigation.action', 'replace');
+    span.setStringAttribute<String>('app.screen.name', newName);
     if (oldName != null) {
-      span.setStringAttribute<String>('nav.previous_route', oldName);
+      span.setStringAttribute<String>('app.screen.previous_name', oldName);
     }
     span.end();
   }
@@ -363,8 +541,8 @@ class RumRouteObserver extends NavigatorObserver {
     _endDwellSpan(routeName);
 
     final span = _tracer.startSpan('navigation.remove');
-    span.setStringAttribute<String>('nav.action', 'remove');
-    span.setStringAttribute<String>('nav.route', routeName);
+    span.setStringAttribute<String>('app.navigation.action', 'remove');
+    span.setStringAttribute<String>('app.screen.name', routeName);
     span.end();
   }
 
@@ -379,8 +557,8 @@ class RumRouteObserver extends NavigatorObserver {
 
     final dwellMs = DateTime.now().difference(startTime).inMilliseconds;
     final span = _tracer.startSpan('screen.dwell');
-    span.setStringAttribute<String>('view.name', routeName);
-    span.setIntAttribute('view.dwell_time_ms', dwellMs);
+    span.setStringAttribute<String>('app.screen.name', routeName);
+    span.setIntAttribute('app.screen.dwell_time_ms', dwellMs);
     span.end();
 
     FlutterOTel.meter(name: 'rum.screen')
@@ -398,8 +576,8 @@ class RumRouteObserver extends NavigatorObserver {
 
     final loadMs = DateTime.now().difference(pushTime).inMilliseconds;
     final span = _tracer.startSpan('screen.load');
-    span.setStringAttribute<String>('view.name', routeName);
-    span.setIntAttribute('view.load_time_ms', loadMs);
+    span.setStringAttribute<String>('app.screen.name', routeName);
+    span.setIntAttribute('app.screen.load_time_ms', loadMs);
     span.end();
 
     FlutterOTel.meter(name: 'rum.screen')
@@ -459,8 +637,8 @@ class RumColdStart {
 
 ### `jank_detector.dart` — Frame Jank + ANR Detection
 
-Monitors every frame for jank (>16 ms) and runs a background isolate watchdog
-for ANR (main thread blocked >5 s).
+Monitors every frame for jank (above 16 ms) and runs a background isolate
+watchdog for ANR (main thread blocked over 5 s).
 
 ```dart title="lib/otel/jank_detector.dart"
 import 'dart:async';
@@ -651,15 +829,18 @@ class _WatchdogConfig {
 }
 ```
 
-### `rum_http_client.dart` — Instrumented HTTP Client
+### `rum_http_client.dart` — Instrumented HTTP Client + W3C Trace Context
 
 Drop-in replacement for `http.Client`. Creates OTel spans around every HTTP
-request.
+request and injects
+[W3C `traceparent`](https://www.w3.org/TR/trace-context/#traceparent-header)
+headers for distributed tracing.
 
 ```dart title="lib/otel/rum_http_client.dart"
 import 'package:flutterrific_opentelemetry/flutterrific_opentelemetry.dart';
 // ignore: depend_on_referenced_packages
 import 'package:http/http.dart' as http;
+import 'rum_session.dart';
 
 class RumHttpClient extends http.BaseClient {
   RumHttpClient([http.Client? inner]) : _inner = inner ?? http.Client();
@@ -669,20 +850,34 @@ class RumHttpClient extends http.BaseClient {
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
     final tracer = FlutterOTel.tracer;
     final span = tracer.startSpan('http.${request.method.toLowerCase()}');
-    span.setStringAttribute<String>('http.method', request.method);
-    span.setStringAttribute<String>('http.url', request.url.toString());
-    span.setStringAttribute<String>('http.url.host', request.url.host);
-    span.setStringAttribute<String>('http.url.path', request.url.path);
 
+    span.setStringAttribute<String>('http.request.method', request.method);
+    span.setStringAttribute<String>('url.full', request.url.toString());
+    span.setStringAttribute<String>('server.address', request.url.host);
+    span.setStringAttribute<String>('url.path', request.url.path);
     if (request.contentLength != null && request.contentLength! > 0) {
-      span.setIntAttribute('http.request.size', request.contentLength!);
+      span.setIntAttribute('http.request.body.size', request.contentLength!);
     }
+
+    // W3C Trace Context propagation — inject traceparent header
+    // Format: version-traceId-spanId-traceFlags (00-{32hex}-{16hex}-01)
+    final traceId = span.spanContext.traceId.hexString;
+    final spanId = span.spanContext.spanId.hexString;
+    request.headers['traceparent'] = '00-$traceId-$spanId-01';
+    request.headers['tracestate'] = '';
+
+    // Record breadcrumb for this HTTP request
+    RumSession.instance.recordBreadcrumb(
+      'http',
+      '${request.method} ${request.url.host}${request.url.path}',
+    );
 
     try {
       final response = await _inner.send(request);
-      span.setIntAttribute('http.status_code', response.statusCode);
+      span.setIntAttribute('http.response.status_code', response.statusCode);
       if (response.contentLength != null) {
-        span.setIntAttribute('http.response.size', response.contentLength!);
+        span.setIntAttribute(
+            'http.response.body.size', response.contentLength!);
       }
       if (response.statusCode >= 400) {
         span.setStatus(
@@ -814,6 +1009,118 @@ class RumEvents {
 }
 ```
 
+### `error_boundary_widget.dart` — Error Boundary
+
+Catches render-time errors in a subtree and shows a fallback UI with a retry
+button. Records an `error_boundary.caught` span with the error message, current
+screen, and breadcrumb trail.
+
+```dart title="lib/otel/error_boundary_widget.dart"
+import 'package:flutter/material.dart';
+import 'package:flutterrific_opentelemetry/flutterrific_opentelemetry.dart';
+import 'rum_session.dart';
+
+class ErrorBoundaryWidget extends StatefulWidget {
+  const ErrorBoundaryWidget({
+    super.key,
+    required this.child,
+    this.fallbackBuilder,
+  });
+
+  final Widget child;
+
+  /// Custom fallback UI builder. Receives the error and a retry callback.
+  /// If null, a default error card with retry button is shown.
+  final Widget Function(Object error, VoidCallback retry)? fallbackBuilder;
+
+  @override
+  State<ErrorBoundaryWidget> createState() => _ErrorBoundaryWidgetState();
+}
+
+class _ErrorBoundaryWidgetState extends State<ErrorBoundaryWidget> {
+  Object? _error;
+  bool _hasError = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_hasError) {
+      if (widget.fallbackBuilder != null) {
+        return widget.fallbackBuilder!(_error!, _retry);
+      }
+      return _defaultFallback();
+    }
+    return widget.child;
+  }
+
+  void handleError(Object error, StackTrace stack) {
+    setState(() {
+      _error = error;
+      _hasError = true;
+    });
+
+    final tracer = FlutterOTel.tracer;
+    final span = tracer.startSpan('error_boundary.caught');
+    span.setStringAttribute<String>(
+        'error.type', error.runtimeType.toString());
+    span.setStringAttribute<String>('error.message', error.toString());
+    span.setStringAttribute<String>(
+        'app.screen.name', RumSession.instance.currentScreen);
+    span.setStringAttribute<String>(
+        'error.breadcrumbs', RumSession.instance.getBreadcrumbString());
+    span.setStatus(SpanStatusCode.Error, error.toString());
+    span.end();
+
+    RumSession.instance.recordBreadcrumb(
+      'error',
+      'error_boundary caught: ${error.runtimeType}',
+    );
+  }
+
+  void _retry() {
+    RumSession.instance.recordBreadcrumb('ui', 'error_boundary retry');
+    setState(() {
+      _error = null;
+      _hasError = false;
+    });
+  }
+
+  Widget _defaultFallback() {
+    return Center(
+      child: Card(
+        margin: const EdgeInsets.all(16),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline, size: 48, color: Colors.red),
+              const SizedBox(height: 16),
+              const Text(
+                'Something went wrong',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _error.toString(),
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: _retry,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
 ### `otel_config.dart` — Wire Everything Together
 
 Central initialization. Call `OTelConfig.initialize()` once before `runApp()`.
@@ -833,6 +1140,7 @@ class OTelConfig {
   OTelConfig._();
   static JankDetector? _jankDetector;
   static RumHttpClient? _httpClient;
+  static RumSpanProcessor? _rumProcessor;
 
   /// Call once before runApp().
   static Future<void> initialize() async {
@@ -861,8 +1169,9 @@ class OTelConfig {
     );
     final batchProcessor = BatchSpanProcessor(spanExporter);
 
-    // Wrap in RumSpanProcessor to enrich ALL spans with RUM context.
-    final rumProcessor = RumSpanProcessor(batchProcessor);
+    // Wrap in RumSpanProcessor to enrich ALL spans with RUM context
+    // and apply battery-aware sampling.
+    _rumProcessor = RumSpanProcessor(batchProcessor);
 
     // Metric exporter (OTLP/gRPC)
     final metricExporter = OtlpGrpcMetricExporter(
@@ -876,7 +1185,7 @@ class OTelConfig {
       serviceName: 'your-app-name',
       serviceVersion: '1.0.0',
       tracerName: 'your-app',
-      spanProcessor: rumProcessor,
+      spanProcessor: _rumProcessor!,
       metricExporter: metricExporter,
       enableMetrics: true,
       secure: true, // set false for non-TLS endpoints
@@ -908,6 +1217,17 @@ class OTelConfig {
   static void pauseJankDetection() => _jankDetector?.pause();
   static void resumeJankDetection() => _jankDetector?.resume();
 
+  /// Force-flush all pending spans to the collector.
+  static Future<void> flush() async {
+    await _rumProcessor?.forceFlush();
+  }
+
+  /// Flush and shut down the span processor.
+  static Future<void> shutdown() async {
+    await flush();
+    await _rumProcessor?.shutdown();
+  }
+
   static void dispose() {
     _jankDetector?.stop();
     _httpClient?.close();
@@ -919,8 +1239,8 @@ class OTelConfig {
 ## Create the Instrumented Entry Point
 
 Create `lib/main_otel.dart` — a wrapper around your existing `main.dart` that
-adds OTel initialization, error handlers, and cold start measurement. Your
-original `main.dart` stays untouched.
+adds OTel initialization, error handlers with breadcrumbs, cold start
+measurement, lifecycle-aware flushing, and battery refresh.
 
 ```dart title="lib/main_otel.dart"
 import 'dart:ui';
@@ -934,38 +1254,69 @@ import 'otel/rum_session.dart';
 Future<void> main() async {
   RumColdStart.markMainStart(); // FIRST LINE — records main() entry time.
 
-  // Capture Flutter framework errors with screen + session context.
+  // Capture Flutter framework errors with breadcrumbs + flush.
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
+    RumSession.instance.forceNextSample();
+    RumSession.instance.recordBreadcrumb(
+      'error',
+      'flutter_error: ${details.exceptionAsString()}',
+    );
     FlutterOTel.reportError(
       details.exceptionAsString(),
       details.exception,
       details.stack,
       attributes: {
-        'error.screen': RumSession.instance.currentScreen,
-        'error.session_id': RumSession.instance.sessionId,
+        'app.screen.name': RumSession.instance.currentScreen,
+        'session.id': RumSession.instance.sessionId,
+        'error.breadcrumbs': RumSession.instance.getBreadcrumbString(),
       },
     );
+    OTelConfig.flush(); // Fire-and-forget flush for crash data.
   };
 
   // Capture uncaught async errors.
   PlatformDispatcher.instance.onError = (error, stack) {
+    RumSession.instance.forceNextSample();
+    RumSession.instance.recordBreadcrumb(
+      'error',
+      'uncaught_error: ${error.runtimeType}',
+    );
     FlutterOTel.reportError(
       'Uncaught error',
       error,
       stack,
       attributes: {
-        'error.screen': RumSession.instance.currentScreen,
-        'error.session_id': RumSession.instance.sessionId,
+        'app.screen.name': RumSession.instance.currentScreen,
+        'session.id': RumSession.instance.sessionId,
+        'error.breadcrumbs': RumSession.instance.getBreadcrumbString(),
       },
     );
+    OTelConfig.flush();
     return true;
   };
 
   await OTelConfig.initialize();
   WidgetsBinding.instance.addObserver(OTelConfig.lifecycleObserver);
+
+  // Lifecycle listener — flush on background, shutdown on exit.
+  AppLifecycleListener(
+    onPause: () {
+      OTelConfig.flush();
+      OTelConfig.pauseJankDetection();
+    },
+    onResume: () {
+      OTelConfig.resumeJankDetection();
+      RumSession.instance.refreshBatteryState();
+    },
+    onExitRequested: () async {
+      await OTelConfig.shutdown();
+      return AppExitResponse.exit;
+    },
+  );
+
   runApp(const MyApp());
-  RumColdStart.measureFirstFrame(); // Schedules post-first-frame callback.
+  RumColdStart.measureFirstFrame();
 }
 ```
 
@@ -1028,8 +1379,47 @@ Call on logout:
 RumSession.instance.clearUser();
 ```
 
-Once set, `user.id`, `user.email`, and `user.role` appear on every subsequent
-span.
+Once set, `enduser.id`, `enduser.email`, and `enduser.role` appear on every
+subsequent span.
+
+### Error Boundary
+
+Wrap any widget subtree to catch render-time errors with a retry UI:
+
+```dart
+ErrorBoundaryWidget(
+  child: MyFragileWidget(),
+)
+```
+
+With a custom fallback:
+
+```dart
+ErrorBoundaryWidget(
+  fallbackBuilder: (error, retry) => Column(
+    children: [
+      Text('Error: $error'),
+      TextButton(onPressed: retry, child: const Text('Try again')),
+    ],
+  ),
+  child: MyFragileWidget(),
+)
+```
+
+### Breadcrumbs
+
+Breadcrumbs are recorded automatically for navigation and HTTP requests. You can
+also record custom breadcrumbs:
+
+```dart
+RumSession.instance.recordBreadcrumb('ui', 'tapped checkout button');
+RumSession.instance.recordBreadcrumb('api', 'fetched user profile', {
+  'user_id': '123',
+});
+```
+
+The last 20 breadcrumbs are attached to every error span as a JSON array in
+`error.breadcrumbs`.
 
 ### Interaction Tracking
 
@@ -1104,8 +1494,8 @@ final response = await OTelConfig.httpClient.get(
 ```
 
 Every request automatically gets an `http.get` (or `http.post`, etc.) span with
-URL, status code, and response size. RUM context is attached by the
-`RumSpanProcessor`.
+URL, status code, response size, and a `traceparent` header for distributed
+tracing. RUM context is attached by the `RumSpanProcessor`.
 
 ## Configuration
 
@@ -1157,14 +1547,16 @@ spans during startup, which trigger `RumSpanProcessor.onStart()`, which calls
 stale default values.
 
 1. `RumColdStart.markMainStart()` — records timestamp
-2. Set error handlers — catches errors during init
-3. `RumSession.instance.initialize()` — loads device info, network, session ID
+2. Set error handlers — catches errors during init, attaches breadcrumbs
+3. `RumSession.instance.initialize()` — loads device info, network, battery,
+   session ID
 4. `FlutterOTel.initialize(...)` — creates lifecycle spans (RumSession must be
    ready)
 5. `JankDetector.start()` — frame monitoring begins
 6. `WidgetsBinding.addObserver(...)` — lifecycle observer
-7. `runApp(...)` — app starts
-8. `RumColdStart.measureFirstFrame()` — schedules post-frame callback
+7. `AppLifecycleListener` — flush on background, shutdown on exit
+8. `runApp(...)` — app starts
+9. `RumColdStart.measureFirstFrame()` — schedules post-frame callback
 
 ## Telemetry Reference
 
@@ -1173,43 +1565,51 @@ stale default values.
 | Span Name | Source | Key Attributes |
 | :--- | :--- | :--- |
 | `app.cold_start` | `RumColdStart` | `app.cold_start_ms`, `app.start_type` |
-| `navigation.push` | `RumRouteObserver` | `nav.route`, `nav.previous_route`, `nav.action` |
-| `navigation.pop` | `RumRouteObserver` | `nav.route`, `nav.previous_route`, `nav.action` |
-| `navigation.replace` | `RumRouteObserver` | `nav.route`, `nav.previous_route`, `nav.action` |
-| `navigation.remove` | `RumRouteObserver` | `nav.route`, `nav.action` |
-| `screen.load` | `RumRouteObserver` | `view.name`, `view.load_time_ms` |
-| `screen.dwell` | `RumRouteObserver` | `view.name`, `view.dwell_time_ms` |
+| `navigation.push` | `RumRouteObserver` | `app.screen.name`, `app.screen.previous_name`, `app.navigation.action` |
+| `navigation.pop` | `RumRouteObserver` | `app.screen.name`, `app.screen.previous_name`, `app.navigation.action` |
+| `navigation.replace` | `RumRouteObserver` | `app.screen.name`, `app.screen.previous_name`, `app.navigation.action` |
+| `navigation.remove` | `RumRouteObserver` | `app.screen.name`, `app.navigation.action` |
+| `screen.load` | `RumRouteObserver` | `app.screen.name`, `app.screen.load_time_ms` |
+| `screen.dwell` | `RumRouteObserver` | `app.screen.name`, `app.screen.dwell_time_ms` |
 | `app_lifecycle.changed` | `OTelLifecycleObserver` | `app_lifecycle.state`, `app_lifecycle.previous_state` |
 | `jank.frame` | `JankDetector` | `frame.build_duration_ms`, `frame.raster_duration_ms`, `jank.severity` |
 | `anr.detected` | `JankDetector` | `anr.threshold_ms` |
-| `http.<method>` | `RumHttpClient` | `http.method`, `http.url`, `http.status_code`, `http.response.size` |
+| `http.<method>` | `RumHttpClient` | `http.request.method`, `url.full`, `http.response.status_code`, `http.response.body.size` |
+| `error_boundary.caught` | `ErrorBoundaryWidget` | `error.type`, `error.message`, `app.screen.name`, `error.breadcrumbs` |
 | `interaction.*.click` | `OTelInteractionTracker` | `interaction.target`, `interaction.type` |
 | `interaction.*.list_selection` | `OTelInteractionTracker` | `interaction.target`, `list_selected_index` |
 | `rage_click.detected` | `RumRageClickDetector` | `rage_click.element_id`, `rage_click.count` |
 | `custom_event.<name>` | `RumEvents` | `event.name`, `event.domain`, custom attributes |
-| `error.*` | Error handlers | `error.screen`, `error.session_id` |
+| `error.*` | Error handlers | `app.screen.name`, `session.id`, `error.breadcrumbs` |
 
 ### Attributes on Every Span (via RumSpanProcessor)
 
-| Attribute | Example Value |
-| :--- | :--- |
-| `session.id` | `hgbat8zso5` |
-| `session.start` | `2026-03-03T18:26:04.137259` |
-| `session.duration_ms` | `14614` |
-| `view.name` | `/song_detail` |
-| `device.model` | `Pixel 8a` |
-| `device.id` | `BP4A.260105.004.E1` |
-| `device.physical` | `true` |
-| `os.type` | `android` |
-| `os.version` | `BP4A.260105.004.E1` |
-| `app.version` | `1.0.0` |
-| `app.build_number` | `1` |
-| `app.package_name` | `dev.flutter.platform_design` |
-| `network.type` | `cellular` |
-| `app.cold_start_ms` | `1305` |
-| `user.id` | `user_123` (when set) |
-| `user.email` | `user@example.com` (when set) |
-| `user.role` | `premium` (when set) |
+Attribute names follow
+[OTel semantic conventions](https://opentelemetry.io/docs/specs/semconv/).
+
+| Attribute | Semconv Source | Example Value |
+| :--- | :--- | :--- |
+| `session.id` | [session](https://opentelemetry.io/docs/specs/semconv/general/session/) | `hgbat8zso5` |
+| `session.start` | — | `2026-03-03T18:26:04.137259` |
+| `session.duration_ms` | — | `14614` |
+| `app.screen.name` | [app](https://opentelemetry.io/docs/specs/semconv/registry/attributes/app/) | `/song_detail` |
+| `device.model.identifier` | [device](https://opentelemetry.io/docs/specs/semconv/resource/device/) | `akita` |
+| `device.model.name` | [device](https://opentelemetry.io/docs/specs/semconv/resource/device/) | `Pixel 8a` |
+| `device.manufacturer` | [device](https://opentelemetry.io/docs/specs/semconv/resource/device/) | `Google` |
+| `device.id` | [device](https://opentelemetry.io/docs/specs/semconv/resource/device/) | `BP4A.260105.004.E1` |
+| `device.battery.level` | — | `78` |
+| `device.battery.state` | — | `discharging` |
+| `os.type` | — | `android` |
+| `os.version` | — | `15` |
+| `service.version` | — | `1.0.0` |
+| `app.build_id` | [app](https://opentelemetry.io/docs/specs/semconv/registry/attributes/app/) | `1` |
+| `app.installation.id` | [app](https://opentelemetry.io/docs/specs/semconv/registry/attributes/app/) | `BP4A.260105.004.E1` |
+| `service.name` | — | `dev.flutter.platform_design` |
+| `network.type` | — | `wifi` |
+| `app.cold_start_ms` | — | `1305` |
+| `enduser.id` | — | `user_123` (when set) |
+| `enduser.email` | — | `user@example.com` (when set) |
+| `enduser.role` | — | `premium` (when set) |
 
 ### Metrics
 
@@ -1229,29 +1629,33 @@ stale default values.
 
 ```text
 lib/
-├── main.dart                    # Original app (no OTel imports needed)
-├── main_otel.dart               # Instrumented entry point
+├── main.dart                        # Original app (no OTel imports needed)
+├── main_otel.dart                   # Instrumented entry point
 └── otel/
-    ├── otel_config.dart         # Central initialization
-    ├── rum_session.dart         # Session/device/user/screen/network state
-    ├── rum_span_processor.dart  # Enriches every span with RUM context
-    ├── rum_route_observer.dart  # Navigation + screen load/dwell
-    ├── rum_cold_start.dart      # Cold start measurement
-    ├── rum_http_client.dart     # Instrumented HTTP client
-    ├── rum_rage_click_detector.dart  # Frustration signal detection
-    ├── rum_events.dart          # Custom business events
-    └── jank_detector.dart       # Frame jank + ANR detection
+    ├── otel_config.dart             # Central initialization + flush/shutdown
+    ├── rum_session.dart             # Session/device/user/screen/network/battery/breadcrumbs
+    ├── rum_span_processor.dart      # Enriches spans + battery-aware sampling
+    ├── rum_route_observer.dart      # Navigation + screen load/dwell + breadcrumbs
+    ├── rum_cold_start.dart          # Cold start measurement
+    ├── rum_http_client.dart         # HTTP client + W3C traceparent
+    ├── rum_rage_click_detector.dart # Frustration signal detection
+    ├── rum_events.dart              # Custom business events
+    ├── error_boundary_widget.dart   # Error boundary with retry UI
+    └── jank_detector.dart           # Frame jank + ANR detection
 ```
 
 ## Quick Start Checklist
 
-- [ ] Add dependencies to `pubspec.yaml` and run `flutter pub get`
+- [ ] Add dependencies to `pubspec.yaml` (including `battery_plus`) and run
+      `flutter pub get`
 - [ ] Copy the `lib/otel/` directory into your project
 - [ ] Update `otel_config.dart` with your collector endpoint and service name
 - [ ] Create `main_otel.dart` wrapping your existing app
 - [ ] Add `navigatorObservers: [OTelConfig.routeObserver]` to `MaterialApp`
 - [ ] Add `RouteSettings(name: '/route_name')` to all `Navigator.push` calls
+- [ ] Wrap fragile widgets in `ErrorBoundaryWidget`
 - [ ] Add `OTelConfig.interactionTracker.trackButtonClick(...)` to key buttons
+- [ ] Use `OTelConfig.httpClient` for all HTTP requests
 - [ ] Run with `flutter run --target=lib/main_otel.dart`
 - [ ] Verify spans in your collector/backend
 
@@ -1261,7 +1665,5 @@ lib/
   for comparing this approach with the manual SDK
 - [Create Your First Dashboard](/guides/create-your-first-dashboard/) to
   build dashboards from your mobile telemetry data
-- [Creating Alerts with LogX](/guides/creating-alerts-with-logx/) to set up
-  alerts on crash rates, ANR counts, or slow screen loads
 - [Troubleshooting Missing Telemetry Data](/guides/troubleshooting-missing-data/)
   if spans are not arriving at your collector
