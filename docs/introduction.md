@@ -37,7 +37,7 @@ Cloud-native and OpenTelemetry-native platform.
 
 ## Architecture Benefits
 
-![Scout OTel Native Architecture](/img/otel-scout-base14.svg)
+![Scout OTel Native Architecture](/img/scout-architecture-v3.svg)
 
 - Native OpenTelemetry support ensures future-proof observability
 - Scalable collection and processing of telemetry data
