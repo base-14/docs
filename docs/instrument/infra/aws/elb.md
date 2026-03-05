@@ -15,6 +15,11 @@ keywords:
     aws elb monitoring,
     alb observability,
   ]
+head:
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I monitor AWS ALB with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Use CloudWatch Metrics Stream to collect Application Load Balancer metrics with 2-3 minute latency, then send them to an OpenTelemetry Collector and base14 Scout for visualization and alerting."}},{"@type":"Question","name":"What ALB metrics does CloudWatch Metrics Stream provide?","acceptedAnswer":{"@type":"Answer","text":"CloudWatch Metrics Stream delivers all AWS/ApplicationELB metrics including request counts, response times, HTTP status codes, target health, connection counts, and more."}},{"@type":"Question","name":"How do I collect AWS ALB access logs with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Configure a Lambda function triggered by S3 events to process ALB access logs. The Lambda reads log files from S3 and forwards them to your OpenTelemetry Collector endpoint."}},{"@type":"Question","name":"Should I use CloudWatch Metrics Stream or Prometheus for ALB monitoring?","acceptedAnswer":{"@type":"Answer","text":"CloudWatch Metrics Stream is recommended. It offers faster delivery (2-3 min vs 5+ min latency), lower cost with no dedicated exporters needed, and automatic metric discovery for AWS services."}},{"@type":"Question","name":"How do I filter ALB metrics in CloudWatch Metrics Stream?","acceptedAnswer":{"@type":"Answer","text":"Select specific namespaces when configuring the Metrics Stream and choose only AWS/ApplicationELB to collect only ALB metrics, reducing costs and data volume in base14 Scout."}}]}
 ---
 
 ## Overview

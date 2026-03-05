@@ -14,6 +14,11 @@ keywords:
     node custom instrumentation,
     nodejs observability,
   ]
+head:
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I add custom OpenTelemetry spans in Node.js?","acceptedAnswer":{"@type":"Answer","text":"Use the OpenTelemetry API to create a tracer with trace.getTracer(), then call tracer.startSpan() to create custom spans in your Express routes or business logic. Export spans to base14 Scout via the OTLP HTTP exporter."}},{"@type":"Question","name":"What npm packages are required for Node.js OpenTelemetry instrumentation?","acceptedAnswer":{"@type":"Answer","text":"Install @opentelemetry/sdk-node, @opentelemetry/api, @opentelemetry/exporter-trace-otlp-http, @opentelemetry/sdk-trace-node, and @opentelemetry/sdk-trace-base. For metrics and logs, add the corresponding exporter and SDK packages."}},{"@type":"Question","name":"How do I create custom metrics in Node.js with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Initialize a MeterProvider with PeriodicExportingMetricReader and OTLPMetricExporter, then use metrics.getMeter() to create counters, histograms, and other metric types. base14 Scout visualizes these metrics automatically."}},{"@type":"Question","name":"How do I export OpenTelemetry logs from a Node.js application?","acceptedAnswer":{"@type":"Answer","text":"Configure a BatchLogRecordProcessor with OTLPLogExporter pointing to your Scout Collector endpoint at port 4318/v1/logs, then use the @opentelemetry/api-logs package to emit structured log records with trace context."}}]}
 ---
 
 # Javascript Node

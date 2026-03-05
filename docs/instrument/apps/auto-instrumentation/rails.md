@@ -29,6 +29,11 @@ keywords:
     opentelemetry ruby,
     rails telemetry,
   ]
+head:
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I add OpenTelemetry to a Ruby on Rails application?","acceptedAnswer":{"@type":"Answer","text":"Install the opentelemetry-instrumentation-all gem, configure the SDK in an initializer, and set the OTLP exporter endpoint to your base14 Scout Collector. Auto-instrumentation traces HTTP requests, ActiveRecord queries, and Sidekiq jobs."}},{"@type":"Question","name":"Can OpenTelemetry detect N+1 queries in Rails?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry traces each ActiveRecord query as a separate span. N+1 queries appear as many sequential database spans under a single parent span in base14 Scout, making the pattern easy to identify."}},{"@type":"Question","name":"Does OpenTelemetry work with Sidekiq background jobs?","acceptedAnswer":{"@type":"Answer","text":"Yes, the OpenTelemetry Sidekiq instrumentation automatically traces job enqueue and processing. Context propagation links background jobs to the original request trace."}},{"@type":"Question","name":"What is the performance impact of OpenTelemetry on Rails apps?","acceptedAnswer":{"@type":"Answer","text":"With BatchSpanProcessor, the overhead is minimal — typically 1-3ms per request, slight CPU increase, and 10-30MB additional memory. Sampling can further reduce the impact in high-traffic apps."}}]}
 ---
 
 # Ruby on Rails

@@ -15,6 +15,11 @@ keywords:
   - nginx observability
   - nginx web server monitoring
   - nginx telemetry collection
+head:
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does NGINX OpenTelemetry monitoring work in Kubernetes?","acceptedAnswer":{"@type":"Answer","text":"Yes. Deploy the nginx-prometheus-exporter as a sidecar container and point the OTel Collector Prometheus scrape config at the sidecar. For traces, include the nginx-module-otel in your NGINX container image."}},{"@type":"Question","name":"Can I use NGINX Plus instead of open-source NGINX with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Yes. NGINX Plus provides a richer metrics API at /api/. Use the nginxplusreceiver in OTel Collector Contrib instead of the Prometheus exporter approach used for open-source NGINX."}},{"@type":"Question","name":"Why does NGINX need three separate telemetry collection methods?","acceptedAnswer":{"@type":"Answer","text":"NGINX does not expose all telemetry through a single interface. Metrics come from stub_status via the exporter, traces require the OTel module, and logs are read from files. Each needs its own receiver in the base14 Scout Collector pipeline."}},{"@type":"Question","name":"How do I collect NGINX metrics with OpenTelemetry Collector?","acceptedAnswer":{"@type":"Answer","text":"Enable stub_status in nginx.conf, install the nginx-prometheus-exporter to expose metrics on port 9113, then add a prometheus/nginx receiver in your OTel Collector config to scrape those metrics for base14 Scout."}}]}
 ---
 
 # NGINX

@@ -14,6 +14,11 @@ keywords:
   ]
 tags: [linux, opentelemetry, base14 scout]
 sidebar_position: 3
+head:
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I install the OpenTelemetry Collector on Ubuntu or Debian?","acceptedAnswer":{"@type":"Answer","text":"Download the otelcol-contrib .deb package for your architecture (amd64, arm64, or i386) from the official releases, then install it with sudo dpkg -i. The collector registers as a systemd service automatically."}},{"@type":"Question","name":"How do I install the OpenTelemetry Collector on RHEL or CentOS?","acceptedAnswer":{"@type":"Answer","text":"Download the otelcol-contrib .rpm package for your architecture, then install with sudo rpm -ivh. The collector starts as a systemd service with the default config at /etc/otelcol-contrib/config.yaml."}},{"@type":"Question","name":"Where is the default OpenTelemetry Collector config file on Linux?","acceptedAnswer":{"@type":"Answer","text":"The default configuration file is located at /etc/otelcol-contrib/config.yaml. Customize collector options via the OTELCOL_OPTIONS variable in /etc/otelcol-contrib/otelcol-contrib.conf."}},{"@type":"Question","name":"How do I restart the OpenTelemetry Collector service on Linux?","acceptedAnswer":{"@type":"Answer","text":"Run sudo systemctl restart otelcol-contrib after modifying the configuration. Check logs with sudo journalctl -u otelcol-contrib to verify the collector started correctly."}},{"@type":"Question","name":"What are the system requirements for running the OTel Collector on Linux?","acceptedAnswer":{"@type":"Answer","text":"You need a Linux system with systemd, root or sudo access, minimum 512MB RAM, and 1GB free disk space. Packages are available for amd64, arm64, and i386 architectures."}}]}
 ---
 
 # Linux

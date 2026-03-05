@@ -15,6 +15,11 @@ keywords:
     aws monitoring setup,
     cloudwatch observability,
   ]
+head:
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is CloudWatch Metrics Stream and how does it work with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"CloudWatch Metrics Stream uses Amazon Kinesis Firehose to deliver AWS CloudWatch metrics to an OpenTelemetry Collector with only 2-3 minute latency, significantly faster than the traditional polling approach."}},{"@type":"Question","name":"How do I set up CloudWatch Metrics Stream for base14 Scout?","acceptedAnswer":{"@type":"Answer","text":"Create an S3 bucket, set up a Kinesis Firehose stream with Direct PUT as input and S3 as output, then configure a CloudWatch Metrics Stream to send metrics through the Firehose pipeline to base14 Scout."}},{"@type":"Question","name":"Is CloudWatch Metrics Stream faster than polling CloudWatch APIs?","acceptedAnswer":{"@type":"Answer","text":"Yes. CloudWatch Metrics Stream delivers metrics with 2-3 minute latency, which is significantly faster than the 5+ minute latency typical of polling-based approaches."}},{"@type":"Question","name":"Can I filter which AWS metrics are streamed via CloudWatch Metrics Stream?","acceptedAnswer":{"@type":"Answer","text":"Yes. When creating the Metrics Stream you can select specific namespaces (e.g., AWS/EC2, AWS/RDS) instead of all namespaces, reducing costs and data volume."}},{"@type":"Question","name":"What AWS infrastructure do I need for CloudWatch Metrics Stream?","acceptedAnswer":{"@type":"Answer","text":"You need an S3 bucket for storage, an Amazon Kinesis Firehose stream configured with Direct PUT, and a CloudWatch Metrics Stream that routes metrics through the Firehose to your OpenTelemetry Collector."}}]}
 ---
 
 Using Amazon CloudWatch Metric Streams and Amazon Data Firehose, you can get

@@ -40,6 +40,11 @@ keywords:
     fastify instrumentation,
     koa instrumentation,
   ]
+head:
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does OpenTelemetry work with TypeScript?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry fully supports TypeScript with official type definitions. Install @types/node and use .ts instrumentation files to get full type safety."}},{"@type":"Question","name":"What is the performance impact of OpenTelemetry on Node.js?","acceptedAnswer":{"@type":"Answer","text":"With BatchSpanProcessor, expect +0.5-2ms latency per request, +2-5% CPU, and +10-30MB memory. The impact is minimal for most production workloads."}},{"@type":"Question","name":"Can I use OpenTelemetry with Express, NestJS, and Fastify?","acceptedAnswer":{"@type":"Answer","text":"Yes, auto-instrumentation supports all major Node.js frameworks including Express, NestJS, Fastify, Koa, and Hapi automatically with no code changes required."}},{"@type":"Question","name":"How do I trace async operations in Node.js with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry automatically propagates context through async/await. For callbacks, manually propagate context using context.with(). View async traces in base14 Scout."}},{"@type":"Question","name":"Does OpenTelemetry auto-instrumentation support Mongoose, TypeORM, and Prisma?","acceptedAnswer":{"@type":"Answer","text":"Yes, auto-instrumentation includes MongoDB (Mongoose), PostgreSQL (pg, Sequelize, TypeORM), MySQL, and Prisma ORM with no additional configuration needed."}}]}
 ---
 
 # Node.js

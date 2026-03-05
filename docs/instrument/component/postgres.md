@@ -16,6 +16,11 @@ keywords:
   - postgres observability
   - postgresql database monitoring
   - postgres telemetry collection
+head:
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does PostgreSQL OpenTelemetry monitoring work in Kubernetes?","acceptedAnswer":{"@type":"Answer","text":"Yes. Set the endpoint to the PostgreSQL service DNS (e.g., postgresql.default.svc.cluster.local:5432) and inject credentials via a Kubernetes secret. The OpenTelemetry Collector can run as a sidecar or DaemonSet."}},{"@type":"Question","name":"How do I monitor multiple PostgreSQL instances with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Add multiple PostgreSQL receiver blocks with distinct names (e.g., postgresql/primary and postgresql/replica) in the OpenTelemetry Collector config, then include both in the metrics pipeline."}},{"@type":"Question","name":"What permissions does the PostgreSQL monitoring user need?","acceptedAnswer":{"@type":"Answer","text":"The pg_monitor role (PostgreSQL 10+) is sufficient. For PostgreSQL 9.6, grant pg_stat_scan_tables and access to pg_stat_activity individually. No write permissions are needed."}},{"@type":"Question","name":"What is the difference between basic and advanced PostgreSQL monitoring?","acceptedAnswer":{"@type":"Answer","text":"Basic monitoring uses the OTel PostgreSQL receiver for core database metrics. The advanced guide adds deeper query-level statistics, per-table I/O, and detailed replication monitoring via base14 Scout."}},{"@type":"Question","name":"What PostgreSQL metrics does the OpenTelemetry Collector capture?","acceptedAnswer":{"@type":"Answer","text":"The OpenTelemetry Collector's PostgreSQL receiver collects 34 metrics from PostgreSQL 9.6+, including connection counts, query performance, lock activity, WAL replication lag, and table/index statistics."}}]}
 ---
 
 # PostgreSQL Basic

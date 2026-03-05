@@ -38,6 +38,11 @@ keywords:
     golang async tracing,
     go web server monitoring,
   ]
+head:
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does OpenTelemetry work with all Go web frameworks?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry supports Echo, Fiber, Chi, Gin, and standard net/http through various instrumentation packages. base14 Scout works with all of them."}},{"@type":"Question","name":"What is the performance impact of OpenTelemetry on Go applications?","acceptedAnswer":{"@type":"Answer","text":"Minimal: approximately 0.1-0.5ms added latency, 1-3% CPU increase, and 5-15MB additional memory. Go's efficient goroutines make OpenTelemetry very lightweight."}},{"@type":"Question","name":"Can I trace GORM and sqlx database queries with OpenTelemetry in Go?","acceptedAnswer":{"@type":"Answer","text":"Yes, use otelgorm for GORM and otelsql for sqlx and database/sql. All SQL queries are automatically traced with parameters sanitized for security."}},{"@type":"Question","name":"How do I propagate OpenTelemetry trace context across goroutines in Go?","acceptedAnswer":{"@type":"Answer","text":"Pass the context to goroutines using go func(ctx context.Context) { ... }(ctx) to maintain the trace hierarchy across concurrent operations."}}]}
 ---
 
 # Go

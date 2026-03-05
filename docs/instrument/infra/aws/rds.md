@@ -15,6 +15,11 @@ keywords:
     aws database monitoring,
     rds observability,
   ]
+head:
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I monitor AWS RDS PostgreSQL with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Use CloudWatch Metrics Stream for infrastructure metrics (CPU, memory, disk I/O) and the OpenTelemetry PostgreSQL receiver for database-specific metrics like connections, query performance, and locks. Both feed into base14 Scout."}},{"@type":"Question","name":"What RDS metrics does CloudWatch Metrics Stream collect?","acceptedAnswer":{"@type":"Answer","text":"CloudWatch Metrics Stream automatically delivers AWS/RDS metrics including CPU utilization, memory usage, disk I/O, read/write latency, database connections, and replication lag with 2-3 minute latency."}},{"@type":"Question","name":"Do I need both CloudWatch Metrics Stream and the PostgreSQL receiver for RDS?","acceptedAnswer":{"@type":"Answer","text":"CloudWatch provides infrastructure-level RDS metrics while the PostgreSQL receiver collects database-specific metrics like locks, deadlocks, and sequential scans. Using both gives complete visibility in base14 Scout."}},{"@type":"Question","name":"How do I collect RDS PostgreSQL logs with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Use the AWS CloudWatch Logs receiver in the OpenTelemetry Collector, specifying your RDS log group names. The collector polls CloudWatch Logs and forwards them to base14 Scout."}},{"@type":"Question","name":"How do I filter RDS metrics in CloudWatch Metrics Stream?","acceptedAnswer":{"@type":"Answer","text":"When configuring the Metrics Stream, select specific namespaces and choose only AWS/RDS instead of all namespaces to collect only RDS metrics, reducing costs and data volume."}}]}
 ---
 
 ## Overview

@@ -29,6 +29,11 @@ keywords:
     express 5 monitoring,
     nodejs apm express,
   ]
+head:
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does Express.js OpenTelemetry instrumentation work with async/await?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry fully supports Express.js async/await patterns. The NodeSDK automatically preserves context across async operations, ensuring parent-child span relationships are maintained correctly."}},{"@type":"Question","name":"What is the performance impact of OpenTelemetry on Express.js?","acceptedAnswer":{"@type":"Answer","text":"Typical overhead is 0.5-2ms added latency per request, 2-5% CPU increase, and 10-50MB additional memory usage. Using BatchSpanProcessor and excluding high-volume endpoints further reduces overhead."}},{"@type":"Question","name":"How do I instrument MongoDB and Mongoose queries in Express.js?","acceptedAnswer":{"@type":"Answer","text":"Install @opentelemetry/instrumentation-mongoose and register it in your NodeSDK instrumentations array before connecting to MongoDB. All Mongoose queries are automatically traced with operation name, collection, and execution time."}},{"@type":"Question","name":"How does distributed tracing work across Express.js microservices?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry uses W3C Trace Context headers to propagate trace context between services. Express HTTP instrumentation automatically extracts headers from incoming requests and injects them into outgoing calls."}},{"@type":"Question","name":"Which Node.js and Express versions does OpenTelemetry support?","acceptedAnswer":{"@type":"Answer","text":"Node.js 24.0.0+ with Krypton LTS recommended, Express 5.0.0+ with 5.0.1+ recommended, and OpenTelemetry SDK 0.200.0+ with full TypeScript support included."}}]}
 ---
 
 # Express.js

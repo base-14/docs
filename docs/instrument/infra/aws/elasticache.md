@@ -15,6 +15,11 @@ keywords:
     aws cache monitoring,
     elasticache observability,
   ]
+head:
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I monitor AWS ElastiCache with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Use CloudWatch Metrics Stream to collect ElastiCache metrics with 2-3 minute latency, and optionally add the OpenTelemetry Redis receiver for detailed cache-specific metrics. Both can be sent to base14 Scout."}},{"@type":"Question","name":"Should I use CloudWatch Metrics Stream or Prometheus exporters for ElastiCache?","acceptedAnswer":{"@type":"Answer","text":"CloudWatch Metrics Stream is recommended over Prometheus exporters for ElastiCache. It provides faster delivery (2-3 min vs 5+ min), lower cost, better scalability, and automatic metric discovery."}},{"@type":"Question","name":"What ElastiCache metrics can I collect with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"CloudWatch Metrics Stream delivers CPU utilization, memory usage, cache hits/misses, network I/O, and evictions. The optional Redis receiver adds detailed metrics like command latency, connected clients, and keyspace stats."}},{"@type":"Question","name":"How do I filter ElastiCache metrics in CloudWatch Metrics Stream?","acceptedAnswer":{"@type":"Answer","text":"When configuring your CloudWatch Metrics Stream, select specific namespaces and choose only AWS/ElastiCache instead of all namespaces to reduce costs and data volume."}},{"@type":"Question","name":"Can I monitor both ElastiCache Redis and Memcached with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Yes. CloudWatch Metrics Stream supports both Redis and Memcached ElastiCache engines. For Redis, you can also add the OpenTelemetry Redis receiver for deeper cache-level metrics."}}]}
 ---
 
 ## Overview

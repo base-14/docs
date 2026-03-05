@@ -15,6 +15,11 @@ keywords:
   ]
 tags: [opentelemetry, base14 scout]
 sidebar_position: 6
+head:
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What are the main sections of an OpenTelemetry Collector config file?","acceptedAnswer":{"@type":"Answer","text":"The config file has five main sections: receivers (data ingestion), processors (transformation and filtering), exporters (sending data to backends), extensions (health checks and diagnostics), and service (pipeline definitions connecting the components)."}},{"@type":"Question","name":"How do I configure OpenTelemetry Collector pipelines for traces, metrics, and logs?","acceptedAnswer":{"@type":"Answer","text":"Define pipelines under the service section, specifying receivers, processors, and exporters for each telemetry type. For example, a traces pipeline might use the otlp receiver, batch processor, and otlp exporter. base14 Scout receives all three signal types."}},{"@type":"Question","name":"What processors should I use in an OpenTelemetry Collector production config?","acceptedAnswer":{"@type":"Answer","text":"Always include the memory_limiter processor to prevent out-of-memory crashes and the batch processor for efficient data transmission. Add resourcedetection to enrich telemetry with host metadata and attributes to insert environment labels."}},{"@type":"Question","name":"How do I use environment variables in OpenTelemetry Collector configuration?","acceptedAnswer":{"@type":"Answer","text":"Use the ${ENV_VAR_NAME} syntax in your YAML config file. For example, set endpoint: ${OTLP_ENDPOINT} to dynamically configure exporter endpoints without hardcoding values."}},{"@type":"Question","name":"What are OpenTelemetry Collector connectors used for?","acceptedAnswer":{"@type":"Answer","text":"Connectors act as both exporters and receivers, routing telemetry between pipelines internally. Common connectors include spanmetrics for generating metrics from traces and forward for routing data between processing chains."}}]}
 ---
 
 # Configuration
