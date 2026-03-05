@@ -1,11 +1,11 @@
 ---
-title: React OpenTelemetry Instrumentation - Complete APM Setup Guide
+title: Instrument React with OpenTelemetry — Browser Tracing & Web Vitals
 sidebar_label: React
 sidebar_position: 14
 description:
-  Trace browser interactions, HTTP requests, and Core Web Vitals in React apps
-  using OpenTelemetry auto instrumentation — export spans to base14 Scout with
-  minimal setup.
+  Trace browser interactions, HTTP requests, and Core Web Vitals in React
+  apps with OpenTelemetry. Export spans to base14 Scout with minimal
+  setup.
 keywords:
   [
     react monitoring,

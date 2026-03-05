@@ -1,14 +1,11 @@
 ---
-title: >
-  NGINX OpenTelemetry Monitoring — Request Rate, Connections,
-  and Collector Setup
+title: Monitor NGINX with OpenTelemetry — Metrics, Traces & Logs
 sidebar_label: NGINX
 id: collecting-nginx-telemetry
 sidebar_position: 7
-description: >
-  Collect NGINX metrics with OpenTelemetry. Monitor active connections,
-  request rates, and worker states using the Prometheus exporter, traces
-  via nginx-module-otel, and logs via filelog. Export to base14 Scout.
+description:
+  Collect NGINX metrics with OpenTelemetry Collector. Monitor connections,
+  request rates, and worker states. Set up traces via nginx-module-otel.
 keywords:
   - nginx opentelemetry
   - nginx otel collector

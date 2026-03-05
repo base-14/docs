@@ -1,12 +1,12 @@
 ---
 date: 2025-11-19
 id: collecting-aws-cloudwatch-metrics-using-kinesis-streams
-title: AWS CloudWatch Metrics Stream Setup Guide
+title: CloudWatch Metrics Stream to OpenTelemetry — Setup Guide
 sidebar_label: CloudWatch Metrics Stream
 description:
-  Set up CloudWatch Metrics Stream with Kinesis Firehose and Lambda to stream
-  AWS metrics to Scout. Complete guide for fast metrics delivery with
-  OpenTelemetry.
+  Stream AWS CloudWatch metrics via Kinesis Firehose to OpenTelemetry
+  Collector. Complete setup for fast, low-latency AWS metrics delivery
+  to base14 Scout.
 keywords:
   [
     cloudwatch metrics stream,

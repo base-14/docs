@@ -1,11 +1,11 @@
 ---
-title: Node.js OpenTelemetry Instrumentation - Complete APM Setup Guide
+title: Instrument Node.js with OpenTelemetry — Auto-Trace HTTP, DB & Queues
 sidebar_label: Node.js
 sidebar_position: 13
 description:
-  Gain full observability across Node.js apps — auto-instrument Express,
-  NestJS, Fastify, databases, Redis, and message queues with zero code changes
-  using the OpenTelemetry SDK and base14 Scout.
+  Auto-instrument Node.js with OpenTelemetry. Capture traces from Express,
+  NestJS, Fastify, databases, Redis, and message queues with zero code
+  changes.
 keywords:
   [
     nodejs opentelemetry instrumentation,

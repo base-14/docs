@@ -1,11 +1,10 @@
 ---
-title: Go OpenTelemetry Instrumentation - Complete APM Setup Guide
+title: Instrument Go with OpenTelemetry — Echo, Fiber, Chi & GORM Tracing
 sidebar_label: Go
 sidebar_position: 18
 description:
-  Trace Go HTTP requests and monitor database queries across Echo, Fiber, and
-  Chi with OpenTelemetry. Covers GORM, sqlx, Redis, background jobs, and gRPC
-  with Base14 Scout.
+  Instrument Go apps with OpenTelemetry. Trace HTTP requests across Echo,
+  Fiber, and Chi. Monitor GORM, sqlx, Redis, and gRPC calls.
 keywords:
   [
     go opentelemetry instrumentation,

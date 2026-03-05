@@ -1,10 +1,10 @@
 ---
-title: NestJS OpenTelemetry Instrumentation - Complete APM Setup Guide
+title: Instrument NestJS with OpenTelemetry — TypeORM & BullMQ Tracing
 sidebar_label: NestJS
 sidebar_position: 11
 description:
-  Trace NestJS controllers, TypeORM queries, BullMQ jobs, and WebSocket gateways
-  with OpenTelemetry auto-instrumentation and distributed tracing via base14 Scout.
+  Auto-instrument NestJS with OpenTelemetry. Trace controllers, TypeORM
+  queries, BullMQ jobs, and WebSocket gateways with distributed tracing.
 keywords:
   [
     nestjs opentelemetry instrumentation,

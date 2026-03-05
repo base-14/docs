@@ -1,10 +1,10 @@
 ---
-title: Django OpenTelemetry Instrumentation - Complete APM Setup Guide
+title: Instrument Django with OpenTelemetry — ORM, Celery & DRF Tracing
 sidebar_label: Django
 sidebar_position: 3
 description:
-  Trace Django requests and ORM queries, detect N+1 patterns, instrument Celery
-  background tasks, and monitor performance with OpenTelemetry and base14 Scout APM.
+  Auto-instrument Django with OpenTelemetry. Trace requests, ORM queries,
+  Celery tasks, and DRF endpoints. Detect N+1 patterns automatically.
 keywords:
   [
     django opentelemetry instrumentation,

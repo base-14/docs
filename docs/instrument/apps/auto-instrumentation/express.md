@@ -1,11 +1,11 @@
 ---
-title: Express.js OpenTelemetry Instrumentation - Complete APM Setup Guide
+title: Instrument Express.js with OpenTelemetry — Traces & Metrics Setup
 sidebar_label: Express.js
 sidebar_position: 8
 description:
-  Trace HTTP requests, MongoDB queries, Redis calls, and background jobs in
-  Express.js apps with OpenTelemetry auto-instrumentation. Export traces and
-  metrics to base14 Scout.
+  Auto-instrument Express.js with OpenTelemetry. Trace HTTP requests,
+  MongoDB queries, Redis calls, and background jobs. Production-ready
+  config included.
 keywords:
   [
     express opentelemetry instrumentation,

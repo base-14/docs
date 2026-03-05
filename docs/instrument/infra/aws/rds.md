@@ -1,11 +1,12 @@
 ---
 date: 2025-04-26
 id: collecting-aws-rds-postgres-telemetry
-title: AWS RDS PostgreSQL Monitoring via CloudWatch Metrics Stream
+title: Monitor AWS RDS PostgreSQL with OpenTelemetry — Metrics & Logs
 sidebar_label: AWS RDS
 description:
-  Monitor AWS RDS PostgreSQL with CloudWatch Metrics Stream and OpenTelemetry.
-  Collect AWS/RDS metrics, database stats, and logs using Scout.
+  Stream AWS RDS PostgreSQL metrics via CloudWatch. Monitor connections,
+  replication lag, IOPS, and query performance with OpenTelemetry and
+  base14 Scout.
 keywords:
   [
     aws rds monitoring,

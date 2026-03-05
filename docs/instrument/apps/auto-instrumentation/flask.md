@@ -1,11 +1,10 @@
 ---
-title: Flask OpenTelemetry Instrumentation - Complete APM Setup Guide
+title: Instrument Flask with OpenTelemetry — SQLAlchemy & Celery Tracing
 sidebar_label: Flask
 sidebar_position: 5
 description:
-  Trace Flask routes, SQLAlchemy queries, and Celery tasks with OpenTelemetry
-  auto-instrumentation. Monitor distributed services and API performance using
-  base14 Scout.
+  Auto-instrument Flask with OpenTelemetry. Trace routes, SQLAlchemy
+  queries, and Celery tasks. Monitor API performance with base14 Scout.
 keywords:
   [
     flask opentelemetry instrumentation,

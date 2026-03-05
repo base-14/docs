@@ -1,10 +1,11 @@
 ---
-title: Python Custom OpenTelemetry Instrumentation - Manual Tracing Guide
+title: Python Custom OpenTelemetry — Manual Spans, Metrics & Logs
 sidebar_label: Python
 sidebar_position: 6
 description:
-  Custom instrumentation for Python applications with OpenTelemetry. Manual
-  tracing, metrics, logs, spans, and telemetry export with Python OTel SDK.
+  Add custom spans, metrics, and logs to Python apps with OpenTelemetry
+  SDK. Manual instrumentation for business logic beyond
+  auto-instrumentation.
 keywords:
   [
     python instrumentation,

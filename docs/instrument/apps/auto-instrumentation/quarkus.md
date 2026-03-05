@@ -1,11 +1,11 @@
 ---
-title: Quarkus OpenTelemetry Instrumentation - Complete APM Setup Guide
+title: Instrument Quarkus with OpenTelemetry — Native Image & REST Tracing
 sidebar_label: Quarkus
 sidebar_position: 15
 description:
-  Instrument Quarkus apps using the built-in OTel extension — trace REST
-  endpoints, Hibernate Panache queries, and native GraalVM images with minimal
-  config and zero agent overhead using base14 Scout.
+  Instrument Quarkus apps with the built-in OTel extension. Trace REST
+  endpoints, Hibernate Panache queries, and GraalVM native images with
+  zero agent overhead.
 keywords:
   [
     quarkus opentelemetry instrumentation,

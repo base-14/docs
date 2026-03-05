@@ -1,10 +1,11 @@
 ---
-title: Java Custom OpenTelemetry Instrumentation - Manual Tracing Guide
+title: Java Custom OpenTelemetry — Manual Spans, Metrics & Tracing Guide
 sidebar_label: Java
 sidebar_position: 3
 description:
-  Custom instrumentation for Java applications with OpenTelemetry. Manual
-  tracing, spans, metrics, and telemetry export with Java OpenTelemetry SDK.
+  Add custom spans, metrics, and traces to Java apps with OpenTelemetry
+  SDK. Manual instrumentation for business logic beyond
+  auto-instrumentation.
 keywords:
   [
     java instrumentation,

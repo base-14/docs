@@ -1,10 +1,9 @@
 ---
-title: Linux OpenTelemetry Collector Installation
+title: Install OpenTelemetry Collector on Linux — DEB & RPM Packages
 sidebar_label: Linux Installation
 description:
-  Install OpenTelemetry Collector on Linux using DEB or RPM packages. Complete
-  guide for Ubuntu, Debian, RHEL, CentOS, and Fedora with systemd service
-  management.
+  Install OpenTelemetry Collector on Ubuntu, Debian, RHEL, CentOS, or
+  Fedora. Complete guide with systemd service setup and configuration.
 keywords:
   [
     linux opentelemetry,

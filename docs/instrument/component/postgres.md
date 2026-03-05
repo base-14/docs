@@ -1,14 +1,12 @@
 ---
-title: >
-  PostgreSQL OpenTelemetry Monitoring — Connections, Query Performance,
-  and Collector Setup
+title: PostgreSQL OpenTelemetry Monitoring — Connections, Queries & WAL
 sidebar_label: PostgreSQL Basic
 id: collecting-postgres-telemetry
 sidebar_position: 1
-description: >
-  Collect PostgreSQL metrics with the OpenTelemetry Collector. Monitor
-  connections, query performance, locks, WAL replication, and table stats
-  using the PostgreSQL receiver and export to base14 Scout.
+description:
+  Collect PostgreSQL metrics with OpenTelemetry Collector. Monitor
+  connections, query performance, locks, WAL replication, and table
+  stats.
 keywords:
   - postgresql opentelemetry
   - postgresql otel collector

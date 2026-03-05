@@ -1,11 +1,11 @@
 ---
-title: Rails OpenTelemetry Instrumentation - Complete APM Setup Guide
+title: Instrument Rails with OpenTelemetry — ActiveRecord & Sidekiq Tracing
 sidebar_label: Ruby on Rails
 sidebar_position: 19
 description:
-  Trace HTTP requests, ActiveRecord queries, and Sidekiq background jobs in
-  Rails apps with OpenTelemetry auto-instrumentation. Export traces and metrics
-  to base14 Scout.
+  Auto-instrument Ruby on Rails with OpenTelemetry. Trace HTTP requests,
+  ActiveRecord queries, and Sidekiq jobs. Detect N+1 queries
+  automatically.
 keywords:
   [
     rails opentelemetry instrumentation,
