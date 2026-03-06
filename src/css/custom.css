@@ -1290,20 +1290,26 @@ article p > em:only-child,
   color: var(--ifm-color-emphasis-700);
 }
 
-/* Blog sidebar - follows page scroll instead of independent scroll */
-html.blog-wrapper aside[class*="sidebar"] {
+/* Blog sidebar - match TOC font size, no independent scroll */
+html.blog-wrapper nav[class*="sidebar"] {
+  font-size: 0.8rem;
+  border-right: 1px solid var(--ifm-color-emphasis-200);
+  padding-right: 1rem;
+}
+
+html.blog-wrapper nav[class*="sidebar"] [class*="sidebarItemLink"] {
   font-size: 0.8rem;
 }
 
-html.blog-wrapper aside nav.thin-scrollbar,
+html.blog-wrapper nav[class*="sidebar"] [class*="sidebarItemTitle"] {
+  font-size: 0.85rem;
+}
+
+html.blog-wrapper nav[class*="sidebar"].thin-scrollbar,
 html.blog-wrapper div[class*="tableOfContents"].thin-scrollbar {
   position: sticky;
   max-height: none;
   overflow: visible;
-}
-
-html.blog-wrapper aside[class*="sidebar"] [class*="sidebarItemTitle"] {
-  font-size: 0.85rem;
 }
 
 /* Blog sidebar - selected item styling */
@@ -1330,6 +1336,50 @@ html.blog-wrapper nav[class*="sidebar"] a[aria-current="page"],
 .alert__heading,
 .admonition-heading {
   text-transform: none !important;
+}
+
+/* Blog navbar: white background with subtle border (light mode only) */
+html.blog-wrapper:not([data-theme='dark']) nav.navbar {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+html.blog-wrapper:not([data-theme='dark']) .navbar__link {
+  color: #000000 !important;
+}
+
+html.blog-wrapper:not([data-theme='dark']) .navbar__link:hover {
+  color: #333333 !important;
+  background: #f5f5f5 !important;
+}
+
+html.blog-wrapper:not([data-theme='dark']) .navbar__link--active {
+  color: #000000 !important;
+  background: #eeeeee;
+}
+
+/* Blog light mode - readability improvements */
+html.blog-wrapper:not([data-theme='dark']) {
+  background: #fafaf8;
+}
+
+html.blog-wrapper:not([data-theme='dark']) article .markdown {
+  color: #374151;
+  line-height: 1.75;
+}
+
+html.blog-wrapper:not([data-theme='dark']) article .markdown h1,
+html.blog-wrapper:not([data-theme='dark']) article .markdown h2,
+html.blog-wrapper:not([data-theme='dark']) article .markdown h3 {
+  color: #111827;
+}
+
+html.blog-wrapper:not([data-theme='dark']) article .markdown a {
+  color: #047857;
+}
+
+html.blog-wrapper:not([data-theme='dark']) article .markdown p {
+  margin-bottom: 1.25em;
 }
 
 /* Hide announcement bar on blog pages */
