@@ -1290,6 +1290,11 @@ article p > em:only-child,
   color: var(--ifm-color-emphasis-700);
 }
 
+/* Blog layout - widen container so sidebar sits closer to the left edge */
+html.blog-wrapper .container.margin-vert--lg {
+  max-width: 100%;
+}
+
 /* Blog sidebar - match TOC font size, no independent scroll */
 html.blog-wrapper nav[class*="sidebar"] {
   font-size: 0.8rem;
