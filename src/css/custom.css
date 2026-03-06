@@ -1290,9 +1290,16 @@ article p > em:only-child,
   color: var(--ifm-color-emphasis-700);
 }
 
-/* Blog sidebar - smaller font only (width controlled by Docusaurus grid) */
+/* Blog sidebar - follows page scroll instead of independent scroll */
 html.blog-wrapper aside[class*="sidebar"] {
   font-size: 0.8rem;
+}
+
+html.blog-wrapper aside nav.thin-scrollbar,
+html.blog-wrapper div[class*="tableOfContents"].thin-scrollbar {
+  position: sticky;
+  max-height: none;
+  overflow: visible;
 }
 
 html.blog-wrapper aside[class*="sidebar"] [class*="sidebarItemTitle"] {
@@ -1352,8 +1359,8 @@ html.blog-wrapper article .markdown h3 {
   font-size: 1.5rem;
 }
 
-/* Docs code block - smaller font size */
-html:not(.blog-wrapper) .theme-code-block code {
+/* Code block - smaller font size */
+.theme-code-block code {
   font-size: 13px;
 }
 
