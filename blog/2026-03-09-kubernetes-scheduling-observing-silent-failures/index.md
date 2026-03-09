@@ -11,11 +11,11 @@ unlisted: true
 ---
 
 A Pending Pod means Kubernetes accepts your workload but can't run it.
-The usual suspects: not enough capacity, over-constrained placement
-rules, unbound PVCs, autoscaler limits, or namespace quotas. Most teams
-discover this during an incident. You don't have to. Wire up the OTel
-Collector's k8s_cluster, kubeletstats, and k8sobjects receivers, alert
-on FailedScheduling events and Pending pod duration, and you'll catch
+Classic culprits are: insufficient capacity, overly restrictive placement
+constraints, unbound PVCs, autoscaler ceilings, or namespace quota exhaustion.
+Most teams discover this during an incident. You don't have to. Wire up the
+OTel Collector's `k8s_cluster`, `kubeletstats`, and `k8sobjects` receivers,
+alert on FailedScheduling events and Pending pod duration, and you'll catch
 scheduling failures before your users do. This post covers the five root
 causes, a kubectl debugging workflow, and a complete OTel
 instrumentation setup with collector config, deployment topology, and
@@ -24,7 +24,7 @@ alert conditions.
 <!--truncate-->
 
 There is a specific kind of danger in systems that don't immediately
-scream. A CrashLoopBackOff is loud, it triggers the automated alarms
+scream. A `CrashLoopBackOff` is loud, it triggers the automated alarms
 and demands attention because something is broken. But a Pending pod is
 quiet. It wears the mask of a transition, implying that the system is
 "working on it." and that we should patiently wait for this to turn
@@ -54,7 +54,7 @@ prevents wasted cycles on the wrong layer of the stack.
 In production systems, a Pending Pod is rarely an isolated event. It
 usually indicates a mismatch between workload intent and cluster
 capacity, placement constraints, or storage assumptions. Left
-undetected, these mismatches compound during traffic spikes — exactly
+undetected, these mismatches compound during traffic spikes, exactly
 when you can least afford them.
 
 This post outlines the most common causes, a structured debugging
@@ -110,8 +110,8 @@ PersistentVolume, StorageClass provisioning failure, zonal mismatch
 between workload and volume, and constraints introduced by
 WaitForFirstConsumer.
 
-Stateful workloads — databases, queues, anything with durable
-storage — are particularly sensitive to these issues. A single unbound
+Stateful workloads, including databases, queues, and anything
+with durable storage, are particularly sensitive to these issues. A single unbound
 PVC can block an entire StatefulSet rollout.
 
 ### 4. Autoscaler Limits
@@ -129,7 +129,7 @@ an SLA.
 
 ResourceQuota may block additional CPU, memory, Pod count, or PVC
 allocation. In shared clusters, this often surfaces during recovery
-events when rapid scaling is attempted — precisely the scenario where
+events when rapid scaling is attempted, precisely the scenario where
 you need headroom the most.
 
 ## A Structured Debugging Workflow
@@ -172,7 +172,7 @@ kubectl -n kube-system logs -l app=cluster-autoscaler --tail=50
 ```
 
 Confirm node group limits, cloud quotas, and autoscaler logs. Do not
-assume new nodes will appear — verify that the autoscaler can
+assume new nodes will appear. Verify that the autoscaler can
 actually act.
 
 ## Proactive Detection with OpenTelemetry
@@ -187,10 +187,10 @@ observable before they escalate.
 The OTel Collector is the central piece. Two receivers are essential
 for Pending Pod detection:
 
-- **k8s_cluster receiver** — connects to the Kubernetes API server
+- **k8s_cluster receiver** connects to the Kubernetes API server
   and emits metrics about cluster-level object state, including pod
   phases, node conditions, and resource quotas.
-- **kubeletstats receiver** — pulls resource utilization metrics from
+- **kubeletstats receiver** pulls resource utilization metrics from
   each node's kubelet, giving you the capacity picture that
   complements the scheduling picture.
 
@@ -245,28 +245,28 @@ service:
 The k8s_cluster receiver emits metrics that directly map to the failure
 modes discussed above:
 
-- **k8s.pod.phase** — reports the current phase of each pod with
+- **k8s.pod.phase** reports the current phase of each pod with
   phase as an attribute. Filter for `phase: Pending` and track both
   count and duration. A pod that has been Pending for more than a few
   minutes in a production namespace is almost always actionable.
-- **k8s.container.ready** and **k8s.pod.status_reason** — help
+- **k8s.container.ready** and **k8s.pod.status_reason** help
   distinguish between Pending due to scheduling and Pending due to
   container initialization. The scheduling case is the one that
   indicates cluster-level issues.
-- **k8s.node.condition** — reports conditions like Ready,
+- **k8s.node.condition** reports conditions like Ready,
   MemoryPressure, and DiskPressure. Correlating node pressure
   conditions with Pending pod counts reveals capacity problems before
   they cause widespread scheduling failures.
-- **k8s.node.allocatable_cpu** / **k8s.node.allocatable_memory** —
+- **k8s.node.allocatable_cpu** / **k8s.node.allocatable_memory**
   the ceiling for schedulable resources on each node. When the gap
   between allocatable and requested narrows, Pending pods follow.
 - **k8s.resource_quota.hard_limit** /
-  **k8s.resource_quota.used** — directly addresses the namespace
+  **k8s.resource_quota.used** directly addresses the namespace
   quota failure mode. Alert when usage approaches the hard limit.
 
 From the kubeletstats receiver:
 
-- **k8s.node.cpu.utilization** / **k8s.node.memory.usage** — actual
+- **k8s.node.cpu.utilization** / **k8s.node.memory.usage** actual
   utilization on each node. High utilization combined with pods stuck
   in Pending confirms capacity exhaustion rather than a
   misconfiguration.
@@ -297,19 +297,19 @@ indexed, searchable, and correlatable.
 With these metrics flowing into your observability backend, set up
 alerts for the signals that matter:
 
-- **Pending pod duration exceeds threshold** — any pod in Pending
+- **Pending pod duration exceeds threshold:** any pod in Pending
   for more than 2–3 minutes in a production namespace. Use
   `k8s.pod.phase` with a phase filter and track time since the pod's
   creation timestamp.
-- **Pending pod count rising** — a sudden increase in Pending pods
+- **Pending pod count rising:** a sudden increase in Pending pods
   across the cluster, which typically indicates a capacity cliff or
   a node failure.
-- **Node allocatable headroom below buffer** — when the ratio of
+- **Node allocatable headroom below buffer:** when the ratio of
   requested to allocatable resources crosses 85–90%, scheduling
   becomes fragile. This is a leading indicator.
-- **ResourceQuota nearing hard limit** — alert at 80% utilization
+- **ResourceQuota nearing hard limit:** alert at 80% utilization
   of quota to give teams time to adjust before scaling is blocked.
-- **FailedScheduling event rate** — a spike in FailedScheduling log
+- **FailedScheduling event rate:** a spike in FailedScheduling log
   records from the k8sobjects receiver is the most direct signal.
 
 ### Deployment Topology
@@ -327,26 +327,11 @@ server and only need one instance watching cluster state. Running
 multiple replicas of k8s_cluster without leader election will produce
 duplicate metrics.
 
-```text
-┌─────────────────────────────────────────────────────┐
-│  Cluster                                            │
-│                                                     │
-│  ┌──────────────────┐   ┌────────────────────────┐  │
-│  │ OTel Collector   │   │ OTel Collector         │  │
-│  │ (Deployment x1)  │   │ (DaemonSet, per-node)  │  │
-│  │                  │   │                        │  │
-│  │ • k8s_cluster    │   │ • kubeletstats         │  │
-│  │ • k8sobjects     │   │                        │  │
-│  └────────┬─────────┘   └───────────┬────────────┘  │
-│           │                         │               │
-│           └─────────┬───────────────┘               │
-│                     ▼                               │
-│            ┌──────────────────┐                     │
-│            │  OTLP Exporter   │                     │
-│            │  → Your Backend  │                     │
-│            └──────────────────┘                     │
-└─────────────────────────────────────────────────────┘
-```
+<img
+  src={require('./k8s-otlp-stats.png').default}
+  alt="k8s OpenTelemetry Stats"
+  style={{maxWidth: '600px', width: '100%'}}
+/>
 
 ## Operational Implications
 
