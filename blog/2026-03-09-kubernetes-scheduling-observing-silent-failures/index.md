@@ -73,6 +73,12 @@ availability are the primary causes. The distinction matters because the
 remediation paths are different: one is a capacity problem, the other is
 a configuration or infrastructure dependency problem.
 
+<img
+  src={require('./scheduling-failure.png').default}
+  alt="k8s OpenTelemetry Stats"
+  style={{maxWidth: '500px', width: '100%'}}
+/>
+
 ## Common Causes in Production Clusters
 
 ### 1. Resource Requests Exceed Capacity
