@@ -38,8 +38,8 @@ your Kubernetes environment and send it to base14 Scout.
 - `kubectl` configured with cluster access
 - Scout account credentials
   - Endpoint URL
-  - API Key
   - Token URL
+  - Client ID and Client Secret
   - Application Name
 
 ## Quick Start Guide
@@ -103,9 +103,10 @@ scout:
   endpoint: __YOUR_ENDPOINT__
   tokenUrl: __YOUR_TOKEN_URL__
   appName: __YOUR_APP_NAME__
-  apiKey: __YOUR_API_KEY__
   clientId: __YOUR_CLIENT_ID__
   clientSecret: __YOUR_CLIENT_SECRET__
+  environment: <environment>
+  clusterName: <cluster-name>
   distribution: microk8s
 
   
@@ -186,10 +187,10 @@ scout:
         resource/env:
           attributes:
             - key: environment
-              value: <environment>
+              value: {{ .Values.scout.environment }}
               action: upsert
             - key: k8s.cluster.name
-              value: <cluster-name>
+              value: {{ .Values.scout.clusterName }}
               action: upsert
         resourcedetection/eks:
           detectors: [env, eks]
@@ -348,9 +349,10 @@ scout:
   endpoint: __YOUR_ENDPOINT__
   tokenUrl: __YOUR_TOKEN_URL__
   appName: __YOUR_APP_NAME__
-  apiKey: __YOUR_API_KEY__
   clientId: __YOUR_CLIENT_ID__
-  clientSecret: __YOUR_CLIENT_SECRET__  
+  clientSecret: __YOUR_CLIENT_SECRET__
+  environment: <environment>
+  clusterName: <cluster-name>
   distribution: eks
 
 
@@ -390,10 +392,10 @@ scout:
         resource/env:
           attributes:
             - key: environment
-              value: <environment>
+              value: {{ .Values.scout.environment }}
               action: upsert
             - key: k8s.cluster.name
-              value: <cluster-name>
+              value: {{ .Values.scout.clusterName }}
               action: upsert
         resourcedetection/eks:
           detectors: [env, eks]
@@ -577,10 +579,10 @@ scout:
         resource/env:
           attributes:
           - key: environment
-            value: <environment>
+            value: {{ .Values.scout.environment }}
             action: upsert
           - key: k8s.cluster.name
-            value: <cluster-name>
+            value: {{ .Values.scout.clusterName }}
             action: upsert
         resourcedetection/eks:
           detectors: [env,  eks]
