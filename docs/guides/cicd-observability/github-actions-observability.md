@@ -1,7 +1,7 @@
 ---
 title: GitHub Actions Observability with OpenTelemetry
 sidebar_label: GitHub Actions Observability
-sidebar_position: 7
+sidebar_position: 1
 description:
   Export GitHub Actions workflows as OpenTelemetry traces to Scout. Identify
   slow steps, track failure patterns, and gain full visibility into your CI/CD
@@ -317,9 +317,9 @@ the GitHub API response and won't appear as spans.
 
 ## What's Next?
 
-- [Create Your First Dashboard](create-your-first-dashboard.md) — build
+- [Create Your First Dashboard](../create-your-first-dashboard.md) — build
   dashboards to visualize CI/CD metrics over time
-- [Creating Alerts with LogX](creating-alerts-with-logx.md) — set up alerts
+- [Creating Alerts with LogX](../creating-alerts-with-logx.md) — set up alerts
   for pipeline failures or duration regressions
-- [Quick Start](quick-start.md) — get Scout set up for application
+- [Quick Start](../quick-start.md) — get Scout set up for application
   observability alongside your CI/CD traces

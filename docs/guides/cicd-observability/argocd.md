@@ -3,7 +3,7 @@ title: >
   ArgoCD Monitoring with OpenTelemetry — Metrics, Sync Status & Health
 sidebar_label: ArgoCD
 id: collecting-argocd-telemetry
-sidebar_position: 34
+sidebar_position: 2
 description: >
   Collect ArgoCD Prometheus metrics with the OpenTelemetry Collector.
   Monitor application sync status, health, reconciliation, and Git
@@ -67,7 +67,7 @@ Before starting:
 - ArgoCD exposes metrics by default — no additional configuration
   is needed on the ArgoCD side
 - OTel Collector installed — see
-  [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
+  [Kubernetes Helm Setup](../../instrument/collector-setup/kubernetes-helm-setup.md)
 
 ## What You'll Monitor
 
@@ -565,23 +565,23 @@ installs. For Helm installs, set `controller.metrics.enabled`,
 
 - **Create Dashboards**: Explore pre-built dashboards or build
   your own. See
-  [Create Your First Dashboard](../../guides/create-your-first-dashboard.md)
+  [Create Your First Dashboard](../create-your-first-dashboard.md)
 - **Monitor More Components**: Add monitoring for
-  [etcd](./etcd.md),
-  [Consul](./consul.md),
+  [etcd](../../instrument/component/etcd.md),
+  [Consul](../../instrument/component/consul.md),
   and other components
 - **Fine-tune Collection**: Use `metric_relabel_configs` to focus on
   application sync and health metrics for production alerting
 
 ## Related Guides
 
-- [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
+- [OTel Collector Configuration](../../instrument/collector-setup/otel-collector-config.md)
   — Advanced collector configuration
-- [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
+- [Kubernetes Helm Setup](../../instrument/collector-setup/kubernetes-helm-setup.md)
   — Production deployment on Kubernetes
-- [Docker Compose Setup](../collector-setup/docker-compose-example.md)
+- [Docker Compose Setup](../../instrument/collector-setup/docker-compose-example.md)
   — Run the Collector locally
-- [Creating Alerts](../../guides/creating-alerts-with-logx.md)
+- [Creating Alerts](../creating-alerts-with-logx.md)
   — Alert on ArgoCD metrics
-- [etcd Monitoring](./etcd.md)
+- [etcd Monitoring](../../instrument/component/etcd.md)
   — Often co-deployed with ArgoCD on Kubernetes

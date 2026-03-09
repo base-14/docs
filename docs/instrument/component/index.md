@@ -106,7 +106,7 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 
 | Component | Guide                                       | Key Metrics                                           |
 | --------- | ------------------------------------------- | ----------------------------------------------------- |
-| ArgoCD    | [ArgoCD](./collecting-argocd-telemetry)     | App sync status, health, reconciliation, Git ops      |
+| ArgoCD    | [ArgoCD](/guides/cicd-observability/collecting-argocd-telemetry)     | App sync status, health, reconciliation, Git ops      |
 | Jenkins   | [Jenkins](./collecting-jenkins-telemetry)   | Build results, executor usage, queue depth            |
 
 ### Web Servers & Proxies

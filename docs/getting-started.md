@@ -39,7 +39,7 @@ for a quick win and a clear next step.
 
 ## I want CI/CD observability
 
-- [GitHub Actions Observability](/guides/github-actions-observability)
+- [GitHub Actions Observability](/guides/cicd-observability/github-actions-observability)
 
 ## I want to explore data in Scout
 

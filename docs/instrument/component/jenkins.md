@@ -270,7 +270,7 @@ agent node status and executor usage.
 - **Create Dashboards**: Explore pre-built dashboards or build your own. See
   [Create Your First Dashboard](../../guides/create-your-first-dashboard.md)
 - **Monitor More Components**: Add monitoring for
-  [ArgoCD](./argocd.md) and other CI/CD components
+  [ArgoCD](../../guides/cicd-observability/argocd.md) and other CI/CD components
 - **Fine-tune Collection**: Use `metric_relabel_configs` to focus on
   build, executor, and queue metrics for production alerting
 
@@ -280,6 +280,7 @@ agent node status and executor usage.
   Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
   Run the Collector locally
-- [ArgoCD Monitoring](./argocd.md) — GitOps delivery monitoring
+- [ArgoCD Monitoring](../../guides/cicd-observability/argocd.md)
+  — GitOps delivery monitoring
 - [Creating Alerts](../../guides/creating-alerts-with-logx.md) —
   Alert on Jenkins metrics

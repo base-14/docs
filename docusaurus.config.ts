@@ -151,6 +151,21 @@ const config: Config = {
       },
     ],
     [
+      "@docusaurus/plugin-client-redirects",
+      {
+        redirects: [
+          {
+            from: "/guides/github-actions-observability/",
+            to: "/guides/cicd-observability/github-actions-observability/",
+          },
+          {
+            from: "/instrument/component/collecting-argocd-telemetry/",
+            to: "/guides/cicd-observability/collecting-argocd-telemetry/",
+          },
+        ],
+      },
+    ],
+    [
       require.resolve("@easyops-cn/docusaurus-search-local"),
       {
         hashed: true,
