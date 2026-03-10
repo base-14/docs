@@ -1,0 +1,10 @@
+{
+  "label": "Scout MCP",
+  "position": 3,
+  "collapsed": false,
+  "link": {
+    "type": "generated-index",
+    "title": "Scout MCP",
+    "description": "Connect your AI assistant to Scout and query traces, logs, metrics, and service dependencies using natural language."
+  }
+}
