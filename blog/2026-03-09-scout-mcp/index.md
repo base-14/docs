@@ -3,7 +3,7 @@ slug: scout-mcp
 date: 2026-03-09
 title: "Scout MCP: Query Your Observability Data Through AI Assistants"
 description: "Scout now exposes an MCP endpoint. Connect Claude Code, Claude Desktop, or Gemini CLI and query traces, logs, metrics, service topology, and alerts in plain English."
-authors: [ranjan-sakalley]
+authors: [nimisha-gj]
 tags: [scout, mcp, ai, observability, agents]
 unlisted: true
 ---
