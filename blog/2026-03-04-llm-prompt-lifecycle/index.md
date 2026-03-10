@@ -12,9 +12,9 @@ Rachel, a Staff Engineer at a mid-size SaaS company, woke up to a Slack message
 from the support lead: "Why are half our billing tickets going to the technical
 team?" She checked the deployment log, nothing shipped in a week. She checked
 the model configuration, same `gpt-4o` endpoint, same parameters, same code.
-No errors in the logs. No latency spikes. No alerts fired. But customer
+No errors in the logs, no latency spikes, no alerts fired. But customer
 complaints about misrouted tickets had doubled in three weeks. Something was
-silently wrong.
+wrong.
 
 This is **prompt drift**, a slow, invisible degradation in LLM output quality
 that no dashboard catches until a human notices the downstream effects.
@@ -22,7 +22,7 @@ Rachel's triage
 prompt, which classifies support tickets and routes them to the right team,
 worked perfectly at launch. The team tested it carefully, tuned the wording,
 validated it against sample tickets, and shipped it with confidence. Three
-months later, it was quietly failing, and nothing in the monitoring stack
+months later, it was failing, and nothing in the monitoring stack
 surfaced the problem until the support lead noticed a pattern in Slack
 complaints.
 
@@ -40,7 +40,7 @@ counts and cost tracking: the call consumed 412 input tokens at $0.003. But
 output quality, the thing that actually matters to users, lives in a blind
 spot between these layers. There is no standard metric for "the model is now
 misclassifying billing tickets as technical issues." The degradation
-accumulates silently until a human notices the downstream effects, whether
+accumulates until a human notices the downstream effects, whether
 that's angry customers, misrouted tickets, or wrong recommendations. By the
 time someone notices, the damage has compounded for weeks.
 
@@ -48,7 +48,7 @@ Prompt drift happens through three distinct failure modes:
 
 | Failure Mode | What Changed | What Dashboards Show | What's Actually Happening |
 |---|---|---|---|
-| **Model drift** | Provider updates the model | Nothing, same model name, same endpoint | Behavior shifts silently; outputs change for identical inputs |
+| **Model drift** | Provider updates the model | Nothing, same model name, same endpoint | Behavior shifts without notice; outputs change for identical inputs |
 | **Data distribution shift** | User queries evolve over time | Volume changes, maybe new categories | Prompt assumptions go stale; real-world inputs no longer match the examples baked into the prompt |
 | **Context drift** | Internal policies, product names, team structures change | Nothing | The system prompt references outdated information; instructions contradict current reality |
 
@@ -84,7 +84,7 @@ token count, prompt content, or completion text. The spans captured that a call
 happened, with none of the detail needed to understand what it did.
 
 She added LLM-specific instrumentation using OpenTelemetry's GenAI semantic
-conventions. Here's the pattern she used to wrap each LLM call:
+conventions. The pattern she used to wrap each LLM call:
 
 ```python title="triage_service.py"
 from opentelemetry import trace
@@ -96,8 +96,7 @@ async def classify_ticket(ticket_text: str, ticket_type: str) -> str:
     with tracer.start_as_current_span(
         f"gen_ai.chat gpt-4o"
     ) as span:
-        # OpenLLMetry-compatible GenAI attributes
-        span.set_attribute("llm.request.type", "chat")
+        # OTel GenAI semantic convention attributes
         span.set_attribute("gen_ai.operation.name", "chat")
         span.set_attribute("gen_ai.provider.name", "openai")
         span.set_attribute("gen_ai.request.model", "gpt-4o")
@@ -107,55 +106,53 @@ async def classify_ticket(ticket_text: str, ticket_type: str) -> str:
         # Business context
         span.set_attribute("triage.ticket_type", ticket_type)
 
-        # Prompt content as indexed attributes (OpenLLMetry convention)
-        span.set_attribute("gen_ai.prompt.0.role", "system")
-        span.set_attribute("gen_ai.prompt.0.content", TRIAGE_SYSTEM_PROMPT)
-        span.set_attribute("gen_ai.prompt.1.role", "user")
-        span.set_attribute("gen_ai.prompt.1.content", ticket_text)
+        # Input content (OTel GenAI semantic convention)
+        messages = [
+            {"role": "system", "content": TRIAGE_SYSTEM_PROMPT},
+            {"role": "user", "content": ticket_text},
+        ]
+        span.set_attribute("gen_ai.input.messages", str(messages))
 
         response = await openai_client.chat.completions.create(
             model="gpt-4o",
             temperature=0.0,
             max_tokens=256,
-            messages=[
-                {"role": "system", "content": TRIAGE_SYSTEM_PROMPT},
-                {"role": "user", "content": ticket_text},
-            ],
+            messages=messages,
         )
 
         # Record response attributes
         category = response.choices[0].message.content.strip()
         span.set_attribute("gen_ai.response.model", response.model)
 
-        # Token usage (OpenLLMetry convention)
+        # Token usage (OTel GenAI semantic convention)
         span.set_attribute(
-            "gen_ai.usage.prompt_tokens",
+            "gen_ai.usage.input_tokens",
             response.usage.prompt_tokens,
         )
         span.set_attribute(
-            "gen_ai.usage.completion_tokens",
+            "gen_ai.usage.output_tokens",
             response.usage.completion_tokens,
         )
         span.set_attribute("triage.category", category)
 
-        # Completion as indexed attribute (OpenLLMetry convention)
-        span.set_attribute("gen_ai.completion.0.content", category)
+        # Output content (OTel GenAI semantic convention)
+        span.set_attribute("gen_ai.output.messages", category)
 
         return category
 ```
 
-The instrumentation follows [OpenLLMetry](https://github.com/traceloop/openllmetry)
-conventions, an open-source standard for LLM telemetry built on OpenTelemetry.
+The instrumentation follows
+[OTel GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-spans/).
 Every call now emits a span with the full picture of what the LLM did:
 
 | What Scout Captures | Attribute | Example |
 |---|---|---|
 | Model identity | `gen_ai.request.model`, `gen_ai.response.model` | `gpt-4o`, `gpt-4o-2024-08-06` |
 | Provider | `gen_ai.provider.name` | `openai` |
-| Token usage | `gen_ai.usage.prompt_tokens`, `gen_ai.usage.completion_tokens` | 412, 1 |
+| Token usage | `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens` | 412, 1 |
 | Latency | span duration, TTFT | 2.3s, 1.1s |
-| Prompt content | `gen_ai.prompt.0.role`, `gen_ai.prompt.0.content` | Full system prompt + user message |
-| Completion content | `gen_ai.completion.0.content` | The model's classification output |
+| Input content | `gen_ai.input.messages` | Full system prompt + user message |
+| Output content | `gen_ai.output.messages` | The model's classification output |
 | Business context | custom attributes | `triage.category = billing` |
 
 These spans flow through the standard OTel Collector pipeline into Scout's
@@ -164,7 +161,7 @@ traces, database spans, and infrastructure metrics. The architecture is
 straightforward:
 
 ```text
-Application (OTel SDK) → OTel Collector → Scout Backend → Grafana
+Application (OTel SDK) -> OTel Collector -> Scout Backend -> Grafana
 ```
 
 The same collector that ships your HTTP and database spans ships your LLM spans,
@@ -220,7 +217,7 @@ intent.
 
 <!-- TODO: screenshot of Scout trace detail view -->
 
-She filtered by `gen_ai.prompt.0.content` to isolate spans associated with the
+She filtered by `gen_ai.input.messages` to isolate spans associated with the
 triage prompt and confirmed: 100% of the misclassifications came from this
 single prompt. The failure was systematic and directional.
 Billing tickets with any technical-sounding language were being routed to the
@@ -498,11 +495,10 @@ backend fed by OpenTelemetry spans, now confirms the fix. Rachel filtered by
 prompt version and read the numbers, with no separate analytics pipeline or
 manual before/after comparison needed.
 
-This is the key insight: the version attribute on every span makes before/after
-comparison trivial. There is no ambiguity about which prompts were served
-during which time period. There is no need to correlate deployment timestamps
-with metric changes. The prompt version is the deployment marker, and it's embedded
-in every span.
+The version attribute on every span makes before/after comparison trivial.
+Because the prompt version is embedded in every span, there's no ambiguity
+about which prompts were served during which time period and no need to
+correlate deployment timestamps with metric changes.
 
 Going forward, every Scope execution emits spans with `scope.prompt.name` and
 `scope.prompt.version` attributes. When the next drift happens, the signal will
@@ -513,7 +509,7 @@ weeks.
 
 ## The Architecture of the Closed Loop
 
-Here's the architecture that makes the closed loop possible:
+The architecture that makes the closed loop possible:
 
 ```text
 ┌─────────────────┐
@@ -542,7 +538,7 @@ Here's the architecture that makes the closed loop possible:
 The relationship is bidirectional:
 
 **Scope → Scout:** Every prompt execution emits an OpenTelemetry span with both
-`scope.prompt.*` attributes (prompt name, version, version ID) and `llm.*`
+`scope.prompt.*` attributes (prompt name, version, version ID) and `gen_ai.*`
 attributes (tokens, latency, cost). These spans land in Scout's data lake and
 appear in standard observability dashboards.
 
@@ -599,7 +595,7 @@ instrumentation and alerting layer, ML team owned the prompt content.
 New prompt authors saw traces in Scope's UI without needing to learn the
 observability stack. New SREs saw token counts and latency in Scout's
 dashboards without needing to understand prompt engineering. The Traces view
-served as the shared language between both teams.
+was the shared language between both teams.
 
 The common failure mode is the opposite: nobody owns the feedback loop. The
 ML team writes prompts and publishes them. The platform team monitors
@@ -610,7 +606,7 @@ don't understand prompt semantics. The result is weeks of silent degradation
 that only surfaces when a colleague notices the downstream effects. The closed
 loop eliminates this gap by giving both teams a shared view of the same data.
 
-## Conclusion
+## Three Months Later
 
 Three months after the billing triage incident, Rachel's team manages twelve
 prompts in Scope. Every one has a Golden Set built from real production data,
@@ -647,8 +643,7 @@ observation layer and the management layer share the same data.
 **See it in action.** Instrument your LLM calls with
 [Scout's LLM observability guide](/guides/ai-observability/llm-observability),
 then manage your prompts with
-[Scope's getting started guide](/scope/core-concepts). The closed loop starts
-with a single instrumented span.
+[Scope's getting started guide](/scope/core-concepts).
 
 ---
 
