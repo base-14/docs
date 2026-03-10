@@ -1,7 +1,7 @@
 ---
 title: Usage Guide
 sidebar_position: 2
-unlisted: true
+unlisted: false
 description:
   Query traces, logs, metrics, service topology, and alerts through your AI
   assistant using Scout MCP.

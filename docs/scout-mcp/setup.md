@@ -1,7 +1,7 @@
 ---
 title: MCP Client Setup
 sidebar_position: 1
-unlisted: true
+unlisted: false
 description:
   Connect your coding agent to Scout using the Model Context Protocol (MCP).
   Supported clients include Claude Code, Claude Desktop, and Gemini CLI.
@@ -43,8 +43,10 @@ connection is established automatically.
 Authenticate inside Claude Code:
 
 ```text
-/mcp > choose scout > authenticate
+/mcp 
 ```
+
+> Choose Scout and Select Authenticate
 
 Verify the connection:
 
