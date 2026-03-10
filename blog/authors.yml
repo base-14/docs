@@ -29,3 +29,11 @@ nimisha-gj:
   image_url: /img/blog/authors/nimisha-gj.jpeg
   socials:
     linkedin: https://www.linkedin.com/in/nimishgj/
+
+nitin:
+  name: Nitin Misra
+  title: Engineer at base14
+  url: https://base14.io/about
+  image_url: /img/blog/authors/nitin.jpeg
+  socials:
+    linkedin: https://www.linkedin.com/in/nitinstp23/
