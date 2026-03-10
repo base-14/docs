@@ -7,7 +7,6 @@ can't run it. Wire up OTel Collector receivers, alert on FailedScheduling
 events, and catch scheduling failures before your users do."
 authors: [irfan-shah]
 tags: [observability, kubernetes, opentelemetry, scheduling, reliability]
-unlisted: true
 ---
 
 A Pending Pod means Kubernetes accepts your workload but can't run it.
