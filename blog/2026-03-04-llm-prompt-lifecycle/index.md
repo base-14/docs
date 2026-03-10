@@ -78,7 +78,7 @@ succeeded, but what was in them, what the model returned, and how those outputs
 compared over time.
 
 Her team's application was already sending traces to
-[Scout](/instrument/apps/ai-observability/llm-observability), base14's
+[Scout](/guides/ai-observability/llm-observability), base14's
 OpenTelemetry-native observability platform. HTTP spans, database queries,
 downstream service calls — all captured automatically. But the LLM calls were
 opaque. The auto-instrumented `httpx` spans showed generic HTTP POSTs to
@@ -222,7 +222,7 @@ visible in the completion text, showed it was latching onto technical-sounding
 keywords ("payment API", "billing system") rather than the customer's actual
 intent.
 
-{/_TODO: screenshot of Scout trace detail view with prompt and completion content_/}
+<!-- TODO: screenshot of Scout trace detail view -->
 
 She filtered by `gen_ai.prompt.0.content` to isolate spans associated with the
 triage prompt and confirmed: 100% of the misclassifications came from this
@@ -427,7 +427,7 @@ results reflect actual model behavior:
 | Login issue | "I can't log in with my SSO credentials" | account | account | account |
 | Billing API bug | "Your billing API is returning wrong amounts" | technical | billing | technical |
 
-{/_TODO: screenshot of Scope Golden Set test run results view_/}
+<!-- TODO: screenshot of Scope Golden Set test run results view -->
 
 v2: 5/5 correct. Every previously misclassified case now routes correctly. The
 two categories that v1 confused (billing ↔ technical) are now cleanly
@@ -462,7 +462,7 @@ What happened at the infrastructure level:
   recorded who promoted, when, which version was replaced, and the promotion
   notes
 
-{/_TODO: screenshot of Scope promotion confirmation_/}
+<!-- TODO: screenshot of Scope promotion confirmation -->
 
 The application never redeployed. The same code from the previous section
 continued running — `render_prompt("support_ticket_triage", ...)` fetches the
@@ -659,7 +659,7 @@ same data.
 ---
 
 **See it in action.** Instrument your LLM calls with
-[Scout's LLM observability guide](/instrument/apps/ai-observability/llm-observability),
+[Scout's LLM observability guide](/guides/ai-observability/llm-observability),
 then manage your prompts with
 [Scope's getting started guide](/scope/core-concepts). The closed loop starts
 with a single instrumented span.
