@@ -1,11 +1,19 @@
 ---
 slug: /getting-started
-title: Getting Started
+title: Getting Started with base14 Scout, OpenTelemetry Native Observability Platform
+sidebar_label: Getting Started
 sidebar_position: 2
-description: Choose the fastest path to get Scout running in your environment.
+description:
+  Get started with base14 Scout in minutes. Set up OpenTelemetry collectors,
+  instrument your apps, and start monitoring traces, metrics, and logs.
+keywords:
+  - opentelemetry getting started
+  - observability platform setup
+  - otel collector setup
+  - application monitoring quickstart
+  - opentelemetry instrumentation guide
+  - base14 scout setup
 ---
-
-# Getting Started
 
 Pick the path that matches your environment and goals. Each track is designed
 for a quick win and a clear next step.

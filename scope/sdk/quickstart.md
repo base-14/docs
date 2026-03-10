@@ -1,9 +1,18 @@
 ---
-title: Quickstart
+title: Scope SDK Quickstart, Fetch and Render LLM Prompts in Minutes
+sidebar_label: Quickstart
 sidebar_position: 3
+description:
+  Get started with the Scope SDK. Authenticate, fetch prompts, and render
+  them with variables in Python or TypeScript. Production-ready examples included.
+keywords:
+  - scope sdk quickstart
+  - llm prompt management sdk
+  - scope client setup
+  - prompt engineering sdk
+  - llm prompt api
+  - scope api key authentication
 ---
-
-# Quickstart
 
 This guide walks you through fetching and rendering your first
 prompt with the Scope SDK.

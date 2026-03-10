@@ -1,9 +1,17 @@
 ---
-title: Error Handling
+title: Scope SDK Error Handling, Error Types, Retries and Recovery
+sidebar_label: Error Handling
 sidebar_position: 6
+description:
+  Handle Scope SDK errors gracefully. Reference for error hierarchy,
+  automatic retries, rate limiting, and recovery patterns in Python and Ruby.
+keywords:
+  - scope sdk error handling
+  - scope api errors
+  - scope sdk retry logic
+  - llm sdk error recovery
+  - scope rate limiting
 ---
-
-# Error Handling
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';

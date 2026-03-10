@@ -1,9 +1,17 @@
 ---
-title: Installation
+title: Install the Scope SDK for Python and Ruby
+sidebar_label: Installation
 sidebar_position: 2
+description:
+  Install the Scope SDK for Python (pip) or Ruby (gem). Requirements,
+  package installation, and verification steps.
+keywords:
+  - scope sdk installation
+  - scope python sdk
+  - scope ruby sdk
+  - scope client install
+  - llm prompt sdk setup
 ---
-
-# Installation
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';

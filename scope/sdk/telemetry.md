@@ -1,9 +1,17 @@
 ---
-title: Telemetry
+title: Scope SDK Telemetry Hooks, Observe Requests, Responses and Errors
+sidebar_label: Telemetry
 sidebar_position: 8
+description:
+  Add observability to Scope SDK calls with telemetry hooks. Monitor HTTP
+  requests, responses, and errors for logging and OpenTelemetry integration.
+keywords:
+  - scope sdk telemetry
+  - scope observability hooks
+  - scope sdk monitoring
+  - llm api observability
+  - scope opentelemetry integration
 ---
-
-# Telemetry
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';

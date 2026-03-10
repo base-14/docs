@@ -1,9 +1,17 @@
 ---
-title: Prompt Management
+title: Scope SDK Prompt Management, Fetch, Render and Version Prompts
+sidebar_label: Prompt Management
 sidebar_position: 5
+description:
+  Fetch prompt versions by name or label, render with variables, and
+  manage prompt lifecycles using the Scope SDK in Python and Ruby.
+keywords:
+  - scope prompt management
+  - llm prompt versioning
+  - prompt template rendering
+  - scope get prompt version
+  - prompt variable substitution
 ---
-
-# Prompt Management
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';

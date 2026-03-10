@@ -1,9 +1,17 @@
 ---
-title: Configuration
+title: Scope SDK Configuration, Environment Variables and Client Options
+sidebar_label: Configuration
 sidebar_position: 4
+description:
+  Configure the Scope SDK with environment variables, timeouts, retries,
+  and custom endpoints. Reference for all required and optional settings.
+keywords:
+  - scope sdk configuration
+  - scope environment variables
+  - scope api key setup
+  - scope client options
+  - llm sdk configuration
 ---
-
-# Configuration
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';

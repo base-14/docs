@@ -1,9 +1,17 @@
 ---
-title: Caching
+title: Scope SDK Caching, In-Memory TTL Cache for Prompt Versions
+sidebar_label: Caching
 sidebar_position: 7
+description:
+  Reduce API calls with the Scope SDK built-in TTL cache. Thread-safe,
+  in-memory caching for prompt versions with configurable expiration.
+keywords:
+  - scope sdk caching
+  - llm prompt caching
+  - scope client ttl cache
+  - prompt version cache
+  - sdk performance optimization
 ---
-
-# Caching
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
