@@ -1,5 +1,5 @@
 ---
-title: Celery OpenTelemetry — Distributed Task Tracing with Context Propagation
+title: Celery OpenTelemetry - Distributed Task Tracing with Context Propagation
 sidebar_label: Celery
 sidebar_position: 2
 description:
@@ -37,8 +37,6 @@ head:
     - |
       {"@context":"https://schema.org","@type":"HowTo","name":"How to instrument Celery with OpenTelemetry","step":[{"@type":"HowToStep","name":"Install required packages","text":"Install opentelemetry-api, opentelemetry-sdk, opentelemetry-exporter-otlp, and opentelemetry-instrumentation-celery via pip or add them to requirements.txt."},{"@type":"HowToStep","name":"Configure the OpenTelemetry SDK","text":"Set up TracerProvider with CeleryInstrumentor().instrument(), configure environment variables for OTEL_SERVICE_NAME and OTEL_EXPORTER_OTLP_ENDPOINT."},{"@type":"HowToStep","name":"Enable distributed tracing across async boundaries","text":"Configure context propagation from HTTP requests through message brokers (RabbitMQ or Redis) to Celery worker execution using inject() and extract()."},{"@type":"HowToStep","name":"Run and verify instrumentation","text":"Start the Celery worker with opentelemetry-instrument celery -A myapp.tasks worker and verify traces flow end-to-end from task producer to worker in base14 Scout."}]}
 ---
-
-# Celery
 
 Implement OpenTelemetry instrumentation for Celery applications to enable
 comprehensive distributed task queue monitoring, end-to-end tracing, and

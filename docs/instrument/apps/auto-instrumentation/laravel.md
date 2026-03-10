@@ -1,5 +1,5 @@
 ---
-title: Laravel OpenTelemetry — Auto-Instrument Eloquent, Queues & HTTP Client
+title: Laravel OpenTelemetry - Auto-Instrument Eloquent, Queues & HTTP Client
 sidebar_label: Laravel
 sidebar_position: 23
 description:
@@ -38,8 +38,6 @@ head:
     - |
       {"@context":"https://schema.org","@type":"HowTo","name":"How to instrument Laravel with OpenTelemetry","step":[{"@type":"HowToStep","name":"Install the OpenTelemetry PHP extension","text":"Install build dependencies (gcc, make, autoconf), then install the OpenTelemetry PHP extension via PECL and enable it in php.ini."},{"@type":"HowToStep","name":"Install required Composer packages","text":"Install open-telemetry/sdk, open-telemetry/exporter-otlp, and open-telemetry/opentelemetry-auto-laravel via Composer."},{"@type":"HowToStep","name":"Configure OpenTelemetry","text":"Set environment variables for OTEL_PHP_AUTOLOAD_ENABLED, OTEL_SERVICE_NAME, and OTEL_EXPORTER_OTLP_ENDPOINT, or configure via Laravel .env file."},{"@type":"HowToStep","name":"Run and verify instrumentation","text":"Start the Laravel application with php artisan serve, make test requests, and verify traces for HTTP requests, Eloquent queries, and queue jobs appear in base14 Scout."}]}
 ---
-
-# Laravel
 
 Implement OpenTelemetry instrumentation for Laravel applications to enable
 comprehensive application performance monitoring (APM), distributed tracing, and

@@ -1,5 +1,5 @@
 ---
-title: PHP OpenTelemetry Manual Instrumentation — Spans, Metrics & Context Propagation
+title: PHP OpenTelemetry Manual Instrumentation - Spans, Metrics & Context Propagation
 sidebar_label: PHP
 sidebar_position: 5
 description:
@@ -26,8 +26,6 @@ head:
     - |
       {"@context":"https://schema.org","@type":"HowTo","name":"How to manually instrument PHP with OpenTelemetry","step":[{"@type":"HowToStep","name":"Install OpenTelemetry packages","text":"Install open-telemetry/sdk, open-telemetry/exporter-otlp, and guzzlehttp/guzzle via Composer."},{"@type":"HowToStep","name":"Initialize the TracerProvider","text":"Create a TracerProvider with a span processor and exporter, register it globally, and obtain a tracer for your application."},{"@type":"HowToStep","name":"Create and manage custom spans","text":"Use spanBuilder to create spans, activate them for context propagation, add attributes and events, record exceptions, and always end spans in a finally block."},{"@type":"HowToStep","name":"Implement metrics collection","text":"Create a MeterProvider, use counters for cumulative values, histograms for distributions, and UpDownCounters for values that increase or decrease."},{"@type":"HowToStep","name":"Configure context propagation","text":"Use TraceContextPropagator to inject trace context into outgoing HTTP headers and extract context from incoming requests for distributed tracing."}]}
 ---
-
-# PHP
 
 Implement OpenTelemetry custom instrumentation for PHP applications to collect
 traces, metrics, and logs using the PHP OpenTelemetry SDK. This guide covers

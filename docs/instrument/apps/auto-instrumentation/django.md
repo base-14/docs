@@ -1,5 +1,5 @@
 ---
-title: Instrument Django with OpenTelemetry — ORM, Celery & DRF Tracing
+title: Instrument Django with OpenTelemetry - ORM, Celery & DRF Tracing
 sidebar_label: Django
 sidebar_position: 3
 description:
@@ -46,8 +46,6 @@ head:
     - |
       {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Do I need to manually instrument Django views with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"No. Django auto-instrumentation automatically traces all views, both function-based and class-based, when you call DjangoInstrumentor().instrument(). No decorators or manual span creation required for basic request/response tracing."}},{"@type":"Question","name":"Can I use OpenTelemetry with Django REST Framework?","acceptedAnswer":{"@type":"Answer","text":"Yes. Django REST Framework views and viewsets are automatically instrumented through Django's middleware. Each API endpoint creates a span with the HTTP method and path."}},{"@type":"Question","name":"How do I detect N+1 queries in Django with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Check span attributes for db.query_count. High counts of more than 10 queries per request often indicate N+1 issues. base14 Scout visualizes these patterns in the span hierarchy."}},{"@type":"Question","name":"Does OpenTelemetry tracing work with Celery background tasks in Django?","acceptedAnswer":{"@type":"Answer","text":"Yes. Install opentelemetry-instrumentation-celery and instrument in your Celery worker initialization. Trace context automatically propagates from Django views to Celery tasks, creating distributed traces."}},{"@type":"Question","name":"What is the performance overhead of OpenTelemetry tracing in Django?","acceptedAnswer":{"@type":"Answer","text":"With 10% sampling, overhead is typically less than 1% for latency and about 8% for memory. Without sampling, expect roughly 6% latency increase and 30% memory increase."}}]}
 ---
-
-# Django
 
 ## Introduction
 

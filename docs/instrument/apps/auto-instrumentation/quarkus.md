@@ -1,5 +1,5 @@
 ---
-title: Instrument Quarkus with OpenTelemetry — Native Image & REST Tracing
+title: Instrument Quarkus with OpenTelemetry - Native Image & REST Tracing
 sidebar_label: Quarkus
 sidebar_position: 15
 description:
@@ -47,8 +47,6 @@ head:
     - |
       {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does Quarkus require manual OpenTelemetry SDK initialization?","acceptedAnswer":{"@type":"Answer","text":"No. Quarkus handles OpenTelemetry initialization automatically through the quarkus-opentelemetry extension. You only need to add the dependency and configure application.properties."}},{"@type":"Question","name":"Can I use Quarkus native images with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Yes, Quarkus fully supports OpenTelemetry in GraalVM native images. The extension handles all reflection configuration and build-time initialization automatically."}},{"@type":"Question","name":"How does Quarkus OpenTelemetry setup differ from Spring Boot?","acceptedAnswer":{"@type":"Answer","text":"Quarkus is simpler. It uses extension-based configuration with zero Java code, while Spring Boot requires programmatic SDK initialization in a @Configuration class."}},{"@type":"Question","name":"How do I add custom spans in Quarkus?","acceptedAnswer":{"@type":"Answer","text":"Use the @WithSpan annotation from OpenTelemetry instrumentation annotations on any method. You can also inject Tracer to create spans manually. View spans in base14 Scout."}},{"@type":"Question","name":"Does Quarkus automatically instrument reactive Mutiny code?","acceptedAnswer":{"@type":"Answer","text":"Yes, Quarkus's reactive Mutiny programming model is automatically instrumented. Context propagation across Uni and Multi chains works out of the box."}}]}
 ---
-
-# Quarkus
 
 ## Introduction
 

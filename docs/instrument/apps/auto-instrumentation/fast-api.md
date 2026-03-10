@@ -1,5 +1,5 @@
 ---
-title: Instrument FastAPI with OpenTelemetry — Traces, Metrics & Logs in 5 Min
+title: Instrument FastAPI with OpenTelemetry - Traces, Metrics & Logs in 5 Min
 sidebar_label: FastAPI
 sidebar_position: 4
 description:
@@ -38,8 +38,6 @@ head:
     - |
       {"@context":"https://schema.org","@type":"HowTo","name":"How to instrument FastAPI with OpenTelemetry","step":[{"@type":"HowToStep","name":"Install OpenTelemetry packages","text":"Install opentelemetry-api, opentelemetry-sdk, opentelemetry-instrumentation-fastapi, and opentelemetry-exporter-otlp via pip."},{"@type":"HowToStep","name":"Configure the OpenTelemetry SDK","text":"Set up TracerProvider with BatchSpanProcessor and OTLP exporter, configure resource attributes like service name and version, and call FastAPIInstrumentor().instrument_app(app)."},{"@type":"HowToStep","name":"Add custom spans and metrics","text":"Implement custom spans for business logic and external API calls, and collect HTTP metrics using custom middleware."},{"@type":"HowToStep","name":"Run and verify instrumentation","text":"Start the FastAPI application with uvicorn, set OTEL_SERVICE_NAME and OTEL_EXPORTER_OTLP_ENDPOINT environment variables, and verify traces appear in base14 Scout."}]}
 ---
-
-# FastAPI
 
 Implement OpenTelemetry instrumentation for FastAPI applications to enable
 comprehensive application performance monitoring (APM), distributed tracing, and
