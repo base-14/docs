@@ -203,7 +203,7 @@ Returns all metrics emitted by a specific service within a time range.
 
 ### `get_last_n_alerts`
 
-Retrieves the last N alerts from Grafana. Returns alert state transitions
+Retrieves the last N alerts from Scout. Returns alert state transitions
 including alert name, state changes, timestamps, and dashboard information.
 
 | Parameter | Type | Required | Description |
