@@ -40,7 +40,7 @@ A few examples of what you can ask:
 The assistant handles tool selection, parameter formatting, and result
 interpretation. You get back a summary instead of raw JSON.
 
-## Supported Clients
+## Supported Agents
 
 Setup takes a few minutes for each client:
 
