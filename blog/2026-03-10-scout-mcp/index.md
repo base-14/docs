@@ -1,14 +1,13 @@
 ---
 slug: scout-mcp
-date: 2026-03-09
+date: 2026-03-10
 title: "Scout MCP: Query Your Observability Data Through AI Assistants"
-description: "Scout now exposes an MCP endpoint. Connect Claude Code, Claude Desktop, or Gemini CLI and query traces, logs, metrics, service topology, and alerts in plain English."
+description: "Scout exposes an MCP endpoint. Connect Claude Code, Claude Desktop, or Gemini CLI and query traces, logs, metrics, service topology, and alerts in plain English."
 authors: [nimisha-gj]
 tags: [scout, mcp, ai, observability, agents]
-unlisted: true
 ---
 
-Scout now supports the [Model Context Protocol (MCP)](https://modelcontextprotocol.io).
+Scout supports the [Model Context Protocol (MCP)](https://modelcontextprotocol.io).
 You can connect your coding agent to Scout and query traces, logs, metrics,
 service topology, and alerts using natural language.
 
@@ -80,6 +79,19 @@ before asking "show me traces where provider is stripe."
 All 10 tools are read-only and idempotent. The coding agent cannot create,
 modify, or delete anything in your environment. This keeps the integration safe
 for everyday use without requiring additional permission scoping.
+
+## See It in Action
+
+<iframe
+  width="100%"
+  height="400"
+  src="https://www.youtube.com/embed/qxoKq_ohfNc?rel=0"
+  title="YouTube video player"
+  frameborder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media;
+    gyroscope; picture-in-picture; web-share; fullscreen"
+  allowfullscreen>
+</iframe>
 
 ## Getting Started
 
