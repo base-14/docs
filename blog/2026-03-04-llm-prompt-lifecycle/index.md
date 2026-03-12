@@ -1,7 +1,7 @@
 ---
 slug: llm-prompt-lifecycle
 date: 2026-03-04
-title: "The Full LLM Prompt Lifecycle: From Observability to Optimization"
+title: "LLM Prompt Lifecycle: From Observability to Optimization"
 description: "Most teams monitor their LLMs or manage their prompts. Almost none do both in a closed loop. Here's how to connect observability to prompt management and eliminate prompt drift."
 authors: [nitin]
 tags: [llm, observability, prompt-management, genai, opentelemetry, prompt-engineering, scout, scope]
