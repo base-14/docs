@@ -1,6 +1,6 @@
 ---
 title: >
-  MongoDB OpenTelemetry Monitoring — Operation Rates, Replication,
+  MongoDB OpenTelemetry Monitoring - Operation Rates, Replication,
   and Collector Setup
 sidebar_label: MongoDB
 id: collecting-mongodb-telemetry
@@ -34,13 +34,13 @@ base14 Scout.
 | ---------------------- | ------- | ----------- |
 | MongoDB                | 4.0     | 6.0+        |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
 - MongoDB must be accessible from the host running the Collector
 - A user with `clusterMonitor` role for monitoring access
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -73,7 +73,7 @@ db.createUser({
 
 **Minimum required permissions:**
 
-- `clusterMonitor` on `admin` — required for `serverStatus`,
+- `clusterMonitor` on `admin` - required for `serverStatus`,
   `replSetGetStatus`, and database statistics
 - No write permissions are needed
 
@@ -104,7 +104,7 @@ receivers:
     direct_connection: true # false for replica sets
 
     metrics:
-      # Disabled by default — enable for full observability
+      # Disabled by default - enable for full observability
       mongodb.uptime:
         enabled: true
       mongodb.active.reads:
@@ -219,7 +219,7 @@ mongosh "mongodb://${MONGO_USER}:${MONGO_PASSWORD}@localhost:27017/"\
 1. Verify MongoDB is running: `systemctl status mongod` or
    `docker ps | grep mongo`
 2. Confirm the endpoint address and port (default 27017) in your config
-3. Check `bindIp` in `mongod.conf` — change to `0.0.0.0` if the
+3. Check `bindIp` in `mongod.conf` - change to `0.0.0.0` if the
    Collector runs on a separate host
 
 ### Authentication failed
@@ -254,7 +254,7 @@ set.
 
 1. Replication metrics (`mongodb.operation.repl.count`,
    `mongodb.repl_*_per_sec`) require a replica set configuration
-2. On standalone instances, these metrics report zero — this is expected
+2. On standalone instances, these metrics report zero - this is expected
 3. Set `direct_connection: false` when monitoring a replica set
 
 ## FAQ
@@ -289,7 +289,7 @@ Then include both in the pipeline:
 **What permissions does the monitoring account need?**
 
 The `clusterMonitor` role on the `admin` database. No write access is
-required. The Collector only reads metrics — it does not modify MongoDB
+required. The Collector only reads metrics - it does not modify MongoDB
 data.
 
 **Why are lock deadlock counts always zero?**
@@ -315,6 +315,6 @@ contention issues worth investigating.
   Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
   Run the Collector locally
-- [PostgreSQL Monitoring](./postgres.md) — Alternative database monitoring
-- [CouchDB Monitoring](./couchdb.md) — Alternative document database
+- [PostgreSQL Monitoring](./postgres.md) - Alternative database monitoring
+- [CouchDB Monitoring](./couchdb.md) - Alternative document database
   monitoring

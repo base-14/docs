@@ -109,7 +109,7 @@ scout:
   clusterName: <cluster-name>
   distribution: microk8s
 
-  
+
   daemon:
     enabled: false
   agent:
@@ -122,15 +122,15 @@ scout:
               endpoint: ${env:MY_POD_IP}:4317
             http:
               endpoint: ${env:MY_POD_IP}:4318
-         
+
         k8s_cluster:
            auth_type: 'serviceAccount'
            collection_interval: 60s
            node_conditions_to_report: [
-             ready, 
-             memorypressure, 
-             diskpressure, 
-             pidpressure, 
+             ready,
+             memorypressure,
+             diskpressure,
+             pidpressure,
              networkunavailable]
            resource_attributes:
              k8s.container.status.last_terminated_reason:
@@ -140,10 +140,10 @@ scout:
                enabled: true
              k8s.node.condition:
                enabled: true
-           allocatable_types_to_report: [ 
-             cpu, 
-             memory, 
-             ephemeral-storage, 
+           allocatable_types_to_report: [
+             cpu,
+             memory,
+             ephemeral-storage,
              storage ]
         k8sobjects:
           objects:
@@ -302,20 +302,20 @@ scout:
             exporters: [otlphttp/base14]
           logs/k8s-events:
             receivers: [ k8sobjects]
-            processors: [ 
-              memory_limiter, 
-              batch, 
-              resource/k8s-events, 
-              resourcedetection/eks, 
+            processors: [
+              memory_limiter,
+              batch,
+              resource/k8s-events,
+              resourcedetection/eks,
               resource/env ]
             exporters: [ otlphttp/base14 ]
           logs/k8s-cluster:
             receivers: [ k8s_cluster ]
-            processors: [ 
-              memory_limiter, 
-              batch, 
-              resource/k8s, 
-              resourcedetection/eks, 
+            processors: [
+              memory_limiter,
+              batch,
+              resource/k8s,
+              resourcedetection/eks,
               resource/env ]
             exporters: [ otlphttp/base14 ]
           metrics:
@@ -324,12 +324,12 @@ scout:
             exporters: [ otlphttp/base14 ]
           metrics/k8s:
             receivers: [ k8s_cluster ]
-            processors: [ 
-              memory_limiter, 
-              batch, 
-              resource/k8s, 
-              resourcedetection/eks, 
-              resource/env, 
+            processors: [
+              memory_limiter,
+              batch,
+              resource/k8s,
+              resourcedetection/eks,
+              resource/env,
               k8sattributes ]
             exporters: [ otlphttp/base14 ]
         telemetry:
@@ -594,7 +594,7 @@ scout:
         k8sattributes:
           auth_type: 'serviceAccount'
           extract:
-            metadata: 
+            metadata:
               - k8s.namespace.name
               - k8s.pod.name
               - k8s.pod.hostname
@@ -673,10 +673,10 @@ scout:
           auth_type: serviceAccount
           collection_interval: 60s
           node_conditions_to_report: [
-            ready, 
-            memorypressure, 
-            diskpressure, 
-            pidpressure, 
+            ready,
+            memorypressure,
+            diskpressure,
+            pidpressure,
             networkunavailable ]
           resource_attributes:
             k8s.container.status.last_terminated_reason:
@@ -686,10 +686,10 @@ scout:
               enabled: true
             k8s.node.condition:
               enabled: true
-          allocatable_types_to_report: [ 
-            cpu, 
-            memory, 
-            ephemeral-storage, 
+          allocatable_types_to_report: [
+            cpu,
+            memory,
+            ephemeral-storage,
             storage ]
         k8sobjects:
           objects:
@@ -718,20 +718,20 @@ scout:
             exporters: [ otlphttp/base14, debug ]
           logs/k8s-events:
             receivers: [ k8sobjects]
-            processors: [ 
-              memory_limiter, 
-              batch, 
-              resource/k8s-events, 
-              resourcedetection/eks, 
+            processors: [
+              memory_limiter,
+              batch,
+              resource/k8s-events,
+              resourcedetection/eks,
               resource/env ]
             exporters: [ otlphttp/base14 ]
           logs/k8s-cluster:
             receivers: [ k8s_cluster ]
-            processors: [ 
-              memory_limiter, 
-              batch, 
-              resource/k8s, 
-              resourcedetection/eks, 
+            processors: [
+              memory_limiter,
+              batch,
+              resource/k8s,
+              resourcedetection/eks,
               resource/env ]
             exporters: [ otlphttp/base14 ]
           metrics:
@@ -740,12 +740,12 @@ scout:
             exporters: [ otlphttp/base14 ]
           metrics/k8s:
             receivers: [ k8s_cluster ]
-            processors: [ 
-              memory_limiter, 
-              batch, 
-              resource/k8s, 
-              resourcedetection/eks, 
-              resource/env, 
+            processors: [
+              memory_limiter,
+              batch,
+              resource/k8s,
+              resourcedetection/eks,
+              resource/env,
               k8sattributes ]
             exporters: [ otlphttp/base14 ]
         telemetry:
@@ -769,7 +769,7 @@ scout:
    forwarded to Scout.
 
 Once deployed, your cluster telemetry flows into
-[base14 Scout](https://base14.io/scout) — unified logs, metrics, and
+[base14 Scout](https://base14.io/scout) - unified logs, metrics, and
 traces from every node and pod in a single platform.
 
 ## Related Guides

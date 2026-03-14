@@ -75,7 +75,7 @@ its last Ruby 3.0–compatible release.
 
 ### Known Limitations
 
-- **Gem version ceiling**: OTel gems are pinned — no new features or bug fixes
+- **Gem version ceiling**: OTel gems are pinned - no new features or bug fixes
   from upstream
 - **Logger 1.4.3 pin**: newer `logger` versions break
   `ActiveSupport::LoggerThreadSafeLevel` in Rails 6.1
@@ -99,7 +99,7 @@ gem "mysql2", "~> 0.5"
 gem "puma", "~> 5.0"
 gem "logger", "1.4.3"
 
-# OpenTelemetry — pinned to last Ruby 3.0 compatible versions
+# OpenTelemetry - pinned to last Ruby 3.0 compatible versions
 gem "opentelemetry-api", "1.4.0"
 gem "opentelemetry-sdk", "1.7.0"
 gem "opentelemetry-exporter-otlp", "0.29.1"
@@ -617,7 +617,7 @@ end
 Ruby 2.7 → Ruby 3.0 → Ruby 3.1 → Ruby 3.2+
 ```
 
-**Key milestone — Ruby 3.1**: This is where you can drop pinned OTel gem
+**Key milestone - Ruby 3.1**: This is where you can drop pinned OTel gem
 versions and use the latest releases (including
 `opentelemetry-instrumentation-all`).
 

@@ -445,7 +445,7 @@ async fn main() -> anyhow::Result<()> {
 ```
 
 `TracingLogger::default()` creates a span for every HTTP request with
-method, path, status code, and duration — no custom `MakeSpan` or
+method, path, status code, and duration - no custom `MakeSpan` or
 `OnResponse` implementations needed.
 
 ### Shared State with `web::Data<T>`

@@ -29,10 +29,10 @@ optimize connection utilization.
 
 The Connections tab is organized into four sections:
 
-1. **Overview** — Connection topology and key stats
-2. **Active Sessions** — Detailed view of current sessions
-3. **Connection Pool Analytics** — Pool utilization and behavior
-4. **Historical Analysis** — Long-term connection patterns
+1. **Overview** - Connection topology and key stats
+2. **Active Sessions** - Detailed view of current sessions
+3. **Connection Pool Analytics** - Pool utilization and behavior
+4. **Historical Analysis** - Long-term connection patterns
 
 ---
 
@@ -69,9 +69,9 @@ PostgreSQL.
 
 **When to investigate:**
 
-- Approaching 80% — plan capacity increase
-- Above 90% — immediate attention needed
-- Sudden spikes — possible connection leak
+- Approaching 80% - plan capacity increase
+- Above 90% - immediate attention needed
+- Sudden spikes - possible connection leak
 
 ### Connection Count (Peak)
 
@@ -102,9 +102,9 @@ A pie chart showing connections by state.
 
 **When to investigate:**
 
-- High "idle in transaction" — application not committing
-- High "idle in transaction (aborted)" — unhandled errors
-- Very few idle — may need more connections
+- High "idle in transaction" - application not committing
+- High "idle in transaction (aborted)" - unhandled errors
+- Very few idle - may need more connections
 
 ### Connection Duration Heatmap
 
@@ -121,7 +121,7 @@ A pie chart showing connections by state.
 ## Active Sessions Section
 
 The Active Sessions table shows details of all current connections. This section
-is collapsed by default — click to expand.
+is collapsed by default - click to expand.
 
 ![Active Sessions](/img/pgx/07-connections-active-sessions.png)
 
@@ -163,7 +163,7 @@ is collapsed by default — click to expand.
 ## Connection Pool Analytics Section
 
 The Pool Analytics section helps you understand connection pool behavior. This
-section is collapsed by default — click to expand.
+section is collapsed by default - click to expand.
 
 ![Pool Analytics](/img/pgx/07-connections-pool-analytics.png)
 
@@ -191,9 +191,9 @@ section is collapsed by default — click to expand.
 
 **When to investigate:**
 
-- Consistently > 80% — increase pool size
-- Consistently < 10% — decrease pool size
-- Sudden spikes — traffic surge or slow queries
+- Consistently > 80% - increase pool size
+- Consistently < 10% - decrease pool size
+- Sudden spikes - traffic surge or slow queries
 
 ### Connection Wait Time
 
@@ -203,9 +203,9 @@ section is collapsed by default — click to expand.
 
 **When to investigate:**
 
-- Any consistent wait time — pool too small
-- Spikes correlating with traffic — scale pool dynamically
-- Growing trend — connection leak or load increase
+- Any consistent wait time - pool too small
+- Spikes correlating with traffic - scale pool dynamically
+- Growing trend - connection leak or load increase
 
 ### Pool Turnover
 
@@ -219,7 +219,7 @@ section is collapsed by default — click to expand.
 
 **Optimization:**
 
-- High turnover is expensive — consider connection pooler
+- High turnover is expensive - consider connection pooler
 - Very low turnover with high wait = increase pool
 - Match turnover to application pattern
 
@@ -228,7 +228,7 @@ section is collapsed by default — click to expand.
 ## Historical Analysis Section
 
 The Historical Analysis section provides long-term connection pattern insights.
-This section is collapsed by default — click to expand.
+This section is collapsed by default - click to expand.
 
 ![Historical Analysis](/img/pgx/07-connections-historical.png)
 
@@ -359,6 +359,6 @@ The Connections section uses these metrics from the
 
 ## Related Guides
 
-- [Overview](./overview.md) — High-level cluster health
-- [Locks & Waits](./locks-waits.md) — Investigate blocked connections
-- [Performance](./performance.md) — Query performance affecting connections
+- [Overview](./overview.md) - High-level cluster health
+- [Locks & Waits](./locks-waits.md) - Investigate blocked connections
+- [Performance](./performance.md) - Query performance affecting connections

@@ -1,6 +1,6 @@
 ---
 title: >
-  ClickHouse OpenTelemetry Monitoring — Query Performance, Merges,
+  ClickHouse OpenTelemetry Monitoring - Query Performance, Merges,
   and Collector Setup
 sidebar_label: ClickHouse
 id: collecting-clickhouse-telemetry
@@ -37,7 +37,7 @@ base14 Scout.
 | ---------------------- | ------- | ----------- |
 | ClickHouse             | 22.x    | 24.x+       |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
@@ -45,7 +45,7 @@ Before starting:
   running the Collector
 - The `<prometheus>` config section must be enabled (not enabled by
   default in all installations)
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -86,13 +86,13 @@ override file:
 </clickhouse>
 ```
 
-- `metrics` — current server gauges (connections, active queries,
+- `metrics` - current server gauges (connections, active queries,
   merge pool tasks)
-- `events` — profile event counters (queries executed, bytes
+- `events` - profile event counters (queries executed, bytes
   read/written, merge operations)
-- `asynchronous_metrics` — periodically updated system metrics
+- `asynchronous_metrics` - periodically updated system metrics
   (memory, CPU, disk, uptime)
-- `status_info` — server version and uptime info
+- `status_info` - server version and uptime info
 
 For Docker deployments, mount this file into
 `/etc/clickhouse-server/config.d/`.
@@ -321,12 +321,12 @@ replication metrics.
 ## Related Guides
 
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
-  — Advanced collector configuration
+  - Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md)
-  — Run the Collector locally
+  - Run the Collector locally
 - [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
-  — Production deployment
+  - Production deployment
 - [Creating Alerts](../../guides/creating-alerts-with-logx.md)
-  — Alert on ClickHouse metrics
+  - Alert on ClickHouse metrics
 - [Kafka Monitoring](./kafka.md)
-  — Message queue monitoring
+  - Message queue monitoring

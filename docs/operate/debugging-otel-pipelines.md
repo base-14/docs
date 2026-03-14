@@ -23,7 +23,7 @@ keywords:
 Your observability pipeline itself needs observability. When telemetry data goes
 missing, latencies spike, or the collector crashes, you need a systematic way to
 diagnose the problem. The OpenTelemetry Collector ships with built-in diagnostic
-tools that make this possible — you just need to know how to use them.
+tools that make this possible - you just need to know how to use them.
 
 This guide covers the diagnostic toolkit available in every collector deployment
 and walks through the most common failure scenarios with concrete fixes.
@@ -87,14 +87,14 @@ Key metrics to monitor:
 
 | Metric | What It Tells You |
 |--------|-------------------|
-| `otelcol_receiver_accepted_spans` | Spans successfully received — confirms data is arriving |
-| `otelcol_receiver_refused_spans` | Spans rejected by the receiver — indicates format or protocol issues |
+| `otelcol_receiver_accepted_spans` | Spans successfully received - confirms data is arriving |
+| `otelcol_receiver_refused_spans` | Spans rejected by the receiver - indicates format or protocol issues |
 | `otelcol_exporter_sent_spans` | Spans successfully exported to the backend |
-| `otelcol_exporter_send_failed_spans` | Export failures — backend unreachable or rejecting data |
-| `otelcol_exporter_queue_size` | Current queue depth — rising values signal backpressure |
-| `otelcol_exporter_queue_capacity` | Maximum queue capacity — compare with `queue_size` to detect overflow risk |
-| `otelcol_processor_dropped_spans` | Spans dropped by processors — check filter or memory_limiter config |
-| `otelcol_process_memory_rss` | Collector memory usage — track for OOM prevention |
+| `otelcol_exporter_send_failed_spans` | Export failures - backend unreachable or rejecting data |
+| `otelcol_exporter_queue_size` | Current queue depth - rising values signal backpressure |
+| `otelcol_exporter_queue_capacity` | Maximum queue capacity - compare with `queue_size` to detect overflow risk |
+| `otelcol_processor_dropped_spans` | Spans dropped by processors - check filter or memory_limiter config |
+| `otelcol_process_memory_rss` | Collector memory usage - track for OOM prevention |
 
 Compare `receiver_accepted` against `exporter_sent` to find where data is being
 lost. If the receiver accepts 1000 spans but the exporter only sends 800,
@@ -193,7 +193,7 @@ distribution (e.g., `otelcol-contrib` for community components).
 
 Use [otelbin.io](https://www.otelbin.io/) to paste your configuration and
 visualize the pipeline graph. It highlights components that are defined but not
-referenced in any pipeline — a common source of "silent" configuration errors.
+referenced in any pipeline - a common source of "silent" configuration errors.
 
 ## Common Failure Scenarios
 
@@ -297,7 +297,7 @@ should share the same `trace_id`.
 | `connection refused` | Backend is down or unreachable |
 | `rpc error: code = Unauthenticated` | Missing or invalid credentials |
 | `413 Request Entity Too Large` | Batch size exceeds backend limit |
-| `context deadline exceeded` | Network timeout — backend too slow to respond |
+| `context deadline exceeded` | Network timeout - backend too slow to respond |
 | `unsupported protocol scheme` | gRPC exporter pointed at an HTTP endpoint (or vice versa) |
 
 **Fix:**
@@ -442,11 +442,11 @@ production operation:
 ## Related Guides
 
 - [Recommended Collector Configuration](recommended-collector-configuration.md)
-  — production settings for compression, batching, retries, and memory
+  - production settings for compression, batching, retries, and memory
   management
 - [Troubleshooting Missing Data](../guides/troubleshooting-missing-data.md)
-  — symptom-based flowchart for when telemetry data is not appearing
+  - symptom-based flowchart for when telemetry data is not appearing
 - [Scout Exporter](../instrument/collector-setup/scout-exporter.md)
-  — configuring the Scout exporter for the collector
+  - configuring the Scout exporter for the collector
 - [OTel Collector Configuration](../instrument/collector-setup/otel-collector-config.md)
-  — full collector configuration reference
+  - full collector configuration reference

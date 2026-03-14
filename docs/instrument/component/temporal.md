@@ -1,6 +1,6 @@
 ---
 title: >
-  Temporal OpenTelemetry Monitoring — Workflow Latency, Task Queues,
+  Temporal OpenTelemetry Monitoring - Workflow Latency, Task Queues,
   and Collector Setup
 sidebar_label: Temporal
 id: collecting-temporal-telemetry
@@ -36,7 +36,7 @@ ships metrics to base14 Scout.
 | ---------------------- | ------- | ----------- |
 | Temporal Server        | 1.20    | 1.24+       |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
@@ -46,7 +46,7 @@ Before starting:
   metrics (not enabled by default)
 - The metrics port (commonly 8000) must be accessible from the host
   running the Collector
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -302,12 +302,12 @@ service emitted the metric. In a single-process deployment (like
 ## Related Guides
 
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
-  — Advanced collector configuration
+  - Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md)
-  — Run the Collector locally
+  - Run the Collector locally
 - [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
-  — Production deployment
+  - Production deployment
 - [PostgreSQL Monitoring](./postgres.md)
-  — Database monitoring (commonly used with Temporal)
+  - Database monitoring (commonly used with Temporal)
 - [Creating Alerts](../../guides/creating-alerts-with-logx.md)
-  — Alert on Temporal metrics
+  - Alert on Temporal metrics

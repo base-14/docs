@@ -1,6 +1,6 @@
 ---
 title: >
-  ZooKeeper OpenTelemetry Monitoring — Connections, Latency,
+  ZooKeeper OpenTelemetry Monitoring - Connections, Latency,
   and Collector Setup
 sidebar_label: ZooKeeper
 id: collecting-zookeeper-telemetry
@@ -34,14 +34,14 @@ and ships metrics to base14 Scout.
 | ---------------------- | ------- | ----------- |
 | ZooKeeper              | 3.5     | 3.9+        |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
 - ZooKeeper client port (2181) must be accessible from the host running
   the Collector
 - The `mntr` and `ruok` four-letter-word commands must be whitelisted
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -78,7 +78,7 @@ Verify the commands are working:
 # Test mntr (metrics)
 echo "mntr" | nc localhost 2181
 
-# Test ruok (health check) — should return "imok"
+# Test ruok (health check) - should return "imok"
 echo "ruok" | nc localhost 2181
 ```
 
@@ -294,8 +294,8 @@ and `zk.version` as resource attributes on all emitted metrics.
 ## Related Guides
 
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
-  — Advanced collector configuration
+  - Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md)
-  — Run the Collector locally
+  - Run the Collector locally
 - [Kafka Monitoring](./kafka.md)
-  — Message broker monitoring
+  - Message broker monitoring

@@ -1,5 +1,5 @@
 ---
-title: OpenTelemetry Collector Config — Receivers, Processors & Exporters
+title: OpenTelemetry Collector Config - Receivers, Processors & Exporters
 sidebar_label: Collector Configuration
 description:
   Configure OpenTelemetry Collector pipelines. Set up receivers,

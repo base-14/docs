@@ -1,6 +1,6 @@
 ---
 title: >
-  Kafka OpenTelemetry Monitoring — Consumer Lag, Partition Offsets,
+  Kafka OpenTelemetry Monitoring - Consumer Lag, Partition Offsets,
   and Collector Setup
 sidebar_label: Kafka
 id: collecting-kafka-telemetry
@@ -38,14 +38,14 @@ to base14 Scout.
 | ---------------------- | ------- | ----------- |
 | Kafka                  | 2.x     | 3.x+        |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
 - At least one Kafka broker must be accessible from the host running
   the Collector (port 9092)
 - No special user required for unauthenticated clusters
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -264,7 +264,7 @@ match the Kafka cluster version.
 1. Check your Kafka version:
    `kafka-broker-api-versions.sh --bootstrap-server localhost:9092`
 2. Set `protocol_version` to match your cluster version
-3. The receiver defaults to `2.1.0` — update this for Kafka 3.x
+3. The receiver defaults to `2.1.0` - update this for Kafka 3.x
    clusters
 
 ## FAQ
@@ -300,7 +300,7 @@ clusters produce identical metrics.
 The `kafkametricsreceiver` collects metrics **about** the Kafka
 cluster (broker count, consumer lag, partition offsets). The
 `kafkareceiver` consumes telemetry data (traces, metrics, logs)
-**from** Kafka topics — it is a transport mechanism, not a monitoring
+**from** Kafka topics - it is a transport mechanism, not a monitoring
 tool.
 
 ## What's Next?
@@ -316,15 +316,15 @@ tool.
   limit metric volume on large clusters
 - **Visualize in Scout**: Once metrics are flowing, you can
   [monitor Kafka broker metrics in Scout](https://base14.io/scout/metrics)
-  — track consumer lag, partition health, and throughput from a single
+  - track consumer lag, partition health, and throughput from a single
   dashboard
 
 ## Related Guides
 
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
-  — Advanced collector configuration
+  - Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md)
-  — Run the Collector locally
-- [RabbitMQ Monitoring](./rabbitmq.md) — Message queue monitoring
+  - Run the Collector locally
+- [RabbitMQ Monitoring](./rabbitmq.md) - Message queue monitoring
 - [ZooKeeper Monitoring](./zookeeper.md)
-  — Coordination service monitoring
+  - Coordination service monitoring

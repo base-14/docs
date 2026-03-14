@@ -34,10 +34,10 @@ CloudWatch integration.
 
 The Resources tab is organized into four sections:
 
-1. **CPU** — CPU utilization and load metrics
-2. **Memory** — Available memory tracking
-3. **Disk** — Storage and I/O metrics
-4. **Network** — Throughput monitoring
+1. **CPU** - CPU utilization and load metrics
+2. **Memory** - Available memory tracking
+3. **Disk** - Storage and I/O metrics
+4. **Network** - Throughput monitoring
 
 ---
 
@@ -57,9 +57,9 @@ cluster.
 
 **When to investigate:**
 
-- Sustained > 70% — consider scaling up
-- Spikes to 100% — identify resource-intensive queries
-- Sudden changes — correlate with application behavior
+- Sustained > 70% - consider scaling up
+- Spikes to 100% - identify resource-intensive queries
+- Sudden changes - correlate with application behavior
 
 ### CPU Utilization by Instance
 
@@ -91,16 +91,16 @@ cluster.
 
 **When to investigate:**
 
-- Load > 1.0 — CPU bottleneck
-- Growing trend — scaling needed
-- Spikes — resource-intensive queries
+- Load > 1.0 - CPU bottleneck
+- Growing trend - scaling needed
+- Spikes - resource-intensive queries
 
 ---
 
 ## Memory Section
 
 The Memory section tracks available memory on your RDS instances. This section
-is collapsed by default — click to expand.
+is collapsed by default - click to expand.
 
 ![Memory Section](/img/pgx/09-resources-memory.png)
 
@@ -135,7 +135,7 @@ is collapsed by default — click to expand.
 ## Disk Section
 
 The Disk section monitors storage capacity and I/O performance. This section is
-collapsed by default — click to expand.
+collapsed by default - click to expand.
 
 ![Disk Section](/img/pgx/09-resources-disk.png)
 
@@ -230,7 +230,7 @@ collapsed by default — click to expand.
 ## Network Section
 
 The Network section monitors data transfer metrics. This section is collapsed by
-default — click to expand.
+default - click to expand.
 
 ![Network Section](/img/pgx/09-resources-network.png)
 
@@ -274,11 +274,11 @@ default — click to expand.
 
 When experiencing slow queries:
 
-1. Check **CPU Utilization** — is CPU a bottleneck?
-2. Review **DB CPU Load per vCPU** — load > 1.0 indicates CPU queueing
-3. Check **Read/Write IOPS** — are you hitting IOPS limits?
-4. Review **Read/Write Latency** — is storage slow?
-5. Check **Freeable Memory** — is memory pressure causing issues?
+1. Check **CPU Utilization** - is CPU a bottleneck?
+2. Review **DB CPU Load per vCPU** - load > 1.0 indicates CPU queueing
+3. Check **Read/Write IOPS** - are you hitting IOPS limits?
+4. Review **Read/Write Latency** - is storage slow?
+5. Check **Freeable Memory** - is memory pressure causing issues?
 
 ### Capacity Planning
 
@@ -302,10 +302,10 @@ For scaling decisions:
 
 To optimize costs:
 
-1. Review **CPU Utilization** — consistently low may indicate over-provisioning
-2. Check **Freeable Memory** — excess memory is wasted cost
-3. Analyze **IOPS** patterns — may allow reduced provisioning
-4. Consider workload patterns — can you use smaller instances off-peak?
+1. Review **CPU Utilization** - consistently low may indicate over-provisioning
+2. Check **Freeable Memory** - excess memory is wasted cost
+3. Analyze **IOPS** patterns - may allow reduced provisioning
+4. Consider workload patterns - can you use smaller instances off-peak?
 
 ### Monitoring During Maintenance
 
@@ -353,6 +353,6 @@ See [Configuration Reference](./configuration.md) for details.
 
 ## Related Guides
 
-- [Performance](./performance.md) — Query performance analysis
-- [Connections](./connections.md) — Connection pool management
-- [Configuration Reference](./configuration.md) — RDS configuration options
+- [Performance](./performance.md) - Query performance analysis
+- [Connections](./connections.md) - Connection pool management
+- [Configuration Reference](./configuration.md) - RDS configuration options

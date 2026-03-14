@@ -1,6 +1,6 @@
 ---
 title: >
-  Docker OpenTelemetry Monitoring — Container CPU, Memory,
+  Docker OpenTelemetry Monitoring - Container CPU, Memory,
   and Collector Setup
 sidebar_label: Docker Engine
 id: collecting-docker-telemetry
@@ -35,7 +35,7 @@ socket access, and ships metrics to base14 Scout.
 | ---------------------- | ------- | ------------ |
 | Docker Engine          | 20.10   | 24.0+        |
 | OTel Collector Contrib | 0.90.0  | latest       |
-| base14 Scout           | Any     | —            |
+| base14 Scout           | Any     | -            |
 
 Before starting:
 
@@ -43,7 +43,7 @@ Before starting:
   Collector runs
 - The Collector needs access to the Docker socket at
   `/var/run/docker.sock`
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -73,7 +73,7 @@ Collector process must have permission to read the socket.
 **On Linux**: the Collector must run as root or as a user in
 the `docker` group.
 
-**On macOS**: Docker Desktop manages socket access — no
+**On macOS**: Docker Desktop manages socket access - no
 extra configuration needed.
 
 When running the Collector in Docker, mount the socket as a
@@ -167,11 +167,11 @@ receivers:
 Each metric includes resource attributes that identify the
 source container:
 
-- `container.id` — full container ID
-- `container.name` — container name
-- `container.image.name` — image name
-- `container.hostname` — container hostname
-- `container.runtime` — always `docker`
+- `container.id` - full container ID
+- `container.name` - container name
+- `container.image.name` - image name
+- `container.hostname` - container hostname
+- `container.runtime` - always `docker`
 
 ### Metrics Reference
 
@@ -234,7 +234,7 @@ running.
 
 **Fix**:
 
-1. Check `excluded_images` in your config — patterns match
+1. Check `excluded_images` in your config - patterns match
    against the image name
 2. Verify the container is running: `docker ps`
 3. Short-lived containers may stop before the next collection
@@ -259,7 +259,7 @@ expose fewer cgroup-level metrics.
 
 **Fix**:
 
-1. On macOS, 13+ core metrics are expected — this is normal
+1. On macOS, 13+ core metrics are expected - this is normal
 2. On Linux, verify cgroups v2 is enabled:
    `stat -fc %T /sys/fs/cgroup/`
 3. Upgrade Docker Engine to 24.0+ for the widest metric
@@ -280,7 +280,7 @@ Linux hosts expose additional cgroup-level detail (up to
 Use `excluded_images` in the receiver config to skip
 containers by image name. The pattern matches against
 the full image name without the tag. You cannot use glob
-patterns — each entry is an exact prefix match.
+patterns - each entry is an exact prefix match.
 
 **Is mounting the Docker socket a security risk?**
 
@@ -307,7 +307,7 @@ receivers:
 
 The `docker_stats` receiver is Docker-specific. For Podman,
 point the endpoint to the Podman socket path
-(`unix:///run/podman/podman.sock`) — compatibility varies
+(`unix:///run/podman/podman.sock`) - compatibility varies
 by Podman version and API parity with Docker.
 
 ## What's Next?

@@ -18,7 +18,7 @@ keywords:
 ---
 
 pgX provides the most comprehensive PostgreSQL monitoring available. From server
-health to query performance, replication lag to lock contention — every metric
+health to query performance, replication lag to lock contention - every metric
 you need to understand, optimize, and troubleshoot your PostgreSQL clusters is
 at your fingertips.
 
@@ -730,8 +730,8 @@ Some metrics are only available in specific PostgreSQL versions:
 
 ## Related Guides
 
-- [Quick Start](./quickstart.md) — Get started with pgX
-- [Overview](./overview.md) — Cluster health monitoring
-- [Configuration Reference](./configuration.md) — Configuration options
+- [Quick Start](./quickstart.md) - Get started with pgX
+- [Overview](./overview.md) - Cluster health monitoring
+- [Configuration Reference](./configuration.md) - Configuration options
 - [Filtering pgX Metrics](../filters-and-transformations/filtering-pgx-metrics.md)
-  — Drop or filter metrics at the collector level
+  - Drop or filter metrics at the collector level

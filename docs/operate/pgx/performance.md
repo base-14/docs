@@ -29,9 +29,9 @@ optimize your database workload.
 
 The Performance tab is organized into three sections:
 
-1. **Overview** — Key performance visualizations
-2. **Query Analytics** — Detailed query analysis table
-3. **Transactions** — Transaction throughput and health
+1. **Overview** - Key performance visualizations
+2. **Query Analytics** - Detailed query analysis table
+3. **Transactions** - Transaction throughput and health
 
 ---
 
@@ -116,7 +116,7 @@ A heatmap visualization showing which queries consume the most resources.
 ## Query Analytics Section
 
 A detailed table showing performance metrics for individual queries. This
-section is collapsed by default — click to expand.
+section is collapsed by default - click to expand.
 
 ![Query Analytics](/img/pgx/04-performance-query-analytics.png)
 
@@ -159,7 +159,7 @@ section is collapsed by default — click to expand.
 ## Transactions Section
 
 The Transactions section shows throughput and transaction health. This section
-is collapsed by default — click to expand.
+is collapsed by default - click to expand.
 
 ![Transactions](/img/pgx/04-performance-transactions.png)
 
@@ -268,6 +268,6 @@ The Performance section uses these metrics from the
 
 ## Related Guides
 
-- [Queries](./queries.md) — Deep query analysis with filtering
-- [Tables & Indexes](./tables-indexes.md) — Index and table optimization
-- [Locks & Waits](./locks-waits.md) — Investigate transaction blocking
+- [Queries](./queries.md) - Deep query analysis with filtering
+- [Tables & Indexes](./tables-indexes.md) - Index and table optimization
+- [Locks & Waits](./locks-waits.md) - Investigate transaction blocking

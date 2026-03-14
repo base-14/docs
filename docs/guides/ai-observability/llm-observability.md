@@ -33,12 +33,12 @@ keywords:
 # LLM Observability
 
 Implement unified observability for AI and LLM applications using OpenTelemetry.
-This guide shows you how to trace every layer of an AI application — from HTTP
-requests through agent orchestration to LLM API calls and database queries — in
+This guide shows you how to trace every layer of an AI application - from HTTP
+requests through agent orchestration to LLM API calls and database queries - in
 a single correlated trace using the OpenTelemetry Python SDK and base14 Scout.
 
 AI applications introduce observability challenges that traditional APM tools
-were not designed for. An LLM call is not just an HTTP request — it carries
+were not designed for. An LLM call is not just an HTTP request - it carries
 semantic meaning: which model was used, how many tokens were consumed, what it
 cost, whether the output passed quality evaluation. Tools like LangSmith or
 Weights & Biases capture LLM-specific telemetry but operate in isolation,
@@ -53,7 +53,7 @@ trying to understand why your AI pipeline is slow and expensive, this guide
 provides production-ready patterns for unified AI observability. You will learn
 how to combine auto-instrumentation for HTTP and database layers with custom
 instrumentation for LLM calls, token tracking, cost attribution, and quality
-evaluation — all visible in a single trace on base14 Scout.
+evaluation - all visible in a single trace on base14 Scout.
 
 ![LLM observability dashboard in Scout](/img/docs/llm-o11y.png)
 
@@ -127,7 +127,7 @@ Before starting, ensure you have:
 
 ## The Unified Trace
 
-The core value of OpenTelemetry for AI applications is the **unified trace** — a
+The core value of OpenTelemetry for AI applications is the **unified trace** - a
 single trace ID that connects every layer of a request, from HTTP entry to LLM
 completion and back.
 
@@ -237,7 +237,7 @@ poetry add \
 ## Auto-Instrumentation Setup
 
 Auto-instrumentation provides the foundation layer: HTTP spans, database spans,
-outbound API call spans, and log correlation. Set this up first — it requires no
+outbound API call spans, and log correlation. Set this up first - it requires no
 changes to your business logic.
 
 ### Telemetry Initialization
@@ -344,7 +344,7 @@ FastAPIInstrumentor.instrument_app(app)
 
 Auto-instrumentation alone gives you visibility into the application and
 infrastructure layers. But an LLM API call appears as a generic `HTTP POST` to
-`api.anthropic.com` — you cannot see the model name, token count, or cost.
+`api.anthropic.com` - you cannot see the model name, token count, or cost.
 Custom instrumentation fills this gap.
 
 ## Custom LLM Instrumentation
@@ -647,7 +647,7 @@ except Exception as e:
 ## Token and Cost Tracking
 
 Token usage and cost are the most critical metrics for AI applications.
-Auto-instrumentation cannot capture these — the information is inside the LLM
+Auto-instrumentation cannot capture these - the information is inside the LLM
 SDK response, not in HTTP headers.
 
 ### Defining GenAI Metrics
@@ -1135,7 +1135,7 @@ span.add_event(
 - **Truncate content** to avoid oversized spans (1000 chars for prompts, 2000
   for completions)
 - **Disable prompt recording** in production if compliance requirements prohibit
-  it — the GenAI span attributes (model, tokens, cost) still provide full
+  it - the GenAI span attributes (model, tokens, cost) still provide full
   operational visibility
 - **Use the OTel Collector `attributes` processor** to redact sensitive fields
   before export if additional filtering is needed
@@ -1436,7 +1436,7 @@ trace.
 **Solutions:**
 
 1. Ensure `setup_telemetry()` is called **before** creating the FastAPI app
-2. Verify `HTTPXClientInstrumentor().instrument()` is called during setup — this
+2. Verify `HTTPXClientInstrumentor().instrument()` is called during setup - this
    creates the parent HTTP span that the custom span nests under
 3. Check that the `gen_ai.chat` span is created inside an async context where
    the trace context is propagated
@@ -1445,7 +1445,7 @@ trace.
 
 **Solutions:**
 
-1. Check your LLM SDK version — older versions may not expose `usage` on the
+1. Check your LLM SDK version - older versions may not expose `usage` on the
    response object
 2. Verify the provider response object has `input_tokens` and `output_tokens`
    fields (naming varies by provider)
@@ -1589,7 +1589,7 @@ evaluation type in your dashboards.
 
 Some frameworks (e.g., LangChain) have their own tracing. You can still use
 OpenTelemetry alongside or instead. The key advantage of OpenTelemetry is
-portability — your traces work with any backend (base14 Scout, Jaeger, Grafana
+portability - your traces work with any backend (base14 Scout, Jaeger, Grafana
 Tempo, etc.) without vendor lock-in.
 
 ### How do I reduce trace volume for high-throughput AI apps?
@@ -1607,7 +1607,7 @@ the `gen_ai.client.cost` metric. This enables
 
 ### How do I add observability to an existing AI app?
 
-Start with auto-instrumentation (FastAPI, SQLAlchemy, httpx) — this requires no
+Start with auto-instrumentation (FastAPI, SQLAlchemy, httpx) - this requires no
 code changes. Then add custom LLM spans in your LLM client layer. Finally, add
 agent-level spans if you use an orchestration framework. Each layer adds value
 independently.

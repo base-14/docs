@@ -63,7 +63,7 @@ in a single trace.
 :::tip TL;DR
 
 Use custom OpenTelemetry spans with GenAI semantic conventions to instrument
-LlamaIndex — not OpenInference or the built-in auto-instrumentation. Wrap each
+LlamaIndex - not OpenInference or the built-in auto-instrumentation. Wrap each
 LLM call in a span that records model, token counts, and cost using a pricing
 table, then attach a PII scrubber before recording prompts and completions. Pair
 this with versioned YAML prompt templates and Promptfoo evaluations for a full
@@ -345,7 +345,7 @@ SCOUT_ENVIRONMENT=production
 ```
 
 The Pydantic `Settings` class reads all environment variables automatically (see
-the Pydantic Settings tab). No code changes needed — set the variables and the
+the Pydantic Settings tab). No code changes needed - set the variables and the
 application picks them up.
 
 ```mdx-code-block
@@ -1123,7 +1123,7 @@ logging.getLogger("opentelemetry").setLevel(logging.DEBUG)
 
 **Solutions:**
 
-1. Check your LLM SDK version — older versions may not expose `usage`
+1. Check your LLM SDK version - older versions may not expose `usage`
 2. Verify the provider response has `input_tokens` and `output_tokens`
 3. For Google GenAI, check `response.usage_metadata` instead of `response.usage`
 
@@ -1159,7 +1159,7 @@ logging.getLogger("opentelemetry").setLevel(logging.DEBUG)
 - **Never record raw prompts** that may contain user data, API keys, or
   credentials in span attributes or events
 - **Truncate content** to 500 characters to avoid oversized spans
-- **Disable content capture** in production if compliance requires it — set
+- **Disable content capture** in production if compliance requires it - set
   `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=false`
 - **Scrub PII** before recording any content in telemetry (see
   [PII Scrubbing](#pii-scrubbing) for the regex patterns used)
@@ -1168,7 +1168,7 @@ logging.getLogger("opentelemetry").setLevel(logging.DEBUG)
 
 For applications handling regulated data (GDPR, HIPAA, PCI-DSS):
 
-- Use opt-in content capture — disabled by default in this guide
+- Use opt-in content capture - disabled by default in this guide
 - Record only token counts and model metadata, not prompt content
 - Audit span attributes regularly for sensitive data leaks
 - Use the OTel Collector `attributes` processor to redact fields before export

@@ -1,6 +1,6 @@
 ---
 title: >
-  Elasticsearch OpenTelemetry Monitoring — Cluster Health, Node Stats,
+  Elasticsearch OpenTelemetry Monitoring - Cluster Health, Node Stats,
   and Collector Setup
 sidebar_label: Elasticsearch
 id: collecting-elasticsearch-telemetry
@@ -39,14 +39,14 @@ and ships metrics to base14 Scout.
 | ---------------------- | -------- | ----------- |
 | Elasticsearch          | 8.x     | 9.x         |
 | OTel Collector Contrib | 0.90.0  | 0.131.0+    |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
 - Elasticsearch HTTP API (port 9200) must be accessible from the host
   running the Collector
 - Credentials with access to cluster stats APIs (if security is enabled)
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -82,7 +82,7 @@ If Elasticsearch security is disabled (development only):
 curl http://<elasticsearch-host>:9200/_cluster/health?pretty
 ```
 
-No special user creation is required — any user with access to the
+No special user creation is required - any user with access to the
 cluster stats APIs can be used for monitoring.
 
 ## Configuration
@@ -126,7 +126,7 @@ receivers:
       elasticsearch.cluster.state_update.time:
         enabled: true
 
-      # Node metrics — disk and filesystem
+      # Node metrics - disk and filesystem
       elasticsearch.node.fs.disk.available:
         enabled: true
       elasticsearch.node.fs.disk.free:
@@ -138,7 +138,7 @@ receivers:
       elasticsearch.node.disk.io.write:
         enabled: true
 
-      # Node metrics — cache
+      # Node metrics - cache
       elasticsearch.node.cache.count:
         enabled: true
       elasticsearch.node.cache.evictions:
@@ -148,7 +148,7 @@ receivers:
       elasticsearch.node.cache.size:
         enabled: true
 
-      # Node metrics — operations
+      # Node metrics - operations
       elasticsearch.node.operations.completed:
         enabled: true
       elasticsearch.node.operations.time:
@@ -160,7 +160,7 @@ receivers:
       elasticsearch.node.operations.get.time:
         enabled: true
 
-      # Node metrics — networking and connections
+      # Node metrics - networking and connections
       elasticsearch.node.http.connections:
         enabled: true
       elasticsearch.node.cluster.connections:
@@ -170,7 +170,7 @@ receivers:
       elasticsearch.node.open_files:
         enabled: true
 
-      # Node metrics — ingest pipeline
+      # Node metrics - ingest pipeline
       elasticsearch.node.ingest.documents:
         enabled: true
       elasticsearch.node.ingest.documents.current:
@@ -184,7 +184,7 @@ receivers:
       elasticsearch.node.pipeline.ingest.operations.failed:
         enabled: true
 
-      # Node metrics — documents and shards
+      # Node metrics - documents and shards
       elasticsearch.node.documents:
         enabled: true
       elasticsearch.node.shards.size:
@@ -194,7 +194,7 @@ receivers:
       elasticsearch.node.shards.reserved.size:
         enabled: true
 
-      # Node metrics — thread pools
+      # Node metrics - thread pools
       elasticsearch.node.thread_pool.tasks.finished:
         enabled: true
       elasticsearch.node.thread_pool.tasks.queued:
@@ -202,7 +202,7 @@ receivers:
       elasticsearch.node.thread_pool.threads:
         enabled: true
 
-      # Node metrics — translog
+      # Node metrics - translog
       elasticsearch.node.translog.operations:
         enabled: true
       elasticsearch.node.translog.size:
@@ -210,7 +210,7 @@ receivers:
       elasticsearch.node.translog.uncommitted.size:
         enabled: true
 
-      # Node metrics — scripts
+      # Node metrics - scripts
       elasticsearch.node.script.compilations:
         enabled: true
       elasticsearch.node.script.cache_evictions:
@@ -218,7 +218,7 @@ receivers:
       elasticsearch.node.script.compilation_limit_triggered:
         enabled: true
 
-      # Node metrics — segments
+      # Node metrics - segments
       elasticsearch.node.segments.memory:
         enabled: true
 
@@ -430,7 +430,7 @@ the `suggest` filter in the stats API.
 
 1. Upgrade OTel Collector Contrib to **v0.131.0 or later**
 2. Earlier versions will log errors when parsing 9.x stats responses
-3. The receiver config does not need changes — only the Collector binary
+3. The receiver config does not need changes - only the Collector binary
 
 ## FAQ
 
@@ -448,7 +448,7 @@ single endpoint. The receiver queries the cluster stats API, which
 returns data for the entire cluster. You only need one receiver
 instance pointing to any node.
 
-**What about OpenSearch — does the same receiver work?**
+**What about OpenSearch - does the same receiver work?**
 
 No. OpenSearch diverged from Elasticsearch and uses different stats API
 responses. Use the `opensearchreceiver` in OTel Collector Contrib for
@@ -477,6 +477,6 @@ index-level metrics for clusters with many indices.
   Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
   Run the Collector locally
-- [ElastiCache Monitoring](../infra/aws/elasticache.md) — AWS ElastiCache
+- [ElastiCache Monitoring](../infra/aws/elasticache.md) - AWS ElastiCache
   monitoring
-- [Redis Monitoring](./redis.md) — Self-hosted Redis monitoring
+- [Redis Monitoring](./redis.md) - Self-hosted Redis monitoring

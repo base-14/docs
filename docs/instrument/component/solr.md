@@ -1,6 +1,6 @@
 ---
 title: >
-  Solr OpenTelemetry Monitoring — JVM, Request Rates,
+  Solr OpenTelemetry Monitoring - JVM, Request Rates,
   and Collector Setup
 sidebar_label: Solr
 id: collecting-solr-telemetry
@@ -36,14 +36,14 @@ Scout.
 | ---------------------- | ------- | ----------- |
 | Solr                   | 7.x     | 9.x+        |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
 - Solr HTTP port (8983) must be accessible from the host running
   the Collector
 - The `/admin/metrics` endpoint is enabled by default
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -81,7 +81,7 @@ authentication enabled, see [Authentication](#authentication)
 below.
 
 The Collector's Prometheus receiver must use a custom `metrics_path`
-and `params` to scrape Solr — the default `/metrics` path does not
+and `params` to scrape Solr - the default `/metrics` path does not
 work. Both are configured in the [Configuration](#configuration)
 section below.
 
@@ -285,7 +285,7 @@ Each node is scraped independently and identified by its
 **What is the difference between `node` and `core` metrics?**
 
 Node metrics (`solr_metrics_node_*`) cover the entire Solr
-instance — connections, filesystem, and aggregate request counts.
+instance - connections, filesystem, and aggregate request counts.
 Core metrics (`solr_metrics_core_*`) are per-collection and
 include index size, update handler stats, and query handler
 performance. Core metrics only appear when cores are loaded.
@@ -311,12 +311,12 @@ overseer metrics.
 ## Related Guides
 
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
-  — Advanced collector configuration
+  - Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md)
-  — Run the Collector locally
+  - Run the Collector locally
 - [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
-  — Production deployment
+  - Production deployment
 - [Creating Alerts](../../guides/creating-alerts-with-logx.md)
-  — Alert on Solr metrics
+  - Alert on Solr metrics
 - [Elasticsearch Monitoring](./elasticsearch.md)
-  — Search engine monitoring
+  - Search engine monitoring

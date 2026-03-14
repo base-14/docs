@@ -34,7 +34,7 @@ instrumentation beyond the recommended OpenTelemetry SDK Integration approach.
 
 Attach the OpenTelemetry Java Agent JAR at JVM startup with
 `-javaagent:opentelemetry-javaagent.jar` for zero-code instrumentation of 150+
-libraries — no dependency changes needed. If you're on Spring Boot 4.0
+libraries - no dependency changes needed. If you're on Spring Boot 4.0
 (currently preview), the native `spring-boot-starter-opentelemetry` starter
 offers Spring-managed OTel via Micrometer. For production, the recommended path
 remains the OpenTelemetry SDK Integration.

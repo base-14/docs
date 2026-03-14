@@ -1,6 +1,6 @@
 ---
 title: >
-  Consul OpenTelemetry Monitoring — Raft Consensus, Service Catalog,
+  Consul OpenTelemetry Monitoring - Raft Consensus, Service Catalog,
   and Collector Setup
 sidebar_label: Consul
 id: collecting-consul-telemetry
@@ -37,7 +37,7 @@ endpoint, and ships metrics to base14 Scout.
 | ---------------------- | ------- | ----------- |
 | Consul                 | 1.7.2   | 1.21+       |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
@@ -45,7 +45,7 @@ Before starting:
   running the Collector
 - `prometheus_retention_time` must be set in the agent telemetry
   config (not enabled by default)
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -82,7 +82,7 @@ to the Consul agent:
 ```
 
 - `prometheus_retention_time` must be greater than `0s` to enable
-  Prometheus metrics (default is `0s` — disabled)
+  Prometheus metrics (default is `0s` - disabled)
 - `disable_hostname` removes hostname prefixes from gauge metrics for
   cleaner Prometheus labels
 - Set retention time to at least 2x the scrape interval
@@ -307,7 +307,7 @@ leader. Other servers emit follower-side metrics like
 
 **What does `consul_autopilot_healthy` mean?**
 
-A value of `1` means Autopilot considers the cluster healthy — enough
+A value of `1` means Autopilot considers the cluster healthy - enough
 voters are alive and reachable. A value of `0` indicates the cluster
 is degraded. Monitor this alongside `consul_raft_peers` and
 `consul_members_servers`.
@@ -327,12 +327,12 @@ is degraded. Monitor this alongside `consul_raft_peers` and
 ## Related Guides
 
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
-  — Advanced collector configuration
+  - Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md)
-  — Run the Collector locally
+  - Run the Collector locally
 - [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
-  — Production deployment
+  - Production deployment
 - [etcd Monitoring](./etcd.md)
-  — Distributed key-value store monitoring
+  - Distributed key-value store monitoring
 - [Creating Alerts](../../guides/creating-alerts-with-logx.md)
-  — Alert on Consul metrics
+  - Alert on Consul metrics

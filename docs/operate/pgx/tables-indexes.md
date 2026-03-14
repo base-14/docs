@@ -30,9 +30,9 @@ bloated tables, underutilized indexes, and maintenance needs.
 
 The Tables & Indexes tab is organized into three sections:
 
-1. **Overview** — High-level table and index counts
-2. **Table Explorer** — Deep dive into individual table metrics
-3. **Index Explorer** — Detailed index analysis
+1. **Overview** - High-level table and index counts
+2. **Table Explorer** - Deep dive into individual table metrics
+3. **Index Explorer** - Detailed index analysis
 
 ---
 
@@ -77,7 +77,7 @@ The Overview section provides cluster-wide table and index metrics.
 ## Table Explorer Section
 
 The Table Explorer allows you to drill down into individual table metrics. This
-section is collapsed by default — click to expand.
+section is collapsed by default - click to expand.
 
 ![Table Explorer](/img/pgx/05-tables-indexes-table-explorer.png)
 
@@ -124,8 +124,8 @@ Four stat panels showing critical table health indicators:
 
 **When to investigate:**
 
-- Bloat > 20% — consider VACUUM
-- Bloat > 50% — consider VACUUM FULL or pg_repack
+- Bloat > 20% - consider VACUUM
+- Bloat > 50% - consider VACUUM FULL or pg_repack
 - Rapidly increasing bloat
 
 #### Table Size
@@ -243,7 +243,7 @@ info.
 ## Index Explorer Section
 
 The Index Explorer allows you to analyze individual indexes. This section is
-collapsed by default — click to expand.
+collapsed by default - click to expand.
 
 ![Index Explorer](/img/pgx/05-tables-indexes-index-explorer.png)
 
@@ -302,8 +302,8 @@ collapsed by default — click to expand.
 
 **When to investigate:**
 
-- Bloat > 30% — consider REINDEX
-- Bloat > 50% — definite reindex needed
+- Bloat > 30% - consider REINDEX
+- Bloat > 50% - definite reindex needed
 - Rapidly increasing bloat
 
 #### Index Cache Hit Percentage
@@ -403,6 +403,6 @@ The Tables & Indexes section uses these metrics from the
 
 ## Related Guides
 
-- [Maintenance](./maintenance.md) — Vacuum and maintenance tracking
-- [Performance](./performance.md) — Query performance analysis
-- [Queries](./queries.md) — Identify queries needing indexes
+- [Maintenance](./maintenance.md) - Vacuum and maintenance tracking
+- [Performance](./performance.md) - Query performance analysis
+- [Queries](./queries.md) - Identify queries needing indexes

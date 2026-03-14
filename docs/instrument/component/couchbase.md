@@ -1,6 +1,6 @@
 ---
 title: >
-  Couchbase OpenTelemetry Monitoring — Data Service,
+  Couchbase OpenTelemetry Monitoring - Data Service,
   Cluster Health, and Collector Setup
 sidebar_label: Couchbase
 id: collecting-couchbase-telemetry
@@ -36,7 +36,7 @@ authentication, and ships metrics to base14 Scout.
 | ---------------------- | ------- | ----------- |
 | Couchbase Server       | 7.0     | 7.6+        |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
@@ -45,7 +45,7 @@ Before starting:
 - A monitoring user with the External Stats Reader role
   (see [Access Setup](#access-setup) below)
 - Cluster must be initialized before metrics are available
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -363,7 +363,7 @@ metrics?**
 
 `cm_*` metrics cover cluster management operations like
 rebalance, auto failover, and REST API activity. `kv_*`
-metrics track the data service — connections, auth, and
+metrics track the data service - connections, auth, and
 command performance. `sys_*` metrics report host-level
 resource usage including CPU, memory, disk I/O, and swap.
 
@@ -389,12 +389,12 @@ Yes. Couchbase Community Edition 7.0+ exposes the same
 ## Related Guides
 
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
-  — Advanced collector configuration
+  - Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md)
-  — Run the Collector locally
+  - Run the Collector locally
 - [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
-  — Production deployment
+  - Production deployment
 - [CouchDB Monitoring](./couchdb.md)
-  — Document database monitoring
+  - Document database monitoring
 - [Creating Alerts](../../guides/creating-alerts-with-logx.md)
-  — Alert on Couchbase metrics
+  - Alert on Couchbase metrics

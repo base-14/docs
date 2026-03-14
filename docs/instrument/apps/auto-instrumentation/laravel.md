@@ -64,7 +64,7 @@ Laravel OpenTelemetry instrumentation.
 
 Install the OpenTelemetry PHP extension and SDK packages via Composer, then
 register the `OtelSdkServiceProvider` in your Laravel app. HTTP requests,
-Eloquent queries, Redis, and queue jobs are traced automatically — no
+Eloquent queries, Redis, and queue jobs are traced automatically - no
 per-route or per-model code changes required. Export traces to base14 Scout
 via OTLP.
 

@@ -37,20 +37,20 @@ Implement OpenTelemetry instrumentation for Slim Framework applications to
 enable distributed tracing, metrics, and log correlation. This guide covers both
 Slim 4 (with fully automatic HTTP span instrumentation via
 `opentelemetry-auto-slim`) and Slim 3 (with a manual `TelemetryMiddleware`). The
-~70% of setup that is identical between versions — environment variables,
-shutdown handlers, metrics, MongoDB auto-instrumentation, Docker deployment — is
+~70% of setup that is identical between versions - environment variables,
+shutdown handlers, metrics, MongoDB auto-instrumentation, Docker deployment - is
 shared throughout.
 
 Slim applications benefit from the OpenTelemetry PHP ecosystem: automatic
 MongoDB query tracing, Monolog log-trace correlation, and business metric
-counters — all with minimal application code. Whether you are building a new API
+counters - all with minimal application code. Whether you are building a new API
 on Slim 4 or maintaining a legacy Slim 3 service, this guide provides
 production-ready configurations for PHP-FPM deployments with base14 Scout.
 
 :::tip TL;DR
 
 Install the `opentelemetry` and `mongodb` PECL extensions, then set
-`OTEL_PHP_AUTOLOAD_ENABLED=true` — this single env var activates the
+`OTEL_PHP_AUTOLOAD_ENABLED=true` - this single env var activates the
 `opentelemetry-auto-slim` package, which automatically instruments every Slim 4
 route with no middleware code. For Slim 3, add a `TelemetryMiddleware` manually
 since `opentelemetry-auto-slim` only supports Slim 4+. Register a shutdown
@@ -88,7 +88,7 @@ created manually. If you are starting a new project, use Slim 4.
 
 You also need:
 
-- **Scout Collector** configured and accessible — see
+- **Scout Collector** configured and accessible - see
   [Docker Compose Setup](../../collector-setup/docker-compose-example.md) for
   local development
 - **Build tools** for compiling the OpenTelemetry PHP extension (gcc, make,
@@ -129,7 +129,7 @@ sudo pecl install opentelemetry mongodb
 brew install php@8.4 autoconf pkg-config
 pecl install opentelemetry mongodb
 
-# Alpine Linux (Docker) — see Dockerfile section below
+# Alpine Linux (Docker) - see Dockerfile section below
 apk add --no-cache autoconf build-base
 pecl install opentelemetry mongodb
 ```
@@ -485,7 +485,7 @@ class Shutdown
                 $lp->forceFlush();
             }
         } catch (\Throwable $e) {
-            // swallow — nothing useful to do during shutdown
+            // swallow - nothing useful to do during shutdown
         }
     }
 }
@@ -599,8 +599,8 @@ Key details:
   route matching (low cardinality)
 - `determineRouteBeforeAppMiddleware: true` in your Slim 3 settings is
   **required** for the route pattern to be available inside middleware
-- Do **not** set `STATUS_OK` on success — leave as UNSET per OTel conventions
-- Do **not** set `STATUS_ERROR` for 4xx responses — only for exceptions
+- Do **not** set `STATUS_OK` on success - leave as UNSET per OTel conventions
+- Do **not** set `STATUS_ERROR` for 4xx responses - only for exceptions
 
 Register it in `src/middleware.php`:
 
@@ -619,7 +619,7 @@ added **last** so it executes **first** (outermost wrapper).
 ## Structured Logging
 
 Wire Monolog with both a stderr handler and the OTel log handler. The OTel
-handler automatically attaches `traceId` and `spanId` to every log record — no
+handler automatically attaches `traceId` and `spanId` to every log record - no
 manual trace context injection needed.
 
 ```mdx-code-block
@@ -689,7 +689,7 @@ $container['logger'] = function () {
 ## Business Metrics
 
 Create counters with an `app.` namespace prefix. Do not add a `.total` suffix to
-counter names — the metric type already implies it. Use attributes for
+counter names - the metric type already implies it. Use attributes for
 differentiation instead of separate counters:
 
 ```php showLineNumbers title="src/Telemetry/Metrics.php"
@@ -1080,11 +1080,11 @@ recycling may be lost.
 
 ## What's Next
 
-- **[Custom PHP Instrumentation](../custom-instrumentation/php.md)** — add
+- **[Custom PHP Instrumentation](../custom-instrumentation/php.md)** - add
   manual spans for business-critical operations
 - **[Docker Compose Setup](../../collector-setup/docker-compose-example.md)** —
   configure Scout Collector for local development
-- **[Creating Alerts](../../../guides/creating-alerts-with-logx.md)** — set up
+- **[Creating Alerts](../../../guides/creating-alerts-with-logx.md)** - set up
   alerts for error rates, latency thresholds, and custom metrics
 - **[Dashboard Creation](../../../guides/create-your-first-dashboard.md)** —
   build custom dashboards combining traces, metrics, and business KPIs

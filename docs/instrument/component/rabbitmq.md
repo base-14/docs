@@ -1,6 +1,6 @@
 ---
 title: >
-  RabbitMQ OpenTelemetry Monitoring — Queue Depth, Message Rates,
+  RabbitMQ OpenTelemetry Monitoring - Queue Depth, Message Rates,
   and Consumer Metrics
 sidebar_label: RabbitMQ
 id: collecting-rabbitmq-telemetry
@@ -35,13 +35,13 @@ credentials, and ships metrics to base14 Scout.
 | RabbitMQ               | 3.x     | 4.x         |
 | Management plugin      | enabled | enabled     |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
 - RabbitMQ management plugin enabled (HTTP API on port 15672)
 - A user with monitoring privileges
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -87,7 +87,7 @@ curl -u rabbitmq_monitor:<password> http://localhost:15672/api/overview
 
 **Minimum required permissions:**
 
-- `monitoring` tag — required for management API access
+- `monitoring` tag - required for management API access
 - No write permissions to queues or exchanges are needed
 
 ## Configuration
@@ -115,7 +115,7 @@ receivers:
       rabbitmq.message.published:
         enabled: true
 
-      # Node metrics — memory
+      # Node metrics - memory
       rabbitmq.node.mem_used:
         enabled: true
       rabbitmq.node.mem_limit:
@@ -125,7 +125,7 @@ receivers:
       rabbitmq.node.mem_used_details.rate:
         enabled: true
 
-      # Node metrics — disk
+      # Node metrics - disk
       rabbitmq.node.disk_free:
         enabled: true
       rabbitmq.node.disk_free_limit:
@@ -135,7 +135,7 @@ receivers:
       rabbitmq.node.disk_free_details.rate:
         enabled: true
 
-      # Node metrics — file descriptors
+      # Node metrics - file descriptors
       rabbitmq.node.fd_used:
         enabled: true
       rabbitmq.node.fd_total:
@@ -143,7 +143,7 @@ receivers:
       rabbitmq.node.fd_used_details.rate:
         enabled: true
 
-      # Node metrics — sockets
+      # Node metrics - sockets
       rabbitmq.node.sockets_used:
         enabled: true
       rabbitmq.node.sockets_total:
@@ -151,7 +151,7 @@ receivers:
       rabbitmq.node.sockets_used_details.rate:
         enabled: true
 
-      # Node metrics — processes
+      # Node metrics - processes
       rabbitmq.node.proc_used:
         enabled: true
       rabbitmq.node.proc_total:
@@ -159,7 +159,7 @@ receivers:
       rabbitmq.node.proc_used_details.rate:
         enabled: true
 
-      # Node metrics — runtime
+      # Node metrics - runtime
       rabbitmq.node.uptime:
         enabled: true
       rabbitmq.node.run_queue:
@@ -171,7 +171,7 @@ receivers:
       rabbitmq.node.context_switches_details.rate:
         enabled: true
 
-      # Node metrics — garbage collection
+      # Node metrics - garbage collection
       rabbitmq.node.gc_num:
         enabled: true
       rabbitmq.node.gc_num_details.rate:
@@ -181,7 +181,7 @@ receivers:
       rabbitmq.node.gc_bytes_reclaimed_details.rate:
         enabled: true
 
-      # Node metrics — I/O read
+      # Node metrics - I/O read
       rabbitmq.node.io_read_count:
         enabled: true
       rabbitmq.node.io_read_bytes:
@@ -195,7 +195,7 @@ receivers:
       rabbitmq.node.io_read_avg_time_details.rate:
         enabled: true
 
-      # Node metrics — I/O write
+      # Node metrics - I/O write
       rabbitmq.node.io_write_count:
         enabled: true
       rabbitmq.node.io_write_bytes:
@@ -209,7 +209,7 @@ receivers:
       rabbitmq.node.io_write_avg_time_details.rate:
         enabled: true
 
-      # Node metrics — I/O sync and seek
+      # Node metrics - I/O sync and seek
       rabbitmq.node.io_sync_count:
         enabled: true
       rabbitmq.node.io_sync_avg_time:
@@ -231,7 +231,7 @@ receivers:
       rabbitmq.node.io_reopen_count_details.rate:
         enabled: true
 
-      # Node metrics — Mnesia transactions
+      # Node metrics - Mnesia transactions
       rabbitmq.node.mnesia_ram_tx_count:
         enabled: true
       rabbitmq.node.mnesia_disk_tx_count:
@@ -241,7 +241,7 @@ receivers:
       rabbitmq.node.mnesia_disk_tx_count_details.rate:
         enabled: true
 
-      # Node metrics — message store
+      # Node metrics - message store
       rabbitmq.node.msg_store_read_count:
         enabled: true
       rabbitmq.node.msg_store_write_count:
@@ -251,7 +251,7 @@ receivers:
       rabbitmq.node.msg_store_write_count_details.rate:
         enabled: true
 
-      # Node metrics — queue index
+      # Node metrics - queue index
       rabbitmq.node.queue_index_write_count:
         enabled: true
       rabbitmq.node.queue_index_read_count:
@@ -261,7 +261,7 @@ receivers:
       rabbitmq.node.queue_index_read_count_details.rate:
         enabled: true
 
-      # Node metrics — connections and channels
+      # Node metrics - connections and channels
       rabbitmq.node.connection_created:
         enabled: true
       rabbitmq.node.connection_closed:
@@ -279,7 +279,7 @@ receivers:
       rabbitmq.node.channel_closed_details.rate:
         enabled: true
 
-      # Node metrics — queue lifecycle
+      # Node metrics - queue lifecycle
       rabbitmq.node.queue_declared:
         enabled: true
       rabbitmq.node.queue_created:
@@ -395,16 +395,16 @@ expected port.
 
 ### Memory or disk alarm metrics showing 1
 
-**Cause**: RabbitMQ has triggered a resource alarm — this is a real
+**Cause**: RabbitMQ has triggered a resource alarm - this is a real
 operational issue.
 
 **Fix**:
 
 1. `rabbitmq.node.mem_alarm = 1` means memory usage exceeds the
-   threshold — publishers are blocked
+   threshold - publishers are blocked
 2. `rabbitmq.node.disk_free_alarm = 1` means free disk is below the
    limit
-3. These metrics are working correctly — resolve the underlying
+3. These metrics are working correctly - resolve the underlying
    resource issue
 
 ## FAQ
@@ -438,7 +438,7 @@ receivers:
 
 The `monitoring` user tag is required for management API access. No
 queue read/write permissions are needed. The Collector only reads
-metrics — it does not modify RabbitMQ data.
+metrics - it does not modify RabbitMQ data.
 
 **Does this work with both RabbitMQ 3.x and 4.x?**
 
@@ -463,4 +463,4 @@ these versions.
   Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
   Run the Collector locally
-- [Redis Monitoring](./redis.md) — Alternative caching service monitoring
+- [Redis Monitoring](./redis.md) - Alternative caching service monitoring

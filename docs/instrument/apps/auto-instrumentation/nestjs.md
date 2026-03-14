@@ -1,5 +1,5 @@
 ---
-title: Instrument NestJS with OpenTelemetry — TypeORM & BullMQ Tracing
+title: Instrument NestJS with OpenTelemetry - TypeORM & BullMQ Tracing
 sidebar_label: NestJS
 sidebar_position: 11
 description:
@@ -75,7 +75,7 @@ instrumentation with Base14 Scout.
 :::tip TL;DR
 
 Add a `TracingModule` that initializes the OpenTelemetry Node.js SDK and import
-it first in your `AppModule` — controllers, TypeORM queries, and HTTP calls are
+it first in your `AppModule` - controllers, TypeORM queries, and HTTP calls are
 then traced automatically. Use `trace.getTracer()` directly in guards,
 interceptors, and BullMQ processors for custom span coverage.
 

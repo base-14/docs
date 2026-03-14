@@ -1,6 +1,6 @@
 ---
 title: >
-  InfluxDB OpenTelemetry Monitoring — Write Throughput, Query Duration,
+  InfluxDB OpenTelemetry Monitoring - Write Throughput, Query Duration,
   and Collector Setup
 sidebar_label: InfluxDB
 id: collecting-influxdb-telemetry
@@ -23,7 +23,7 @@ keywords:
 # InfluxDB
 
 InfluxDB 2.x exposes Prometheus-format metrics at `/metrics` on port
-8086 by default — no additional configuration required. The
+8086 by default - no additional configuration required. The
 OpenTelemetry Collector scrapes this endpoint using the Prometheus
 receiver, collecting 60+ metrics including HTTP request rates, write
 throughput, query duration, storage cardinality, task execution status,
@@ -32,7 +32,7 @@ metrics to base14 Scout.
 
 :::note
 The OTel Collector's `influxdbreceiver` is for **receiving** InfluxDB
-line protocol writes (push model) — it is NOT for monitoring InfluxDB
+line protocol writes (push model) - it is NOT for monitoring InfluxDB
 health. This guide uses the Prometheus receiver to scrape InfluxDB's
 built-in `/metrics` endpoint.
 :::
@@ -43,14 +43,14 @@ built-in `/metrics` endpoint.
 | ---------------------- | ------- | ----------- |
 | InfluxDB               | 2.0     | 2.7+        |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
 - InfluxDB HTTP API port (8086) must be accessible from the host running
   the Collector
 - InfluxDB initial setup must be complete (org, bucket, admin user)
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -70,7 +70,7 @@ Full metric list: run
 
 ## Access Setup
 
-The `/metrics` endpoint is enabled by default in InfluxDB 2.x — no
+The `/metrics` endpoint is enabled by default in InfluxDB 2.x - no
 configuration changes are needed. The endpoint does not require
 authentication.
 
@@ -189,7 +189,7 @@ is running InfluxDB 1.x with a different metrics configuration.
 **What about the OTel InfluxDB receiver?**
 
 The `influxdbreceiver` in the OTel Collector Contrib is for receiving
-InfluxDB line protocol writes — it acts as an InfluxDB-compatible write
+InfluxDB line protocol writes - it acts as an InfluxDB-compatible write
 endpoint, not a metrics scraper. To monitor InfluxDB itself, use the
 Prometheus receiver as shown in this guide.
 
@@ -197,7 +197,7 @@ Prometheus receiver as shown in this guide.
 
 InfluxDB 1.x also exposes a `/metrics` endpoint, but the internal
 metrics differ from 2.x. The Prometheus receiver will scrape them
-correctly — the metric names will reflect 1.x internals (e.g.,
+correctly - the metric names will reflect 1.x internals (e.g.,
 `influxdb_shard_*` instead of `storage_*`).
 
 **Does this work with InfluxDB running in Kubernetes?**
@@ -240,5 +240,5 @@ Each instance is identified by its `instance` label.
   Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
   Run the Collector locally
-- [MySQL Monitoring](./mysql.md) — Database monitoring
-- [PostgreSQL Monitoring](./postgres.md) — Database monitoring
+- [MySQL Monitoring](./mysql.md) - Database monitoring
+- [PostgreSQL Monitoring](./postgres.md) - Database monitoring

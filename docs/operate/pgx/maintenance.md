@@ -30,9 +30,9 @@ accumulation, bloat levels, and freeze age.
 
 The Maintenance tab is organized into three sections:
 
-1. **Critical Stats** — Key maintenance health indicators
-2. **Vacuum Analysis** — Manual and auto vacuum tracking
-3. **Bloat Monitoring** — Table and index bloat trends
+1. **Critical Stats** - Key maintenance health indicators
+2. **Vacuum Analysis** - Manual and auto vacuum tracking
+3. **Bloat Monitoring** - Table and index bloat trends
 
 ---
 
@@ -85,7 +85,7 @@ requiring attention.
 | < 100M      | Healthy                            |
 | 100M - 150M | Monitor                            |
 | 150M - 200M | Warning                            |
-| > 200M      | Critical — immediate action needed |
+| > 200M      | Critical - immediate action needed |
 
 **When to investigate:**
 
@@ -130,7 +130,7 @@ VACUUM FREEZE tablename;
 ## Vacuum Analysis Section
 
 The Vacuum Analysis section shows vacuum operation frequency. This section is
-collapsed by default — click to expand.
+collapsed by default - click to expand.
 
 ![Vacuum Analysis](/img/pgx/11-maintenance-vacuum.png)
 
@@ -171,7 +171,7 @@ collapsed by default — click to expand.
 ## Bloat Monitoring Section
 
 The Bloat Monitoring section tracks wasted space in tables and indexes. This
-section is collapsed by default — click to expand.
+section is collapsed by default - click to expand.
 
 ![Bloat Monitoring](/img/pgx/11-maintenance-bloat.png)
 
@@ -264,9 +264,9 @@ Before scheduling maintenance:
 
 When queries slow down:
 
-1. Check **Table Analyze Stats** — stale statistics?
-2. Review **Dead Tuple Percentage** — high dead tuples?
-3. Check **Table Bloat Percentage** — excessive bloat?
+1. Check **Table Analyze Stats** - stale statistics?
+2. Review **Dead Tuple Percentage** - high dead tuples?
+3. Check **Table Bloat Percentage** - excessive bloat?
 4. Run ANALYZE and VACUUM as needed
 
 ### Configuring Autovacuum
@@ -382,6 +382,6 @@ The Maintenance section uses these metrics from the
 
 ## Related Guides
 
-- [Tables & Indexes](./tables-indexes.md) — Detailed table analysis
-- [Performance](./performance.md) — Query performance
-- [Configuration Reference](./configuration.md) — pgX settings
+- [Tables & Indexes](./tables-indexes.md) - Detailed table analysis
+- [Performance](./performance.md) - Query performance
+- [Configuration Reference](./configuration.md) - pgX settings

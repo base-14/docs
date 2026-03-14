@@ -70,15 +70,15 @@ with OAuth tokens that the app manages.
 
 | | Collector + API Gateway | Direct to Base14 |
 | :--- | :--- | :--- |
-| **Authentication** | API gateway handles auth centrally — app only needs an API key or static token | App must manage OAuth token lifecycle (acquire, refresh, retry on 401) |
-| **Credential security** | Credentials stay on your infra — app ships a lightweight key that the gateway validates | OAuth client secret must be embedded or fetched at runtime — risk of extraction from APK/IPA |
-| **Rate limiting** | API gateway enforces per-device or per-app rate limits — protects backend from traffic spikes | No rate limiting — a buggy release can flood Base14 with telemetry |
-| **Server-side sampling** | OTel collector applies tail sampling (e.g. keep all errors, sample 10% of healthy spans) — reduces cost without losing signal | All sampling must happen on-device — you lose the ability to make sampling decisions with full context |
-| **Buffering and retry** | Collector buffers and retries on export failure — device fire-and-forget | App must handle retry logic and local buffering if Base14 is unreachable |
+| **Authentication** | API gateway handles auth centrally - app only needs an API key or static token | App must manage OAuth token lifecycle (acquire, refresh, retry on 401) |
+| **Credential security** | Credentials stay on your infra - app ships a lightweight key that the gateway validates | OAuth client secret must be embedded or fetched at runtime - risk of extraction from APK/IPA |
+| **Rate limiting** | API gateway enforces per-device or per-app rate limits - protects backend from traffic spikes | No rate limiting - a buggy release can flood Base14 with telemetry |
+| **Server-side sampling** | OTel collector applies tail sampling (e.g. keep all errors, sample 10% of healthy spans) - reduces cost without losing signal | All sampling must happen on-device - you lose the ability to make sampling decisions with full context |
+| **Buffering and retry** | Collector buffers and retries on export failure - device fire-and-forget | App must handle retry logic and local buffering if Base14 is unreachable |
 | **Schema evolution** | Collector processors can rename attributes, drop PII, or add resource attributes without app updates | Any schema change requires an app release and user update |
-| **Network efficiency** | Gateway can terminate TLS at the edge, compress, and batch — lower overhead per device | Each device opens its own TLS connection to Base14 — more overhead at scale |
+| **Network efficiency** | Gateway can terminate TLS at the edge, compress, and batch - lower overhead per device | Each device opens its own TLS connection to Base14 - more overhead at scale |
 | **Operational cost** | Requires running a collector and gateway (but these are standard infra components) | No additional infra to manage |
-| **Deployment complexity** | Moderate — collector + gateway config | Low — just configure the Base14 endpoint in the app |
+| **Deployment complexity** | Moderate - collector + gateway config | Low - just configure the Base14 endpoint in the app |
 | **Best for** | Production apps with multiple devices, teams that want control over sampling and PII | Prototypes, internal tools, or apps with a small user base |
 
 :::tip Recommendation
@@ -156,9 +156,9 @@ flutter pub get
 ## Step 3: Initialize Telemetry
 
 Both approaches initialize telemetry before `runApp()`. Below are the minimal
-entry points — see the reference docs for the complete file listings.
+entry points - see the reference docs for the complete file listings.
 
-**Flutterific RUM** — create `lib/main_otel.dart`:
+**Flutterific RUM** - create `lib/main_otel.dart`:
 
 ```dart title="lib/main_otel.dart"
 import 'package:flutter/material.dart';
@@ -180,7 +180,7 @@ Future<void> main() async {
 > documented in the
 > [Flutterific RUM reference](../instrument/mobile/flutter-rum-flutterific.md#create-the-libotel-directory).
 
-**Manual SDK** — wrap your existing `main()` in `runZonedGuarded`:
+**Manual SDK** - wrap your existing `main()` in `runZonedGuarded`:
 
 ```dart title="lib/main.dart"
 import 'dart:async';
@@ -216,18 +216,18 @@ flutter run
 
 Once the app is running, confirm spans are reaching your collector.
 
-1. **Check collector logs** — look for incoming OTLP requests:
+1. **Check collector logs** - look for incoming OTLP requests:
 
    ```bash
    docker logs otel-collector 2>&1 | grep -i "traces"
    ```
 
-2. **Look for expected span names** — depending on your approach:
+2. **Look for expected span names** - depending on your approach:
    - Flutterific RUM: `app.cold_start`, `navigation.push`, `screen.load`,
      `screen.dwell`, `jank.frame`
    - Manual SDK: `GET /api/products`, `screen_view`, `device.app.lifecycle`
 
-3. **Open Scout** — navigate to the Traces view and filter by
+3. **Open Scout** - navigate to the Traces view and filter by
    `service.name = your-app-name`. You should see spans arriving within
    30 seconds of app activity.
 
@@ -240,12 +240,12 @@ Once the app is running, confirm spans are reaching your collector.
 ## Next Steps
 
 - [Flutter RUM with Flutterific](../instrument/mobile/flutter-rum-flutterific.md)
-  — full reference for automatic RUM instrumentation
-- [Flutter OpenTelemetry (Manual SDK)](../instrument/mobile/flutter.md) — full
+  - full reference for automatic RUM instrumentation
+- [Flutter OpenTelemetry (Manual SDK)](../instrument/mobile/flutter.md) - full
   reference for manual SDK instrumentation
-- [Create Your First Dashboard](./create-your-first-dashboard.md) — build
+- [Create Your First Dashboard](./create-your-first-dashboard.md) - build
   dashboards from your mobile telemetry data
-- [Creating Alerts with LogX](./creating-alerts-with-logx.md) — set up alerts
+- [Creating Alerts with LogX](./creating-alerts-with-logx.md) - set up alerts
   on crash rates, ANR counts, or slow screen loads
 - [Troubleshooting Missing Telemetry Data](./troubleshooting-missing-data.md)
-  — diagnose issues when spans are not arriving
+  - diagnose issues when spans are not arriving

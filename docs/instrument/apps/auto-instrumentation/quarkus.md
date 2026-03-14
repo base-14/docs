@@ -78,7 +78,7 @@ extensions.
 Add the `quarkus-opentelemetry` extension via `./mvnw quarkus:add-extension`,
 then set `quarkus.otel.exporter.otlp.endpoint` in `application.properties`.
 REST endpoints, Hibernate Panache queries, and reactive Mutiny pipelines are
-traced automatically — no Java agent needed, and native GraalVM images are
+traced automatically - no Java agent needed, and native GraalVM images are
 fully supported.
 
 :::

@@ -1,6 +1,6 @@
 ---
 title: >
-  Memcached OpenTelemetry Monitoring — Cache Usage, Hit Ratios,
+  Memcached OpenTelemetry Monitoring - Cache Usage, Hit Ratios,
   and Collector Setup
 sidebar_label: Memcached
 id: collecting-memcached-telemetry
@@ -33,13 +33,13 @@ verifies connectivity, and ships metrics to base14 Scout.
 | ---------------------- | ------- | ----------- |
 | Memcached              | 1.6     | 1.6.x       |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
 - Memcached must be accessible over TCP from the host running the Collector
-- No authentication is required — Memcached uses network-level access control
-- OTel Collector installed — see
+- No authentication is required - Memcached uses network-level access control
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -55,7 +55,7 @@ Full metric reference:
 ## Access Setup
 
 Memcached has no built-in authentication. Access control is handled at the
-network level — ensure only the Collector host can reach port 11211.
+network level - ensure only the Collector host can reach port 11211.
 
 Verify connectivity:
 
@@ -72,7 +72,7 @@ the Memcached host and port.
 receivers:
   memcached:
     endpoint: localhost:11211           # Change to your Memcached address
-    transport: tcp                      # Required — must be explicitly set
+    transport: tcp                      # Required - must be explicitly set
     collection_interval: 30s
 
     metrics:
@@ -204,7 +204,7 @@ receivers:
 **Fix**:
 
 1. The `memcached.operation_hit_ratio` metric requires both `get` hits and
-   misses to calculate — it stays zero until the cache is actively used
+   misses to calculate - it stays zero until the cache is actively used
 2. Verify cache traffic with `echo "stats" | nc localhost 11211` and check
    `get_hits` and `get_misses` counters
 
@@ -237,7 +237,7 @@ Then include both in the pipeline:
 **Why is `transport: tcp` required?**
 
 The Memcached receiver defaults to an empty transport value, which causes
-a startup error. This is a known quirk — always set `transport: tcp`
+a startup error. This is a known quirk - always set `transport: tcp`
 explicitly in the config.
 
 **Can I monitor Memcached with SASL authentication?**
@@ -263,6 +263,6 @@ deployment pattern.
   Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
   Run the Collector locally
-- [Redis Monitoring](./redis.md) — Alternative caching service monitoring
-- [ElastiCache Monitoring](../infra/aws/elasticache.md) — AWS ElastiCache
+- [Redis Monitoring](./redis.md) - Alternative caching service monitoring
+- [ElastiCache Monitoring](../infra/aws/elasticache.md) - AWS ElastiCache
   monitoring

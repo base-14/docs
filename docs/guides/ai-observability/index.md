@@ -37,7 +37,7 @@ shows the full picture:
 | ----------------- | ---------------------------------- | ---------------------------------------- |
 | Traditional APM   | HTTP requests, DB queries, latency | Model name, tokens, cost, prompt content |
 | AI-specific tools | LLM calls, prompts, model metadata | HTTP context, DB queries, infrastructure |
-| **OpenTelemetry** | **All of the above in one trace**  | —                                        |
+| **OpenTelemetry** | **All of the above in one trace**  | -                                        |
 
 With OpenTelemetry, a single trace shows that a slow HTTP response was caused by
 a specific LLM call in a specific agent, which also triggered 3 database queries

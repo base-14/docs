@@ -1,6 +1,6 @@
 ---
 title: >
-  Caddy OpenTelemetry Monitoring — Request Rates, TLS Handshakes,
+  Caddy OpenTelemetry Monitoring - Request Rates, TLS Handshakes,
   and Collector Setup
 sidebar_label: Caddy
 id: collecting-caddy-telemetry
@@ -36,15 +36,15 @@ metrics to base14 Scout.
 | ---------------------- | ------- | ----------- |
 | Caddy                  | 2.0     | 2.9+        |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
 - Caddy admin API port (2019) must be accessible from the host running
   the Collector
-- The admin API is enabled by default — do not disable it if you need
+- The admin API is enabled by default - do not disable it if you need
   metrics
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -170,7 +170,7 @@ curl -s http://localhost:2019/metrics | grep caddy_http
 
 1. Verify Caddy is running: `docker ps | grep caddy` or
    `caddy version`
-2. Check admin API is enabled — do not set `admin off` in Caddyfile
+2. Check admin API is enabled - do not set `admin off` in Caddyfile
 3. Confirm the admin port: default is 2019, check `admin` directive
    in your Caddyfile
 
@@ -239,7 +239,7 @@ Each instance is identified by its `instance` label.
 The admin API should not be publicly accessible. Restrict it using
 Caddy's `admin` directive (e.g., bind to localhost or a private
 interface) and use firewall rules. The Collector only needs access
-to port 2019 — it does not need to reach the HTTP/HTTPS ports.
+to port 2019 - it does not need to reach the HTTP/HTTPS ports.
 
 ## What's Next?
 
@@ -257,5 +257,5 @@ to port 2019 — it does not need to reach the HTTP/HTTPS ports.
   Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
   Run the Collector locally
-- [NGINX Monitoring](./nginx.md) — Alternative web server monitoring
-- [Traefik Monitoring](./traefik.md) — Alternative reverse proxy monitoring
+- [NGINX Monitoring](./nginx.md) - Alternative web server monitoring
+- [Traefik Monitoring](./traefik.md) - Alternative reverse proxy monitoring

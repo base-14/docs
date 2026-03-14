@@ -1,5 +1,5 @@
 ---
-title: PostgreSQL OpenTelemetry Monitoring — Connections, Queries & WAL
+title: PostgreSQL OpenTelemetry Monitoring - Connections, Queries & WAL
 sidebar_label: PostgreSQL Basic
 id: collecting-postgres-telemetry
 sidebar_position: 1
@@ -41,13 +41,13 @@ base14 Scout.
 | ---------------------- | ------- | ----------- |
 | PostgreSQL             | 9.6     | 14+         |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
 - PostgreSQL must be accessible from the host running the Collector
 - Superuser access for initial monitoring user creation
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -282,7 +282,7 @@ PostgreSQL version does not support the queried stats view.
 
 1. `postgresql.wal.age` requires PostgreSQL 13+ with `pg_stat_wal`
 2. `postgresql.replication.data_delay` requires at least one replica
-   connected — it reports zero with no replicas
+   connected - it reports zero with no replicas
 
 ## FAQ
 
@@ -336,15 +336,15 @@ No write permissions are needed.
   statistics and per-table metrics
 - **Analyze in Scout**: Get
   [deep PostgreSQL analysis with pgX](https://base14.io/scout/pgx)
-  — correlate query performance with application traces and
+  - correlate query performance with application traces and
   infrastructure metrics
 
 ## Related Guides
 
 - [PostgreSQL Advanced](./postgres-advanced.md)
-  — Deeper query and table-level monitoring
+  - Deeper query and table-level monitoring
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md) —
   Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
   Run the Collector locally
-- [MongoDB Monitoring](./mongodb.md) — Alternative database monitoring
+- [MongoDB Monitoring](./mongodb.md) - Alternative database monitoring

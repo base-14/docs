@@ -28,10 +28,10 @@ and troubleshoot wait events.
 
 The Locks & Waits tab is organized into four sections:
 
-1. **Concurrency Overview** — Lock types and deadlock monitoring
-2. **Locks Grid** — Detailed view of all locks
-3. **Blocking Analysis** — Blocking chains and impact assessment
-4. **Wait Event Analysis** — PostgreSQL wait event distribution
+1. **Concurrency Overview** - Lock types and deadlock monitoring
+2. **Locks Grid** - Detailed view of all locks
+3. **Blocking Analysis** - Blocking chains and impact assessment
+4. **Wait Event Analysis** - PostgreSQL wait event distribution
 
 ---
 
@@ -64,9 +64,9 @@ A pie chart showing the distribution of lock types.
 
 **When to investigate:**
 
-- High tuple lock count — row contention
-- Growing lock counts — possible lock escalation
-- Unexpected lock types — review application behavior
+- High tuple lock count - row contention
+- Growing lock counts - possible lock escalation
+- Unexpected lock types - review application behavior
 
 ### Lock Wait Queue Depth
 
@@ -109,7 +109,7 @@ A pie chart showing the distribution of lock types.
 ## Locks Grid Section
 
 The Locks Grid shows detailed information about all current locks. This section
-is collapsed by default — click to expand.
+is collapsed by default - click to expand.
 
 ![Locks Grid](/img/pgx/10-locks-waits-grid.png)
 
@@ -160,7 +160,7 @@ is collapsed by default — click to expand.
 ## Blocking Analysis Section
 
 The Blocking Analysis section helps identify blocking chains and their impact.
-This section is collapsed by default — click to expand.
+This section is collapsed by default - click to expand.
 
 ### Blocking Sessions Node Graph
 
@@ -230,7 +230,7 @@ A visual representation of which sessions are blocking others.
 ## Wait Event Analysis Section
 
 The Wait Event Analysis section shows where PostgreSQL is spending time waiting.
-This section is collapsed by default — click to expand.
+This section is collapsed by default - click to expand.
 
 ### Wait Event Distribution
 
@@ -260,16 +260,16 @@ This section is collapsed by default — click to expand.
 
 **IO wait types:**
 
-- DataFileRead — Reading data files
-- DataFileWrite — Writing data files
-- WALWrite — Writing WAL
-- WALSync — Syncing WAL
+- DataFileRead - Reading data files
+- DataFileWrite - Writing data files
+- WALWrite - Writing WAL
+- WALSync - Syncing WAL
 
 **When to investigate:**
 
-- High DataFileRead — buffer cache misses
-- High WALWrite — heavy write workload
-- Any sustained IO waits — storage bottleneck
+- High DataFileRead - buffer cache misses
+- High WALWrite - heavy write workload
+- Any sustained IO waits - storage bottleneck
 
 ### LWLock Analysis
 
@@ -277,16 +277,16 @@ This section is collapsed by default — click to expand.
 
 **Common LWLocks:**
 
-- buffer_content — Buffer access
-- WALInsert — WAL insertion
-- lock_manager — Lock management
-- proc — Process management
+- buffer_content - Buffer access
+- WALInsert - WAL insertion
+- lock_manager - Lock management
+- proc - Process management
 
 **When to investigate:**
 
-- High buffer_content — buffer contention
-- High WALInsert — WAL write contention
-- Unusual patterns — configuration issues
+- High buffer_content - buffer contention
+- High WALInsert - WAL write contention
+- Unusual patterns - configuration issues
 
 ---
 
@@ -381,6 +381,6 @@ The Locks & Waits section uses these metrics from the
 
 ## Related Guides
 
-- [Performance](./performance.md) — Query performance analysis
-- [Connections](./connections.md) — Connection management
-- [Queries](./queries.md) — Query analysis
+- [Performance](./performance.md) - Query performance analysis
+- [Connections](./connections.md) - Connection management
+- [Queries](./queries.md) - Query analysis

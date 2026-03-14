@@ -396,7 +396,7 @@ SCOUT_ENVIRONMENT=production
 ```
 
 The Pydantic `Settings` class reads all environment variables automatically (see
-the Pydantic Settings tab). No code changes needed — set the variables and the
+the Pydantic Settings tab). No code changes needed - set the variables and the
 application picks them up.
 
 ```mdx-code-block
@@ -555,7 +555,7 @@ CMD ["uv", "run", "uvicorn", "sales_intelligence.main:app", \
 
 This section covers LangGraph-specific instrumentation patterns that go beyond
 generic LLM observability. These patterns give you visibility into the agent
-orchestration layer — which nodes executed, what routing decisions were made,
+orchestration layer - which nodes executed, what routing decisions were made,
 how state flowed through the pipeline, and where time was spent.
 
 ### State Definition
@@ -1351,7 +1351,7 @@ logging.getLogger("opentelemetry").setLevel(logging.DEBUG)
 
 **Solutions:**
 
-1. Check your LLM SDK version — older versions may not expose `usage` on the
+1. Check your LLM SDK version - older versions may not expose `usage` on the
    response object
 2. Verify the provider response has `input_tokens` and `output_tokens` (naming
    varies by provider)
@@ -1361,11 +1361,11 @@ logging.getLogger("opentelemetry").setLevel(logging.DEBUG)
 
 **Solutions:**
 
-1. Ensure `wrap_agent` creates spans inside the pipeline span context — call
+1. Ensure `wrap_agent` creates spans inside the pipeline span context - call
    `pipeline.ainvoke()` within the `pipeline.run` span (see
    [Pipeline-Level Parent Span](#pipeline-level-parent-span))
 2. Verify `setup_telemetry()` is called **before** creating the FastAPI app
-3. Check that async context propagation is working — LangGraph preserves the
+3. Check that async context propagation is working - LangGraph preserves the
    OTel context across `await` boundaries
 
 #### Issue: Cost metrics not accurate
@@ -1394,7 +1394,7 @@ logging.getLogger("opentelemetry").setLevel(logging.DEBUG)
 - **Never record raw prompts** that may contain user data, API keys, or
   credentials in span attributes or events
 - **Truncate content** to 500 characters to avoid oversized spans
-- **Disable content capture** in production if compliance requires it — set
+- **Disable content capture** in production if compliance requires it - set
   `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=false`
 - **Scrub PII** before recording any content in telemetry (see
   [PII Scrubbing](#pii-scrubbing) for the regex patterns used)
@@ -1415,7 +1415,7 @@ SQLAlchemyInstrumentor().instrument(
 
 For applications handling regulated data (GDPR, HIPAA, PCI-DSS):
 
-- Use opt-in content capture — disabled by default in this guide
+- Use opt-in content capture - disabled by default in this guide
 - Record only token counts and model metadata, not prompt content
 - Audit span attributes regularly for sensitive data leaks
 - Use the OTel Collector `attributes` processor to redact fields before export
@@ -1475,7 +1475,7 @@ is unmeasurable. `BatchSpanProcessor` exports spans in a background thread.
 
 LangSmith provides deep LangGraph-specific tracing but operates in isolation
 from your HTTP and database telemetry. OpenTelemetry gives you a single trace
-that spans all layers — you can see that a slow HTTP response was caused by a
+that spans all layers - you can see that a slow HTTP response was caused by a
 specific agent node making an LLM call, and that the same request also ran
 database queries. LangSmith cannot show that correlation.
 

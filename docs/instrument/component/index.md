@@ -150,11 +150,11 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 
 Each component exposes metrics through one of three methods:
 
-1. **Dedicated OTel receiver** — the Collector connects directly to the
+1. **Dedicated OTel receiver** - the Collector connects directly to the
    component's stats API (PostgreSQL, MySQL, MariaDB, MongoDB, Redis,
    RabbitMQ, Elasticsearch, CouchDB, Memcached, Apache HTTP Server,
    HAProxy, ZooKeeper, Kafka, Aerospike, Docker Engine)
-2. **Prometheus scrape** — the component or a sidecar exporter exposes
+2. **Prometheus scrape** - the component or a sidecar exporter exposes
    a `/metrics` endpoint that the Collector scrapes (Cassandra via
    JMX exporter, Consul, Vault, etcd, Solr, Temporal, NGINX,
    ClickHouse, NATS via prometheus-nats-exporter, Traefik, Envoy,
@@ -162,7 +162,7 @@ Each component exposes metrics through one of three methods:
    pgbouncer-exporter, Nomad, Couchbase, Pulsar, ArgoCD, Jenkins via
    Prometheus Metrics plugin, InfluxDB, Caddy, Varnish via
    prometheus_varnish_exporter)
-3. **JMX Scraper** — a standalone process connects to the application's
+3. **JMX Scraper** - a standalone process connects to the application's
    JMX port via RMI, converts MBeans to OpenTelemetry metrics, and
    exports OTLP to the Collector (Tomcat, ActiveMQ, Jetty, WildFly).
    See [JMX Metrics Collection Guide](../collector-setup/jmx-metrics-collection-guide.md).
@@ -180,5 +180,5 @@ NGINX also supports **distributed traces** via `nginx-module-otel` and
 
 1. **Choose your component** from the tables above
 2. **Follow the guide** to configure the OTel Collector receiver
-3. **Create dashboards** in Scout — see
+3. **Create dashboards** in Scout - see
    [Create Your First Dashboard](../../guides/create-your-first-dashboard.md)

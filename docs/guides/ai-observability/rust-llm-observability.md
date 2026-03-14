@@ -35,15 +35,15 @@ keywords:
 
 Implement unified observability for Rust AI and LLM applications using
 OpenTelemetry. This guide shows you how to trace every layer of a Rust AI
-application — from HTTP requests through pipeline orchestration to LLM API calls
-and database queries — in a single correlated trace using the OpenTelemetry Rust
+application - from HTTP requests through pipeline orchestration to LLM API calls
+and database queries - in a single correlated trace using the OpenTelemetry Rust
 SDK and base14 Scout. You will instrument a multi-stage AI pipeline that
 retrieves data from PostgreSQL, analyzes trends with a fast LLM, generates
-structured narratives with a capable LLM, and assembles the final output — with
+structured narratives with a capable LLM, and assembles the final output - with
 every stage, token count, and cost captured in telemetry.
 
 Rust AI applications introduce observability challenges that generic APM tooling
-was not designed for. An LLM call is not just an HTTP request — it carries
+was not designed for. An LLM call is not just an HTTP request - it carries
 semantic meaning: which model was used, how many tokens were consumed, what it
 cost, whether the response was a fallback from another provider. Unlike Python
 or Node.js, Rust has no auto-instrumentation libraries for LLM SDKs like
@@ -60,7 +60,7 @@ this guide provides production-ready patterns for unified AI observability in
 Rust. You will learn how to set up three-pillar telemetry (traces, metrics,
 logs), create GenAI spans with the correct semantic conventions, define six
 standard LLM metrics, implement retry and fallback observability, and deploy
-with Docker Compose and the OpenTelemetry Collector — all visible in a single
+with Docker Compose and the OpenTelemetry Collector - all visible in a single
 trace on base14 Scout.
 
 :::tip TL;DR
@@ -146,7 +146,7 @@ Before starting, ensure you have:
 ## The Unified Trace
 
 The core value of OpenTelemetry for Rust AI applications is the **unified
-trace** — a single trace ID that connects every layer of a request, from HTTP
+trace** - a single trace ID that connects every layer of a request, from HTTP
 entry through pipeline stages to LLM completions and back.
 
 Here is what a trace looks like for an AI pipeline request:
@@ -175,7 +175,7 @@ Three types of spans work together:
 
 The HTTP span captures the incoming request. The pipeline span orchestrates
 stages. Each `gen_ai.chat` span wraps an LLM call, adding provider, model,
-token, and cost context. All are children of the same trace — giving you full
+token, and cost context. All are children of the same trace - giving you full
 visibility from HTTP entry to LLM completion.
 
 ## Installation
@@ -230,13 +230,13 @@ dotenvy = "0.15"
 
 > **Note:** The `opentelemetry`, `opentelemetry_sdk`, and `opentelemetry-otlp`
 > crates must use the same version. The `tracing-opentelemetry` version must be
-> compatible — check the
+> compatible - check the
 > [tracing-opentelemetry compatibility matrix](https://github.com/open-telemetry/opentelemetry-rust/tree/main/opentelemetry-tracing)
 > for the correct pairing.
 
 ## Telemetry Initialization
 
-Initialize the three OpenTelemetry pillars — traces, metrics, and logs — with
+Initialize the three OpenTelemetry pillars - traces, metrics, and logs - with
 OTLP gRPC export. This runs once at application startup.
 
 ```rust showLineNumbers title="src/telemetry/init.rs"
@@ -382,7 +382,7 @@ pub fn init_telemetry(
 Key points:
 
 - **`TelemetryGuard`** holds all three providers and flushes pending telemetry
-  on shutdown — call `shutdown()` before process exit to avoid losing the final
+  on shutdown - call `shutdown()` before process exit to avoid losing the final
   batch
 - **`OpenTelemetryLayer`** converts `tracing` spans into OpenTelemetry spans
   with proper parent-child relationships
@@ -585,7 +585,7 @@ pub async fn generate_once(
 Key patterns:
 
 - **`tracing::field::Empty`** declares span fields that are filled later with
-  `span.record()` — this is how you handle attributes that depend on the LLM
+  `span.record()` - this is how you handle attributes that depend on the LLM
   response
 - **`.instrument(span.clone())`** executes the async LLM call within the span
   context, so the span duration matches the actual API call
@@ -1302,7 +1302,7 @@ pub trait Provider: Send + Sync {
 ```
 
 The `LlmClient` wraps this trait with retry, fallback, and telemetry logic. Each
-provider implementation only needs to implement the `Provider` trait — all
+provider implementation only needs to implement the `Provider` trait - all
 observability happens in the client layer.
 
 ```mdx-code-block
@@ -1635,11 +1635,11 @@ span.add_event(
 
 - **Truncate prompts** to 1000 characters and completions to 2000 characters to
   limit data exposure in telemetry
-- **Never record API keys** in span attributes or events — load keys from
+- **Never record API keys** in span attributes or events - load keys from
   environment variables, not configuration files
 - **Use the OpenTelemetry Collector** `filter` processor to drop sensitive spans
   before they leave your network
-- **Strip HTTP headers** like `Authorization` from HTTP spans — tower-http's
+- **Strip HTTP headers** like `Authorization` from HTTP spans - tower-http's
   `TraceLayer` does not record headers by default, which is the safe behavior
 - **Consider disabling prompt/completion events** in production if your data is
   subject to GDPR, HIPAA, or PCI-DSS compliance requirements by removing the
@@ -1927,7 +1927,7 @@ curl http://localhost:13133/health
 
 1. Verify `OTEL_EXPORTER_OTLP_ENDPOINT` points to the collector (e.g.,
    `http://otel-collector:4317` in Docker, `http://localhost:4317` locally)
-2. Check that `telemetry_guard.shutdown()` is called before process exit — the
+2. Check that `telemetry_guard.shutdown()` is called before process exit - the
    batch exporter flushes on shutdown
 3. Add a `debug` exporter to the collector config to see incoming spans in
    collector logs
@@ -1938,7 +1938,7 @@ curl http://localhost:13133/health
 
 1. Ensure async operations use `.instrument(span.clone())` to propagate the span
    context across `await` points
-2. Use `#[tracing::instrument]` on async functions — it automatically creates
+2. Use `#[tracing::instrument]` on async functions - it automatically creates
    child spans
 3. Enable `tracing` feature on `tokio` in Cargo.toml:
    `tokio = { features = ["tracing"] }`
@@ -1947,7 +1947,7 @@ curl http://localhost:13133/health
 
 **Solutions:**
 
-1. Verify `PeriodicReader` interval — metrics are batched and exported every 15
+1. Verify `PeriodicReader` interval - metrics are batched and exported every 15
    seconds by default
 2. Check that `global::set_meter_provider()` is called before any metric
    instruments are created
@@ -1959,7 +1959,7 @@ curl http://localhost:13133/health
 
 1. Check that `span.record()` is called with the correct field name matching the
    `tracing::info_span!` declaration
-2. Verify `tracing::field::Empty` fields are declared in the span macro — you
+2. Verify `tracing::field::Empty` fields are declared in the span macro - you
    cannot record fields that were not declared
 3. Ensure `.instrument(span.clone())` is used, not
    `.instrument(tracing::Span::current())`
@@ -1983,7 +1983,7 @@ creation is nearly free.
 #### 1. Use Batch Export
 
 The default `with_batch_exporter()` is already optimal. Avoid
-`SimpleSpanProcessor` in production — it blocks on every span.
+`SimpleSpanProcessor` in production - it blocks on every span.
 
 #### 2. Tune Metric Export Interval
 
@@ -2076,7 +2076,7 @@ dimensions let you build per-provider and per-model cost dashboards.
 
 Yes. The provider trait pattern abstracts away the backend. Ollama exposes an
 OpenAI-compatible API, so you can use the same `async-openai` client pointed at
-`http://localhost:11434/v1`. All GenAI spans and metrics work identically — only
+`http://localhost:11434/v1`. All GenAI spans and metrics work identically - only
 `gen_ai.provider.name` and `server.address` change.
 
 ### How do I reduce trace volume from LLM applications?
@@ -2090,7 +2090,7 @@ events to reduce span size while keeping the core GenAI attributes.
 
 The batch exporter buffers spans in memory and retries export. If the collector
 remains unavailable, buffered spans are eventually dropped. Your application
-continues to run normally — telemetry export is non-blocking. Configure the
+continues to run normally - telemetry export is non-blocking. Configure the
 collector with health checks and ensure it starts before your application in
 Docker Compose.
 
@@ -2111,26 +2111,26 @@ it supports streaming and has lower overhead for high-volume telemetry.
 
 ### Advanced Topics
 
-- [LLM Observability (Python)](../llm-observability) — Python equivalent with
+- [LLM Observability (Python)](../llm-observability) - Python equivalent with
   auto-instrumentation patterns
 - [Axum Instrumentation](../../instrument/apps/auto-instrumentation/axum.md) —
   General Axum APM without AI-specific patterns
 - [Rust Custom Instrumentation](../../instrument/apps/custom-instrumentation/rust.md)
-  — Manual OpenTelemetry SDK usage for Rust
+  - Manual OpenTelemetry SDK usage for Rust
 
 ### Scout Platform Features
 
-- [Creating Alerts](../creating-alerts-with-logx.md) — Set up alerts for LLM
+- [Creating Alerts](../creating-alerts-with-logx.md) - Set up alerts for LLM
   error rates and cost thresholds
-- [Dashboards and Alerts](../../operate/dashboards-and-alerts.md) — Build
+- [Dashboards and Alerts](../../operate/dashboards-and-alerts.md) - Build
   dashboards for LLM metrics in Scout
 
 ### Deployment and Operations
 
 - [Docker Compose Setup](../../instrument/collector-setup/docker-compose-example.md)
-  — Collector deployment guide
+  - Collector deployment guide
 - [Kubernetes Helm Setup](../../instrument/collector-setup/kubernetes-helm-setup.md)
-  — Production Kubernetes deployment
+  - Production Kubernetes deployment
 
 ## Complete Example
 
@@ -2207,15 +2207,15 @@ src/
 
 ## Related Guides
 
-- [LLM Observability (Python)](../llm-observability) — Python equivalent of this
+- [LLM Observability (Python)](../llm-observability) - Python equivalent of this
   guide with auto-instrumentation patterns
 - [Axum Instrumentation](../../instrument/apps/auto-instrumentation/axum.md) —
   General Axum APM setup
 - [Rust Custom Instrumentation](../../instrument/apps/custom-instrumentation/rust.md)
-  — Manual OpenTelemetry SDK for Rust
+  - Manual OpenTelemetry SDK for Rust
 - [Vercel AI SDK](../../instrument/apps/auto-instrumentation/vercel-ai-sdk.md) —
   TypeScript AI pipeline monitoring
-- [LangGraph](../../instrument/apps/auto-instrumentation/langgraph.md) — Python
+- [LangGraph](../../instrument/apps/auto-instrumentation/langgraph.md) - Python
   agent orchestration monitoring
 - [Docker Compose Setup](../../instrument/collector-setup/docker-compose-example.md)
-  — Collector deployment
+  - Collector deployment

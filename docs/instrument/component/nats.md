@@ -1,6 +1,6 @@
 ---
 title: >
-  NATS OpenTelemetry Monitoring — Message Throughput, Connections,
+  NATS OpenTelemetry Monitoring - Message Throughput, Connections,
   and Collector Setup
 sidebar_label: NATS
 id: collecting-nats-telemetry
@@ -38,7 +38,7 @@ base14 Scout.
 | NATS Server            | 2.0     | 2.10+       |
 | NATS Prometheus Exporter | 0.12.0 | 0.15.0+    |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
@@ -46,7 +46,7 @@ Before starting:
 - The Prometheus NATS Exporter must be deployed alongside the server
 - Exporter port (7777) must be accessible from the host running the
   Collector
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -104,10 +104,10 @@ prometheus-nats-exporter \
 
 Flags control which monitoring endpoints are scraped:
 
-- `-varz` — server statistics (CPU, memory, messages, connections)
-- `-connz` — connection details
-- `-routez` — cluster route metrics
-- `-jsz=all` — JetStream streams, consumers, and storage
+- `-varz` - server statistics (CPU, memory, messages, connections)
+- `-connz` - connection details
+- `-routez` - cluster route metrics
+- `-jsz=all` - JetStream streams, consumers, and storage
 
 For Docker deployments, use the
 `natsio/prometheus-nats-exporter` image:
@@ -322,12 +322,12 @@ Prometheus-format metrics.
 ## Related Guides
 
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
-  — Advanced collector configuration
+  - Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md)
-  — Run the Collector locally
+  - Run the Collector locally
 - [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
-  — Production deployment
+  - Production deployment
 - [Creating Alerts](../../guides/creating-alerts-with-logx.md)
-  — Alert on NATS metrics
+  - Alert on NATS metrics
 - [Kafka Monitoring](./kafka.md)
-  — Message queue monitoring
+  - Message queue monitoring

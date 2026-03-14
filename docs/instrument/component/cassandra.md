@@ -1,6 +1,6 @@
 ---
 title: >
-  Cassandra OpenTelemetry Monitoring — Client Requests, Compaction,
+  Cassandra OpenTelemetry Monitoring - Client Requests, Compaction,
   and Collector Setup
 sidebar_label: Cassandra
 id: collecting-cassandra-telemetry
@@ -38,7 +38,7 @@ the Collector, and ships metrics to base14 Scout.
 | Cassandra              | 3.11    | 5.0+        |
 | JMX Exporter           | 0.20.0  | 1.5.0+      |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
@@ -47,7 +47,7 @@ Before starting:
   Java agent JAR
 - The JMX exporter port (e.g., 9404) must be accessible from the
   host running the Collector
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -72,7 +72,7 @@ instance with the JMX exporter agent loaded.
 ## Access Setup
 
 The Prometheus JMX exporter runs as a Java agent inside the
-Cassandra process. No authentication is required — the agent reads
+Cassandra process. No authentication is required - the agent reads
 JMX MBeans directly from within the JVM.
 
 ### 1. Download the JMX Exporter Agent
@@ -294,7 +294,7 @@ MBeans.
 1. Verify `jmx-config.yaml` contains Cassandra-specific patterns
    (e.g., `org.apache.cassandra.metrics`)
 2. Check for typos in the pattern regex
-3. Test with an empty rules config — the exporter will export all
+3. Test with an empty rules config - the exporter will export all
    MBeans as untyped metrics
 
 ### No metrics appearing in Scout
@@ -384,14 +384,14 @@ MBeans.
 ## Related Guides
 
 - [JMX Metrics Collection Guide](../collector-setup/jmx-metrics-collection-guide.md)
-  — Compare JMX Scraper vs JMX Exporter
+  - Compare JMX Scraper vs JMX Exporter
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
-  — Advanced collector configuration
+  - Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md)
-  — Run the Collector locally
+  - Run the Collector locally
 - [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
-  — Production deployment
+  - Production deployment
 - [MongoDB Monitoring](./mongodb.md)
-  — NoSQL database monitoring
+  - NoSQL database monitoring
 - [Creating Alerts](../../guides/creating-alerts-with-logx.md)
-  — Alert on Cassandra metrics
+  - Alert on Cassandra metrics

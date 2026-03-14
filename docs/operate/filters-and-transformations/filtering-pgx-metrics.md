@@ -24,10 +24,10 @@ hundreds of tables.
 
 Common filtering needs include:
 
-1. **Dropping metrics by name** — Remove entire metric families you don't need
-2. **Filtering by attributes** — Drop metrics for specific databases, schemas,
+1. **Dropping metrics by name** - Remove entire metric families you don't need
+2. **Filtering by attributes** - Drop metrics for specific databases, schemas,
    or tables
-3. **Filtering by regex** — Drop groups of related metrics matching a pattern
+3. **Filtering by regex** - Drop groups of related metrics matching a pattern
 
 ## Solution
 
@@ -91,7 +91,7 @@ processors:
 > `PGDASHEX_COLLECT_METRICS` to only the groups you need (e.g.,
 > `PGDASHEX_COLLECT_METRICS=basic,queries,replication`). This is more efficient
 > because metrics are never collected or transmitted. However, source-level
-> filtering is group-level only — you can disable all table metrics but you
+> filtering is group-level only - you can disable all table metrics but you
 > can't keep `pg_table_info` while dropping `pg_table_stats`. For that
 > granularity, use the collector filter processor as shown above. See
 > [pgdashex Metric Groups](../../instrument/component/postgres-advanced.md#metric-groups)
@@ -202,9 +202,9 @@ processors:
 ### Filter by Regex
 
 Use `IsMatch()` to drop metrics matching a regular expression pattern.
-`IsMatch()` works on any string field — metric names, datapoint attributes, and
+`IsMatch()` works on any string field - metric names, datapoint attributes, and
 resource attributes. It uses
-[RE2 syntax](https://github.com/google/re2/wiki/Syntax) (Go regex) — lookahead
+[RE2 syntax](https://github.com/google/re2/wiki/Syntax) (Go regex) - lookahead
 and lookbehind are not supported.
 
 **Drop metric name families:**
@@ -219,7 +219,7 @@ processors:
         - 'IsMatch(name, "pg_system_.*")'
 ```
 
-**Drop datapoints by attribute pattern** — e.g., drop all metrics from databases
+**Drop datapoints by attribute pattern** - e.g., drop all metrics from databases
 matching `test_*` or `dev_*`:
 
 ```yaml
@@ -231,7 +231,7 @@ processors:
         - 'IsMatch(attributes["database"], "test_.*|dev_.*")'
 ```
 
-**Drop by resource attribute pattern** — e.g., drop all metrics from
+**Drop by resource attribute pattern** - e.g., drop all metrics from
 non-production Kubernetes namespaces:
 
 ```yaml
@@ -362,31 +362,31 @@ Resource (resource.attributes: pod, service, environment...)
        └─ ...
 ```
 
-- **`metrics.metric` context** — Iterates over metrics one at a time. Each
+- **`metrics.metric` context** - Iterates over metrics one at a time. Each
   iteration sees one metric as a whole unit. The decision is all-or-nothing:
   drop or keep the entire metric with all its datapoints. Available fields
   include `name` and `resource.attributes`. Datapoint `attributes` are **not**
   available here because a single metric contains many datapoints with different
-  attribute values — there's no single value to check.
-- **`metrics.datapoint` context** — Iterates over individual datapoints one at a
+  attribute values - there's no single value to check.
+- **`metrics.datapoint` context** - Iterates over individual datapoints one at a
   time. Each iteration sees exactly one datapoint, so `attributes["database"]`
   always refers to a single unambiguous value. This is the only context where
   you can surgically drop some datapoints while keeping others. If all
   datapoints for a metric are dropped, the metric is also removed.
-- **`resource.attributes`** — Available in **both** contexts. A resource
+- **`resource.attributes`** - Available in **both** contexts. A resource
   describes the telemetry source (a pod, a service) and has a 1:1 relationship
   with each metric, so it's always unambiguous regardless of which level you're
   at.
 
 ### Other Key Concepts
 
-- **`IsMatch()`** — Evaluates a regular expression against a field value. Uses
+- **`IsMatch()`** - Evaluates a regular expression against a field value. Uses
   [RE2 syntax](https://github.com/google/re2/wiki/Syntax) (Go's regex engine),
   which does not support lookahead or lookbehind.
-- **`error_mode: ignore`** — Silently skips expressions that fail to evaluate
+- **`error_mode: ignore`** - Silently skips expressions that fail to evaluate
   (e.g., when an attribute doesn't exist on a datapoint) instead of failing the
   pipeline.
-- **Processor ordering** — Filter processors run in the order listed in the
+- **Processor ordering** - Filter processors run in the order listed in the
   pipeline. Place them before `batch` and exporters so filtered metrics are never
   batched or transmitted.
 
@@ -394,7 +394,7 @@ Resource (resource.attributes: pod, service, environment...)
 
 1. **Use `error_mode: ignore`** to prevent pipeline failures when expressions
    don't match all metric types
-2. **Prefer exact name matches over broad regex** for better performance — regex
+2. **Prefer exact name matches over broad regex** for better performance - regex
    evaluation is more expensive per metric
 3. **Consider source-level filtering** via the `PGDASHEX_COLLECT_METRICS`
    environment variable when you want to disable entire metric categories (e.g.,
@@ -402,18 +402,18 @@ Resource (resource.attributes: pod, service, environment...)
    and more). This avoids collecting and transmitting metrics you'll never use.
 4. **Place filter processors before batch/export** in the pipeline definition to
    reduce downstream processing
-5. **Test in non-production first** — verify that your dashboards and alerts
+5. **Test in non-production first** - verify that your dashboards and alerts
    still have the data they need after applying filters
 
 ## Related Guides
 
-- [pgX Metrics Reference](../pgx/metrics.md) — Complete list of all pgX
+- [pgX Metrics Reference](../pgx/metrics.md) - Complete list of all pgX
   metric names and labels
 - [PostgreSQL Advanced Monitoring](../../instrument/component/postgres-advanced.md)
-  — pgdashex setup and collector pipeline configuration
-- [pgX Configuration](../pgx/configuration.md) — pgX configuration options
+  - pgdashex setup and collector pipeline configuration
+- [pgX Configuration](../pgx/configuration.md) - pgX configuration options
   including `PGDASHEX_COLLECT_METRICS`
-- [Filtering Logs with Regex and JSON](filter-logs-regex-and-json.md) — Similar
+- [Filtering Logs with Regex and JSON](filter-logs-regex-and-json.md) - Similar
   filtering techniques applied to log pipelines
-- [OTTL Span Transformations](ottl-span-transformations.md) — Filter and
+- [OTTL Span Transformations](ottl-span-transformations.md) - Filter and
   transform spans using OTTL

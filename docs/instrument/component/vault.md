@@ -1,6 +1,6 @@
 ---
 title: >
-  Vault OpenTelemetry Monitoring — Seal Operations, Token Lifecycle,
+  Vault OpenTelemetry Monitoring - Seal Operations, Token Lifecycle,
   and Collector Setup
 sidebar_label: Vault
 id: collecting-vault-telemetry
@@ -37,7 +37,7 @@ metrics to base14 Scout.
 | ---------------------- | ------- | ----------- |
 | Vault                  | 1.1     | 1.19+       |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
@@ -46,7 +46,7 @@ Before starting:
 - `prometheus_retention_time` must be set in the server telemetry
   config (not enabled by default)
 - A Vault token with `read` capability on `sys/metrics` is required
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -81,7 +81,7 @@ telemetry {
 ```
 
 - `prometheus_retention_time` must be greater than `0s` to enable
-  Prometheus metrics (default is `0s` — disabled)
+  Prometheus metrics (default is `0s` - disabled)
 - `disable_hostname` removes hostname prefixes from metric names for
   cleaner Prometheus labels
 - Set retention time to at least 2x the scrape interval
@@ -249,7 +249,7 @@ curl -s -H "X-Vault-Token: $VAULT_TOKEN" \
 1. Verify the token policy includes
    `path "sys/metrics" { capabilities = ["read"] }`
 2. Check the token is valid: `vault token lookup $VAULT_TOKEN`
-3. Ensure the request is made against the root namespace — the
+3. Ensure the request is made against the root namespace - the
    metrics endpoint is only accessible from the root namespace
 
 ### Metrics endpoint returns empty or 500
@@ -351,12 +351,12 @@ encryption operations.
 ## Related Guides
 
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
-  — Advanced collector configuration
+  - Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md)
-  — Run the Collector locally
+  - Run the Collector locally
 - [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
-  — Production deployment
+  - Production deployment
 - [Consul Monitoring](./consul.md)
-  — Service discovery monitoring (commonly used with Vault)
+  - Service discovery monitoring (commonly used with Vault)
 - [Creating Alerts](../../guides/creating-alerts-with-logx.md)
-  — Alert on Vault metrics
+  - Alert on Vault metrics

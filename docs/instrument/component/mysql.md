@@ -1,6 +1,6 @@
 ---
 title: >
-  MySQL OpenTelemetry Monitoring — Query Performance, Connections,
+  MySQL OpenTelemetry Monitoring - Query Performance, Connections,
   and Collector Setup
 sidebar_label: MySQL
 id: collecting-mysql-telemetry
@@ -34,14 +34,14 @@ base14 Scout.
 | ---------------------- | ------- | ----------- |
 | MySQL                  | 8.0     | 8.0+        |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
 - MySQL must be accessible from the host running the Collector
 - Superuser access for initial monitoring user creation
 - `performance_schema` enabled for full metric coverage
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -110,7 +110,7 @@ receivers:
       insecure_skip_verify: true
 
     metrics:
-      # Disabled by default — enable for full observability
+      # Disabled by default - enable for full observability
       mysql.client.network.io:
         enabled: true
       mysql.commands:
@@ -233,7 +233,7 @@ SHOW GLOBAL STATUS LIKE 'Slow_queries';
 1. Verify MySQL is running: `systemctl status mysql` or
    `docker ps | grep mysql`
 2. Confirm the endpoint address and port (default 3306) in your config
-3. Check `bind-address` in `my.cnf` — change to `0.0.0.0` if the
+3. Check `bind-address` in `my.cnf` - change to `0.0.0.0` if the
    Collector runs on a separate host
 
 ### Authentication failed
@@ -304,14 +304,14 @@ Then include both in the pipeline:
 **What permissions does the monitoring account need?**
 
 `PROCESS`, `REPLICATION CLIENT`, and `SELECT` on `performance_schema`.
-No write access is required. The Collector only reads metrics — it does
+No write access is required. The Collector only reads metrics - it does
 not modify MySQL data.
 
 **Why are replication metrics showing zero?**
 
 `mysql.replica.sql_delay` and `mysql.replica.time_behind_source` require
 MySQL to be configured as a replica. On a standalone instance or primary
-server, these metrics report zero — this is expected behavior.
+server, these metrics report zero - this is expected behavior.
 
 ## What's Next?
 
@@ -329,5 +329,5 @@ server, these metrics report zero — this is expected behavior.
   Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
   Run the Collector locally
-- [PostgreSQL Monitoring](./postgres.md) — Alternative database monitoring
-- [MongoDB Monitoring](./mongodb.md) — Alternative database monitoring
+- [PostgreSQL Monitoring](./postgres.md) - Alternative database monitoring
+- [MongoDB Monitoring](./mongodb.md) - Alternative database monitoring

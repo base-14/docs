@@ -32,10 +32,10 @@ troubleshoot replication issues.
 
 The Replication tab is organized into four sections:
 
-1. **Overview** — Topology and health at a glance
-2. **Primary Metrics** — WAL and slot monitoring
-3. **Replica Metrics** — Standby-specific metrics
-4. **Replication Debugging** — Detailed troubleshooting data
+1. **Overview** - Topology and health at a glance
+2. **Primary Metrics** - WAL and slot monitoring
+3. **Replica Metrics** - Standby-specific metrics
+4. **Replication Debugging** - Detailed troubleshooting data
 
 ---
 
@@ -71,9 +71,9 @@ standby.
 
 **Types of lag:**
 
-- **Write lag** — Time for WAL to reach standby
-- **Flush lag** — Time for WAL to be flushed on standby
-- **Replay lag** — Time for WAL to be applied on standby
+- **Write lag** - Time for WAL to reach standby
+- **Flush lag** - Time for WAL to be flushed on standby
+- **Replay lag** - Time for WAL to be applied on standby
 
 **When to investigate:**
 
@@ -109,7 +109,7 @@ A table showing health status of all replication connections.
 ## Primary Metrics Section
 
 The Primary Metrics section focuses on the primary server's replication
-workload. This section is collapsed by default — click to expand.
+workload. This section is collapsed by default - click to expand.
 
 ![Primary Metrics](/img/pgx/08-replication-primary-metrics.png)
 
@@ -128,9 +128,9 @@ workload. This section is collapsed by default — click to expand.
 
 **When to investigate:**
 
-- Inactive slots — may be holding WAL unnecessarily
-- "lost" WAL status — slot fell behind, needs recreation
-- Large lag — consumer is falling behind
+- Inactive slots - may be holding WAL unnecessarily
+- "lost" WAL status - slot fell behind, needs recreation
+- Large lag - consumer is falling behind
 
 **Warning:** Inactive slots can cause WAL accumulation and disk space issues.
 
@@ -177,7 +177,7 @@ workload. This section is collapsed by default — click to expand.
 ## Replica Metrics Section
 
 The Replica Metrics section shows standby-specific data. This section is
-collapsed by default — click to expand.
+collapsed by default - click to expand.
 
 ![Replica Metrics](/img/pgx/08-replication-replica-metrics.png)
 
@@ -203,11 +203,11 @@ collapsed by default — click to expand.
 
 **Conflict types:**
 
-- **tablespace** — Tablespace being dropped
-- **lock** — Lock conflicts with recovery
-- **snapshot** — Snapshot too old
-- **bufferpin** — Buffer pinned during recovery
-- **deadlock** — Deadlock between recovery and queries
+- **tablespace** - Tablespace being dropped
+- **lock** - Lock conflicts with recovery
+- **snapshot** - Snapshot too old
+- **bufferpin** - Buffer pinned during recovery
+- **deadlock** - Deadlock between recovery and queries
 
 **Healthy range:** Zero conflicts ideally.
 
@@ -228,7 +228,7 @@ collapsed by default — click to expand.
 ## Replication Debugging Section
 
 The Debugging section provides detailed data for troubleshooting. This section
-is collapsed by default — click to expand.
+is collapsed by default - click to expand.
 
 ![Replication Debugging](/img/pgx/08-replication-debugging.png)
 
@@ -303,7 +303,7 @@ Daily health check:
 
 When experiencing high replication lag:
 
-1. Check **WAL Generation Rate** — is it unusually high?
+1. Check **WAL Generation Rate** - is it unusually high?
 2. Review **Replication Health Board** for affected standbys
 3. Check **Conflicts Over Time** for recovery conflicts
 4. Review network bandwidth and latency
@@ -382,6 +382,6 @@ The Replication section uses these metrics from the
 
 ## Related Guides
 
-- [Overview](./overview.md) — Cluster health overview
-- [Performance](./performance.md) — Query performance analysis
-- [Resources](./resources.md) — Server resource monitoring
+- [Overview](./overview.md) - Cluster health overview
+- [Performance](./performance.md) - Query performance analysis
+- [Resources](./resources.md) - Server resource monitoring

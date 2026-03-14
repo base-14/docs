@@ -1,6 +1,6 @@
 ---
 title: >
-  CouchDB OpenTelemetry Monitoring — Request Times, Database Operations,
+  CouchDB OpenTelemetry Monitoring - Request Times, Database Operations,
   and Collector Setup
 sidebar_label: CouchDB
 id: collecting-couchdb-telemetry
@@ -33,13 +33,13 @@ sets up monitoring credentials, and ships metrics to base14 Scout.
 | ---------------------- | ------- | ----------- |
 | CouchDB                | 2.3     | 3.x         |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
 - CouchDB HTTP API must be accessible from the host running the Collector
 - Admin or monitoring credentials with read access to `/_node/_local/_stats`
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -66,7 +66,7 @@ curl -X PUT http://localhost:5984/_users/org.couchdb.user:otel_monitor \
 
 **Minimum required permissions:**
 
-- Read access to `/_node/_local/_stats` — required for all metrics
+- Read access to `/_node/_local/_stats` - required for all metrics
 - No write permissions are needed
 
 Verify the stats endpoint:
@@ -187,7 +187,7 @@ permissions.
 1. Verify CouchDB is running: `systemctl status couchdb` or
    `docker ps | grep couchdb`
 2. Confirm the endpoint address and port (default 5984) in your config
-3. Check if CouchDB is bound to `127.0.0.1` — change to `0.0.0.0` in
+3. Check if CouchDB is bound to `127.0.0.1` - change to `0.0.0.0` in
    `local.ini` if the Collector runs on a separate host
 
 ### No metrics appearing in Scout
@@ -206,7 +206,7 @@ permissions.
 
 **Fix**:
 
-1. `couchdb.httpd.views` tracks MapReduce view requests — it stays zero
+1. `couchdb.httpd.views` tracks MapReduce view requests - it stays zero
    until views are queried
 2. Create and query a view to verify:
    `curl -u user:pass http://localhost:5984/mydb/_design/test/_view/all`
@@ -243,7 +243,7 @@ Then include both in the pipeline:
 **What permissions does the monitoring account need?**
 
 Read access to `/_node/_local/_stats`. No write access is required.
-The Collector only reads metrics — it does not modify CouchDB data.
+The Collector only reads metrics - it does not modify CouchDB data.
 An admin account works but a dedicated read-only user is recommended.
 
 **Does this work with CouchDB 2.x and 3.x?**
@@ -268,8 +268,8 @@ in CouchDB 2.0. All 8 metrics are available on both CouchDB 2.3+ and
   Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
   Run the Collector locally
-- [MongoDB Monitoring](./mongodb.md) — Alternative document database monitoring
+- [MongoDB Monitoring](./mongodb.md) - Alternative document database monitoring
 - [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
-  — Production deployment
+  - Production deployment
 - [Creating Alerts](../../guides/creating-alerts-with-logx.md)
-  — Alert on CouchDB metrics
+  - Alert on CouchDB metrics

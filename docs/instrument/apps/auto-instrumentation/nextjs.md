@@ -69,7 +69,7 @@ distributed tracing for background workers, and deploy with Docker.
 :::tip TL;DR
 
 Create an `instrumentation.ts` file in your Next.js project root and initialize
-the OpenTelemetry Node.js SDK there — Next.js calls it automatically before your
+the OpenTelemetry Node.js SDK there - Next.js calls it automatically before your
 app starts. Add `@opentelemetry/auto-instrumentations-node` to capture HTTP,
 MongoDB, Redis, and database spans with no manual wrapping required.
 

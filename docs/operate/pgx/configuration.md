@@ -44,7 +44,7 @@ This document provides a complete reference of all pgX configuration options.
 | **Setting**  | `clickhouseDataSourceUid` |
 | **Type**     | String                    |
 | **Required** | Yes                       |
-| **Default**  | —                         |
+| **Default**  | -                         |
 
 The UID of your Scout Telemetry Data Lake datasource in Grafana. This datasource
 must be configured and working before pgX can display metrics.
@@ -148,10 +148,10 @@ prevent expensive queries.
 
 **Examples:**
 
-- `30m` — 30 minutes
-- `1h` — 1 hour
-- `6h` — 6 hours
-- `1d` — 1 day
+- `30m` - 30 minutes
+- `1h` - 1 hour
+- `6h` - 6 hours
+- `1d` - 1 day
 
 #### Max Variable Options
 
@@ -379,6 +379,6 @@ How CloudWatch dimension attributes are stored in the data lake.
 
 ## Related Guides
 
-- [Getting Started](./quickstart.md) — Initial setup guide
-- [Overview](./overview.md) — Start using pgX
-- [Metrics Reference](./metrics.md) — Available metrics
+- [Getting Started](./quickstart.md) - Initial setup guide
+- [Overview](./overview.md) - Start using pgX
+- [Metrics Reference](./metrics.md) - Available metrics

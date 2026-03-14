@@ -76,10 +76,10 @@ Logs appear in the Logs Panel in reverse chronological order:
 
 When you expand a log entry, you'll see:
 
-- **Full log body** — Complete message without truncation
-- **Trace Info tab** — Trace ID, Span ID, and View Trace button
-- **Resource Attributes tab** — Service, host, and deployment info
-- **Log Attributes tab** — Exception details, HTTP info, custom attributes
+- **Full log body** - Complete message without truncation
+- **Trace Info tab** - Trace ID, Span ID, and View Trace button
+- **Resource Attributes tab** - Service, host, and deployment info
+- **Log Attributes tab** - Exception details, HTTP info, custom attributes
 
 ![Log Details](/img/logX/logx-body-attributes.png)
 

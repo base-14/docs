@@ -1,5 +1,5 @@
 ---
-title: Instrument Rails with OpenTelemetry — ActiveRecord & Sidekiq Tracing
+title: Instrument Rails with OpenTelemetry - ActiveRecord & Sidekiq Tracing
 sidebar_label: Ruby on Rails
 sidebar_position: 19
 description:
@@ -33,7 +33,7 @@ head:
   - - script
     - type: application/ld+json
     - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I add OpenTelemetry to a Ruby on Rails application?","acceptedAnswer":{"@type":"Answer","text":"Install the opentelemetry-instrumentation-all gem, configure the SDK in an initializer, and set the OTLP exporter endpoint to your base14 Scout Collector. Auto-instrumentation traces HTTP requests, ActiveRecord queries, and Sidekiq jobs."}},{"@type":"Question","name":"Can OpenTelemetry detect N+1 queries in Rails?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry traces each ActiveRecord query as a separate span. N+1 queries appear as many sequential database spans under a single parent span in base14 Scout, making the pattern easy to identify."}},{"@type":"Question","name":"Does OpenTelemetry work with Sidekiq background jobs?","acceptedAnswer":{"@type":"Answer","text":"Yes, the OpenTelemetry Sidekiq instrumentation automatically traces job enqueue and processing. Context propagation links background jobs to the original request trace."}},{"@type":"Question","name":"What is the performance impact of OpenTelemetry on Rails apps?","acceptedAnswer":{"@type":"Answer","text":"With BatchSpanProcessor, the overhead is minimal — typically 1-3ms per request, slight CPU increase, and 10-30MB additional memory. Sampling can further reduce the impact in high-traffic apps."}}]}
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I add OpenTelemetry to a Ruby on Rails application?","acceptedAnswer":{"@type":"Answer","text":"Install the opentelemetry-instrumentation-all gem, configure the SDK in an initializer, and set the OTLP exporter endpoint to your base14 Scout Collector. Auto-instrumentation traces HTTP requests, ActiveRecord queries, and Sidekiq jobs."}},{"@type":"Question","name":"Can OpenTelemetry detect N+1 queries in Rails?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry traces each ActiveRecord query as a separate span. N+1 queries appear as many sequential database spans under a single parent span in base14 Scout, making the pattern easy to identify."}},{"@type":"Question","name":"Does OpenTelemetry work with Sidekiq background jobs?","acceptedAnswer":{"@type":"Answer","text":"Yes, the OpenTelemetry Sidekiq instrumentation automatically traces job enqueue and processing. Context propagation links background jobs to the original request trace."}},{"@type":"Question","name":"What is the performance impact of OpenTelemetry on Rails apps?","acceptedAnswer":{"@type":"Answer","text":"With BatchSpanProcessor, the overhead is minimal - typically 1-3ms per request, slight CPU increase, and 10-30MB additional memory. Sampling can further reduce the impact in high-traffic apps."}}]}
 ---
 
 # Ruby on Rails
@@ -59,7 +59,7 @@ Rails OpenTelemetry instrumentation.
 
 Add `opentelemetry-sdk` and `opentelemetry-instrumentation-all` to your
 Gemfile, then call `OpenTelemetry::SDK.configure` with `use_all` in a Rails
-initializer — this automatically instruments ActiveRecord, ActionPack, Redis,
+initializer - this automatically instruments ActiveRecord, ActionPack, Redis,
 Sidekiq, and most popular gems. Set `OTEL_SERVICE_NAME` and
 `OTEL_EXPORTER_OTLP_ENDPOINT` as environment variables, and configure the OTLP
 exporter to point at your Scout collector with no additional code changes.
@@ -111,7 +111,7 @@ This comprehensive guide demonstrates how to:
 Before starting, ensure you have:
 
 - **Ruby 3.1 or later** (CRuby), **JRuby 9.3.2.0+**, or **TruffleRuby 22.1+**
-  - Ruby 3.0 requires pinned gem versions — see the [Legacy Guide](./rails-legacy.md#ruby-30--rails-61)
+  - Ruby 3.0 requires pinned gem versions - see the [Legacy Guide](./rails-legacy.md#ruby-30--rails-61)
   - JRuby users should use the latest stable release
 - **Rails 6.0 or later** installed
   - Rails 7.0+ is recommended for optimal OpenTelemetry support
@@ -1387,7 +1387,7 @@ impact is minimal and acceptable for most production workloads.
 ### Which Rails versions are supported?
 
 OpenTelemetry supports Rails 6.0+ with Ruby 3.1+ (latest gems). Ruby 3.0
-requires pinned gem versions — see the
+requires pinned gem versions - see the
 [Legacy Guide](./rails-legacy.md#ruby-30--rails-61). Rails 7.0+ with
 Ruby 3.1+ is recommended for optimal compatibility and performance. See
 the [Prerequisites](#prerequisites) section for detailed version

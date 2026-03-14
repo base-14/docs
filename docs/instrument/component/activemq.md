@@ -1,6 +1,6 @@
 ---
 title: >
-  ActiveMQ OpenTelemetry Monitoring — Queue Depth, Message Rates,
+  ActiveMQ OpenTelemetry Monitoring - Queue Depth, Message Rates,
   and Collector Setup
 sidebar_label: ActiveMQ
 id: collecting-activemq-telemetry
@@ -42,15 +42,15 @@ base14 Scout.
 | JMX Scraper     | 1.46.0  | 1.54.0+     |
 | Java (scraper)  | 11      | 17+         |
 | OTel Collector  | 0.90.0  | latest      |
-| base14 Scout    | Any     | —           |
+| base14 Scout    | Any     | -           |
 
 Before starting:
 
 - ActiveMQ must be accessible from the host running the JMX Scraper
   (JMX port, default 1099)
-- The JMX Scraper runs as a standalone Java process — it requires
+- The JMX Scraper runs as a standalone Java process - it requires
   its own JRE
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -333,7 +333,7 @@ docker logs otel-collector 2>&1 \
 
 1. Verify ActiveMQ is running:
    `docker ps | grep activemq`
-2. Confirm remote JMX is enabled — check that
+2. Confirm remote JMX is enabled - check that
    `ACTIVEMQ_SUNJMX_START` includes `-Dcom.sun.management.jmxremote.port=1099`
 3. Verify the JMX port matches between ActiveMQ config and
    scraper's `OTEL_JMX_SERVICE_URL`
@@ -349,9 +349,9 @@ docker logs otel-collector 2>&1 \
 
 1. Set `OTEL_JMX_TARGET_SYSTEM=jvm,activemq` (both targets
    comma-separated)
-2. Verify ActiveMQ has started fully — MBeans are only available
+2. Verify ActiveMQ has started fully - MBeans are only available
    after the broker initializes
-3. Confirm you are running ActiveMQ Classic, not Artemis — the
+3. Confirm you are running ActiveMQ Classic, not Artemis - the
    `activemq` target does not support Artemis MBeans
 
 ### No destination metrics
@@ -391,7 +391,7 @@ via `OTEL_JMX_CUSTOM_CONFIG`.
 
 Yes. Both queues and topics are JMX MBeans under
 `org.apache.activemq:type=Broker`. The scraper collects metrics
-from all destinations by default — no additional configuration
+from all destinations by default - no additional configuration
 needed.
 
 **Does this work with ActiveMQ running in Kubernetes?**
@@ -435,16 +435,16 @@ jmx-scraper-replica:
 ## Related Guides
 
 - [JMX Metrics Collection Guide](../collector-setup/jmx-metrics-collection-guide.md)
-  — Compare JMX Scraper vs JMX Exporter
+  - Compare JMX Scraper vs JMX Exporter
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
-  — Advanced collector configuration
+  - Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md)
-  — Run the Collector locally
+  - Run the Collector locally
 - [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
-  — Production deployment
+  - Production deployment
 - [Kafka Monitoring](./kafka.md)
-  — Another message broker setup
+  - Another message broker setup
 - [RabbitMQ Monitoring](./rabbitmq.md)
-  — Another message broker setup
+  - Another message broker setup
 - [Creating Alerts](../../guides/creating-alerts-with-logx.md)
-  — Alert on ActiveMQ metrics
+  - Alert on ActiveMQ metrics

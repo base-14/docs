@@ -1,6 +1,6 @@
 ---
 title: >
-  PgBouncer OpenTelemetry Monitoring — Connection Pools,
+  PgBouncer OpenTelemetry Monitoring - Connection Pools,
   Query Throughput, and Collector Setup
 sidebar_label: PgBouncer
 id: collecting-pgbouncer-telemetry
@@ -319,7 +319,7 @@ settings for application databases.
   [HAProxy](./haproxy.md),
   and other components
 - **Fine-tune Collection**: Adjust `scrape_interval` based
-  on pool churn rate — high-traffic deployments may benefit
+  on pool churn rate - high-traffic deployments may benefit
   from 15s intervals
 
 ## Related Guides

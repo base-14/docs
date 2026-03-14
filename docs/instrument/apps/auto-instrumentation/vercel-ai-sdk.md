@@ -43,8 +43,8 @@ token and cost metrics, concurrent pipeline stage execution, and production
 deployment with Docker Compose.
 
 Vercel AI SDK applications present unique observability challenges. A
-multi-stage pipeline involves sequential and concurrent stages — ingestion,
-routing, extraction, embedding, scoring, summarization — each making LLM or
+multi-stage pipeline involves sequential and concurrent stages - ingestion,
+routing, extraction, embedding, scoring, summarization - each making LLM or
 embedding API calls, database queries, and file operations. The AI SDK's
 middleware architecture (`LanguageModelV3Middleware`) provides a natural
 interception point for attaching GenAI semantic conventions to every model call
@@ -223,7 +223,7 @@ if (otelEnabled) {
 
 Key design decisions:
 
-- **`NodeSDK` owns the `MeterProvider`** — passing `metricReaders` here avoids
+- **`NodeSDK` owns the `MeterProvider`** - passing `metricReaders` here avoids
   the duplicate-registration error that occurs when a separate `MeterProvider`
   is created after `sdk.start()`
 - **`PgInstrumentation`** auto-instruments all PostgreSQL queries so they appear
@@ -311,7 +311,7 @@ SCOUT_ENVIRONMENT=production
 ```
 
 The Zod `ConfigSchema` reads all environment variables automatically (see the
-Zod Config tab). No code changes needed — set the variables and the application
+Zod Config tab). No code changes needed - set the variables and the application
 picks them up.
 
 ```mdx-code-block
@@ -495,7 +495,7 @@ monkey-patch the `pg` module before it is first imported.
 
 This section covers Vercel AI SDK-specific instrumentation patterns that go
 beyond generic LLM observability. These patterns give you visibility into the AI
-SDK middleware layer — how models are wrapped, how GenAI semantic conventions
+SDK middleware layer - how models are wrapped, how GenAI semantic conventions
 are attached, and how multi-stage pipelines are orchestrated.
 
 ### GenAI Semantic Convention Middleware
@@ -651,7 +651,7 @@ export function createSemconvMiddleware(
 }
 ```
 
-The middleware intercepts `wrapGenerate` — the AI SDK's hook that runs around
+The middleware intercepts `wrapGenerate` - the AI SDK's hook that runs around
 every `doGenerate()` call. This means structured output (`generateObject`),
 plain text (`generateText`), and streaming calls all get instrumented
 automatically.
@@ -755,7 +755,7 @@ export function getCapableModel() {
 
 Every model returned by `getCapableModel()` or `getFastModel()` is already
 wrapped with the GenAI semconv middleware. Call `generateText()` or
-`generateObject()` normally — spans are created automatically.
+`generateObject()` normally - spans are created automatically.
 
 ### Pipeline Stage Spans
 
@@ -1191,7 +1191,7 @@ diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
 
 **Solutions:**
 
-1. Verify you're using AI SDK v6+ — earlier versions use a different `usage`
+1. Verify you're using AI SDK v6+ - earlier versions use a different `usage`
    response shape
 2. Check that `result.usage.inputTokens.total` exists (v6 uses nested token
    objects)
@@ -1228,10 +1228,10 @@ diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
 
 ### Protecting Sensitive Data
 
-- **Truncate prompts and completions** — the middleware truncates user messages
+- **Truncate prompts and completions** - the middleware truncates user messages
   to 1,000 characters and completions to 2,000 characters to avoid oversized
   spans
-- **Never record raw API keys** in span attributes — the Zod config validates
+- **Never record raw API keys** in span attributes - the Zod config validates
   keys are present but never logs their values
 - **Disable content capture** in production if compliance requires it by
   removing `span.addEvent("gen_ai.user.message", ...)` calls
@@ -1251,7 +1251,7 @@ new PgInstrumentation({
 
 For applications handling regulated data (GDPR, HIPAA, PCI-DSS):
 
-- Use opt-in content capture — disabled by default in production
+- Use opt-in content capture - disabled by default in production
 - Record only token counts and model metadata, not prompt content
 - Audit span attributes regularly for sensitive data leaks
 - Use the OTel Collector `attributes` processor to redact fields before export

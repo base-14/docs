@@ -1,6 +1,6 @@
 ---
 title: >
-  PostgreSQL Advanced OpenTelemetry Monitoring with pgdashex — Query Stats,
+  PostgreSQL Advanced OpenTelemetry Monitoring with pgdashex - Query Stats,
   Replication, and Table Metrics
 sidebar_label: PostgreSQL Advanced
 id: collecting-postgres-advanced-telemetry
@@ -23,9 +23,9 @@ keywords:
 # PostgreSQL Advanced
 
 Pgdashex is a PostgreSQL monitoring agent that collects comprehensive
-database metrics across 17 metric groups — including query statistics,
+database metrics across 17 metric groups - including query statistics,
 table/index sizes, replication lag, lock activity, and background writer
-stats — and exposes them in Prometheus format. This guide deploys pgdashex,
+stats - and exposes them in Prometheus format. This guide deploys pgdashex,
 configures the OTel Collector to scrape its metrics, and ships them to
 base14 Scout.
 
@@ -36,13 +36,13 @@ base14 Scout.
 | PostgreSQL             | 9.6     | 14+         |
 | pgdashex               | v0.5.10 | v0.5.10     |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
 - PostgreSQL must be accessible from the host running pgdashex
 - Superuser access for initial monitoring user creation
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -366,16 +366,16 @@ Set `PG_ALL_DBS=true` to monitor all databases in the cluster, or use
   [MySQL](./mysql.md), [MongoDB](./mongodb.md),
   and other components
 - **Fine-tune Collection**: Optimize metric groups using
-  `PGDASHEX_COLLECT_METRICS` — use `basic,tables,indexes,queries` for
+  `PGDASHEX_COLLECT_METRICS` - use `basic,tables,indexes,queries` for
   targeted monitoring or `all` for comprehensive coverage
 
 ## Related Guides
 
-- [PostgreSQL Basic Monitoring](./postgres.md) — Core PostgreSQL metrics
+- [PostgreSQL Basic Monitoring](./postgres.md) - Core PostgreSQL metrics
   via OTel receiver
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md) —
   Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
   Collector setup with Docker Compose
 - [Filtering pgX Metrics](../../operate/filters-and-transformations/filtering-pgx-metrics.md)
-  — Filter and tune pgdashex metrics in the Collector pipeline
+  - Filter and tune pgdashex metrics in the Collector pipeline

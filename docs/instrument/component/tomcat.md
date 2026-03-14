@@ -1,6 +1,6 @@
 ---
 title: >
-  Tomcat OpenTelemetry Monitoring — Request Rates, Thread Pools,
+  Tomcat OpenTelemetry Monitoring - Request Rates, Thread Pools,
   and Collector Setup
 sidebar_label: Tomcat
 id: collecting-tomcat-telemetry
@@ -38,15 +38,15 @@ configures the scraper, and ships metrics to base14 Scout.
 | JMX Scraper    | 1.46.0  | 1.54.0+     |
 | Java (scraper) | 11      | 17+         |
 | OTel Collector | 0.90.0  | latest      |
-| base14 Scout   | Any     | —           |
+| base14 Scout   | Any     | -           |
 
 Before starting:
 
 - Tomcat must be accessible from the host running the JMX Scraper
   (JMX port, default 9010)
-- The JMX Scraper runs as a standalone Java process — it requires
+- The JMX Scraper runs as a standalone Java process - it requires
   its own JRE
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -326,7 +326,7 @@ docker logs otel-collector 2>&1 \
 
 1. Verify Tomcat is running:
    `docker ps | grep tomcat`
-2. Confirm JMX is enabled — check for
+2. Confirm JMX is enabled - check for
    `-Dcom.sun.management.jmxremote` in Tomcat's startup args:
    `ps aux | grep jmxremote`
 3. Verify the JMX port matches between Tomcat config and
@@ -343,7 +343,7 @@ docker logs otel-collector 2>&1 \
 
 1. Set `OTEL_JMX_TARGET_SYSTEM=jvm,tomcat` (both targets
    comma-separated)
-2. Verify Tomcat has started fully — MBeans are only available
+2. Verify Tomcat has started fully - MBeans are only available
    after Catalina initializes
 
 ### Session metrics missing
@@ -354,7 +354,7 @@ web application is deployed.
 
 **Fix**:
 
-1. Deploy a web application to Tomcat — empty Tomcat instances
+1. Deploy a web application to Tomcat - empty Tomcat instances
    with no contexts do not emit session metrics
 2. Session MBeans are per-context
    (`Catalina:type=Manager,host=localhost,context=/myapp`)
@@ -392,7 +392,7 @@ JMX remote access on the Spring Boot app using the same
 The `jmxreceiver` in the Collector was deprecated in January
 2026. It required a JRE inside the Collector container and ran
 a Java subprocess internally. The standalone JMX Scraper replaces
-it — same metric definitions, cleaner operational model.
+it - same metric definitions, cleaner operational model.
 
 **How do I monitor multiple Tomcat instances?**
 
@@ -429,14 +429,14 @@ jmx-scraper-replica:
 ## Related Guides
 
 - [JMX Metrics Collection Guide](../collector-setup/jmx-metrics-collection-guide.md)
-  — Compare JMX Scraper vs JMX Exporter
+  - Compare JMX Scraper vs JMX Exporter
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
-  — Advanced collector configuration
+  - Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md)
-  — Run the Collector locally
+  - Run the Collector locally
 - [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
-  — Production deployment
+  - Production deployment
 - [Cassandra Monitoring](./cassandra.md)
-  — Another JMX-based monitoring setup
+  - Another JMX-based monitoring setup
 - [Creating Alerts](../../guides/creating-alerts-with-logx.md)
-  — Alert on Tomcat metrics
+  - Alert on Tomcat metrics

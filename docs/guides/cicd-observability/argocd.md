@@ -1,6 +1,6 @@
 ---
 title: >
-  ArgoCD Monitoring with OpenTelemetry — Metrics, Sync Status & Health
+  ArgoCD Monitoring with OpenTelemetry - Metrics, Sync Status & Health
 sidebar_label: ArgoCD
 id: collecting-argocd-telemetry
 sidebar_position: 2
@@ -57,16 +57,16 @@ ships metrics to base14 Scout.
 | ---------------------- | ------- | ----------- |
 | ArgoCD                 | 2.5     | 2.13+       |
 | OTel Collector Contrib | 0.90.0  | 0.127.0+    |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
 - ArgoCD must be running on a Kubernetes cluster
 - Metrics ports (8082, 8083, 8084) must be accessible from the
   host or pod running the Collector
-- ArgoCD exposes metrics by default — no additional configuration
+- ArgoCD exposes metrics by default - no additional configuration
   is needed on the ArgoCD side
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Kubernetes Helm Setup](../../instrument/collector-setup/kubernetes-helm-setup.md)
 
 ## What You'll Monitor
@@ -421,9 +421,9 @@ service address.
 
 1. Verify the metrics services exist:
    `kubectl -n argocd get svc | grep metrics`
-2. Service names differ between manifest and Helm installs — see
+2. Service names differ between manifest and Helm installs - see
    [Access Setup](#access-setup)
-3. Check network policies — ArgoCD creates NetworkPolicy resources
+3. Check network policies - ArgoCD creates NetworkPolicy resources
    that may block Collector access
 4. Confirm the Collector pod can reach the argocd namespace
 
@@ -451,7 +451,7 @@ service address.
 2. Verify `OTEL_EXPORTER_OTLP_ENDPOINT` is set correctly
 3. Confirm the pipeline includes both the receiver and exporter
 
-### Partial metrics — only some components reporting
+### Partial metrics - only some components reporting
 
 **Cause**: Not all ArgoCD component endpoints are configured in
 the scrape config.
@@ -464,7 +464,7 @@ the scrape config.
 3. Verify each service is reachable:
    `kubectl -n argocd port-forward svc/<service-name> <port>:<port>`
 
-### Helm install — no metrics services found
+### Helm install - no metrics services found
 
 **Cause**: The Helm chart does not create metrics services by
 default.
@@ -486,7 +486,7 @@ Yes. Enable metrics services in the Helm values by setting
 `controller.metrics.enabled`, `server.metrics.enabled`, and
 `repoServer.metrics.enabled` to `true`. The Helm chart creates
 dedicated metrics services with different names than the manifest
-install — see [Access Setup](#access-setup) for the full mapping.
+install - see [Access Setup](#access-setup) for the full mapping.
 Verify your service names with `kubectl -n argocd get svc`.
 
 **How do I monitor ArgoCD in a multi-cluster setup?**
@@ -576,12 +576,12 @@ installs. For Helm installs, set `controller.metrics.enabled`,
 ## Related Guides
 
 - [OTel Collector Configuration](../../instrument/collector-setup/otel-collector-config.md)
-  — Advanced collector configuration
+  - Advanced collector configuration
 - [Kubernetes Helm Setup](../../instrument/collector-setup/kubernetes-helm-setup.md)
-  — Production deployment on Kubernetes
+  - Production deployment on Kubernetes
 - [Docker Compose Setup](../../instrument/collector-setup/docker-compose-example.md)
-  — Run the Collector locally
+  - Run the Collector locally
 - [Creating Alerts](../creating-alerts-with-logx.md)
-  — Alert on ArgoCD metrics
+  - Alert on ArgoCD metrics
 - [etcd Monitoring](../../instrument/component/etcd.md)
-  — Often co-deployed with ArgoCD on Kubernetes
+  - Often co-deployed with ArgoCD on Kubernetes

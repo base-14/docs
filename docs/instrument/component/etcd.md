@@ -1,6 +1,6 @@
 ---
 title: >
-  etcd OpenTelemetry Monitoring — Raft Proposals, Disk Latency,
+  etcd OpenTelemetry Monitoring - Raft Proposals, Disk Latency,
   and Collector Setup
 sidebar_label: etcd
 id: collecting-etcd-telemetry
@@ -35,14 +35,14 @@ metrics to base14 Scout.
 | ---------------------- | ------- | ----------- |
 | etcd                   | 3.4     | 3.5+        |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
 - etcd client port (2379) must be accessible from the host running
   the Collector
 - No authentication required for the metrics endpoint by default
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -239,11 +239,11 @@ clusters.
 
 **Fix**:
 
-1. Standalone etcd nodes do not emit peer metrics — this is
+1. Standalone etcd nodes do not emit peer metrics - this is
    expected
 2. In a cluster, verify all members are communicating:
    `etcdctl member list`
-3. Check `etcd_server_has_leader` — if 0, the cluster may be
+3. Check `etcd_server_has_leader` - if 0, the cluster may be
    unhealthy
 
 ## FAQ
@@ -253,7 +253,7 @@ clusters.
 Yes. Set `targets` to the etcd pod or service DNS
 (e.g., `etcd-0.etcd.kube-system.svc.cluster.local:2379`). For
 managed Kubernetes (EKS, GKE, AKS), the control-plane etcd may not
-be directly accessible — check your provider's documentation.
+be directly accessible - check your provider's documentation.
 
 **How do I monitor an etcd cluster?**
 
@@ -279,7 +279,7 @@ Each member is scraped independently and identified by its
 
 A small number of pending proposals is normal under write load.
 Sustained high values indicate the cluster cannot commit proposals
-fast enough — check disk latency (`etcd_disk_wal_fsync_duration`)
+fast enough - check disk latency (`etcd_disk_wal_fsync_duration`)
 and network health (`etcd_network_peer_*`).
 
 **What is the difference between `db_total_size` and
@@ -288,7 +288,7 @@ and network health (`etcd_network_peer_*`).
 `etcd_mvcc_db_total_size_in_bytes` includes space freed by
 compaction but not yet reclaimed (fragmentation).
 `etcd_mvcc_db_total_size_in_use_in_bytes` reflects actual data.
-A large gap between the two indicates fragmentation — run
+A large gap between the two indicates fragmentation - run
 `etcdctl defrag` to reclaim space.
 
 ## What's Next?
@@ -306,12 +306,12 @@ A large gap between the two indicates fragmentation — run
 ## Related Guides
 
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
-  — Advanced collector configuration
+  - Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md)
-  — Run the Collector locally
+  - Run the Collector locally
 - [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
-  — Production deployment
+  - Production deployment
 - [Creating Alerts](../../guides/creating-alerts-with-logx.md)
-  — Alert on etcd metrics
+  - Alert on etcd metrics
 - [ZooKeeper Monitoring](./zookeeper.md)
-  — Coordination service monitoring
+  - Coordination service monitoring

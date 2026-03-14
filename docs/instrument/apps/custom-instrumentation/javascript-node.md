@@ -1,5 +1,5 @@
 ---
-title: Node.js Custom OpenTelemetry — Manual Spans, Metrics & Logs
+title: Node.js Custom OpenTelemetry - Manual Spans, Metrics & Logs
 sidebar_label: Node.js
 sidebar_position: 4
 description:

@@ -1,6 +1,6 @@
 ---
 title: >
-  WildFly OpenTelemetry Monitoring — Undertow Requests, Datasource Pools,
+  WildFly OpenTelemetry Monitoring - Undertow Requests, Datasource Pools,
   and Collector Setup
 sidebar_label: WildFly
 id: collecting-wildfly-telemetry
@@ -29,7 +29,7 @@ and 18 JVM metrics from WildFly 26+, including Undertow request
 throughput, error counts, datasource connection pools, and
 transaction activity. WildFly uses a non-standard JMX protocol
 (`remote+http`) through its management interface instead of
-standard JMX/RMI — the scraper connects via port 9990 using the
+standard JMX/RMI - the scraper connects via port 9990 using the
 WildFly client libraries. This guide configures a management user,
 sets up the scraper with the correct JMX URL, and ships metrics to
 base14 Scout.
@@ -42,7 +42,7 @@ base14 Scout.
 | JMX Scraper    | 1.46.0  | 1.54.0+     |
 | Java (scraper) | 11      | 17+         |
 | OTel Collector | 0.90.0  | latest      |
-| base14 Scout   | Any     | —           |
+| base14 Scout   | Any     | -           |
 
 Before starting:
 
@@ -51,7 +51,7 @@ Before starting:
 - A management user is required for remote JMX access
 - The JMX Scraper needs `jboss-client.jar` on its classpath
   (copied from WildFly)
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -127,7 +127,7 @@ $JBOSS_HOME/bin/add-user.sh -u otel-monitor -p <strong-password> -g Monitor
 
 The JMX Scraper connects using `OTEL_JMX_USERNAME` and
 `OTEL_JMX_PASSWORD` environment variables. These are
-**required** for WildFly — unauthenticated access is not
+**required** for WildFly - unauthenticated access is not
 supported.
 
 ## Configuration
@@ -346,7 +346,7 @@ interface.
    `docker ps | grep wildfly`
 2. Confirm the JMX URL uses `remote+http`, **not** `rmi`:
    `service:jmx:remote+http://wildfly:9990`
-3. Verify the management user exists — run `add-user.sh`
+3. Verify the management user exists - run `add-user.sh`
    if needed
 4. Confirm the management interface is bound to `0.0.0.0`
    (`-bmanagement 0.0.0.0`)
@@ -361,9 +361,9 @@ interface.
 
 1. Set `OTEL_JMX_TARGET_SYSTEM=jvm,wildfly` (both targets
    comma-separated)
-2. Verify `jboss-client.jar` is on the classpath — without it,
+2. Verify `jboss-client.jar` is on the classpath - without it,
    the scraper may connect via fallback but only see JVM MBeans
-3. Verify WildFly has started fully — MBeans are only available
+3. Verify WildFly has started fully - MBeans are only available
    after subsystems initialize
 
 ### No datasource metrics
@@ -411,7 +411,7 @@ classpath.
 Yes. Run the JMX Scraper as a sidecar container in the same pod.
 Set `OTEL_JMX_SERVICE_URL` to
 `service:jmx:remote+http://localhost:9990`. The sidecar needs
-`jboss-client.jar` on its classpath — use the multi-stage
+`jboss-client.jar` on its classpath - use the multi-stage
 Dockerfile shown above.
 
 **How do I get session metrics?**
@@ -438,16 +438,16 @@ transaction metrics but not session metrics.
 ## Related Guides
 
 - [JMX Metrics Collection Guide](../collector-setup/jmx-metrics-collection-guide.md)
-  — Compare JMX Scraper vs JMX Exporter
+  - Compare JMX Scraper vs JMX Exporter
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
-  — Advanced collector configuration
+  - Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md)
-  — Run the Collector locally
+  - Run the Collector locally
 - [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
-  — Production deployment
+  - Production deployment
 - [Tomcat Monitoring](./tomcat.md)
-  — Another Java application server setup
+  - Another Java application server setup
 - [Jetty Monitoring](./jetty.md)
-  — Another Java application server setup
+  - Another Java application server setup
 - [Creating Alerts](../../guides/creating-alerts-with-logx.md)
-  — Alert on WildFly metrics
+  - Alert on WildFly metrics

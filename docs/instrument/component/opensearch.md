@@ -1,6 +1,6 @@
 ---
 title: >
-  OpenSearch OpenTelemetry Monitoring — Cluster Health, Search Performance,
+  OpenSearch OpenTelemetry Monitoring - Cluster Health, Search Performance,
   and Collector Setup
 sidebar_label: OpenSearch
 id: collecting-opensearch-telemetry
@@ -38,7 +38,7 @@ ships metrics to base14 Scout.
 | OpenSearch             | 2.0     | 3.5+        |
 | prometheus-exporter    | match   | match       |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
@@ -46,7 +46,7 @@ Before starting:
   the Collector
 - The prometheus-exporter plugin version must match your OpenSearch
   version exactly (e.g., 3.5.0 needs plugin 3.5.0.0)
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -272,7 +272,7 @@ OpenSearch version.
 Yes. Set `targets` to the OpenSearch service DNS
 (e.g., `opensearch-cluster.opensearch.svc.cluster.local:9200`).
 The prometheus-exporter plugin must be installed in the container
-image — use a custom Dockerfile or an init container. The Collector
+image - use a custom Dockerfile or an init container. The Collector
 can run as a sidecar or DaemonSet.
 
 **How do I monitor an OpenSearch cluster with multiple nodes?**
@@ -327,12 +327,12 @@ infrastructure telemetry in base14 Scout.
 ## Related Guides
 
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
-  — Advanced collector configuration
+  - Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md)
-  — Run the Collector locally
+  - Run the Collector locally
 - [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
-  — Production deployment
+  - Production deployment
 - [Elasticsearch Monitoring](./elasticsearch.md)
-  — Monitor Elasticsearch clusters
+  - Monitor Elasticsearch clusters
 - [Creating Alerts](../../guides/creating-alerts-with-logx.md)
-  — Alert on OpenSearch metrics
+  - Alert on OpenSearch metrics

@@ -44,8 +44,8 @@ Find your language and see what's available:
 | **Ruby** | [Rails](./auto-instrumentation/rails), [Rails Legacy](./auto-instrumentation/rails-legacy) | [Ruby SDK](./custom-instrumentation/ruby) |
 | **PHP** | [Laravel](./auto-instrumentation/laravel) | [PHP SDK](./custom-instrumentation/php) |
 | **.NET** | [ASP.NET Core](./auto-instrumentation/dotnet) | [C# SDK](./custom-instrumentation/csharp) |
-| **Elixir** | [Phoenix](./auto-instrumentation/elixir-phoenix) | — |
-| **Rust** | — | [Rust SDK](./custom-instrumentation/rust) |
+| **Elixir** | [Phoenix](./auto-instrumentation/elixir-phoenix) | - |
+| **Rust** | - | [Rust SDK](./custom-instrumentation/rust) |
 | **Browser** | [React](./auto-instrumentation/react) | [Browser SDK](./custom-instrumentation/javascript-browser) |
 
 ## Decision Guide

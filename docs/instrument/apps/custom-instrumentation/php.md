@@ -693,7 +693,7 @@ try {
 ```
 
 Once your spans are exported, you can
-[visualize PHP traces in Scout](https://base14.io/scout/traces) — inspect
+[visualize PHP traces in Scout](https://base14.io/scout/traces) - inspect
 request waterfalls, identify slow operations, and correlate traces with
 logs and metrics.
 

@@ -1,6 +1,6 @@
 ---
 title: >
-  HAProxy OpenTelemetry Monitoring — Request Rates, Connection Errors,
+  HAProxy OpenTelemetry Monitoring - Request Rates, Connection Errors,
   and Collector Setup
 sidebar_label: HAProxy
 id: collecting-haproxy-telemetry
@@ -34,13 +34,13 @@ base14 Scout.
 | ------------------------ | ------- | ----------- |
 | HAProxy                  | 2.4     | 2.8+ (LTS)  |
 | OTel Collector Contrib   | 0.90.0  | latest      |
-| base14 Scout             | Any     | —           |
+| base14 Scout             | Any     | -           |
 
 Before starting:
 
 - HAProxy must be accessible from the host running the Collector
-- Stats endpoint enabled over HTTP — see setup below
-- OTel Collector installed — see
+- Stats endpoint enabled over HTTP - see setup below
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -240,7 +240,7 @@ misconfigured.
 
 **Fix**:
 
-1. The receiver handles CSV parsing internally — set the endpoint to
+1. The receiver handles CSV parsing internally - set the endpoint to
    `/stats`, not `/stats;csv`
 2. Verify `stats uri` in `haproxy.cfg` matches the path in the receiver
    config
@@ -262,7 +262,7 @@ received traffic.
 
 **Fix**:
 
-1. Check `haproxy.active` and `haproxy.backup` — zero indicates no
+1. Check `haproxy.active` and `haproxy.backup` - zero indicates no
    healthy servers in that backend
 2. Send test traffic to the backend to trigger metric collection
 3. Verify all backends appear in
@@ -328,7 +328,7 @@ when the corresponding HAProxy feature is not configured.
   Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
   Run the Collector locally
-- [NGINX Monitoring](./nginx.md) — Web server and
+- [NGINX Monitoring](./nginx.md) - Web server and
   reverse proxy monitoring
-- [AWS ELB Monitoring](../infra/aws/elb.md) — AWS managed load balancer
+- [AWS ELB Monitoring](../infra/aws/elb.md) - AWS managed load balancer
   monitoring

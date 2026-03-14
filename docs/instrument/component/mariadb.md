@@ -1,6 +1,6 @@
 ---
 title: >
-  MariaDB OpenTelemetry Monitoring — Query Performance, Connections,
+  MariaDB OpenTelemetry Monitoring - Query Performance, Connections,
   and Collector Setup
 sidebar_label: MariaDB
 id: collecting-mariadb-telemetry
@@ -35,7 +35,7 @@ to base14 Scout.
 | ---------------------- | ------- | ----------- |
 | MariaDB                | 10.5    | 11.7+       |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
@@ -43,7 +43,7 @@ Before starting:
 - Superuser access for initial monitoring user creation
 - `performance_schema` enabled for full metric coverage (enabled by
   default since MariaDB 10.5)
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -111,7 +111,7 @@ receivers:
       insecure_skip_verify: true
 
     metrics:
-      # Disabled by default — enable for full observability
+      # Disabled by default - enable for full observability
       mysql.client.network.io:
         enabled: true
       mysql.commands:
@@ -232,7 +232,7 @@ SHOW GLOBAL STATUS LIKE 'Slow_queries';
 1. Verify MariaDB is running: `systemctl status mariadb` or
    `docker ps | grep mariadb`
 2. Confirm the endpoint address and port (default 3306) in your config
-3. Check `bind-address` in `my.cnf` — change to `0.0.0.0` if the
+3. Check `bind-address` in `my.cnf` - change to `0.0.0.0` if the
    Collector runs on a separate host
 
 ### Authentication failed
@@ -277,7 +277,7 @@ is not active.
 
 **Why does this use the MySQL receiver?**
 
-MariaDB is wire-compatible with MySQL — both use the MySQL protocol for
+MariaDB is wire-compatible with MySQL - both use the MySQL protocol for
 client connections. The OTel Collector's MySQL receiver works with
 MariaDB without modification. There is no separate MariaDB receiver.
 
@@ -309,7 +309,7 @@ via a Kubernetes secret. The Collector can run as a sidecar or DaemonSet.
 **What permissions does the monitoring account need?**
 
 `PROCESS`, `REPLICATION CLIENT`, and `SELECT` on `performance_schema`.
-No write access is required. The Collector only reads metrics — it does
+No write access is required. The Collector only reads metrics - it does
 not modify MariaDB data.
 
 ## What's Next?
@@ -328,5 +328,5 @@ not modify MariaDB data.
   Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
   Run the Collector locally
-- [MySQL Monitoring](./mysql.md) — MySQL-specific monitoring
-- [PostgreSQL Monitoring](./postgres.md) — Alternative database monitoring
+- [MySQL Monitoring](./mysql.md) - MySQL-specific monitoring
+- [PostgreSQL Monitoring](./postgres.md) - Alternative database monitoring

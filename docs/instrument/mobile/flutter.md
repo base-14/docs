@@ -1,5 +1,5 @@
 ---
-title: Flutter OpenTelemetry Instrumentation — Complete Mobile APM Setup Guide
+title: Flutter OpenTelemetry Instrumentation - Complete Mobile APM Setup Guide
 sidebar_label: Flutter
 sidebar_position: 25
 description:
@@ -62,7 +62,7 @@ mobile traces with backend services to debug latency across the full request
 path, or building dashboards that track crash rates and slow screens in
 production, this guide provides the configuration, code examples, and
 operational patterns you need. All code is drawn from a working reference app —
-the Astronomy Shop Mobile demo — so every snippet has been tested on real
+the Astronomy Shop Mobile demo - so every snippet has been tested on real
 devices.
 
 :::tip TL;DR
@@ -2077,7 +2077,7 @@ user emails in resource attributes.
 
 Bad (leaks PII):
 
-```dart showLineNumbers title="lib/services/telemetry_service.dart — avoid this"
+```dart showLineNumbers title="lib/services/telemetry_service.dart - avoid this"
 _deviceInfo['device.id'] = Platform.localHostname;
 _deviceInfo['user.email'] = currentUser.email;
 _deviceInfo['device.imei'] = await getDeviceImei();
@@ -2141,7 +2141,7 @@ SCOUT_ENDPOINT=https://ingest.base14.io
 Never include passwords, tokens, or PII in span attributes. Filter sensitive
 fields before attaching them to spans:
 
-```dart showLineNumbers title="lib/services/http_service.dart — filtering pattern"
+```dart showLineNumbers title="lib/services/http_service.dart - filtering pattern"
 final sanitizedHeaders = Map<String, String>.from(requestHeaders)
   ..remove('Authorization')
   ..remove('Cookie')

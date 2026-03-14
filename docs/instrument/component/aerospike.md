@@ -1,6 +1,6 @@
 ---
 title: >
-  Aerospike OpenTelemetry Monitoring — Connections, Transactions,
+  Aerospike OpenTelemetry Monitoring - Connections, Transactions,
   and Collector Setup
 sidebar_label: Aerospike
 id: collecting-aerospike-telemetry
@@ -34,14 +34,14 @@ Aerospike node, and ships metrics to base14 Scout.
 | ---------------------- | ------- | ----------- |
 | Aerospike              | 4.9     | 7.x+        |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
 - Aerospike client port (3000) must be accessible from the host
   running the Collector
 - No authentication required for Community Edition
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -70,7 +70,7 @@ aql -h localhost -p 3000 -c "show namespaces"
 ```
 
 Community Edition requires no authentication. Enterprise Edition
-uses username/password — see [Authentication](#authentication) below.
+uses username/password - see [Authentication](#authentication) below.
 
 ## Configuration
 
@@ -280,11 +280,11 @@ zero if geospatial features are not used.
 ## Related Guides
 
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
-  — Advanced collector configuration
+  - Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md)
-  — Run the Collector locally
+  - Run the Collector locally
 - [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
-  — Production deployment
-- [Redis Monitoring](./redis.md) — Alternative key-value store monitoring
+  - Production deployment
+- [Redis Monitoring](./redis.md) - Alternative key-value store monitoring
 - [Creating Alerts](../../guides/creating-alerts-with-logx.md)
-  — Alert on Aerospike metrics
+  - Alert on Aerospike metrics

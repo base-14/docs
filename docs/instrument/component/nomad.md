@@ -1,6 +1,6 @@
 ---
 title: >
-  Nomad OpenTelemetry Monitoring — Raft Consensus, Scheduler,
+  Nomad OpenTelemetry Monitoring - Raft Consensus, Scheduler,
   and Collector Setup
 sidebar_label: Nomad
 id: collecting-nomad-telemetry
@@ -37,7 +37,7 @@ metrics endpoint, and ships metrics to base14 Scout.
 | ---------------------- | ------- | ----------- |
 | Nomad                  | 1.3.0   | 1.9+        |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
@@ -45,9 +45,9 @@ Before starting:
   running the Collector
 - `prometheus_metrics` must be enabled in the agent telemetry
   config (not enabled by default)
-- Nomad retains Prometheus metrics in memory — only enable if
+- Nomad retains Prometheus metrics in memory - only enable if
   actively scraping
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -89,7 +89,7 @@ telemetry {
 - `publish_allocation_metrics` enables per-allocation resource
   metrics
 - `publish_node_metrics` enables node-level resource metrics
-- Nomad holds Prometheus metrics in memory — disable if no
+- Nomad holds Prometheus metrics in memory - disable if no
   scraper is active
 
 Verify the endpoint is working:
@@ -342,14 +342,14 @@ scrape jobs in the same Collector config. See
 ## Related Guides
 
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
-  — Advanced collector configuration
+  - Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md)
-  — Run the Collector locally
+  - Run the Collector locally
 - [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
-  — Production deployment
+  - Production deployment
 - [Consul Monitoring](./consul.md)
-  — HashiCorp Consul service mesh monitoring
+  - HashiCorp Consul service mesh monitoring
 - [Vault Monitoring](./vault.md)
-  — HashiCorp Vault secrets engine monitoring
+  - HashiCorp Vault secrets engine monitoring
 - [Creating Alerts](../../guides/creating-alerts-with-logx.md)
-  — Alert on Nomad metrics
+  - Alert on Nomad metrics

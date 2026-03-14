@@ -29,10 +29,10 @@ drill down into specific query behavior.
 
 The Queries tab offers:
 
-1. **Flexible Filtering** — Filter by database, user, query type, and response
+1. **Flexible Filtering** - Filter by database, user, query type, and response
    time percentile
-2. **Query Heatmap** — Visualize query performance distribution over time
-3. **Query Stats Table** — Detailed metrics for individual queries
+2. **Query Heatmap** - Visualize query performance distribution over time
+3. **Query Stats Table** - Detailed metrics for individual queries
 
 ---
 
@@ -49,9 +49,9 @@ Select which response time percentile to display in the heatmap.
 | Option                | Description                                 |
 | --------------------- | ------------------------------------------- |
 | **p50 Response time** | Median response time (50th percentile)      |
-| **p90 Response time** | 90th percentile — 90% of queries are faster |
-| **p95 Response time** | 95th percentile — typical SLA target        |
-| **p99 Response time** | 99th percentile — worst-case performance    |
+| **p90 Response time** | 90th percentile - 90% of queries are faster |
+| **p95 Response time** | 95th percentile - typical SLA target        |
+| **p99 Response time** | 99th percentile - worst-case performance    |
 
 **How to use:**
 
@@ -128,7 +128,7 @@ The heatmap visualization shows query response time distribution over time.
 
 | Pattern                    | Meaning                            | Action                           |
 | -------------------------- | ---------------------------------- | -------------------------------- |
-| Tight band at bottom       | Consistent fast performance        | Healthy — maintain current state |
+| Tight band at bottom       | Consistent fast performance        | Healthy - maintain current state |
 | Spreading upward over time | Performance degradation            | Investigate index/bloat issues   |
 | Periodic spikes            | Scheduled jobs or traffic patterns | Review job timing and impact     |
 | Sudden vertical spread     | Incident occurring                 | Immediate investigation needed   |
@@ -177,14 +177,14 @@ Click on a query to access detailed analysis panels:
 
 ![Query Drill Down view](/img/pgx/06-queries-drill-down.png)
 
-- **Average Execution Time** — Time-series of response time
-- **Number of Calls** — Call frequency over time
-- **Cache Hit Ratio** — Buffer cache efficiency for this query
-- **Read I/O** — Rows returned and blocks read
-- **Write I/O** — Blocks dirtied and written
-- **Planning Time** — Query planning overhead
-- **WAL Bytes Generated** — Write-ahead log impact
-- **Temp File Usage** — Temporary file activity
+- **Average Execution Time** - Time-series of response time
+- **Number of Calls** - Call frequency over time
+- **Cache Hit Ratio** - Buffer cache efficiency for this query
+- **Read I/O** - Rows returned and blocks read
+- **Write I/O** - Blocks dirtied and written
+- **Planning Time** - Query planning overhead
+- **WAL Bytes Generated** - Write-ahead log impact
+- **Temp File Usage** - Temporary file activity
 
 ---
 
@@ -262,14 +262,14 @@ Monitor buffer cache efficiency for this specific query:
 
 ### Read I/O Analysis
 
-- **Rows Returned** — Data returned to client
-- **Blocks Read** — Disk blocks accessed
+- **Rows Returned** - Data returned to client
+- **Blocks Read** - Disk blocks accessed
 - High blocks/low rows = inefficient query
 
 ### Write I/O Analysis
 
-- **Blocks Dirtied** — Pages modified
-- **Blocks Written** — Pages flushed to disk
+- **Blocks Dirtied** - Pages modified
+- **Blocks Written** - Pages flushed to disk
 - High values indicate write-heavy operations
 
 ### Planning Time
@@ -319,6 +319,6 @@ The Queries section uses these metrics from the
 
 ## Related Guides
 
-- [Performance](./performance.md) — Higher-level performance view
-- [Tables & Indexes](./tables-indexes.md) — Optimize tables and indexes
-- [Locks & Waits](./locks-waits.md) — Investigate blocking issues
+- [Performance](./performance.md) - Higher-level performance view
+- [Tables & Indexes](./tables-indexes.md) - Optimize tables and indexes
+- [Locks & Waits](./locks-waits.md) - Investigate blocking issues

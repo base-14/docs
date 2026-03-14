@@ -1,6 +1,6 @@
 ---
 title: >
-  MinIO OpenTelemetry Monitoring — Cluster Capacity, Drive Health,
+  MinIO OpenTelemetry Monitoring - Cluster Capacity, Drive Health,
   and Collector Setup
 sidebar_label: MinIO
 id: collecting-minio-telemetry
@@ -36,15 +36,15 @@ authentication, and ships metrics to base14 Scout.
 | ---------------------- | ------- | ----------- |
 | MinIO                  | 2022-01 | latest      |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
 - MinIO S3 API port (9000) must be accessible from the host running
   the Collector
-- Prometheus metrics are exposed by default — no additional config
+- Prometheus metrics are exposed by default - no additional config
   needed
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -303,7 +303,7 @@ receivers:
 **What does `minio_cluster_health_status` mean?**
 
 A value of `1` indicates the cluster is healthy and has write quorum.
-A value of `0` means the cluster is degraded — check
+A value of `0` means the cluster is degraded - check
 `minio_cluster_drive_offline_total` and
 `minio_cluster_nodes_offline_total` to identify the cause.
 
@@ -330,10 +330,10 @@ monitoring needs.
 ## Related Guides
 
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
-  — Advanced collector configuration
+  - Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md)
-  — Run the Collector locally
+  - Run the Collector locally
 - [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
-  — Production deployment
+  - Production deployment
 - [Creating Alerts](../../guides/creating-alerts-with-logx.md)
-  — Alert on MinIO metrics
+  - Alert on MinIO metrics

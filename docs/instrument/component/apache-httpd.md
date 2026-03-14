@@ -1,6 +1,6 @@
 ---
 title: >
-  Apache HTTP Server OpenTelemetry Monitoring — Request Rates, Worker Status,
+  Apache HTTP Server OpenTelemetry Monitoring - Request Rates, Worker Status,
   and Collector Setup
 sidebar_label: Apache HTTP Server
 id: collecting-apache-httpd-telemetry
@@ -34,13 +34,13 @@ to base14 Scout.
 | ---------------------- | -------- | ----------- |
 | Apache HTTP Server     | 2.4.13   | 2.4.x       |
 | OTel Collector Contrib | 0.90.0   | latest      |
-| base14 Scout           | Any      | —           |
+| base14 Scout           | Any      | -           |
 
 Before starting:
 
 - Apache must be accessible from the host running the Collector
 - `mod_status` module loaded with `ExtendedStatus On`
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -203,7 +203,7 @@ returned.
 
 1. Add `ExtendedStatus On` before the `<Location>` block
 2. Verify by checking the output of
-   `curl -s http://localhost/server-status?auto` — it should include
+   `curl -s http://localhost/server-status?auto` - it should include
    `Total Accesses`, `CPULoad`, and `ReqPerSec`
 3. Restart Apache: `apachectl graceful`
 
@@ -227,7 +227,7 @@ all operating systems.
 
 1. These metrics are populated on Linux systems where Apache reports
    system load in `server-status`
-2. On macOS or Windows, these may report zero — this is expected behavior
+2. On macOS or Windows, these may report zero - this is expected behavior
 3. Use OS-level monitoring for load averages on non-Linux platforms
 
 ## FAQ
@@ -283,8 +283,8 @@ distributing work across its worker pool.
   Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
   Run the Collector locally
-- [NGINX Monitoring](./nginx.md) — Alternative web server monitoring
+- [NGINX Monitoring](./nginx.md) - Alternative web server monitoring
 - [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
-  — Production deployment
+  - Production deployment
 - [Creating Alerts](../../guides/creating-alerts-with-logx.md)
-  — Alert on Apache HTTP metrics
+  - Alert on Apache HTTP metrics

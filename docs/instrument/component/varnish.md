@@ -1,6 +1,6 @@
 ---
 title: >
-  Varnish OpenTelemetry Monitoring — Cache Hit Ratio, Backend Health,
+  Varnish OpenTelemetry Monitoring - Cache Hit Ratio, Backend Health,
   and Collector Setup
 sidebar_label: Varnish
 id: collecting-varnish-telemetry
@@ -39,14 +39,14 @@ Scout.
 | Varnish                        | 6.0     | 7.6+        |
 | prometheus_varnish_exporter    | 1.6     | latest      |
 | OTel Collector Contrib         | 0.90.0  | latest      |
-| base14 Scout                   | Any     | —           |
+| base14 Scout                   | Any     | -           |
 
 Before starting:
 
 - Varnish must be running with a configured backend
-- The exporter needs access to Varnish shared memory (VSM) — in Docker
+- The exporter needs access to Varnish shared memory (VSM) - in Docker
   this means sharing a volume at `/var/lib/varnish`
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -70,7 +70,7 @@ Varnish does not expose Prometheus metrics natively. Install the
 `prometheus_varnish_exporter` as a sidecar process that reads Varnish
 shared memory (VSM).
 
-**Docker setup** — build a custom exporter image (the project does not
+**Docker setup** - build a custom exporter image (the project does not
 publish a Docker image) and share a volume at `/var/lib/varnish`:
 
 ```yaml showLineNumbers title="docker-compose.yaml (excerpt)"
@@ -107,7 +107,7 @@ EXPOSE 9131
 ENTRYPOINT ["prometheus_varnish_exporter"]
 ```
 
-**Bare-metal setup** — install the exporter binary and run it on the
+**Bare-metal setup** - install the exporter binary and run it on the
 same host as Varnish:
 
 ```bash showLineNumbers title="Install exporter"
@@ -230,7 +230,7 @@ curl -s http://localhost:6081/ > /dev/null
 1. Verify the exporter container is running:
    `docker ps | grep varnish-exporter`
 2. Check exporter logs: `docker logs varnish-exporter`
-3. Ensure the exporter starts after Varnish — use `depends_on` in
+3. Ensure the exporter starts after Varnish - use `depends_on` in
    Docker Compose
 
 ### No metrics appearing in Scout
@@ -252,7 +252,7 @@ curl -s http://localhost:6081/ > /dev/null
 1. Send requests through Varnish to generate cache metrics:
    `curl http://localhost:6081/`
 2. Cache hit metrics only populate after Varnish processes requests
-3. First request is always a miss — repeat to see hits
+3. First request is always a miss - repeat to see hits
 
 ## FAQ
 
@@ -290,7 +290,7 @@ Each instance is identified by its `instance` label.
 
 **What does `varnish_main_cache_hit` vs `varnish_main_cache_hitpass` mean?**
 
-`cache_hit` is a normal cache hit — the response was served from cache.
+`cache_hit` is a normal cache hit - the response was served from cache.
 `cache_hitpass` means Varnish remembered that a previous request for
 this object was uncacheable, so it passed directly to the backend
 without attempting a cache lookup. Monitor the ratio of
@@ -312,5 +312,5 @@ without attempting a cache lookup. Monitor the ratio of
   Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
   Run the Collector locally
-- [NGINX Monitoring](./nginx.md) — Alternative web server monitoring
-- [Caddy Monitoring](./caddy.md) — Alternative web server monitoring
+- [NGINX Monitoring](./nginx.md) - Alternative web server monitoring
+- [Caddy Monitoring](./caddy.md) - Alternative web server monitoring

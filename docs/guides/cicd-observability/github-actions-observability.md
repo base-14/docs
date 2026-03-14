@@ -44,7 +44,7 @@ have for your applications.
 ## How It Works
 
 The action runs after your workflow completes and uses the GitHub API to
-fetch the full run data — jobs, steps, timestamps, and outcomes. It converts
+fetch the full run data - jobs, steps, timestamps, and outcomes. It converts
 this data into OpenTelemetry traces following the
 [CICD semantic conventions](https://opentelemetry.io/docs/specs/semconv/attributes-registry/cicd/)
 and exports them to your OTLP endpoint.
@@ -126,7 +126,7 @@ variables → Actions**:
 The `workflow_run` event fires after any workflow in your repository
 completes. The `runId` input points to the completed workflow's run ID
 (`github.event.workflow_run.id`), so the action fetches and exports that
-run's data — not its own.
+run's data - not its own.
 
 ## Option B: In-Workflow Job
 
@@ -180,22 +180,22 @@ jobs:
 
 Key details:
 
-- **`needs: [build, deploy]`** — waits for all jobs to finish before
+- **`needs: [build, deploy]`** - waits for all jobs to finish before
   exporting
-- **`if: always()`** — ensures the export runs even if a previous job fails,
+- **`if: always()`** - ensures the export runs even if a previous job fails,
   so you capture traces for broken builds too
-- **`runId`** is omitted — it defaults to the current workflow run ID
+- **`runId`** is omitted - it defaults to the current workflow run ID
 
 ## Configuration Reference
 
 | Input             | Required | Default            | Description                                                           |
 | ----------------- | -------- | ------------------ | --------------------------------------------------------------------- |
-| `otlpEndpoint`    | Yes      | —                  | OTLP endpoint to export traces to                                     |
+| `otlpEndpoint`    | Yes      | -                  | OTLP endpoint to export traces to                                     |
 | `otlpHeaders`     | No       | `""`               | Additional HTTP headers for the OTLP endpoint                         |
 | `otelServiceName` | No       | `""`               | OpenTelemetry service name for the exported traces                    |
 | `githubToken`     | No       | `secrets.GITHUB_TOKEN` | Repository token with workflow read permissions                   |
 | `runId`           | No       | `env.GITHUB_RUN_ID` | Workflow run ID to export (defaults to the current run)              |
-| `extraAttributes` | No       | —                  | Extra resource attributes to add to each span                         |
+| `extraAttributes` | No       | -                  | Extra resource attributes to add to each span                         |
 | `tokenUrl`        | No       | `""`               | OAuth2 token endpoint URL for `client_credentials` flow               |
 | `appName`         | No       | `""`               | OAuth2 client ID (application name) for `client_credentials` flow     |
 | `apiKey`          | No       | `""`               | OAuth2 client secret (API key) for `client_credentials` flow          |
@@ -203,7 +203,7 @@ Key details:
 
 The action also produces one output:
 
-- **`traceId`** — the OpenTelemetry trace ID of the root span, which you can
+- **`traceId`** - the OpenTelemetry trace ID of the root span, which you can
   use to link directly to the trace in Scout
 
 ## Viewing Traces in Scout
@@ -223,10 +223,10 @@ Once the action runs, your workflow traces appear in Scout's trace explorer - tr
 
 The trace waterfall shows the full execution timeline:
 
-- **Root span** — the workflow run, showing total duration and final status
-- **Job spans** — each job appears as a child of the root span, with its own
+- **Root span** - the workflow run, showing total duration and final status
+- **Job spans** - each job appears as a child of the root span, with its own
   start time and duration
-- **Step spans** — each step within a job is a child of the job span
+- **Step spans** - each step within a job is a child of the job span
 
 Parallel jobs appear side by side in the waterfall, making it easy to see
 which jobs ran concurrently and which ran sequentially. Failed steps are
@@ -234,9 +234,9 @@ highlighted, so you can immediately spot where a pipeline broke.
 
 ### Useful Filters
 
-- **`service.name`** — filter by repository or project
-- **Status** — filter for failed traces to see broken builds
-- **Duration** — sort by duration to find your slowest pipelines
+- **`service.name`** - filter by repository or project
+- **Status** - filter for failed traces to see broken builds
+- **Duration** - sort by duration to find your slowest pipelines
 
 ## Verification
 
@@ -257,7 +257,7 @@ want to find out which step is responsible.
 ### Approach
 
 1. Open a recent trace for the workflow in Scout
-2. Look at the trace waterfall — the longest spans immediately stand out
+2. Look at the trace waterfall - the longest spans immediately stand out
 3. Compare with an older trace to see what changed
 
 ### Common Bottlenecks
@@ -294,13 +294,13 @@ get an error, double-check the `tokenUrl`, `appName`, `apiKey`, and
 
 ### No Traces Appearing in Scout
 
-1. **Check the action logs** — expand the "Export workflow trace" step in the
+1. **Check the action logs** - expand the "Export workflow trace" step in the
    GitHub Actions UI to see any error messages
-2. **Verify credentials** — ensure `SCOUT_TENANT`, `SCOUT_CLIENT_ID`, and
+2. **Verify credentials** - ensure `SCOUT_TENANT`, `SCOUT_CLIENT_ID`, and
    `SCOUT_CLIENT_SECRET` are set correctly in repository secrets
-3. **Check the endpoint** — confirm `otlpEndpoint` matches the Scout
+3. **Check the endpoint** - confirm `otlpEndpoint` matches the Scout
    endpoint provided to you during onboarding
-4. **Verify network access** — GitHub-hosted runners need outbound HTTPS
+4. **Verify network access** - GitHub-hosted runners need outbound HTTPS
    access to both the Scout API and the identity provider
 
 ### Workflow Run Trigger Not Firing
@@ -317,9 +317,9 @@ the GitHub API response and won't appear as spans.
 
 ## What's Next?
 
-- [Create Your First Dashboard](../create-your-first-dashboard.md) — build
+- [Create Your First Dashboard](../create-your-first-dashboard.md) - build
   dashboards to visualize CI/CD metrics over time
-- [Creating Alerts with LogX](../creating-alerts-with-logx.md) — set up alerts
+- [Creating Alerts with LogX](../creating-alerts-with-logx.md) - set up alerts
   for pipeline failures or duration regressions
-- [Quick Start](../quick-start.md) — get Scout set up for application
+- [Quick Start](../quick-start.md) - get Scout set up for application
   observability alongside your CI/CD traces

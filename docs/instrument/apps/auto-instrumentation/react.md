@@ -1,5 +1,5 @@
 ---
-title: Instrument React with OpenTelemetry — Browser Tracing & Web Vitals
+title: Instrument React with OpenTelemetry - Browser Tracing & Web Vitals
 sidebar_label: React
 sidebar_position: 14
 description:
@@ -18,7 +18,7 @@ head:
   - - script
     - type: application/ld+json
     - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I add OpenTelemetry tracing to a React application?","acceptedAnswer":{"@type":"Answer","text":"Install @opentelemetry/sdk-trace-web and @opentelemetry/auto-instrumentations-web, call setupTelemetry() before your React app renders, and point the OTLP exporter at your base14 Scout Collector endpoint."}},{"@type":"Question","name":"What does OpenTelemetry auto-instrumentation capture in the browser?","acceptedAnswer":{"@type":"Answer","text":"Auto-instrumentation captures fetch and XHR requests, document load timing, and user interactions like clicks and form submissions — all with no manual span code required."}},{"@type":"Question","name":"Can I monitor Core Web Vitals with OpenTelemetry in React?","acceptedAnswer":{"@type":"Answer","text":"Yes, you can capture Core Web Vitals (LCP, FID, CLS) alongside OpenTelemetry traces to correlate real user performance metrics with distributed traces in base14 Scout."}},{"@type":"Question","name":"Does OpenTelemetry browser tracing work with React Router?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry traces navigation events and route changes in single-page React apps. Each route transition and associated API calls are captured as linked spans."}}]}
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I add OpenTelemetry tracing to a React application?","acceptedAnswer":{"@type":"Answer","text":"Install @opentelemetry/sdk-trace-web and @opentelemetry/auto-instrumentations-web, call setupTelemetry() before your React app renders, and point the OTLP exporter at your base14 Scout Collector endpoint."}},{"@type":"Question","name":"What does OpenTelemetry auto-instrumentation capture in the browser?","acceptedAnswer":{"@type":"Answer","text":"Auto-instrumentation captures fetch and XHR requests, document load timing, and user interactions like clicks and form submissions - all with no manual span code required."}},{"@type":"Question","name":"Can I monitor Core Web Vitals with OpenTelemetry in React?","acceptedAnswer":{"@type":"Answer","text":"Yes, you can capture Core Web Vitals (LCP, FID, CLS) alongside OpenTelemetry traces to correlate real user performance metrics with distributed traces in base14 Scout."}},{"@type":"Question","name":"Does OpenTelemetry browser tracing work with React Router?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry traces navigation events and route changes in single-page React apps. Each route transition and associated API calls are captured as linked spans."}}]}
 ---
 
 # React

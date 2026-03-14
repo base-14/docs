@@ -1,5 +1,5 @@
 ---
-title: Spring Boot OpenTelemetry Setup — SDK, Java Agent & Spring Boot 4 Starter
+title: Spring Boot OpenTelemetry Setup - SDK, Java Agent & Spring Boot 4 Starter
 sidebar_label: Spring Boot
 sidebar_position: 16
 description:
@@ -76,7 +76,7 @@ optimization.
 
 Add the `opentelemetry-spring-boot-starter` dependency to your `pom.xml` or
 `build.gradle` and configure `management.otlp.tracing.endpoint` in
-`application.properties` — the starter auto-instruments Spring MVC, Spring
+`application.properties` - the starter auto-instruments Spring MVC, Spring
 Data JPA, RestTemplate, WebClient, and Kafka with zero code changes. For
 fine-grained control over specific operations, inject `Tracer` via the
 OpenTelemetry API and use `startActiveSpan` to add custom spans alongside the
@@ -1811,7 +1811,7 @@ The example demonstrates:
 - [Custom Java Instrumentation](../custom-instrumentation/java.md) - Manual
   instrumentation for advanced use cases
 - [Rails Instrumentation](./rails.md) - Ruby framework alternative
-- [Spring AI LLM Observability][spring-ai] — Spring AI with
+- [Spring AI LLM Observability][spring-ai] - Spring AI with
   three-layer OTel instrumentation
 
 [spring-ai]: ../../../guides/ai-observability/spring-ai-llm-observability.md

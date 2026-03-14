@@ -1,6 +1,6 @@
 ---
 title: >
-  Pulsar OpenTelemetry Monitoring — Broker Throughput,
+  Pulsar OpenTelemetry Monitoring - Broker Throughput,
   Message Backlog, and Collector Setup
 sidebar_label: Pulsar
 id: collecting-pulsar-telemetry

@@ -1,6 +1,6 @@
 ---
 title: >
-  Redis OpenTelemetry Monitoring — Memory, Latency,
+  Redis OpenTelemetry Monitoring - Memory, Latency,
   and Keyspace Metrics
 sidebar_label: Redis
 id: collecting-redis-telemetry
@@ -33,13 +33,13 @@ the receiver, verifies connectivity, and ships metrics to base14 Scout.
 | ---------------------- | ------- | ----------- |
 | Redis                  | 6.0     | 7.0+        |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
 - Redis must be accessible from the host running the Collector
 - Redis password (if authentication is enabled)
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -59,7 +59,7 @@ Full metric reference:
 ## Access Setup
 
 Redis uses password-based authentication (if enabled). No special user
-creation is required — the Collector connects using the standard
+creation is required - the Collector connects using the standard
 `AUTH` command.
 
 Verify connectivity:
@@ -215,7 +215,7 @@ redis-cli -h ${REDIS_HOST} -p ${REDIS_PORT} info
 1. Verify Redis is running: `systemctl status redis` or
    `docker ps | grep redis`
 2. Confirm the endpoint address and port (default 6379) in your config
-3. Check `bind` directive in `redis.conf` — change to `0.0.0.0` if the
+3. Check `bind` directive in `redis.conf` - change to `0.0.0.0` if the
    Collector runs on a separate host
 
 ### Authentication failed (NOAUTH)
@@ -241,13 +241,13 @@ receiver.
 
 ### Memory fragmentation ratio above 1.5
 
-**Cause**: This is not a collection issue — fragmentation ratio above
+**Cause**: This is not a collection issue - fragmentation ratio above
 1.5 indicates Redis memory fragmentation.
 
 **Fix**:
 
 1. The `redis.memory.fragmentation_ratio` metric is reporting correctly
-2. Values above 1.5 suggest memory management issues — consider
+2. Values above 1.5 suggest memory management issues - consider
    restarting Redis or tuning `activedefrag` settings
 3. Monitor alongside `redis.memory.used` and `redis.memory.rss`
 
@@ -300,7 +300,7 @@ this is expected.
   cache usage patterns
 - **Visualize in Scout**: Once metrics are flowing, you can
   [track Redis performance metrics in Scout](https://base14.io/scout/metrics)
-  — build dashboards for hit ratios, memory usage, and connection
+  - build dashboards for hit ratios, memory usage, and connection
   patterns
 
 ## Related Guides
@@ -309,7 +309,7 @@ this is expected.
   Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
   Run the Collector locally
-- [Memcached Monitoring](./memcached.md) — Alternative caching service
+- [Memcached Monitoring](./memcached.md) - Alternative caching service
   monitoring
-- [ElastiCache Monitoring](../infra/aws/elasticache.md) — AWS ElastiCache
+- [ElastiCache Monitoring](../infra/aws/elasticache.md) - AWS ElastiCache
   monitoring

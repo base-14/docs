@@ -1,5 +1,5 @@
 ---
-title: Monitor NGINX with OpenTelemetry — Metrics, Traces & Logs
+title: Monitor NGINX with OpenTelemetry - Metrics, Traces & Logs
 sidebar_label: NGINX
 id: collecting-nginx-telemetry
 sidebar_position: 7
@@ -37,12 +37,12 @@ through the OTel Collector.
 | NGINX                      | 1.19    | 1.24+       |
 | nginx-prometheus-exporter  | 1.5.1   | latest      |
 | OTel Collector Contrib     | 0.90.0  | latest      |
-| base14 Scout               | Any     | —           |
+| base14 Scout               | Any     | -           |
 
 Before starting:
 
 - NGINX must be installed and running
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -388,6 +388,6 @@ in the Collector pipeline.
   Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
   Run the Collector locally
-- [Apache HTTP Server Monitoring](./apache-httpd.md) — Alternative web
+- [Apache HTTP Server Monitoring](./apache-httpd.md) - Alternative web
   server monitoring
-- [HAProxy Monitoring](./haproxy.md) — Load balancer monitoring
+- [HAProxy Monitoring](./haproxy.md) - Load balancer monitoring

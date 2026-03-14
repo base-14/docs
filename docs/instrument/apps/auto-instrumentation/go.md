@@ -1,5 +1,5 @@
 ---
-title: Instrument Go with OpenTelemetry — Echo, Fiber, Chi & GORM Tracing
+title: Instrument Go with OpenTelemetry - Echo, Fiber, Chi & GORM Tracing
 sidebar_label: Go
 sidebar_position: 18
 description:

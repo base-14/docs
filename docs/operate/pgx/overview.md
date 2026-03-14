@@ -29,9 +29,9 @@ critical metrics at a glance.
 
 The Overview tab is organized into three main sections:
 
-1. **Topology** — Visual representation of connections and replication
-2. **Stats** — Key health metrics as stat panels
-3. **Detailed View** — Time-series charts for trend analysis
+1. **Topology** - Visual representation of connections and replication
+2. **Stats** - Key health metrics as stat panels
+3. **Detailed View** - Time-series charts for trend analysis
 
 ---
 
@@ -158,7 +158,7 @@ disk.
 ## Detailed View Section
 
 The Detailed View section provides time-series panels for trend analysis. This
-section is collapsed by default — click to expand.
+section is collapsed by default - click to expand.
 
 ![Detailed View](/img/pgx/03-overview-detailed.png)
 
@@ -249,6 +249,6 @@ The Overview section uses these metrics from the
 
 ## Related Guides
 
-- [Performance](./performance.md) — Dive deeper into query performance
-- [Connections](./connections.md) — Detailed connection analysis
-- [Replication](./replication.md) — Full replication monitoring
+- [Performance](./performance.md) - Dive deeper into query performance
+- [Connections](./connections.md) - Detailed connection analysis
+- [Replication](./replication.md) - Full replication monitoring

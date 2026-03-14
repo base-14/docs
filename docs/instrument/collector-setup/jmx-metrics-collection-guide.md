@@ -1,6 +1,6 @@
 ---
 title: >
-  JMX Monitoring with OpenTelemetry — JMX Scraper vs Prometheus JMX
+  JMX Monitoring with OpenTelemetry - JMX Scraper vs Prometheus JMX
   Exporter Comparison
 sidebar_label: JMX Metrics Collection
 id: jmx-metrics-collection-guide
@@ -43,8 +43,8 @@ Prometheus tooling.
 ## How JMX Monitoring Works
 
 JMX (Java Management Extensions) is a standard API built into every
-JVM. Applications register managed objects called MBeans — structured
-data points like `Catalina:type=ThreadPool,name="http-nio-8080"` — that
+JVM. Applications register managed objects called MBeans - structured
+data points like `Catalina:type=ThreadPool,name="http-nio-8080"` - that
 expose operational state: thread counts, request rates, memory usage,
 cache hit ratios, and connection pool sizes. MBeans are available
 through the JVM's built-in MBean server, either locally (same process)
@@ -93,17 +93,17 @@ Prometheus receiver.
 | **Deployment**          | Standalone Java process (sidecar or host) | Java agent inside the target JVM               |
 | **Protocol**            | JMX/RMI to app, OTLP to Collector        | In-process MBean read, Prometheus HTTP to Collector |
 | **Metric format**       | OTLP (native OpenTelemetry)              | Prometheus exposition format                   |
-| **Config complexity**   | Low — env vars only, no config files     | Medium — requires YAML rules for MBean mapping |
+| **Config complexity**   | Low - env vars only, no config files     | Medium - requires YAML rules for MBean mapping |
 | **Runtime overhead**    | Separate JVM for the scraper             | Runs in-process, no extra JVM                  |
 | **Built-in targets**    | 8 targets: Tomcat, Kafka, ActiveMQ, Jetty, WildFly, Hadoop, Camel, JVM | 19 [example configs](https://github.com/prometheus/jmx_exporter/tree/main/examples): Cassandra, Kafka, Tomcat, Spark, Flink, ZooKeeper, and more |
 | **Custom MBean rules**  | Supported via YAML config (`OTEL_JMX_CUSTOM_CONFIG`) | Full regex-based pattern matching     |
 | **Networking**          | Requires JMX port accessible over network | Only needs HTTP port for Prometheus scrape     |
-| **JVM modification**    | None — connects remotely                 | Requires `-javaagent` flag on target JVM       |
-| **Authentication**      | Remote JMX auth via `OTEL_JMX_USERNAME`/`OTEL_JMX_PASSWORD`, supports SSL | Not needed — agent reads MBeans in-process, no remote connection |
+| **JVM modification**    | None - connects remotely                 | Requires `-javaagent` flag on target JVM       |
+| **Authentication**      | Remote JMX auth via `OTEL_JMX_USERNAME`/`OTEL_JMX_PASSWORD`, supports SSL | Not needed - agent reads MBeans in-process, no remote connection |
 
 ## When to Use Which
 
-Some applications — Tomcat, Kafka, ActiveMQ, WildFly — have both a
+Some applications - Tomcat, Kafka, ActiveMQ, WildFly - have both a
 built-in Scraper target and an Exporter example config. When both are
 available, prefer the **JMX Scraper**: it produces OTel-native metrics
 out of the box, requires no config files, and doesn't touch the
@@ -119,13 +119,13 @@ where a built-in target covers your application.
 
 - **A built-in target exists** for your application (Tomcat, Kafka,
   ActiveMQ, Jetty, WildFly, Hadoop, Camel). The scraper ships pre-defined metric
-  definitions — no MBean pattern rules needed.
-- **You want an OTel-native pipeline** — the scraper exports OTLP
+  definitions - no MBean pattern rules needed.
+- **You want an OTel-native pipeline** - the scraper exports OTLP
   directly, avoiding a Prometheus-to-OTLP conversion step.
-- **You cannot modify the target JVM** — the scraper connects remotely
+- **You cannot modify the target JVM** - the scraper connects remotely
   via RMI, so you only need JMX enabled on the application (no agent
   JAR to inject).
-- **You prefer env-var-driven configuration** — no YAML config files
+- **You prefer env-var-driven configuration** - no YAML config files
   needed for built-in targets.
 
 ### Use the Prometheus JMX Exporter When
@@ -133,13 +133,13 @@ where a built-in target covers your application.
 The JMX Exporter is the better fit when you need full control over
 MBean mapping or cannot expose a JMX port on the network.
 
-- **Remote JMX access is blocked** — the exporter runs inside the JVM,
+- **Remote JMX access is blocked** - the exporter runs inside the JVM,
   bypassing network-level JMX restrictions. Only an HTTP port needs to
   be reachable.
-- **You need custom MBean mapping** — the exporter's regex-based rules
+- **You need custom MBean mapping** - the exporter's regex-based rules
   give full control over which MBeans are exported and how they're
   named and labeled.
-- **You have existing Prometheus tooling** — if Grafana, alerting
+- **You have existing Prometheus tooling** - if Grafana, alerting
   rules, or dashboards already consume Prometheus metrics, the exporter
   integrates without format conversion.
 - **No built-in scraper target exists** for your application (e.g.,
@@ -218,9 +218,9 @@ Collector container and spawned a Java subprocess to connect to remote
 JMX endpoints. The standalone
 [JMX Scraper](https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/jmx-metrics)
 replaces it with the same metric definitions and a cleaner operational
-model — the scraper runs as its own process and exports metrics over
+model - the scraper runs as its own process and exports metrics over
 OTLP. If you are migrating from the `jmxreceiver`, the JMX Scraper
-uses the same `target_system` values and metric names — switch by
+uses the same `target_system` values and metric names - switch by
 running the scraper JAR with equivalent `OTEL_JMX_*` environment
 variables and pointing it at your Collector's OTLP receiver.
 
@@ -238,7 +238,7 @@ config and include them in the metrics pipeline.
 
 Both work well in Kubernetes. The JMX Scraper runs as a sidecar
 container in the same pod, connecting to `localhost:<jmx-port>`. The
-JMX Exporter requires no sidecar — the agent runs inside the
+JMX Exporter requires no sidecar - the agent runs inside the
 application container, and the Collector scrapes the metrics endpoint
 via the pod IP or service DNS. The exporter approach has a smaller
 footprint since it avoids a second JVM, but the scraper approach avoids
@@ -249,7 +249,7 @@ modifying the application's JVM flags.
 Yes. Beyond built-in targets, the scraper accepts a YAML configuration
 file with custom MBean rules via the `OTEL_JMX_CUSTOM_CONFIG`
 environment variable. The rule format differs from the Prometheus JMX
-Exporter — see the
+Exporter - see the
 [JMX Scraper documentation](https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/jmx-metrics)
 for syntax details.
 
@@ -283,7 +283,7 @@ adds minimal network overhead but requires an open RMI connection.
 The Prometheus JMX Exporter runs inside the application's JVM and adds
 negligible memory overhead (the agent JAR itself is ~2 MB). It reads
 MBeans directly from the in-process MBean server on each HTTP scrape
-request — no network hop, no serialization. For most applications at
+request - no network hop, no serialization. For most applications at
 30-second scrape intervals, the CPU impact is not measurable. Large
 deployments with thousands of MBeans (e.g., Cassandra with hundreds of
 tables) should use exporter `blacklist` rules to limit cardinality.
@@ -291,16 +291,16 @@ tables) should use exporter `blacklist` rules to limit cardinality.
 ## Related Guides
 
 - [Tomcat Monitoring](../component/tomcat.md)
-  — Full JMX Scraper setup for Apache Tomcat
+  - Full JMX Scraper setup for Apache Tomcat
 - [ActiveMQ Monitoring](../component/activemq.md)
-  — Full JMX Scraper setup for Apache ActiveMQ Classic
+  - Full JMX Scraper setup for Apache ActiveMQ Classic
 - [Jetty Monitoring](../component/jetty.md)
-  — Full JMX Scraper setup for Eclipse Jetty
+  - Full JMX Scraper setup for Eclipse Jetty
 - [WildFly Monitoring](../component/wildfly.md)
-  — Full JMX Scraper setup for WildFly / JBoss EAP
+  - Full JMX Scraper setup for WildFly / JBoss EAP
 - [Cassandra Monitoring](../component/cassandra.md)
-  — Full JMX Exporter setup for Apache Cassandra
+  - Full JMX Exporter setup for Apache Cassandra
 - [OTel Collector Configuration](./otel-collector-config.md)
-  — Advanced collector configuration
+  - Advanced collector configuration
 - [Docker Compose Setup](./docker-compose-example.md)
-  — Run the Collector locally
+  - Run the Collector locally

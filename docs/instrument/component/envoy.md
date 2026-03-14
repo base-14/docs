@@ -1,6 +1,6 @@
 ---
 title: >
-  Envoy OpenTelemetry Monitoring — Downstream Connections, Upstream
+  Envoy OpenTelemetry Monitoring - Downstream Connections, Upstream
   Health, and Collector Setup
 sidebar_label: Envoy
 id: collecting-envoy-telemetry
@@ -37,14 +37,14 @@ ships metrics to base14 Scout.
 | ---------------------- | ------- | ----------- |
 | Envoy                  | 1.20    | 1.32+       |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
 - Envoy admin interface port (9901) must be accessible from the host
   running the Collector
 - The `admin` block must be configured in the Envoy bootstrap config
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -93,7 +93,7 @@ curl -s http://localhost:9901/stats/prometheus | head -20
 
 No authentication is required on the admin interface by default.
 Bind to `127.0.0.1` or use network policies to restrict access in
-production — the admin interface can modify Envoy settings and
+production - the admin interface can modify Envoy settings and
 trigger shutdown.
 
 ## Configuration
@@ -215,7 +215,7 @@ config.
 
 1. Add the `admin` section with `address` and `port_value` to the
    bootstrap config
-2. Restart Envoy — the admin address is static configuration
+2. Restart Envoy - the admin address is static configuration
 3. Verify: `curl http://localhost:9901/`
 
 ### Metrics endpoint returns empty or partial data
@@ -227,7 +227,7 @@ config.
 1. Metrics appear as listeners, clusters, and routes are configured
 2. Use `curl http://localhost:9901/stats/prometheus` without
    `usedonly` to see all available metrics including zeros
-3. Check Envoy is processing traffic — downstream metrics require
+3. Check Envoy is processing traffic - downstream metrics require
    active connections
 
 ### No metrics appearing in Scout
@@ -312,12 +312,12 @@ shutting down. Use this metric for basic liveness alerting.
 ## Related Guides
 
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
-  — Advanced collector configuration
+  - Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md)
-  — Run the Collector locally
+  - Run the Collector locally
 - [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
-  — Production deployment
+  - Production deployment
 - [Creating Alerts](../../guides/creating-alerts-with-logx.md)
-  — Alert on Envoy metrics
+  - Alert on Envoy metrics
 - [Traefik Monitoring](./traefik.md)
-  — Reverse proxy monitoring
+  - Reverse proxy monitoring

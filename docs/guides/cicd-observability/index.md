@@ -1,6 +1,6 @@
 ---
 title: >
-  CI/CD Observability — Monitor Your Pipelines with
+  CI/CD Observability - Monitor Your Pipelines with
   OpenTelemetry | base14 Scout
 sidebar_label: CI/CD Observability
 description:
@@ -28,11 +28,11 @@ pipelines.
 ## Guides
 
 - **[GitHub Actions Observability](./github-actions-observability.md)**
-  — Export GitHub Actions workflows as OpenTelemetry
+  - Export GitHub Actions workflows as OpenTelemetry
   traces. Identify slow steps, track failure patterns,
   and gain full visibility into your CI pipelines.
 
-- **[ArgoCD Monitoring](./argocd.md)** — Collect ArgoCD
+- **[ArgoCD Monitoring](./argocd.md)** - Collect ArgoCD
   Prometheus metrics with the OpenTelemetry Collector.
   Monitor application sync status, health,
   reconciliation, and Git operations.

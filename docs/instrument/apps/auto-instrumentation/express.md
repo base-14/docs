@@ -63,7 +63,7 @@ business logic, optimize performance, and deploy with Docker.
 
 Create a `telemetry.ts` file that initializes `NodeSDK` with
 `getNodeAutoInstrumentations()` and import it as the very first line of your
-entry point — this single step auto-instruments Express routes, MongoDB
+entry point - this single step auto-instruments Express routes, MongoDB
 (Mongoose), Redis, and HTTP clients. Set `OTEL_SERVICE_NAME` and
 `OTEL_EXPORTER_OTLP_ENDPOINT` to point at your Scout collector, and use
 `BatchSpanProcessor` in production to minimize request latency overhead.

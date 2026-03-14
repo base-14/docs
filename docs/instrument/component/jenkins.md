@@ -1,6 +1,6 @@
 ---
 title: >
-  Jenkins OpenTelemetry Monitoring — Build Results, Executor Usage,
+  Jenkins OpenTelemetry Monitoring - Build Results, Executor Usage,
   and Collector Setup
 sidebar_label: Jenkins
 id: collecting-jenkins-telemetry
@@ -36,16 +36,16 @@ the receiver, and ships metrics to base14 Scout.
 | Jenkins                | 2.387   | LTS (latest) |
 | Prometheus Metrics plugin | 2.0  | latest       |
 | OTel Collector Contrib | 0.90.0  | latest       |
-| base14 Scout           | Any     | —            |
+| base14 Scout           | Any     | -            |
 
 Before starting:
 
 - Jenkins web port (8080) must be accessible from the host running the
   Collector
-- The Prometheus Metrics plugin must be installed — metrics are not
+- The Prometheus Metrics plugin must be installed - metrics are not
   available without it
 - Jenkins initial setup wizard must complete before metrics appear
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -207,7 +207,7 @@ not finished starting.
 
 1. Verify the plugin is installed:
    **Manage Jenkins** → **Manage Plugins** → **Installed**
-2. Wait for Jenkins to fully start — the setup wizard must complete
+2. Wait for Jenkins to fully start - the setup wizard must complete
 3. Confirm the URL includes the trailing slash: `/prometheus/` not
    `/prometheus`
 
@@ -218,7 +218,7 @@ not finished starting.
 **Fix**:
 
 1. Verify Jenkins is running: `docker ps | grep jenkins`
-2. Jenkins takes 30-60 seconds to start — check
+2. Jenkins takes 30-60 seconds to start - check
    `docker logs jenkins` for startup progress
 3. Check firewall rules if the Collector runs on a separate host
 
@@ -250,7 +250,7 @@ Yes. The Jenkins OpenTelemetry plugin sends OTLP traces and metrics
 directly to the Collector, focusing on CI pipeline observability
 (build traces, step durations). This guide uses the Prometheus Metrics
 plugin for server health metrics (executors, queue depth, JVM).
-The two approaches are complementary — you can use both.
+The two approaches are complementary - you can use both.
 
 **Does this work with Jenkins running in Kubernetes?**
 
@@ -281,6 +281,6 @@ agent node status and executor usage.
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
   Run the Collector locally
 - [ArgoCD Monitoring](../../guides/cicd-observability/argocd.md)
-  — GitOps delivery monitoring
+  - GitOps delivery monitoring
 - [Creating Alerts](../../guides/creating-alerts-with-logx.md) —
   Alert on Jenkins metrics

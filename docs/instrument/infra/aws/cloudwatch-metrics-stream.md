@@ -1,7 +1,7 @@
 ---
 date: 2025-11-19
 id: collecting-aws-cloudwatch-metrics-using-kinesis-streams
-title: CloudWatch Metrics Stream to OpenTelemetry — Setup Guide
+title: CloudWatch Metrics Stream to OpenTelemetry - Setup Guide
 sidebar_label: CloudWatch Metrics Stream
 description:
   Stream AWS CloudWatch metrics via Kinesis Firehose to OpenTelemetry

@@ -58,7 +58,7 @@ Add the `OpenTelemetry.Extensions.Hosting` and
 `builder.Services.AddOpenTelemetry()` in `Program.cs` to register ASP.NET
 Core, Entity Framework Core, and HttpClient instrumentation in one call.
 Configure the OTLP exporter with your Scout collector endpoint and set
-`OTEL_SERVICE_NAME` — no additional code is needed for HTTP request traces,
+`OTEL_SERVICE_NAME` - no additional code is needed for HTTP request traces,
 database spans, or outbound call tracking.
 
 :::

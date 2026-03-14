@@ -1,6 +1,6 @@
 ---
 title: >
-  Jetty OpenTelemetry Monitoring — Thread Pools, Sessions,
+  Jetty OpenTelemetry Monitoring - Thread Pools, Sessions,
   and Collector Setup
 sidebar_label: Jetty
 id: collecting-jetty-telemetry
@@ -27,7 +27,7 @@ keywords:
 The OpenTelemetry JMX Scraper collects 9 Jetty-specific metrics
 and 18 JVM metrics from Eclipse Jetty 9.x through 12.x, including
 thread pool utilization, I/O select counts, and session activity.
-Jetty requires explicit JMX enablement — unlike Tomcat, JMX MBean
+Jetty requires explicit JMX enablement - unlike Tomcat, JMX MBean
 registration is not configured by default. The scraper connects
 to Jetty via JMX, converts MBeans into OpenTelemetry metrics, and
 exports them over OTLP to the Collector. This guide enables JMX
@@ -41,16 +41,16 @@ on Jetty, configures the scraper, and ships metrics to base14 Scout.
 | JMX Scraper    | 1.46.0  | 1.54.0+     |
 | Java (scraper) | 11      | 17+         |
 | OTel Collector | 0.90.0  | latest      |
-| base14 Scout   | Any     | —           |
+| base14 Scout   | Any     | -           |
 
 Before starting:
 
 - Jetty must be accessible from the host running the JMX Scraper
   (JMX port, default 1099)
-- The JMX Scraper runs as a standalone Java process — it requires
+- The JMX Scraper runs as a standalone Java process - it requires
   its own JRE
 - Jetty's `jmx` module must be enabled for MBean registration
-- OTel Collector installed — see
+- OTel Collector installed - see
   [Docker Compose Setup](../collector-setup/docker-compose-example.md)
 
 ## What You'll Monitor
@@ -345,7 +345,7 @@ docker logs otel-collector 2>&1 \
 
 1. Verify Jetty is running:
    `docker ps | grep jetty`
-2. Confirm JMX remote access is enabled — check that
+2. Confirm JMX remote access is enabled - check that
    `-Dcom.sun.management.jmxremote.port=1099` is in `JAVA_OPTIONS`
    or `start.d/jmx-remote.ini`
 3. Verify the JMX port matches between Jetty config and
@@ -445,14 +445,14 @@ network. No firewall rules needed for intra-pod communication.
 ## Related Guides
 
 - [JMX Metrics Collection Guide](../collector-setup/jmx-metrics-collection-guide.md)
-  — Compare JMX Scraper vs JMX Exporter
+  - Compare JMX Scraper vs JMX Exporter
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
-  — Advanced collector configuration
+  - Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md)
-  — Run the Collector locally
+  - Run the Collector locally
 - [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
-  — Production deployment
+  - Production deployment
 - [Tomcat Monitoring](./tomcat.md)
-  — Another Java application server setup
+  - Another Java application server setup
 - [Creating Alerts](../../guides/creating-alerts-with-logx.md)
-  — Alert on Jetty metrics
+  - Alert on Jetty metrics

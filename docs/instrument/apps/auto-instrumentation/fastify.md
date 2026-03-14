@@ -61,7 +61,7 @@ business logic, optimize performance, and deploy with Docker.
 
 Create a `telemetry.ts` file that initializes `NodeSDK` with
 `getNodeAutoInstrumentations()` and import it as the very first line of your
-entry point — this auto-instruments Fastify routes, PostgreSQL (`pg`), Redis
+entry point - this auto-instruments Fastify routes, PostgreSQL (`pg`), Redis
 (IORedis), and HTTP clients without touching route code. Set
 `OTEL_SERVICE_NAME` and `OTEL_EXPORTER_OTLP_ENDPOINT`, and propagate trace
 context explicitly into BullMQ job data so worker spans link back to the
