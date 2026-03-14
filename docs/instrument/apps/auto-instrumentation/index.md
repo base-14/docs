@@ -1,6 +1,5 @@
 ---
-title:
-  Auto-Instrumentation Overview - Zero-Code OpenTelemetry Setup | base14 Scout
+title: Auto-Instrumentation Overview - Zero-Code OpenTelemetry Setup | base14 Scout
 sidebar_label: Overview
 sidebar_position: 1
 description:
@@ -25,7 +24,9 @@ keywords:
 
 Auto-instrumentation provides **zero-code observability** by automatically
 capturing traces, metrics, and logs from your application and its dependencies.
-This is the fastest way to get started with OpenTelemetry.
+This is the fastest way to get started with OpenTelemetry. If you want to verify
+your collector is working first, try the
+[Hello World guide](/instrument/apps/hello-world).
 
 ## When to Use Auto-Instrumentation
 
@@ -111,8 +112,8 @@ This is the fastest way to get started with OpenTelemetry.
 
 ### Mobile / Cross-Platform
 
-| Framework | Guide                | What's Instrumented                                                                          |
-| --------- | -------------------- | -------------------------------------------------------------------------------------------- |
+| Framework | Guide                           | What's Instrumented                                               |
+| --------- | ------------------------------- | ----------------------------------------------------------------- |
 | Flutter   | [Flutter](../../mobile/flutter) | HTTP requests, crash handling, app lifecycle, distributed tracing |
 
 ## How Auto-Instrumentation Works

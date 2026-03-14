@@ -18,9 +18,9 @@ keywords:
 
 # 5-Minute Quick Start
 
-Get Scout up and running in less than 5 minutes. This guide will help you
-deploy an OpenTelemetry collector, configure it to send data to Scout, and
-start collecting telemetry from your applications and infrastructure.
+Get Scout up and running in less than 5 minutes. This guide will help you deploy
+an OpenTelemetry collector, configure it to send data to Scout, and start
+collecting telemetry from your applications and infrastructure.
 
 ## Time to Complete
 
@@ -49,7 +49,8 @@ infrastructure. Choose from Docker, Kubernetes, Linux, or AWS ECS options.
 Perfect for local development and testing environments. Download the
 configuration and deploy using Docker Compose.
 
-See the [Docker Compose Setup Guide](../instrument/collector-setup/docker-compose-example.md)
+See the
+[Docker Compose Setup Guide](../instrument/collector-setup/docker-compose-example.md)
 for detailed instructions.
 
 ### Kubernetes
@@ -57,7 +58,8 @@ for detailed instructions.
 Ideal for production deployments on EKS, GKE, or AKS. Install using Helm charts
 for simplified deployment and management.
 
-See the [Kubernetes Helm Setup Guide](../instrument/collector-setup/kubernetes-helm-setup.md)
+See the
+[Kubernetes Helm Setup Guide](../instrument/collector-setup/kubernetes-helm-setup.md)
 for detailed instructions.
 
 ### Linux
@@ -78,8 +80,8 @@ detailed instructions on Fargate and EC2 deployments.
 
 ## Step 2: Configure the OpenTelemetry Collector
 
-Once your collector is deployed, configure it to receive telemetry and send
-data to Scout. Here's a complete configuration example:
+Once your collector is deployed, configure it to receive telemetry and send data
+to Scout. Here's a complete configuration example:
 
 ```yaml showLineNumbers
 # Extensions provide additional capabilities to the collector
@@ -142,10 +144,9 @@ service:
 
 ### Configuration Breakdown
 
-- **OAuth Extension**: Handles authentication with Scout using OAuth2
-  client credentials flow
-- **OTLP Receiver**: Accepts telemetry data on ports 4317 (gRPC) and 4318
-  (HTTP)
+- **OAuth Extension**: Handles authentication with Scout using OAuth2 client
+  credentials flow
+- **OTLP Receiver**: Accepts telemetry data on ports 4317 (gRPC) and 4318 (HTTP)
 - **Resource Processor**: Adds environment metadata to all telemetry signals
 - **Scout Exporter**: Sends data to Scout backend using authenticated OTLP
 
@@ -156,7 +157,8 @@ service:
 3. Save the configuration to `otel-collector-config.yaml`
 4. Restart the collector to apply changes
 
-See the [Scout Exporter Configuration Guide](../instrument/collector-setup/scout-exporter.md)
+See the
+[Scout Exporter Configuration Guide](../instrument/collector-setup/scout-exporter.md)
 for complete details and authentication options.
 
 ## Step 3: Start Collecting Data
@@ -168,7 +170,8 @@ Now that your collector is running, start sending telemetry data:
 Instrument your applications to send traces, metrics, and logs:
 
 - **Auto-instrumentation**: Get started quickly with zero-code instrumentation
-  for popular frameworks. See [Auto-instrumentation Guides](/instrument/apps/auto-instrumentation/)
+  for popular frameworks. See
+  [Auto-instrumentation Guides](/instrument/apps/auto-instrumentation/)
 - **Custom instrumentation**: Add application-specific telemetry. See
   [Custom Instrumentation Guides](/instrument/apps/custom-instrumentation/)
 
@@ -202,6 +205,9 @@ Monitor your AWS resources automatically:
 
 Now that you have Scout running, explore these topics:
 
+- **Send your first trace**: Run a
+  [Hello World app](/instrument/apps/hello-world) in any of 9 languages to
+  see traces, logs, and metrics flowing through your collector
 - **Fine-tune your collector**: Review the
   [OTel Collector Configuration Guide](../instrument/collector-setup/otel-collector-config.md)
   to optimize your collector setup
@@ -230,5 +236,5 @@ If you're not seeing data in Scout:
   \- Advanced collector configuration
 - [Scout Exporter](../instrument/collector-setup/scout-exporter.md) - Exporter
   configuration details
-- [Dashboards and Alerts](../operate/dashboards-and-alerts.md) - Create visualizations
-  and alerts
+- [Dashboards and Alerts](../operate/dashboards-and-alerts.md) - Create
+  visualizations and alerts

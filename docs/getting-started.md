@@ -21,6 +21,7 @@ for a quick win and a clear next step.
 ## I want a 5-minute setup
 
 - [5-Minute Quick Start](/guides/quick-start)
+- [Hello World — Send Your First Trace](/instrument/apps/hello-world)
 
 ## I am deploying a collector
 
