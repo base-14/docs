@@ -70,7 +70,8 @@ before running a targeted query:
 **Tip:** Use discover first to understand what metrics exist and what attributes
 you can filter or group by:
 
-> Discover what metrics payment-service has, then query the one related to request duration
+> Discover what metrics payment-service has, then query the one
+> related to request duration
 
 ### Alerts
 
