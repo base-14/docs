@@ -23,7 +23,7 @@ Once you have connected your coding agent to Scout
 (see [MCP Client Setup](./setup.md)), you can query your observability data in
 plain English.
 
-Scout MCP exposes 10 read-only tools that cover service topology, traces, logs,
+Scout MCP exposes 12 read-only tools that cover service topology, traces, logs,
 metrics, and alerts. You do not need to know the tool names. Ask your question
 and your coding agent will figure out which tools to use.
 
@@ -62,7 +62,16 @@ before running a targeted query:
 ### Metrics
 
 - *What metrics does payment-service emit?*
-- *Show me all metrics for order-service in the last 24 hours*
+- *Show me CPU usage for order-service in the last hour*
+- *What's the request rate for checkout-service grouped by endpoint?*
+- *Show me the raw memory usage data points for the last 15 minutes*
+- *Compare error counts across services using the http.status_code attribute*
+
+**Tip:** Use discover first to understand what metrics exist and what attributes
+you can filter or group by:
+
+> Discover what metrics payment-service has, then query the one
+> related to request duration
 
 ### Alerts
 
@@ -104,7 +113,7 @@ Your coding agent will:
 1. Fetch service dependencies (incoming and outgoing)
 2. Discover available span names and attributes
 3. Discover log attributes and severity levels
-4. List metrics the service emits
+4. Discover metrics the service emits, their types, and available dimensions
 5. Give you a complete overview
 
 ## Tips for Better Results
@@ -115,6 +124,7 @@ Your coding agent will:
 | "Last 5 slowest traces for checkout-service today" | "Show me traces" |
 | "Compare error rates before and after 2pm" | "Is something wrong?" |
 | "Discover what attributes payment-service has, then search for traces where provider is stripe" | "Find stripe traces" |
+| "Discover metrics for order-service, then query request_duration grouped by endpoint" | "Show me metrics" |
 
 ### Guide your coding agent's approach
 
@@ -147,7 +157,7 @@ When querying Scout:
 
 ## Tool Reference
 
-All 10 tools exposed by Scout MCP. Every tool is read-only and idempotent.
+All 12 tools exposed by Scout MCP. Every tool is read-only and idempotent.
 
 ### `list_services`
 
@@ -304,3 +314,40 @@ attributes, events, and links.
 **Returns:** `trace_id`, `found` boolean, array of span details with full span
 information including `events`, `links`, `attributes`, `duration_ns`,
 `status_code`, and `span_count`.
+
+### `discover_metrics`
+
+Discover what metrics a service emits, their types, units, and available filter
+dimensions. Use this before `query_metrics` to understand the metric schema.
+
+| Parameter | Type | Required | Description |
+| --- | --- | --- | --- |
+| `service_name` | string | Yes | The service to discover metrics for |
+| `start_time` | string (RFC 3339) | No | Start of time window. Defaults to 7 days ago |
+| `end_time` | string (RFC 3339) | No | End of time window. Defaults to now |
+
+**Returns:** `service_name`, `time_range`, `total_count`, and `metrics` array.
+Each metric includes `name`, `type` (gauge, sum, histogram, summary), `description`,
+`unit`, `attribute_keys`, and `resource_attribute_keys`.
+
+### `query_metrics`
+
+Query metric values with filtering, grouping, and aggregation. Supports gauge,
+sum, histogram, and summary metric types.
+
+| Parameter | Type | Required | Description |
+| --- | --- | --- | --- |
+| `service_name` | string | Yes | The service to query |
+| `metric_name` | string | Yes | Metric name to query. Use `discover_metrics` first to find available metrics |
+| `start_time` | string (RFC 3339) | Yes | Start time |
+| `end_time` | string (RFC 3339) | Yes | End time |
+| `attributes` | object | No | Filter by metric attributes. Values can be a string or array for OR matching |
+| `resource_attributes` | object | No | Filter by resource attributes. Values can be a string or array for OR matching |
+| `group_by` | string or array | No | Attribute key(s) to group results by |
+| `aggregate_interval` | string | No | Aggregation bucket interval (e.g., `1m`, `5m`, `1h`). Auto-selected if not specified |
+| `raw` | boolean | No | Return raw data points instead of aggregated. Max time range: 30m |
+| `limit` | integer | No | Max data points to return. Default 1000, max 10000 |
+
+**Returns:** Metric data points with timestamps and values. Structure depends on
+metric type and whether `raw` mode is enabled. Aggregated results include
+bucket timestamps with min, max, avg, sum, and count.
