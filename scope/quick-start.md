@@ -33,6 +33,8 @@ provider.
 5. Click **Test Connection** to verify the key is valid
 6. Save the provider configuration
 
+![Base14 Scope provider configuration page showing connected LLM providers like OpenAI and Anthropic](./drawings/providers-list-base14.png)
+
 Once connected, enable the models you want to use (e.g., `gpt-4o`,
 `claude-3-opus`).
 
@@ -45,17 +47,26 @@ prompts. See [Configure Providers](./platform/configure-providers.md) for detail
 
 1. Click **New Prompt** from the prompt list
 2. Enter a name (e.g., `greeting`)
-3. Add your prompt content:
+3. Add a **description** (e.g., "Greet the user and suggest an activity")
+4. Add your prompt messages:
 
-```text
-You are a friendly assistant. Greet the user by name and suggest
-a fun activity for them to try today.
+   **SYSTEM message:**
 
-User name: {{name}}
-Activity preference: {{preference}}
-```
+   ```text
+   You are a friendly assistant. Your goal is to greet the user by name
+   and suggest a fun activity based on their preference.
+   ```
+
+   **HUMAN message:**
+
+   ```text
+   My name is {{name}} and I enjoy {{preference}} activities.
+   What should I try today?
+   ```
 
 Scope automatically detects `{{name}}` and `{{preference}}` as variables.
+
+![Base14 Scope create prompt editor with variable syntax highlighting and metadata fields](./drawings/create-prompt-base14.png)
 
 1. Click **Create** — this creates version `v1` in **draft** status
 
@@ -69,6 +80,8 @@ Scope automatically detects `{{name}}` and `{{preference}}` as variables.
    - `preference`: `outdoor`
 5. Click **Run**
 
+![Base14 Scope test panel showing LLM response with token usage, latency, and cost metrics](./drawings/test-panel-base14.png)
+
 The test panel shows the LLM response along with token usage, latency, and
 estimated cost. Adjust your prompt and re-run until you're satisfied.
 
@@ -79,6 +92,8 @@ When the prompt is ready:
 1. Click **Promote** on the version you want to deploy
 2. Add optional promotion notes (e.g., "Initial release")
 3. Confirm the promotion
+
+![Base14 Scope promote to production dialog with promotion notes for deploying prompt version](./drawings/promote-to-production-base14.png)
 
 The version status changes from **draft** to **published**. Any application
 using the SDK or API will now receive this version when requesting the

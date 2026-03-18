@@ -31,6 +31,8 @@ switch is instant.
   customers")
 5. Confirm the promotion
 
+![Base14 Scope promote to production dialog with promotion notes for deploying prompt version](../drawings/promote-to-production-base14.png)
+
 The version status changes from **draft** to **published**, and the previous
 production version (if any) is archived.
 

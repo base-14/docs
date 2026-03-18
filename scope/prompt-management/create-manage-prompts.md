@@ -20,6 +20,8 @@ you no longer need.
 4. Optionally add a **description** and **tags**
 5. Click **Create**
 
+![Base14 Scope create prompt editor with variable syntax highlighting and metadata fields](../drawings/create-prompt-base14.png)
+
 Scope creates the prompt with an initial version (`v1`) in **draft** status.
 Variables like `{{customer_name}}` are automatically detected from the content.
 
@@ -30,6 +32,8 @@ should be stable and meaningful.
 :::
 
 ## View and Browse Prompts
+
+![Base14 Scope prompt list showing all managed prompts with search, tags, and status filters](../drawings/prompt-list-base14.png)
 
 The prompt list shows all prompts in your workspace. You can:
 
