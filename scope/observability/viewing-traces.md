@@ -43,6 +43,8 @@ The trace list shows key information at a glance:
 | **Cost** | Estimated cost |
 | **Time** | When the execution occurred |
 
+![Base14 Scope traces view showing LLM execution history with prompt, model, tokens, latency, and cost columns](../drawings/traces-list-base14.png)
+
 ## Filtering Traces
 
 Use the filter controls to narrow the trace list:
@@ -72,6 +74,8 @@ Click on a trace to view its full details:
 - **Token breakdown** — prompt tokens, completion tokens, total
 - **Latency** — end-to-end response time in milliseconds
 - **Cost** — estimated cost based on model pricing
+
+![Base14 Scope trace detail view showing request, response, token breakdown, and OpenTelemetry metadata](../drawings/trace-detail-base14.png)
 
 ### Metadata
 

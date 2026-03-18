@@ -22,6 +22,8 @@ Scope supports the following LLM providers:
 | **Google** | Gemini Pro, Gemini Ultra, and other Google AI models |
 | **AWS Bedrock** | Access to multiple model providers through AWS Bedrock |
 
+![Base14 Scope provider configuration page showing connected LLM providers like OpenAI and Anthropic](../drawings/providers-list-base14.png)
+
 ## Add a Provider
 
 1. Go to **Settings > Providers**
@@ -37,6 +39,8 @@ Scope supports the following LLM providers:
      deployments
 5. Click **Test Connection** to verify the API key
 6. Save the provider
+
+![Base14 Scope add provider form with API key configuration and test connection for LLM providers](../drawings/add-provider-base14.png)
 
 :::warning
 Provider API keys are stored encrypted. Only users with provider management

@@ -29,6 +29,8 @@ export SCOPE_API_KEY="key_01XYZ789"
 export SCOPE_API_SECRET="secret_01DEF456..."
 ```
 
+![Base14 Scope API keys management page showing key names, status, and creation dates for SDK authentication](../drawings/api-keys-base14.png)
+
 ## Create an API Key
 
 1. Go to **Settings > API Keys**

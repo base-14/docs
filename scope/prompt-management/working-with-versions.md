@@ -23,6 +23,8 @@ statuses:
 | **Published** | No | Yes (default) | The active production version. |
 | **Archived** | No | No | Preserved for history. Cannot be served. |
 
+![Base14 Scope prompt detail view showing version list with draft, published, and archived status badges](../drawings/prompt-detail-versions-base14.png)
+
 ## Create a New Version
 
 1. Open the prompt from the prompt list

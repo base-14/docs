@@ -136,6 +136,8 @@ end
 
 ## Variables in the Test Panel
 
+![Base14 Scope test panel with auto-detected prompt variable input fields for dynamic values](../drawings/prompt-variables-test-base14.png)
+
 When testing a prompt in the UI:
 
 1. Open a prompt version and click **Test**

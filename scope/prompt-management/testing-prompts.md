@@ -23,6 +23,8 @@ before promoting to production.
      `max_tokens`
 4. Click **Run**
 
+![Base14 Scope test panel showing LLM response with token usage, latency, and cost metrics](../drawings/test-panel-base14.png)
+
 ## Understanding Results
 
 After execution, the test panel displays:

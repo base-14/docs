@@ -32,6 +32,8 @@ and iterating on.
    - The LLM response
 4. Click **Create Prompt from Trace**
 
+![Base14 Scope wizard for creating a managed prompt from a Scout LLM execution trace](../drawings/create-prompt-from-trace-base14.png)
+
 ### Step 2: Configure the Prompt
 
 The wizard pre-fills fields from the trace:
