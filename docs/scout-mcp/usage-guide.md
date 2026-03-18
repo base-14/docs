@@ -225,8 +225,8 @@ span includes its peer service, error rate, and latency stats.
 | Parameter | Type | Required | Description |
 | --- | --- | --- | --- |
 | `service_name` | string | Yes | The service to get the profile for |
-| `start_time` | string (RFC 3339) | No | Start of time window. Defaults to 24 hours ago |
-| `end_time` | string (RFC 3339) | No | End of time window. Defaults to now |
+| `start_time` | string (RFC 3339) | No | Start of time window. Defaults to 5 minutes ago |
+| `end_time` | string (RFC 3339) | No | End of time window. Defaults to now. Max range: 1 hour |
 
 **Returns:** Service info and a `spans` array. Each span includes `peer_service`,
 `span_name`, `method`, `error_rate`, `avg_latency_ms`, `min_latency_ms`,
