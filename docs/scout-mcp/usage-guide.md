@@ -23,7 +23,7 @@ Once you have connected your coding agent to Scout
 (see [MCP Client Setup](./setup.md)), you can query your observability data in
 plain English.
 
-Scout MCP exposes 12 read-only tools that cover service topology, traces, logs,
+Scout MCP exposes 13 read-only tools that cover service topology, traces, logs,
 metrics, and alerts. You do not need to know the tool names. Ask your question
 and your coding agent will figure out which tools to use.
 
@@ -35,6 +35,12 @@ and your coding agent will figure out which tools to use.
 - *Show me the service dependency map for payment-service*
 - *What services does order-service call? And what calls it?*
 - *Show me the full service topology for the last 6 hours*
+
+### Service profile
+
+- *What's the performance profile for payment-service?*
+- *Show me error rates and latency stats for all spans in order-service*
+- *Which peer services does checkout-service interact with, and how are they performing?*
 
 ### Traces
 
@@ -157,7 +163,7 @@ When querying Scout:
 
 ## Tool Reference
 
-All 12 tools exposed by Scout MCP. Every tool is read-only and idempotent.
+All 13 tools exposed by Scout MCP. Every tool is read-only and idempotent.
 
 ### `list_services`
 
@@ -210,6 +216,21 @@ Returns all metrics emitted by a specific service within a time range.
 
 **Returns:** Array of metrics, each with `name`, `type`, `description`,
 `first_seen`, `last_noticed`.
+
+### `get_service_profile`
+
+Returns cumulative performance stats for a service as a flat list of spans. Each
+span includes its peer service, error rate, and latency stats.
+
+| Parameter | Type | Required | Description |
+| --- | --- | --- | --- |
+| `service_name` | string | Yes | The service to get the profile for |
+| `start_time` | string (RFC 3339) | No | Start of time window. Defaults to 24 hours ago |
+| `end_time` | string (RFC 3339) | No | End of time window. Defaults to now |
+
+**Returns:** Service info and a `spans` array. Each span includes `peer_service`,
+`span_name`, `method`, `error_rate`, `avg_latency_ms`, `min_latency_ms`,
+`max_latency_ms`, `first_seen`, `last_noticed`.
 
 ### `get_last_n_alerts`
 
