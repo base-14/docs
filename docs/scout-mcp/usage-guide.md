@@ -14,6 +14,7 @@ keywords:
     metrics,
     service topology,
     alerts,
+    system health,
   ]
 ---
 
@@ -23,7 +24,7 @@ Once you have connected your coding agent to Scout
 (see [MCP Client Setup](./setup.md)), you can query your observability data in
 plain English.
 
-Scout MCP exposes 13 read-only tools that cover service topology, traces, logs,
+Scout MCP exposes 14 read-only tools that cover service topology, traces, logs,
 metrics, and alerts. You do not need to know the tool names. Ask your question
 and your coding agent will figure out which tools to use.
 
@@ -78,6 +79,12 @@ you can filter or group by:
 
 > Discover what metrics payment-service has, then query the one
 > related to request duration
+
+### System health overview
+
+- *Give me a health summary of the entire system*
+- *Are there any firing alerts and which services are affected?*
+- *What does the overall service map look like, including error rates and latency?*
 
 ### Alerts
 
@@ -163,7 +170,7 @@ When querying Scout:
 
 ## Tool Reference
 
-All 13 tools exposed by Scout MCP. Every tool is read-only and idempotent.
+All 14 tools exposed by Scout MCP. Every tool is read-only and idempotent.
 
 ### `list_services`
 
@@ -231,6 +238,23 @@ span includes its peer service, error rate, and latency stats.
 **Returns:** Service info and a `spans` array. Each span includes `peer_service`,
 `span_name`, `method`, `error_rate`, `avg_latency_ms`, `min_latency_ms`,
 `max_latency_ms`, `first_seen`, `last_noticed`.
+
+### `get_system_health_summary`
+
+Returns a complete picture of system health in one call. Includes currently
+firing alerts, all known services, and per-span performance stats (error rate,
+latency) for every service-to-service relationship. Relationships are nested
+inside each service as outbound dependencies.
+
+| Parameter | Type | Required | Description |
+| --- | --- | --- | --- |
+| *(none)* | | | This tool takes no parameters |
+
+**Returns:** `active_alerts` array (alert name, severity, labels, annotations,
+fingerprint) and `services` array. Each service includes `name`, `first_seen`,
+`last_noticed`, and a `relationships` array of outbound dependencies with
+`target`, `span_name`, `method`, `error_rate`, `avg_latency_ms`,
+`min_latency_ms`, `max_latency_ms`, `first_seen`, `last_noticed`.
 
 ### `get_last_n_alerts`
 
