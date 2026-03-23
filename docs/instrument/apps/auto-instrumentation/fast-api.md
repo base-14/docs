@@ -1,10 +1,11 @@
 ---
-title: Instrument FastAPI with OpenTelemetry - Traces, Metrics & Logs in 5 Min
+title: FastAPI OpenTelemetry Instrumentation - Traces, Metrics & Logs Setup
 sidebar_label: FastAPI
 sidebar_position: 4
 description:
-  Auto-instrument FastAPI with OpenTelemetry. Capture traces from HTTP requests,
-  SQLAlchemy queries, and async operations. Production-ready config included.
+  Set up OpenTelemetry in FastAPI in 5 minutes. Capture traces from HTTP
+  requests, SQLAlchemy queries, and async operations. 5-minute setup with
+  working config included.
 keywords:
   [
     fastapi opentelemetry instrumentation,

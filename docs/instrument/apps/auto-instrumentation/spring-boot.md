@@ -1,10 +1,10 @@
 ---
-title: Spring Boot OpenTelemetry Setup - SDK, Java Agent & Spring Boot 4 Starter
+title: Spring Boot OpenTelemetry Instrumentation - Java Agent, SDK & Starter
 sidebar_label: Spring Boot
 sidebar_position: 16
 description:
-  Instrument Spring Boot with OpenTelemetry using SDK, Java agent, or Spring
-  Boot 4 starter. Covers MVC, JPA, WebClient, and Kafka. Java 8-25 supported.
+  Set up OpenTelemetry in Spring Boot using the Java agent, SDK, or Spring Boot
+  4 starter. Covers MVC, JPA, WebClient, and Kafka. Java 8-25.
 keywords:
   [
     spring boot monitoring,

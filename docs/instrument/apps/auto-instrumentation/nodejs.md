@@ -1,11 +1,10 @@
 ---
-title: Instrument Node.js with OpenTelemetry - Auto-Trace HTTP, DB & Queues
+title: Node.js OpenTelemetry Instrumentation - HTTP, DB & Queue Tracing
 sidebar_label: Node.js
 sidebar_position: 13
 description:
-  Auto-instrument Node.js with OpenTelemetry. Capture traces from Express,
-  NestJS, Fastify, databases, Redis, and message queues with zero code
-  changes.
+  Add OpenTelemetry to Node.js with zero code changes. Capture traces from
+  Express, NestJS, Fastify, databases, and queues.
 keywords:
   [
     nodejs opentelemetry instrumentation,

@@ -1,10 +1,10 @@
 ---
-title: PHP OpenTelemetry Manual Instrumentation - Spans, Metrics & Context Propagation
+title: PHP OpenTelemetry Instrumentation - Custom Spans & Metrics Guide
 sidebar_label: PHP
 sidebar_position: 5
 description:
-  Manual OpenTelemetry instrumentation for PHP. Create custom spans, record
-  metrics, and propagate context across services. Works with any PHP framework.
+  Add custom OpenTelemetry spans, metrics, and context propagation to any PHP
+  app. Step-by-step manual instrumentation guide.
 keywords:
   [
     php instrumentation,
