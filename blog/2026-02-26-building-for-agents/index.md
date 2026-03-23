@@ -1,7 +1,7 @@
 ---
 slug: building-for-agents
 date: 2026-02-26
-title: "Building for Agents"
+title: "Building for AI Agents - Observability Patterns"
 description: "Designing products for a user that is fast, literal, stateless, and has no eyes. Lessons from building agents that rely on third-party tools."
 authors: [ranjan-sakalley]
 tags: [agents, api-design, developer-experience, observability, ai]

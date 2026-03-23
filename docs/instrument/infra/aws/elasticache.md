@@ -1,7 +1,7 @@
 ---
 date: 2025-04-28
 id: collecting-aws-elasticache-telemetry
-title: Monitor AWS ElastiCache with OpenTelemetry - Redis & Memcached
+title: AWS ElastiCache Monitoring with OpenTelemetry - Redis & Memcached Metrics
 sidebar_label: AWS ElastiCache
 description:
   Stream ElastiCache Redis and Memcached metrics via CloudWatch. Monitor

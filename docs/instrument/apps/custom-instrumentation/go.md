@@ -1,5 +1,5 @@
 ---
-title: Go Custom OpenTelemetry Instrumentation - Manual Tracing Guide
+title: Go OpenTelemetry Custom Instrumentation - Spans & Metrics Guide
 sidebar_label: Go
 sidebar_position: 2
 description:

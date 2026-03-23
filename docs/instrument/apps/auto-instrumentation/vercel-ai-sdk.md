@@ -1,7 +1,6 @@
 ---
 title:
-  Vercel AI SDK OpenTelemetry Instrumentation - Complete AI Pipeline Monitoring
-  Guide | base14 Scout
+  Vercel AI SDK OpenTelemetry Instrumentation - AI Pipeline Monitoring
 sidebar_label: Vercel AI SDK
 sidebar_position: 8
 description:

@@ -1,5 +1,5 @@
 ---
-title: Auto-Instrumentation Overview - Zero-Code OpenTelemetry Setup | base14 Scout
+title: Auto-Instrumentation Overview - Zero-Code OpenTelemetry Setup
 sidebar_label: Overview
 sidebar_position: 1
 description:

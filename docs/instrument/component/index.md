@@ -1,6 +1,6 @@
 ---
 title:
-  Component Monitoring Overview - OpenTelemetry Collector Setup | base14 Scout
+  Component Monitoring Overview - OpenTelemetry Collector Setup
 sidebar_label: Overview
 sidebar_position: 0
 description:

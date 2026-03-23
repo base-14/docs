@@ -1,6 +1,6 @@
 ---
 title:
-  ASP.NET Core OpenTelemetry Instrumentation - Complete APM Setup Guide | base14 Scout
+  ASP.NET Core OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: ASP.NET Core
 sidebar_position: 25
 description:

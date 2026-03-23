@@ -1,10 +1,10 @@
 ---
-title: Instrument Express.js with OpenTelemetry - Traces & Metrics Setup
+title: Express.js OpenTelemetry Instrumentation - Traces & Metrics Setup
 sidebar_label: Express.js
 sidebar_position: 8
 description:
-  Auto-instrument Express.js with OpenTelemetry. Trace HTTP requests,
-  MongoDB queries, Redis calls, and background jobs. Production-ready
+  Set up OpenTelemetry in Express.js. Trace HTTP requests, MongoDB
+  queries, Redis calls, and background jobs. 5-minute setup with working
   config included.
 keywords:
   [

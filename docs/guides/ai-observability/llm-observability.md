@@ -1,7 +1,6 @@
 ---
 title:
-  LLM Observability with OpenTelemetry - Unified AI Application Tracing Guide |
-  base14 Scout
+  LLM Observability with OpenTelemetry - Unified AI Application Tracing Guide
 sidebar_label: LLM Observability
 sidebar_position: 8
 description:

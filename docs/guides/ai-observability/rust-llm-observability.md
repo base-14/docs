@@ -1,7 +1,6 @@
 ---
 title:
-  Rust LLM Observability with OpenTelemetry - AI Application Tracing Guide |
-  base14 Scout
+  Rust LLM Observability with OpenTelemetry - AI Application Tracing Guide
 sidebar_label: Rust LLM Observability
 sidebar_position: 9
 description:

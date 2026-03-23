@@ -1,7 +1,6 @@
 ---
 title:
-  AI Observability Overview - LLM and Agent Instrumentation with OpenTelemetry |
-  base14 Scout
+  AI Observability Overview - LLM and Agent Instrumentation with OpenTelemetry
 sidebar_label: AI Observability
 sidebar_position: 8
 description:

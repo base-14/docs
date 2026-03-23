@@ -1,7 +1,7 @@
 ---
 date: 2025-04-27
 id: collecting-aws-amazon-mq-telemetry
-title: AWS Amazon MQ Monitoring via CloudWatch Metrics Stream
+title: AWS Amazon MQ Monitoring - ActiveMQ & RabbitMQ Metrics via CloudWatch
 sidebar_label: AWS Amazon MQ
 description:
   Monitor AWS Amazon MQ RabbitMQ and ActiveMQ with CloudWatch Metrics Stream and

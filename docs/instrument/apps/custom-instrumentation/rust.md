@@ -1,5 +1,5 @@
 ---
-title: Rust Custom OpenTelemetry Instrumentation - Manual Tracing Guide
+title: Rust OpenTelemetry Custom Instrumentation - Spans & Metrics Guide
 sidebar_label: Rust
 sidebar_position: 8
 description:

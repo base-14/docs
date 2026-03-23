@@ -1,7 +1,6 @@
 ---
 title:
-  Axum OpenTelemetry Instrumentation - Complete APM Setup Guide | base14
-  Scout
+  Axum OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Axum
 sidebar_position: 22
 description:

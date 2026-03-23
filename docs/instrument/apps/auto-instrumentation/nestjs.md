@@ -1,10 +1,10 @@
 ---
-title: Instrument NestJS with OpenTelemetry - TypeORM & BullMQ Tracing
+title: NestJS OpenTelemetry Instrumentation - TypeORM & BullMQ Tracing
 sidebar_label: NestJS
 sidebar_position: 11
 description:
-  Auto-instrument NestJS with OpenTelemetry. Trace controllers, TypeORM
-  queries, BullMQ jobs, and WebSocket gateways with distributed tracing.
+  Add OpenTelemetry to NestJS. Trace controllers, TypeORM queries,
+  BullMQ jobs, and WebSocket gateways.
 keywords:
   [
     nestjs opentelemetry instrumentation,

@@ -1,7 +1,6 @@
 ---
 title:
-  Actix Web OpenTelemetry Instrumentation - Complete APM Setup Guide | base14
-  Scout
+  Actix Web OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Actix Web
 sidebar_position: 21
 description:

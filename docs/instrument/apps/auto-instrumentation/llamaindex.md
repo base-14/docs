@@ -1,7 +1,6 @@
 ---
 title:
-  LlamaIndex OpenTelemetry Instrumentation - Complete AI App Monitoring Guide |
-  base14 Scout
+  LlamaIndex OpenTelemetry Instrumentation - RAG & Agent Monitoring Guide
 sidebar_label: LlamaIndex
 sidebar_position: 7
 description:

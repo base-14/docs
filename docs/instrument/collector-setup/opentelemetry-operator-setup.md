@@ -1,5 +1,5 @@
 ---
-title: OpenTelemetry Operator for Kubernetes
+title: OpenTelemetry Operator for Kubernetes - Auto-Instrumentation & Collector Setup
 sidebar_label: OpenTelemetry Operator
 description:
   Deploy and manage OpenTelemetry Collectors using the OpenTelemetry Operator on

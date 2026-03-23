@@ -1,7 +1,7 @@
 ---
 date: 2025-11-19
 id: collecting-aws-elb-telemetry
-title: Monitor AWS ALB with OpenTelemetry - Metrics, Health & Logs
+title: AWS ELB Monitoring with OpenTelemetry - ALB, NLB & CLB Metrics
 sidebar_label: AWS ALB
 description:
   Stream AWS Application Load Balancer metrics via CloudWatch Metrics

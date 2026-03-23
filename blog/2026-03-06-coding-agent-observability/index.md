@@ -1,7 +1,7 @@
 ---
 slug: coding-agent-observability
 date: 2026-03-06
-title: "Coding Agent Observability for Your Team"
+title: "Coding Agent Observability - Monitor AI Coding Assistants"
 description: "Claude Code, Codex CLI, and Gemini CLI all emit OpenTelemetry signals. Here is what each agent reports, what we learned running telemetry across five engineers, and why instrumenting your AI-assisted development workflow matters."
 authors: [ranjan-sakalley]
 tags: [observability, ai, agents, opentelemetry, developer-experience]

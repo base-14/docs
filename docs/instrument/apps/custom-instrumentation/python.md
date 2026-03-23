@@ -1,5 +1,5 @@
 ---
-title: Python Custom OpenTelemetry - Manual Spans, Metrics & Logs
+title: Python OpenTelemetry Custom Instrumentation - Spans & Metrics
 sidebar_label: Python
 sidebar_position: 6
 description:

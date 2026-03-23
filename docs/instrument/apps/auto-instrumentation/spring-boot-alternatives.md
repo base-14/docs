@@ -1,5 +1,5 @@
 ---
-title: Spring Boot Alternatives OpenTelemetry Instrumentation - Complete APM Setup Guide
+title: Spring Boot OpenTelemetry Alternatives - Micrometer, SDK & Agent Compared
 sidebar_label: Spring Boot Alternatives
 sidebar_position: 17
 description:

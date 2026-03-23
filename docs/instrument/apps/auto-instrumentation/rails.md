@@ -1,11 +1,10 @@
 ---
-title: Instrument Rails with OpenTelemetry - ActiveRecord & Sidekiq Tracing
+title: Rails OpenTelemetry Instrumentation - ActiveRecord & Sidekiq Tracing
 sidebar_label: Ruby on Rails
 sidebar_position: 19
 description:
-  Auto-instrument Ruby on Rails with OpenTelemetry. Trace HTTP requests,
-  ActiveRecord queries, and Sidekiq jobs. Detect N+1 queries
-  automatically.
+  Add OpenTelemetry to Rails. Trace HTTP requests, ActiveRecord queries,
+  and Sidekiq jobs. Detects N+1 queries automatically.
 keywords:
   [
     rails opentelemetry instrumentation,

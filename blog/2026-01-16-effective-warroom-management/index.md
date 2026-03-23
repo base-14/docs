@@ -1,7 +1,7 @@
 ---
 slug: effective-warroom-management
 date: 2026-01-16
-title: "Effective War Room Management: A Guide to Incident Response"
+title: "Effective War Room Management - Incident Response Playbook"
 description: "Battle-tested incident war room practices: clear roles, shared visibility, engineering pairing, and post-incident processes."
 authors: [ranjan-sakalley]
 tags: [incident-management, warroom, devops, sre, on-call, postmortem, incident-response, incident-commander, blameless-postmortem, mttr]

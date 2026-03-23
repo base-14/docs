@@ -1,5 +1,5 @@
 ---
-title: Ruby Custom OpenTelemetry Instrumentation - Manual Tracing Guide
+title: Ruby OpenTelemetry Custom Instrumentation - Spans & Metrics Guide
 sidebar_label: Ruby
 sidebar_position: 7
 description:

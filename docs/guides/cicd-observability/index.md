@@ -1,7 +1,7 @@
 ---
 title: >
   CI/CD Observability - Monitor Your Pipelines with
-  OpenTelemetry | base14 Scout
+  OpenTelemetry
 sidebar_label: CI/CD Observability
 description:
   Monitor CI/CD pipelines with OpenTelemetry. Trace GitHub

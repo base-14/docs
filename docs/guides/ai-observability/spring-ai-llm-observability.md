@@ -1,7 +1,6 @@
 ---
 title:
-  Spring AI OpenTelemetry Instrumentation - Java LLM Tracing & Metrics Guide |
-  base14 Scout
+  Spring AI OpenTelemetry Instrumentation - Java LLM Tracing & Metrics Guide
 sidebar_label: Java AI Observability
 sidebar_position: 10
 description:

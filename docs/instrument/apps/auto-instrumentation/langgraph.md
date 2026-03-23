@@ -1,7 +1,6 @@
 ---
 title:
-  LangGraph OpenTelemetry Instrumentation - Complete AI Agent Monitoring Guide |
-  base14 Scout
+  LangGraph OpenTelemetry Instrumentation - AI Agent Monitoring Guide
 sidebar_label: LangGraph
 sidebar_position: 6
 description:

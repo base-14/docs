@@ -1,6 +1,6 @@
 ---
 date: 2025-11-19
-title: AWS ECS OpenTelemetry Collector Setup
+title: AWS ECS OpenTelemetry Setup - Fargate & EC2 Collector Deployment
 sidebar_label: AWS ECS Setup
 description:
   Deploy OpenTelemetry on AWS ECS Fargate and EC2. Complete guide for ECS

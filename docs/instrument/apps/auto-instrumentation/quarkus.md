@@ -1,11 +1,11 @@
 ---
-title: Instrument Quarkus with OpenTelemetry - Native Image & REST Tracing
+title: Quarkus OpenTelemetry Instrumentation - Native Image & REST Tracing
 sidebar_label: Quarkus
 sidebar_position: 15
 description:
-  Instrument Quarkus apps with the built-in OTel extension. Trace REST
-  endpoints, Hibernate Panache queries, and GraalVM native images with
-  zero agent overhead.
+  Set up OpenTelemetry in Quarkus using the built-in extension. Trace
+  REST endpoints, Hibernate Panache, and native images. Zero agent
+  overhead.
 keywords:
   [
     quarkus opentelemetry instrumentation,

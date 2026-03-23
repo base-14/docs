@@ -1,10 +1,10 @@
 ---
-title: Instrument Django with OpenTelemetry - ORM, Celery & DRF Tracing
+title: Django OpenTelemetry Instrumentation - ORM, Celery & DRF Tracing
 sidebar_label: Django
 sidebar_position: 3
 description:
-  Auto-instrument Django with OpenTelemetry. Trace requests, ORM queries,
-  Celery tasks, and DRF endpoints. Detect N+1 patterns automatically.
+  Add OpenTelemetry to Django. Trace requests, ORM queries, Celery
+  tasks, and DRF endpoints. Detects N+1 queries automatically.
 keywords:
   [
     django opentelemetry instrumentation,

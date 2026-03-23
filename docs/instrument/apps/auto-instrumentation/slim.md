@@ -1,7 +1,6 @@
 ---
 title:
-  Slim Framework OpenTelemetry Instrumentation - Complete APM Setup Guide |
-  base14 Scout
+  Slim Framework OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Slim
 sidebar_position: 24
 description:

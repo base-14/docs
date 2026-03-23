@@ -1,5 +1,5 @@
 ---
-title: AWS Lambda OpenTelemetry Instrumentation
+title: AWS Lambda OpenTelemetry Instrumentation - Traces, Metrics & Logs
 sidebar_label: AWS Lambda
 description:
   Instrument AWS Lambda functions with OpenTelemetry to collect traces,
