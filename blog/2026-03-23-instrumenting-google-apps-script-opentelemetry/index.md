@@ -5,7 +5,7 @@ title: "Instrumenting Google Apps Script with OpenTelemetry"
 description: "Google Apps Script has no native observability. Here's how we built a lightweight OTLP SDK to export traces, logs, and metrics from serverless Apps Script functions — without npm, modules, or async."
 authors: [nimisha-gj]
 tags: [observability, opentelemetry, google-apps-script, instrumentation, serverless, otlp, google-workspace, traces, metrics, logs]
-unlisted: true
+unlisted: false
 ---
 
 Google Apps Script powers a surprising amount of business infrastructure.
