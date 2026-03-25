@@ -294,6 +294,22 @@ receivers:
 > Note: If you have configured log collection location to a custom directory,
 > update the `include` block with the correct path.
 
+:::note
+
+The OTel Collector process needs read access to the NGINX log files.
+If you see permission errors, add the `otelcol-contrib` user to the
+group that owns the log files:
+
+```bash
+sudo usermod -aG <log-file-group> otelcol-contrib
+```
+
+Replace `<log-file-group>` with the group that owns your NGINX log
+directory (commonly `adm` or `www-data`). Restart the collector after
+making this change.
+
+:::
+
 ## Verify the Setup
 
 After configuring all three collection methods, verify each is working:
