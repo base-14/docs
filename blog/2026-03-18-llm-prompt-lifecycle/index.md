@@ -6,6 +6,11 @@ description: "Most teams monitor their LLMs or manage their prompts. Almost none
 authors: [nitin]
 tags: [llm, observability, prompt-management, genai, opentelemetry, prompt-engineering, scout, scope]
 unlisted: false
+head:
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is prompt drift and why is it hard to detect?","acceptedAnswer":{"@type":"Answer","text":"Prompt drift is a slow, invisible degradation in LLM output quality that standard monitoring does not catch. It happens through model drift, data distribution shift, and context drift. Every infrastructure metric looks healthy while outputs get worse."}},{"@type":"Question","name":"How do you monitor LLM output quality in production?","acceptedAnswer":{"@type":"Answer","text":"Instrument LLM calls using OpenTelemetry GenAI semantic conventions to capture model identity, token usage, latency, full prompt content, and completion text on every span. In base14 Scout, filter by prompt name and version to spot quality regressions, then use base14 Scope to version, test, and promote prompt fixes without a code deployment."}},{"@type":"Question","name":"What is the difference between hardcoded and managed prompts?","acceptedAnswer":{"@type":"Answer","text":"Hardcoded prompts are embedded in application code and require a full deployment cycle for every change. Managed prompts are stored in a prompt management system with immutable version history, atomic promotion and rollback without code deployment, and regression testing against real inputs."}},{"@type":"Question","name":"How do you regression test LLM prompts before deploying changes?","acceptedAnswer":{"@type":"Answer","text":"Build a Golden Set: a regression test dataset from real production failures. Select traces of actual incorrect LLM outputs, capture the inputs and expected correct outputs, and run new prompt versions against these exact failure cases before promotion. This catches regressions that synthetic test data misses."}},{"@type":"Question","name":"How do you fix a prompt that is producing worse results over time?","acceptedAnswer":{"@type":"Answer","text":"First, instrument your LLM calls with OpenTelemetry to capture full prompt content and completions on every call. Filter by prompt name and version to isolate when quality degraded. Then update the prompt using real production failure examples, test the new version against a regression dataset built from those failures, and promote atomically without a code deployment."}}]}
 ---
 
 Rachel, a Staff Engineer at a mid-size SaaS company, woke up to a Slack message
@@ -190,7 +195,7 @@ added content without removing anything. Nobody had removed the outdated
 context. The prompt was bloating, and bloated prompts make models more likely to
 latch onto irrelevant information.
 
-![Prompt Token Usage — Grafana dashboard showing average prompt tokens growing in two distinct steps over one month, from ~350 to ~370 to ~410](./prompt-token-usage.png)
+![Prompt Token Usage - Grafana dashboard showing average prompt tokens growing in two distinct steps over one month, from ~350 to ~370 to ~410](./prompt-token-usage.png)
 
 **Cost per conversation.** Trending up, correlating with the token growth. At
 $0.003 per triage call and thousands of tickets per day, the cost increase was
@@ -275,7 +280,7 @@ sourced from Scout, Rachel found one of the misclassified billing tickets.
 The trace showed the full prompt content, the variables used, the provider and
 model, and the LLM's response.
 
-![Get production trace detail in Scope — Step 1 selecting a production trace](./get-trace-detail.png)
+![Get production trace detail in Scope - Step 1 selecting a production trace](./get-trace-detail.png)
 
 **Step 2: Configure the prompt.** The wizard pre-filled the prompt content from
 the trace. Rachel named it `support_ticket_triage` and converted hardcoded
@@ -283,20 +288,20 @@ values into template variables: `{{ticket_text}}` for the customer's message,
 `{{ticket_type}}` for the incoming channel, `{{customer_tier}}` for priority
 routing.
 
-![Create Prompt from Trace wizard in Scope — Step 2 showing prompt configuration with variables extracted from the production trace](./create-prompt-from-trace.png)
+![Create Prompt from Trace wizard in Scope - Step 2 showing prompt configuration with variables extracted from the production trace](./create-prompt-from-trace.png)
 
 **Step 3: Create and review.** She clicked **Create**. Scope saved the prompt
 as `v1` in draft status, the exact production prompt now under version
 control.
 
-![Created Prompt detail in Scope — Step 3 showing created prompt detail](./created-prompt-detail.png)
+![Created Prompt detail in Scope - Step 3 showing created prompt detail](./created-prompt-detail.png)
 
 **Step 4: Build a regression dataset.** She then selected the five worst
 misclassification traces and used **Add to Golden Set** to create a regression
 test dataset from real production failures, the actual inputs that broke the
 system.
 
-![Built a regression dataset — Step 4 showing add to golden set dialog](./add-to-golden-set.png)
+![Built a regression dataset - Step 4 showing add to golden set dialog](./add-to-golden-set.png)
 
 **Step 5: Integrate the SDK.** With the prompt now managed in Scope, Rachel
 updated the application code once:

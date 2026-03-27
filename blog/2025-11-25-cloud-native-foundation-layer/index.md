@@ -7,6 +7,11 @@ description: "Avoid cloud lock-in with a portable foundation layer. Use composab
 authors: [irfan-shah]
 tags: [cloud-native, portability, vendor-neutral, architecture, multi-cloud, kubernetes]
 image: ./cover.png
+head:
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do you avoid cloud vendor lock-in?","acceptedAnswer":{"@type":"Answer","text":"Build on portable abstractions: containers instead of proprietary compute, Terraform instead of cloud-specific IaC, standard protocols like gRPC and SQL instead of vendor SDKs, and OpenTelemetry for observability. The goal is not to avoid a single cloud, but to keep the option to move without rewriting business logic."}},{"@type":"Question","name":"How does cloud vendor lock-in happen?","acceptedAnswer":{"@type":"Answer","text":"Lock-in rarely comes from a deliberate vendor choice. It accumulates through SDK calls in business logic, proprietary database dependencies, CI pipelines tied to one cloud, non-reproducible IAM models, and networking patterns with no equivalent outside the original provider."}},{"@type":"Question","name":"Does cloud lock-in increase costs?","acceptedAnswer":{"@type":"Answer","text":"Yes. When all workloads sit on one cloud, you lose the ability to shift workloads to cheaper regions, compare GPU pricing across providers, or negotiate pricing. Portability preserves the option to move, which is the foundation of cost leverage."}},{"@type":"Question","name":"What are the benefits of a vendor-neutral cloud architecture?","acceptedAnswer":{"@type":"Answer","text":"A vendor-neutral architecture provides portability across clouds, better uptime through multi-provider resilience, lower cost volatility, easier regulatory compliance, and freedom to adopt new technology as it becomes available on different providers."}},{"@type":"Question","name":"How does OpenTelemetry help avoid cloud lock-in?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry provides a vendor-neutral instrumentation standard for observability. By instrumenting with OpenTelemetry, your telemetry data can be sent to any compatible backend without code changes, eliminating dependency on a single monitoring vendor."}}]}
 ---
 
 <!-- markdownlint-disable MD033 -->
@@ -34,13 +39,13 @@ If you expect change, you need an architecture that can handle it.
 
 Two recent outages show how risky this is:
 
-### Cloudflare — 18 Nov 2025
+### Cloudflare - 18 Nov 2025
 
 A routing bug took down large parts of the internet for hours. Many companies
 broke even if they weren't Cloudflare customers. Their DNS, CDN, or WAF traffic
 still flowed through Cloudflare somewhere.
 
-### AWS us-east-1 — 20 Oct 2025
+### AWS us-east-1 - 20 Oct 2025
 
 Cascading control-plane failures halted services across the industry. Anyone
 tied to us-east-1 had no alternatives.
@@ -125,7 +130,7 @@ painful.
 ## What's Next
 
 In **Post 2**, we'll cover how to structure your code so your domain logic
-doesn't depend on any one cloud — the core of true portability.
+doesn't depend on any one cloud - the core of true portability.
 
 Meanwhile you can read about what we wrote about [the learnings](https://www.linkedin.com/pulse/my-learnings-from-cloudflare-nov-18-incident-ranjan-sakalley-bxwbc)
 from the recent cloudflare outage.
@@ -138,5 +143,5 @@ from the recent cloudflare outage.
   [https://www.linkedin.com/pulse/my-learnings-from-cloudflare-nov-18-incident-ranjan-sakalley-bxwbc](https://www.linkedin.com/pulse/my-learnings-from-cloudflare-nov-18-incident-ranjan-sakalley-bxwbc)
 - AWS us-east-1 Outage (20 Oct 2025):
   [https://www.thousandeyes.com/blog/aws-outage-analysis-october-20-2025](https://www.thousandeyes.com/blog/aws-outage-analysis-october-20-2025)
-- DHH — _We Have Left the Cloud_:
+- DHH - _We Have Left the Cloud_:
   [https://world.hey.com/dhh/we-have-left-the-cloud-251760fb](https://world.hey.com/dhh/we-have-left-the-cloud-251760fb)

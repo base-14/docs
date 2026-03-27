@@ -4,6 +4,11 @@ title: Reducing Bus Factor in Observability Using AI
 description: "Stop relying on tribal knowledge for incident diagnosis. Build a Living Knowledge Base with graph databases and LLMs to democratize root cause analysis across your team."
 authors: [nimisha-gj]
 tags: [observability, engineering, best-practices, ai, llm, knowledge-graph, incident-response]
+head:
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is bus factor in engineering teams?","acceptedAnswer":{"@type":"Answer","text":"Bus factor in observability refers to the reliance on a handful of senior engineers who just know how everything fits together. When these engineers leave, the team loses the ability to quickly diagnose incidents because that system context - how services connect, which dependencies matter, where failures cascade - was never codified."}},{"@type":"Question","name":"How do you reduce tribal knowledge dependency in engineering?","acceptedAnswer":{"@type":"Answer","text":"Codify system relationships automatically using telemetry data rather than documentation. A graph database that builds service dependency maps from traces, metrics, and infrastructure metadata stays current without manual updates. Pair it with an LLM interface so any engineer can query system context in natural language during incidents."}},{"@type":"Question","name":"How do you speed up incident root cause analysis?","acceptedAnswer":{"@type":"Answer","text":"Map service dependencies and infrastructure relationships in a graph database that updates automatically from telemetry. During an incident, an AI agent can walk these relationships to trace causality, correlating alerts with recent deployments and dependency changes. This replaces the hunt for the one engineer who knows how everything connects."}},{"@type":"Question","name":"Can AI help with incident response?","acceptedAnswer":{"@type":"Answer","text":"Yes. An LLM connected to a live system knowledge graph can correlate alerts with service dependencies and recent deployment events. It provides root cause analysis that previously required deep tribal knowledge, enabling any on-call engineer to diagnose issues in natural language without escalating to senior staff."}},{"@type":"Question","name":"How do you prevent knowledge loss when senior engineers leave?","acceptedAnswer":{"@type":"Answer","text":"Automate the capture of system knowledge. Use telemetry-driven dependency mapping instead of manually maintained runbooks, record incident postmortems with structured root cause data, and build AI-queryable system context that any engineer can access. The goal is to encode how-the-system-works into infrastructure, not documentation."}}]}
 ---
 
 <!-- markdownlint-disable MD033 -->
@@ -108,15 +113,15 @@ prompt the Observability Agent:
 
 Prompt: "Why did payment service latency spike?"
 
-The agent does not guess; it walks the graph:  
+The agent does not guess; it walks the graph:
 
-- Find Node: Find the Service A 500 Error node.  
+- Find Node: Find the Service A 500 Error node.
 - Walk Upstream: Follow the CAUSED_BY edge (derived from trace data)
-to find the dependency on Service B.  
+to find the dependency on Service B.
 - Correlate: Find the Service B node. Walk the RUNS_ON edge to the
-K8s Node Y node.  
+K8s Node Y node.
 - Contextualize: Query the time-series data related to K8s Node Y and
-discover a memory leak or a recent deployment event.  
+discover a memory leak or a recent deployment event.
 
 Synthesize: The LLM translates the complex graph traversal into a simple,
 natural language root cause: “Payment service latency spiked because
