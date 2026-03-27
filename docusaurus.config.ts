@@ -131,7 +131,7 @@ const config: Config = {
   ],
 
   plugins: [
-    require.resolve('./src/plugins/noindex-thin-pages.ts'),
+    require.resolve("./src/plugins/noindex-thin-pages.ts"),
     [
       "docusaurus-plugin-llms",
       {
@@ -184,9 +184,12 @@ const config: Config = {
     // Replace with your project's social card
     image: "img/base14-social-card.jpg",
     announcementBar: {
-      id: "announcement-bar",
+      id: "announcement-scout-mcp",
       content:
-        '🚀 Welcome to base14 documentation! Check out the latest articles on our <a href="https://docs.base14.io/blog" target="_blank" rel="noopener noreferrer" style="color: #FFFFFF; text-decoration: underline;">Blog</a>.',
+        "New: Connect Claude Code or Gemini CLI to Scout and query traces, " +
+        "logs, and metrics in plain English - " +
+        '<a href="/blog/scout-mcp/" style="color: #FFFFFF; ' +
+        'text-decoration: underline;">Learn more</a>',
       backgroundColor: "#047857",
       textColor: "#FFFFFF",
       isCloseable: true,
@@ -226,6 +229,11 @@ const config: Config = {
           to: "/blog",
           label: "Blog",
           position: "left",
+        },
+        {
+          href: "https://base14.io/pricing",
+          label: "Pricing",
+          position: "right",
         },
         {
           href: "https://base14.io",
@@ -271,6 +279,10 @@ const config: Config = {
           title: "Resources",
           items: [
             {
+              label: "Pricing",
+              href: "https://base14.io/pricing",
+            },
+            {
               label: "Documentation",
               to: "/",
             },
@@ -279,22 +291,18 @@ const config: Config = {
               to: "/blog",
             },
             {
-              label: "Changelog",
-              href: "https://base14.io/changelog",
-            },
-            {
               label: "FAQ",
               href: "https://base14.io/faq",
-            },
-            {
-              label: "Pricing",
-              href: "https://base14.io/pricing",
             },
           ],
         },
         {
           title: "Company",
           items: [
+            {
+              label: "Contact",
+              href: "https://base14.io/contact",
+            },
             {
               label: "About",
               href: "https://base14.io/about",
@@ -310,10 +318,6 @@ const config: Config = {
             {
               label: "Careers",
               href: "https://base14.io/careers",
-            },
-            {
-              label: "Contact",
-              href: "https://base14.io/contact",
             },
           ],
         },
