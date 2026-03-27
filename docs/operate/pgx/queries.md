@@ -1,5 +1,5 @@
 ---
-title: Queries
+title: PostgreSQL Query Analysis
 sidebar_label: Queries
 sidebar_position: 5
 description:

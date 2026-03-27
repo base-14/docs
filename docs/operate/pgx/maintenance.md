@@ -1,5 +1,5 @@
 ---
-title: Maintenance
+title: PostgreSQL Vacuum & Maintenance
 sidebar_label: Maintenance
 sidebar_position: 10
 description:

@@ -1,5 +1,5 @@
 ---
-title: Tables & Indexes
+title: PostgreSQL Tables & Indexes
 sidebar_label: Tables & Indexes
 sidebar_position: 4
 description:

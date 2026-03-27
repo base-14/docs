@@ -1,5 +1,5 @@
 ---
-title: Overview
+title: PostgreSQL Monitoring Overview
 sidebar_label: Overview
 sidebar_position: 2
 description:

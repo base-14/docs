@@ -1,5 +1,5 @@
 ---
-title: Locks & Waits
+title: PostgreSQL Locks & Waits
 sidebar_label: Locks & Waits
 sidebar_position: 9
 description:

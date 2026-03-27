@@ -1,5 +1,5 @@
 ---
-title: Metrics Reference
+title: PostgreSQL Metrics Reference
 sidebar_label: Metrics
 sidebar_position: 12
 description:

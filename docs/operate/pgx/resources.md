@@ -1,5 +1,5 @@
 ---
-title: Resources
+title: PostgreSQL Resource Usage
 sidebar_label: Resources
 sidebar_position: 8
 description:

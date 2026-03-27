@@ -1,5 +1,5 @@
 ---
-title: Connections
+title: PostgreSQL Connection Monitoring
 sidebar_label: Connections
 sidebar_position: 6
 description:

@@ -1,5 +1,5 @@
 ---
-title: Replication
+title: PostgreSQL Replication Monitoring
 sidebar_label: Replication
 sidebar_position: 7
 description:

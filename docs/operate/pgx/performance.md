@@ -1,5 +1,5 @@
 ---
-title: Performance
+title: PostgreSQL Query Performance
 sidebar_label: Performance
 sidebar_position: 3
 description:

@@ -1,5 +1,5 @@
 ---
-title: Configuration Reference
+title: pgX Configuration Reference
 sidebar_label: Configuration
 sidebar_position: 11
 description:

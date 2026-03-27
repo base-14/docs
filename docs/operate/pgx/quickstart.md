@@ -1,5 +1,5 @@
 ---
-title: pgX Quick Start
+title: pgX Quick Start - PostgreSQL Monitoring
 sidebar_label: Quick Start
 sidebar_position: 1
 description:
