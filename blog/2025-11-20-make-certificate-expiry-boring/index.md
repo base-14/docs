@@ -784,5 +784,5 @@ wrong. Need help getting certificate observability in place?
 
 ## Related reading
 
-* [Understanding What Increases and Reduces MTTR](/blog/factors-influencing-mttr/)
-* [Effective War Room Management](/blog/effective-warroom-management/)
+- [Understanding What Increases and Reduces MTTR](/blog/factors-influencing-mttr/)
+- [Effective War Room Management](/blog/effective-warroom-management/)

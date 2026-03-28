@@ -387,5 +387,5 @@ before they affect your users. Want to see this in action?
 
 ## Related reading
 
-* [Production-Ready OpenTelemetry Collector](/blog/production-ready-otel-collector/)
-* [The Cloud-Native Foundation Layer](/blog/cloud-native-foundation-layer/)
+- [Production-Ready OpenTelemetry Collector](/blog/production-ready-otel-collector/)
+- [The Cloud-Native Foundation Layer](/blog/cloud-native-foundation-layer/)

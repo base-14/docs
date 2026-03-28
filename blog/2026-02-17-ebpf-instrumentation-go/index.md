@@ -347,5 +347,5 @@ Ready to send your Go traces somewhere useful?
 
 ## Related reading
 
-* [Production-Ready OpenTelemetry Collector](/blog/production-ready-otel-collector/)
-* [Coding Agent Observability](/blog/coding-agent-observability/)
+- [Production-Ready OpenTelemetry Collector](/blog/production-ready-otel-collector/)
+- [Coding Agent Observability](/blog/coding-agent-observability/)

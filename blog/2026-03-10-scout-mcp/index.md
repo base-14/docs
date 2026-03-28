@@ -107,5 +107,5 @@ ask, example investigations, and a full tool reference.
 
 ## Related reading
 
-* [Coding Agent Observability](/blog/coding-agent-observability/)
-* [Building for Agents](/blog/building-for-agents/)
+- [Coding Agent Observability](/blog/coding-agent-observability/)
+- [Building for Agents](/blog/building-for-agents/)

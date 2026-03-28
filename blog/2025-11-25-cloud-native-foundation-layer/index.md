@@ -151,5 +151,5 @@ Building your observability on open standards?
 
 ## Related reading
 
-* [The Multi-Cloud Design](/blog/multi-cloud-design/)
-* [Why Unified Observability Matters](/blog/unified-observability/)
+- [The Multi-Cloud Design](/blog/multi-cloud-design/)
+- [Why Unified Observability Matters](/blog/unified-observability/)

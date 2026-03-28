@@ -311,5 +311,5 @@ telemetry, [reach out to the base14 team](https://base14.io/contact).
 
 ## Related reading
 
-* [Scout MCP: Query Observability Data Through AI](/blog/scout-mcp/)
-* [LLM Prompt Lifecycle](/blog/llm-prompt-lifecycle/)
+- [Scout MCP: Query Observability Data Through AI](/blog/scout-mcp/)
+- [LLM Prompt Lifecycle](/blog/llm-prompt-lifecycle/)

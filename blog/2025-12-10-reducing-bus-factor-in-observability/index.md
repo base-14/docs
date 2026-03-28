@@ -161,5 +161,5 @@ Want to see how this works?
 
 ## Related reading
 
-* [Observability Theatre](/blog/observability-theatre/)
-* [Why Unified Observability Matters](/blog/unified-observability/)
+- [Observability Theatre](/blog/observability-theatre/)
+- [Why Unified Observability Matters](/blog/unified-observability/)

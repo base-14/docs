@@ -351,5 +351,5 @@ with real visibility?
 
 ## Related reading
 
-* [Why Unified Observability Matters](/blog/unified-observability/)
-* [Reducing Bus Factor in Observability](/blog/reducing-bus-factor-in-observability/)
+- [Why Unified Observability Matters](/blog/unified-observability/)
+- [Reducing Bus Factor in Observability](/blog/reducing-bus-factor-in-observability/)
