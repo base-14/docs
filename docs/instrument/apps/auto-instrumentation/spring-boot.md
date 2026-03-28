@@ -28,6 +28,8 @@ keywords:
     java distributed tracing,
     spring boot performance monitoring,
     java 25 instrumentation,
+    spring boot 4 opentelemetry,
+    spring-boot-starter-opentelemetry,
   ]
 head:
   - - script
