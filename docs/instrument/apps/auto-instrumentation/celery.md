@@ -3,8 +3,9 @@ title: Celery OpenTelemetry Instrumentation - Task Tracing & Propagation
 sidebar_label: Celery
 sidebar_position: 2
 description:
-  Trace Celery tasks across RabbitMQ and Redis with OpenTelemetry. Full context
-  propagation between producers and workers. Production config included.
+  pip install opentelemetry-instrumentation-celery for full task
+  tracing with context propagation across RabbitMQ and Redis.
+  Producer-to-worker traces with production config included.
 keywords:
   [
     celery opentelemetry instrumentation,

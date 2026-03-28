@@ -3,8 +3,9 @@ title: Node.js OpenTelemetry Instrumentation - HTTP, DB & Queue Tracing
 sidebar_label: Node.js
 sidebar_position: 13
 description:
-  Add OpenTelemetry to Node.js with zero code changes. Capture traces from
-  Express, NestJS, Fastify, databases, and queues.
+  npm install @opentelemetry/auto-instrumentations-node for
+  zero-code tracing. Covers Express, NestJS, Fastify, databases,
+  and queues. Configure via otel_node_enabled_instrumentations.
 keywords:
   [
     nodejs opentelemetry instrumentation,

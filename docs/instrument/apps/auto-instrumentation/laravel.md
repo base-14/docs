@@ -3,8 +3,9 @@ title: Laravel OpenTelemetry Instrumentation - Eloquent, Queues & HTTP
 sidebar_label: Laravel
 sidebar_position: 23
 description:
-  Add OpenTelemetry to Laravel with zero code changes. Capture Eloquent queries,
-  queue jobs, Redis, and HTTP calls. Works with Laravel 8-11.
+  composer require open-telemetry/opentelemetry-auto-laravel and
+  get traces with zero code changes. Capture Eloquent queries,
+  queue jobs, Redis, and HTTP calls. Laravel 8-11.
 keywords:
   [
     laravel opentelemetry instrumentation,
