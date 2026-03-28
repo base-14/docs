@@ -401,5 +401,6 @@ Head back to the Scout dashboards to view all your AWS Services metrics.
 - [Application Load Balancer Monitoring](./elb.md) - Monitor AWS ALB with
   CloudWatch Metrics Stream
 - [RDS Monitoring](./rds.md) - Monitor AWS RDS databases
+- [ElastiCache Monitoring](./elasticache.md) - Monitor Redis and Memcached
 - [Scout Exporter Configuration](../../collector-setup/scout-exporter.md) -
   Configure authentication and endpoints

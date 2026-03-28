@@ -151,6 +151,8 @@ changes to your application code.
 
 - [CloudWatch Metrics Stream Setup](./cloudwatch-metrics-stream.md) - Configure
   AWS metrics streaming
+- [ELB Monitoring](./elb.md) - Monitor AWS Application Load Balancers
+- [ElastiCache Monitoring](./elasticache.md) - Monitor Redis and Memcached
 - [AWS ECS/Fargate Setup](../../collector-setup/ecs-setup.md) - Deploy Scout
   Collector on AWS ECS
 - [Monitor PostgreSQL Component](../../component/postgres.md) - Direct

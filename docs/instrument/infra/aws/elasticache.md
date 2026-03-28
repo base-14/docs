@@ -164,6 +164,8 @@ without any changes to your application code.
 
 - [CloudWatch Metrics Stream Setup](./cloudwatch-metrics-stream.md) - Set up AWS
   metrics streaming
+- [ELB Monitoring](./elb.md) - Monitor AWS Application Load Balancers
+- [RDS Monitoring](./rds.md) - Monitor AWS RDS databases
 - [Redis Monitoring](../../component/redis.md) - Self-hosted Redis monitoring
   guide
 - [OTel Collector Configuration](../../collector-setup/otel-collector-config.md)

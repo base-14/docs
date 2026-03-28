@@ -358,5 +358,6 @@ With this setup, your ALB becomes fully observable through Scout.
 - [CloudWatch Metrics Stream Setup](./cloudwatch-metrics-stream.md) - Set up AWS
   metrics streaming
 - [RDS Monitoring](./rds.md) - Monitor AWS RDS databases
+- [ElastiCache Monitoring](./elasticache.md) - Monitor Redis and Memcached
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
   up collector for local development
