@@ -36,10 +36,10 @@ But as PostgreSQL clusters grow in size and importance, the questions engineers
 need to answer change. Instead of *"Which query is slow?"*, the questions
 become harder and more operational:
 
-* Why is replication lagging right now?  
-* Which application is exhausting the connection pool?  
-* What is blocking this transaction?  
-* Is autovacuum keeping up with write volume?  
+* Why is replication lagging right now?
+* Which application is exhausting the connection pool?
+* What is blocking this transaction?
+* Is autovacuum keeping up with write volume?
 * Did performance degrade because of query shape, data growth, or resource pressure?
 
 These are not questions `pg_stat_statements` is designed to answer.
@@ -65,20 +65,20 @@ Before discussing its limits, it is worth acknowledging what
 
 It provides:
 
-* Normalized, per-query execution statistics  
-* Call counts and total execution time  
-* Min, max, mean, and standard deviation of execution time  
-* Buffer hits vs reads  
-* Temporary file usage  
-* Planning time (PostgreSQL 13+)  
+* Normalized, per-query execution statistics
+* Call counts and total execution time
+* Min, max, mean, and standard deviation of execution time
+* Buffer hits vs reads
+* Temporary file usage
+* Planning time (PostgreSQL 13+)
 * WAL byte generation (PostgreSQL 13+)
 
 These metrics enable teams to:
 
-* Identify slow or expensive queries  
-* Detect N+1 query patterns  
-* Track query regressions after deployments  
-* Find cache-inefficient query shapes  
+* Identify slow or expensive queries
+* Detect N+1 query patterns
+* Track query regressions after deployments
+* Find cache-inefficient query shapes
 * Understand which queries dominate workload
 
 For early-stage systems, or for focused query optimization work, this is
@@ -87,11 +87,11 @@ and efficiently.
 
 However, several limitations become significant at scale:
 
-* Statistics reset on restart unless persisted externally  
-* No visibility into query plans  
-* No real-time view of current contention  
-* Limited to top-level statements  
-* Storage overhead grows with high query diversity  
+* Statistics reset on restart unless persisted externally
+* No visibility into query plans
+* No real-time view of current contention
+* Limited to top-level statements
+* Storage overhead grows with high query diversity
 * No context about *why* queries are slow at a given moment
 
 These limitations are not flaws. They reflect the narrow scope
@@ -307,29 +307,29 @@ foundational context for managing Postgres at scale.
 All of this data already exists inside PostgreSQL. It lives in system catalogs
 and views such as:
 
-* `pg_stat_activity`  
-* `pg_stat_replication`  
-* `pg_locks`  
-* `pg_stat_user_tables`  
-* `pg_stat_user_indexes`  
-* `pg_stat_bgwriter`  
+* `pg_stat_activity`
+* `pg_stat_replication`
+* `pg_locks`
+* `pg_stat_user_tables`
+* `pg_stat_user_indexes`
+* `pg_stat_bgwriter`
 * `pg_stat_wal`
 
 The challenge is its **operationalization**.
 
 Teams must:
 
-* Collect metrics at appropriate intervals  
-* Store them as time-series  
-* Build dashboards per domain  
-* Define meaningful alerts  
+* Collect metrics at appropriate intervals
+* Store them as time-series
+* Build dashboards per domain
+* Define meaningful alerts
 * Maintain and evolve the stack as Postgres versions change
 
 A common DIY approach looks like:
 
-* Prometheus \+ postgres\_exporter  
-* Custom SQL queries for gaps  
-* Grafana dashboards  
+* Prometheus \+ postgres\_exporter
+* Custom SQL queries for gaps
+* Grafana dashboards
 * Alertmanager for notifications
 
 This works, but comes with hidden costs:
@@ -382,20 +382,20 @@ For us, the goal is to help engineers achieve faster, more confident resolution.
 
 A representative workflow looks like this:
 
-1. Users report slow checkout requests  
-2. Performance view shows a p95 response time spike  
-3. Drill into Queries, filter to high-percentile latency  
-4. Identify a degraded query  
-5. Inspect cache hit ratio and I/O patterns for that query  
-6. Navigate to Tables & Indexes  
-7. Discover 40% bloat on the primary table  
-8. Check Maintenance and see autovacuum hasn’t run recently  
+1. Users report slow checkout requests
+2. Performance view shows a p95 response time spike
+3. Drill into Queries, filter to high-percentile latency
+4. Identify a degraded query
+5. Inspect cache hit ratio and I/O patterns for that query
+6. Navigate to Tables & Indexes
+7. Discover 40% bloat on the primary table
+8. Check Maintenance and see autovacuum hasn’t run recently
 9. Root cause identified in minutes, not hours
 
 Alerting also becomes more meaningful:
 
-* Compound conditions such as *replication lag \+ read traffic*  
-* Trend-based alerts on connection exhaustion  
+* Compound conditions such as *replication lag \+ read traffic*
+* Trend-based alerts on connection exhaustion
 * Early warnings on maintenance debt
 
 When PostgreSQL metrics share the same data lake as application telemetry,
@@ -439,6 +439,8 @@ technical setup in our [pgX documentation](/operate/pgx/overview), including the
 [metrics reference](/operate/pgx/metrics). And if you're navigating this exact
 problem—figuring out how to unify database observability with the rest of your
 stack—we'd be interested to hear how you're approaching it.
+Want a walkthrough? [Book a 15-minute demo](https://base14.io/contact),
+no setup required.
 
 ---
 

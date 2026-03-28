@@ -144,6 +144,10 @@ door isn't locked from the outside. That's the real value of avoiding vendor loc
 In the next post, we'll dig into the stack itself: which protocols actually
 preserve your freedom, and which ones are "open" in name only.
 
+Building on OpenTelemetry and want vendor-neutral observability?
+[Book a 15-minute demo](https://base14.io/contact),
+no setup required.
+
 ## Related Reading
 
 * [The Cloud-Native Foundation Layer][foundation] —

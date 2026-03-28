@@ -243,6 +243,8 @@ including the [quickstart guide](/operate/pgx/quickstart) to get started. And if
 you're navigating this exact problem—figuring out how to unify database
 observability with the rest of your stack—we'd be interested to hear how you're
 approaching it.
+Want a walkthrough? [Book a 15-minute demo](https://base14.io/contact),
+no setup required.
 
 *In our next post, we'll dive deeper into [what pgX collects](/blog/pgx-details)
 and the visualizations it provides to help you understand your PostgreSQL

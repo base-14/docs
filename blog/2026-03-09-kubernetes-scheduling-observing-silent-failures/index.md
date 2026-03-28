@@ -382,4 +382,5 @@ In production environments, that signal should be treated as an early
 reliability indicator, not a transient anomaly. OpenTelemetry gives
 you the instrumentation to detect these mismatches continuously,
 correlate them with capacity and configuration state, and act on them
-before they affect your users.
+before they affect your users. Want to see this in action?
+[Book a 15-minute demo](https://base14.io/contact), no setup required.

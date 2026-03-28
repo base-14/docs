@@ -345,4 +345,6 @@ observability theatre isn't just costing money. It's costing market position.
 The choice is stark: evolve or become irrelevant. Your systems will only grow
 more complex. Customer expectations will only increase. The organizations that
 can see, understand, and respond to their systems will win. Those performing
-theatre in the dark will not.
+theatre in the dark will not. Ready to replace the theatre
+with real visibility?
+[Book a 15-minute demo](https://base14.io/contact), no setup required.

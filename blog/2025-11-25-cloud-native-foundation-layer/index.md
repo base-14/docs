@@ -135,6 +135,9 @@ doesn't depend on any one cloud - the core of true portability.
 Meanwhile you can read about what we wrote about [the learnings](https://www.linkedin.com/pulse/my-learnings-from-cloudflare-nov-18-incident-ranjan-sakalley-bxwbc)
 from the recent cloudflare outage.
 
+Building your observability on open standards?
+[Book a 15-minute demo](https://base14.io/contact) of Scout, no setup required.
+
 ## References
 
 - Cloudflare Outage (18 Nov 2025):

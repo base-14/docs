@@ -341,3 +341,6 @@ attributes, context propagation requirements, but they are well-defined and
 well-documented. Between eBPF, compile-time tools, and manual instrumentation,
 Go teams now have a complete spectrum of options for adding observability at
 whatever depth their services require.
+
+Ready to send your Go traces somewhere useful?
+[Book a 15-minute demo](https://base14.io/contact), no setup required.

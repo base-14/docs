@@ -522,3 +522,6 @@ there when something goes wrong.
 
 For detailed reference on each topic covered here, see the
 [OpenTelemetry Collector documentation](https://opentelemetry.io/docs/collector/).
+
+Need help hardening your collector setup?
+[Book a 15-minute demo](https://base14.io/contact), no setup required.
