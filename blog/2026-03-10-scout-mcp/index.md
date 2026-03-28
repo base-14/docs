@@ -104,3 +104,8 @@ The [MCP Client Setup](/scout-mcp/setup) guide covers
 connecting Claude Code, Claude Desktop, and Gemini CLI. The
 [Usage Guide](/scout-mcp/usage-guide) covers what you can
 ask, example investigations, and a full tool reference.
+
+## Related reading
+
+* [Coding Agent Observability](/blog/coding-agent-observability/)
+* [Building for Agents](/blog/building-for-agents/)

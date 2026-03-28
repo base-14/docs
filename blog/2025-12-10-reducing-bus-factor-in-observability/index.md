@@ -158,3 +158,8 @@ We create a system that understands itself, drastically reducing the Bus Factor
 and making every engineer capable of instant, deep root cause analysis.
 Want to see how this works?
 [Book a 15-minute demo](https://base14.io/contact), no setup required.
+
+## Related reading
+
+* [Observability Theatre](/blog/observability-theatre/)
+* [Why Unified Observability Matters](/blog/unified-observability/)

@@ -148,3 +148,8 @@ Building your observability on open standards?
   [https://www.thousandeyes.com/blog/aws-outage-analysis-october-20-2025](https://www.thousandeyes.com/blog/aws-outage-analysis-october-20-2025)
 - DHH - _We Have Left the Cloud_:
   [https://world.hey.com/dhh/we-have-left-the-cloud-251760fb](https://world.hey.com/dhh/we-have-left-the-cloud-251760fb)
+
+## Related reading
+
+* [The Multi-Cloud Design](/blog/multi-cloud-design/)
+* [Why Unified Observability Matters](/blog/unified-observability/)

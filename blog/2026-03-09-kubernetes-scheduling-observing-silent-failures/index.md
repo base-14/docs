@@ -384,3 +384,8 @@ you the instrumentation to detect these mismatches continuously,
 correlate them with capacity and configuration state, and act on them
 before they affect your users. Want to see this in action?
 [Book a 15-minute demo](https://base14.io/contact), no setup required.
+
+## Related reading
+
+* [Production-Ready OpenTelemetry Collector](/blog/production-ready-otel-collector/)
+* [The Cloud-Native Foundation Layer](/blog/cloud-native-foundation-layer/)

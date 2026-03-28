@@ -452,3 +452,8 @@ no setup required.
 [Metrics Reference](/operate/pgx/metrics).
 
 </div>
+
+## Related reading
+
+* [Evaluating Database Monitoring Solutions](/blog/evaluating-database-monitoring-solutions/)
+* [Reducing Bus Factor in Observability](/blog/reducing-bus-factor-in-observability/)

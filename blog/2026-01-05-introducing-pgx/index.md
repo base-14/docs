@@ -249,3 +249,8 @@ no setup required.
 *In our next post, we'll dive deeper into [what pgX collects](/blog/pgx-details)
 and the visualizations it provides to help you understand your PostgreSQL
 performance at a glance.*
+
+## Related reading
+
+* [Evaluating Database Monitoring Solutions](/blog/evaluating-database-monitoring-solutions/)
+* [Why Unified Observability Matters](/blog/unified-observability/)

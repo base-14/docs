@@ -781,3 +781,8 @@ That's the goal. Not perfect governance. Just clear guardrails, steady
 habits, and a system you can trust - even on the days when nothing looks
 wrong. Need help getting certificate observability in place?
 [Book a 15-minute demo](https://base14.io/contact), no setup required.
+
+## Related reading
+
+* [Understanding What Increases and Reduces MTTR](/blog/factors-influencing-mttr/)
+* [Effective War Room Management](/blog/effective-warroom-management/)

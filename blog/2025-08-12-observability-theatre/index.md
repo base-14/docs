@@ -348,3 +348,8 @@ can see, understand, and respond to their systems will win. Those performing
 theatre in the dark will not. Ready to replace the theatre
 with real visibility?
 [Book a 15-minute demo](https://base14.io/contact), no setup required.
+
+## Related reading
+
+* [Why Unified Observability Matters](/blog/unified-observability/)
+* [Reducing Bus Factor in Observability](/blog/reducing-bus-factor-in-observability/)

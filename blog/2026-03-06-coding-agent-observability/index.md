@@ -308,3 +308,8 @@ spend" to "what did we get for it."
 
 If your team is instrumenting AI workflows and wants help operationalizing the
 telemetry, [reach out to the base14 team](https://base14.io/contact).
+
+## Related reading
+
+* [Scout MCP: Query Observability Data Through AI](/blog/scout-mcp/)
+* [LLM Prompt Lifecycle](/blog/llm-prompt-lifecycle/)

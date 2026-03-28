@@ -344,3 +344,8 @@ whatever depth their services require.
 
 Ready to send your Go traces somewhere useful?
 [Book a 15-minute demo](https://base14.io/contact), no setup required.
+
+## Related reading
+
+* [Production-Ready OpenTelemetry Collector](/blog/production-ready-otel-collector/)
+* [Coding Agent Observability](/blog/coding-agent-observability/)
