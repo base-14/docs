@@ -89,6 +89,8 @@ in a live environment, you can use the official [OTTL Playground](https://ottl.r
 
 ## Related Guides
 
+- [OTTL Functions Reference](./ottl-functions-reference.md) — Complete
+  function catalog
 - [Transforming Spans Using OTTL Functions](./ottl-span-transformations.md)
 - [Transform Logs Guide](./transform-logs.md)
 - [Filter Logs with Regex and JSON](./filter-logs-regex-and-json.md)

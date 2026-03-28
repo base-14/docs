@@ -95,9 +95,11 @@ logs/otlp:
 
 ## Related Guides
 
-- [Extract Log Level from Body](extract-log-level-from-body.md) - Parse
+- [OTTL Functions Reference](ottl-functions-reference.md) — Complete
+  function catalog
+- [Extract Log Level from Body](extract-log-level-from-body.md) — Parse
   log severity levels
-- [OTTL Span Transformations](ottl-span-transformations.md) - Transform
+- [OTTL Span Transformations](ottl-span-transformations.md) — Transform
   trace spans
 - [OTel Collector Configuration](../../instrument/collector-setup/otel-collector-config.md)
-  \- Collector configuration basics
+  — Collector configuration basics

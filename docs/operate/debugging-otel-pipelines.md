@@ -441,12 +441,14 @@ production operation:
 
 ## Related Guides
 
+- [OTTL Functions Reference](filters-and-transformations/ottl-functions-reference.md)
+  — Complete reference for OTTL expressions in filter and transform processors
 - [Recommended Collector Configuration](recommended-collector-configuration.md)
-  - production settings for compression, batching, retries, and memory
+  — production settings for compression, batching, retries, and memory
   management
 - [Troubleshooting Missing Data](../guides/troubleshooting-missing-data.md)
-  - symptom-based flowchart for when telemetry data is not appearing
+  — symptom-based flowchart for when telemetry data is not appearing
 - [Scout Exporter](../instrument/collector-setup/scout-exporter.md)
-  - configuring the Scout exporter for the collector
+  — configuring the Scout exporter for the collector
 - [OTel Collector Configuration](../instrument/collector-setup/otel-collector-config.md)
-  - full collector configuration reference
+  — full collector configuration reference

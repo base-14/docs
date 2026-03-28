@@ -125,9 +125,11 @@ service:
 
 ## Related Guides
 
-- [Extract Log Level from Body](extract-log-level-from-body.md) - Parse
+- [OTTL Functions Reference](ottl-functions-reference.md) — Complete
+  function catalog
+- [Extract Log Level from Body](extract-log-level-from-body.md) — Parse
   log severity with regex
-- [Transform Logs Guide](transform-logs.md) - Extract trace and span IDs
+- [Transform Logs Guide](transform-logs.md) — Extract trace and span IDs
   from logs
-- [OTTL Span Transformations](ottl-span-transformations.md) - Filter and
+- [OTTL Span Transformations](ottl-span-transformations.md) — Filter and
   transform spans

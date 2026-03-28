@@ -133,5 +133,7 @@ processors:
 
 ## Related Guides
 
+- [OTTL Functions Reference](filters-and-transformations/ottl-functions-reference.md)
+  — Transform and filter telemetry with OTTL expressions
 - [Quick Start](../guides/quick-start.md)
-- [Otel collector configuration](../instrument/collector-setup/otel-collector-config.md)
+- [OTel Collector Configuration](../instrument/collector-setup/otel-collector-config.md)

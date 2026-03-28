@@ -122,9 +122,11 @@ transform/advanced-severity:
 
 ## Related Guides
 
-- [Filter Logs with Regex and JSON](filter-logs-regex-and-json.md) -
+- [OTTL Functions Reference](ottl-functions-reference.md) — Complete
+  function catalog
+- [Filter Logs with Regex and JSON](filter-logs-regex-and-json.md) —
   Advanced log filtering techniques
-- [Transform Logs Guide](transform-logs.md) - General log transformation
+- [Transform Logs Guide](transform-logs.md) — General log transformation
   patterns
 - [OTel Collector Configuration](../../instrument/collector-setup/otel-collector-config.md)
-  \- Collector configuration basics
+  — Collector configuration basics

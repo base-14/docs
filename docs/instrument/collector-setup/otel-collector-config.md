@@ -450,12 +450,14 @@ service:
 
 ## Related Guides
 
-- [Scout Exporter Configuration](./scout-exporter.md) - Configure data export to
+- [OTTL Functions Reference](../../operate/filters-and-transformations/ottl-functions-reference.md)
+  — Complete reference for transform and filter processor expressions
+- [Scout Exporter Configuration](./scout-exporter.md) — Configure data export to
   Scout
 - [Extract Log Level from Body](../../operate/filters-and-transformations/extract-log-level-from-body.md)
-  \- Parse and categorize log severity
+  — Parse and categorize log severity
 - [Transform and Filter Logs](../../operate/filters-and-transformations/transform-logs.md)
-  \- Advanced log processing techniques
+  — Advanced log processing techniques
 
 ## Resources
 

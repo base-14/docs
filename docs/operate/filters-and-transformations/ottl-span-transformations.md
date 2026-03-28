@@ -20,7 +20,8 @@ keywords:
 
 OTTL (OpenTelemetry Transformation Language) is a powerful domain specific
 language that allows you to transform telemetry data (Traces, Metrics, Logs)
-within the Collector.
+within the Collector. For a complete list of every function and converter, see
+the [OTTL Functions Reference](ottl-functions-reference.md).
 
 ## Common OTTL use cases for spans
 
@@ -103,12 +104,14 @@ processors:
 
 ## Related Guides
 
-- [Transform Logs Guide](transform-logs.md) - Transform log data with
+- [OTTL Functions Reference](ottl-functions-reference.md) — Complete
+  function catalog with examples
+- [Transform Logs Guide](transform-logs.md) — Transform log data with
   OTTL
-- [Filter Logs with Regex and JSON](filter-logs-regex-and-json.md) -
+- [Filter Logs with Regex and JSON](filter-logs-regex-and-json.md) —
   Advanced filtering techniques
 - [OTel Collector Configuration](../../instrument/collector-setup/otel-collector-config.md)
-  \- Collector configuration basics
+  — Collector configuration basics
 
 ## Next Steps
 

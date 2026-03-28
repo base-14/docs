@@ -415,5 +415,7 @@ Resource (resource.attributes: pod, service, environment...)
   including `PGDASHEX_COLLECT_METRICS`
 - [Filtering Logs with Regex and JSON](filter-logs-regex-and-json.md) - Similar
   filtering techniques applied to log pipelines
-- [OTTL Span Transformations](ottl-span-transformations.md) - Filter and
+- [OTTL Functions Reference](ottl-functions-reference.md) — Complete
+  function catalog
+- [OTTL Span Transformations](ottl-span-transformations.md) — Filter and
   transform spans using OTTL
