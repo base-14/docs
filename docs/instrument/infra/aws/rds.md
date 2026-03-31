@@ -5,8 +5,8 @@ title: AWS RDS PostgreSQL Monitoring with OpenTelemetry - Metrics, Logs & Alerts
 sidebar_label: AWS RDS
 description:
   Monitor AWS RDS PostgreSQL with OpenTelemetry and CloudWatch Metrics
-  Stream. Collect connections, replication lag, IOPS, query performance,
-  and Performance Insights data in base14 Scout.
+  Stream. Collect connections, replication lag, IOPS, and query
+  performance data in base14 Scout.
 keywords:
   - aws rds monitoring
   - rds postgresql monitoring
@@ -15,14 +15,13 @@ keywords:
   - rds postgres observability
   - cloudwatch metrics stream
   - aws database monitoring
-  - rds performance insights
   - aws rds postgresql observability
   - rds postgres dashboard
 head:
   - - script
     - type: application/ld+json
     - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I monitor AWS RDS PostgreSQL with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Use CloudWatch Metrics Stream for infrastructure metrics (CPU, memory, disk I/O, connections) and the OpenTelemetry PostgreSQL receiver for database-specific metrics like locks, deadlocks, and sequential scans. Both feed into a single observability platform like base14 Scout."}},{"@type":"Question","name":"What RDS metrics does CloudWatch Metrics Stream collect?","acceptedAnswer":{"@type":"Answer","text":"CloudWatch Metrics Stream delivers AWS/RDS metrics including CPUUtilization, FreeableMemory, ReadIOPS, WriteIOPS, ReadLatency, WriteLatency, DatabaseConnections, ReplicaLag, FreeStorageSpace, and DiskQueueDepth with 2-3 minute latency."}},{"@type":"Question","name":"Do I need both CloudWatch Metrics Stream and the PostgreSQL receiver?","acceptedAnswer":{"@type":"Answer","text":"Yes. CloudWatch provides infrastructure-level RDS metrics (CPU, memory, IOPS) while the PostgreSQL receiver collects database-specific metrics like locks, deadlocks, sequential scans, and tuple operations. Using both gives complete visibility."}},{"@type":"Question","name":"How do I collect RDS PostgreSQL logs with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Use the AWS CloudWatch Logs receiver in the OpenTelemetry Collector, specifying your RDS log group names. The collector polls CloudWatch Logs and forwards them to your observability backend."}},{"@type":"Question","name":"How do I monitor RDS PostgreSQL query performance?","acceptedAnswer":{"@type":"Answer","text":"Enable Performance Insights on your RDS instance and publish the metrics to CloudWatch. Performance Insights provides per-query statistics including wait events, top SQL by load, and active session history. For deeper query monitoring, use the PostgreSQL pg_stat_statements extension with the OTel PostgreSQL receiver."}},{"@type":"Question","name":"What is the difference between CloudWatch metrics and Enhanced Monitoring for RDS?","acceptedAnswer":{"@type":"Answer","text":"CloudWatch metrics are collected at 1-minute intervals and cover instance-level stats like CPU, memory, and IOPS. Enhanced Monitoring provides OS-level metrics at up to 1-second granularity, including per-process CPU, memory usage, and file system details. Enhanced Monitoring is useful for diagnosing issues that 1-minute CloudWatch intervals miss."}},{"@type":"Question","name":"How do I set up alerts for RDS PostgreSQL?","acceptedAnswer":{"@type":"Answer","text":"Route RDS metrics through CloudWatch Metrics Stream to base14 Scout, then configure alerts in Scout on key thresholds: CPU above 80%, connections above 80% of max, replication lag exceeding your SLA, storage below 20% free, and read/write latency spikes."}}]}
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I monitor AWS RDS PostgreSQL with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Use CloudWatch Metrics Stream for infrastructure metrics (CPU, memory, disk I/O, connections) and the OpenTelemetry PostgreSQL receiver for database-specific metrics like locks, deadlocks, and sequential scans. Both feed into a single observability platform like base14 Scout."}},{"@type":"Question","name":"What RDS metrics does CloudWatch Metrics Stream collect?","acceptedAnswer":{"@type":"Answer","text":"CloudWatch Metrics Stream delivers AWS/RDS metrics including CPUUtilization, FreeableMemory, ReadIOPS, WriteIOPS, ReadLatency, WriteLatency, DatabaseConnections, ReplicaLag, FreeStorageSpace, and DiskQueueDepth with 2-3 minute latency."}},{"@type":"Question","name":"Do I need both CloudWatch Metrics Stream and the PostgreSQL receiver?","acceptedAnswer":{"@type":"Answer","text":"Yes. CloudWatch provides infrastructure-level RDS metrics (CPU, memory, IOPS) while the PostgreSQL receiver collects database-specific metrics like locks, deadlocks, sequential scans, and tuple operations. Using both gives complete visibility."}},{"@type":"Question","name":"How do I collect RDS PostgreSQL logs with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Use the AWS CloudWatch Logs receiver in the OpenTelemetry Collector, specifying your RDS log group names. The collector polls CloudWatch Logs and forwards them to your observability backend."}},{"@type":"Question","name":"How do I monitor RDS PostgreSQL query performance?","acceptedAnswer":{"@type":"Answer","text":"Enable the PostgreSQL pg_stat_statements extension and use the OTel PostgreSQL receiver to collect per-query statistics including execution counts, total time, and rows returned."}},{"@type":"Question","name":"What is the difference between CloudWatch metrics and Enhanced Monitoring for RDS?","acceptedAnswer":{"@type":"Answer","text":"CloudWatch metrics are collected at 1-minute intervals and cover instance-level stats like CPU, memory, and IOPS. Enhanced Monitoring provides OS-level metrics at up to 1-second granularity, including per-process CPU, memory usage, and file system details. Enhanced Monitoring is useful for diagnosing issues that 1-minute CloudWatch intervals miss."}},{"@type":"Question","name":"How do I set up alerts for RDS PostgreSQL?","acceptedAnswer":{"@type":"Answer","text":"Route RDS metrics through CloudWatch Metrics Stream to base14 Scout, then configure alerts in Scout on key thresholds: CPU above 80%, connections above 80% of max, replication lag exceeding your SLA, storage below 20% free, and read/write latency spikes."}}]}
 ---
 
 ## Overview
@@ -93,12 +92,9 @@ Follow our comprehensive
 up the streaming infrastructure (S3 bucket, Kinesis Firehose, Metrics
 Stream).
 
-When configuring the Metrics Stream:
-
-1. Select **specific namespaces** instead of "All namespaces"
-2. Choose **AWS/RDS** from the namespace list
-3. This ensures you only collect RDS metrics, reducing costs and data
-   volume
+When configuring the Metrics Stream, select the **AWS/RDS** namespace
+instead of "All namespaces" to only collect RDS metrics and reduce
+costs.
 
 ## Step 2: Create a monitoring user on RDS
 
@@ -283,30 +279,6 @@ log_connections = on
 log_disconnections = on
 ```
 
-## Step 5: Enable Performance Insights (optional)
-
-RDS Performance Insights provides query-level monitoring that
-CloudWatch and the PostgreSQL receiver don't cover:
-
-- **Top SQL by load** — which queries consume the most CPU and I/O
-- **Wait events** — what queries are waiting on (CPU, I/O, lock,
-  network)
-- **Active session history** — per-second breakdown of database load
-
-To enable:
-
-1. In the RDS console, modify your instance
-2. Under **Performance Insights**, enable it
-3. Choose a retention period (free tier: 7 days, paid: up to 2 years)
-4. Optionally publish Performance Insights metrics to CloudWatch
-
-Performance Insights data flows through CloudWatch Metrics Stream
-alongside your other RDS metrics.
-
-For deeper query-level monitoring beyond Performance Insights, see
-[PostgreSQL Advanced Monitoring](../../component/postgres-advanced.md)
-which covers `pg_stat_statements` and per-table I/O.
-
 ## Verify the setup
 
 Start the Collector and check for metrics within 60 seconds:
@@ -399,10 +371,9 @@ Buffer hit ratio: calculate as
 
 **How do I monitor RDS PostgreSQL query performance?**
 
-Enable Performance Insights on the RDS instance for top SQL by load
-and wait event analysis. For per-query statistics, enable
-`pg_stat_statements` and use the
-[PostgreSQL Advanced guide](../../component/postgres-advanced.md).
+Enable `pg_stat_statements` for per-query statistics and use the
+[PostgreSQL Advanced guide](../../component/postgres-advanced.md)
+for detailed query-level monitoring.
 
 **What's the difference between CloudWatch and Enhanced Monitoring?**
 
