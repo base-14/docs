@@ -3,15 +3,25 @@ title: React OpenTelemetry Instrumentation - Browser Tracing & Web Vitals
 sidebar_label: React
 sidebar_position: 17
 description:
-  Add OpenTelemetry to React. Trace browser interactions, HTTP requests,
-  and Core Web Vitals. Works with any backend.
+  React OpenTelemetry instrumentation for browser tracing, fetch/XHR
+  requests, and Core Web Vitals. Export to base14 Scout via OTLP.
 keywords:
   [
+    react opentelemetry,
+    react opentelemetry instrumentation,
     react monitoring,
+    react apm,
+    react distributed tracing,
+    react performance monitoring,
     frontend monitoring,
     react instrumentation,
     opentelemetry react,
     browser monitoring,
+    web vitals opentelemetry,
+    react fetch tracing,
+    spa monitoring,
+    react browser tracing,
+    opentelemetry browser sdk,
   ]
 head:
   - - script

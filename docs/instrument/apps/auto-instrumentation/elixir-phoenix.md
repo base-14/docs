@@ -3,16 +3,24 @@ title: Elixir Phoenix OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Elixir Phoenix
 sidebar_position: 32
 description:
-  Get full visibility into Elixir Phoenix apps - trace HTTP requests, Ecto
-  database queries, and LiveView events automatically using the OTel SDK with
-  base14 Scout.
+  Elixir Phoenix OpenTelemetry instrumentation. Trace HTTP requests, Ecto
+  queries, and LiveView events automatically. Export to base14 Scout.
 keywords:
   [
+    elixir opentelemetry,
+    elixir opentelemetry instrumentation,
     phoenix observability,
     elixir monitoring,
     opentelemetry elixir,
     phoenix instrumentation,
     elixir apm,
+    phoenix distributed tracing,
+    ecto monitoring,
+    elixir performance monitoring,
+    beam observability,
+    phoenix telemetry,
+    elixir production monitoring,
+    phoenix liveview monitoring,
     liveview monitoring,
   ]
 ---

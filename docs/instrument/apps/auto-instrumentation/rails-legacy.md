@@ -4,9 +4,8 @@ title:
 sidebar_label: Ruby on Rails (Legacy)
 sidebar_position: 25
 description:
-  Legacy Rails OpenTelemetry instrumentation for Ruby 3.0 / Rails 6.1 and Ruby
-  2.7 / Rails 5.x with pinned SDK versions and upgrade recommendations using
-  base14 Scout.
+  Rails 5 and 6 OpenTelemetry instrumentation with pinned SDK versions
+  for Ruby 2.7 and 3.0. Upgrade paths and export to base14 Scout.
 keywords:
   [
     rails 6.1 opentelemetry,
@@ -21,6 +20,11 @@ keywords:
     rails 6.1 instrumentation,
     pinned otel gems ruby,
   ]
+head:
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Can I use the all-in-one instrumentation gem with Ruby 3.0?","acceptedAnswer":{"@type":"Answer","text":"No. The -all meta-gem pulls latest versions that require Ruby 3.1+. Use individual instrumentation gems with pinned versions instead."}},{"@type":"Question","name":"Can I use the all-in-one instrumentation gem with Ruby 2.7?","acceptedAnswer":{"@type":"Answer","text":"Not recommended. Use individual instrumentation gems to avoid compatibility issues with gems that require Ruby 3.0+."}},{"@type":"Question","name":"Will my legacy app slow down with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Yes, expect 5-10ms overhead on Ruby 2.7 vs 1-3ms on Ruby 3.x."}},{"@type":"Question","name":"Is Rails 5.2 instrumentation production-ready?","acceptedAnswer":{"@type":"Answer","text":"No. Rails 5.2 support is limited and untested. Upgrade to Rails 6.1+ for production observability."}},{"@type":"Question","name":"Can I run Ruby 2.7 with Rails 7.1?","acceptedAnswer":{"@type":"Answer","text":"No. Rails 7.1 requires Ruby 3.0 or later."}}]}
 ---
 
 # Ruby on Rails (Legacy)

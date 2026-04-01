@@ -4,9 +4,8 @@ title:
 sidebar_label: ASP.NET Core
 sidebar_position: 31
 description:
-  Trace HTTP requests, database queries, and background jobs in ASP.NET Core
-  apps with OpenTelemetry auto-instrumentation. Export traces, metrics, and logs
-  to base14 Scout.
+  ASP.NET Core OpenTelemetry instrumentation. Trace HTTP requests, Entity
+  Framework queries, and background services. Export to base14 Scout.
 keywords:
   [
     dotnet opentelemetry instrumentation,
@@ -28,6 +27,11 @@ keywords:
     dotnet observability stack,
     activity source dotnet,
   ]
+head:
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does OpenTelemetry impact .NET application performance?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry adds approximately 1-2ms of latency per request in typical ASP.NET Core applications. With proper configuration (batch processor), the performance impact is minimal and acceptable for most production workloads."}},{"@type":"Question","name":"Which .NET versions are supported?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry supports .NET 6.0+ with full support. .NET 8.0+ is recommended for optimal compatibility and performance. See the Prerequisites section for detailed version compatibility."}},{"@type":"Question","name":"Can I use OpenTelemetry with background services?","acceptedAnswer":{"@type":"Answer","text":"Yes. You can instrument IHostedService and BackgroundService implementations using ActivitySource to create custom spans for background job processing."}},{"@type":"Question","name":"Can I use OpenTelemetry alongside Application Insights?","acceptedAnswer":{"@type":"Answer","text":"Yes, you can run OpenTelemetry alongside Application Insights during migration periods. However, running multiple telemetry systems simultaneously will multiply the overhead, so plan your migration carefully. Consider using the Azure Monitor OpenTelemetry exporter as a replacement."}},{"@type":"Question","name":"How do I handle multi-tenant applications?","acceptedAnswer":{"@type":"Answer","text":"Add tenant context to spans using tags, then filter traces by tenant in Scout Dashboard."}},{"@type":"Question","name":"What's the difference between traces and metrics?","acceptedAnswer":{"@type":"Answer","text":"Traces show the complete request flow through your application with timing details for each operation. Use traces to debug slow requests and understand distributed transactions. Metrics provide aggregated statistics over time (request rate, error rate, latency percentiles). Use metrics for monitoring overall application health and setting alerts."}},{"@type":"Question","name":"How do I propagate trace context to message queues?","acceptedAnswer":{"@type":"Answer","text":"Use W3C Trace Context propagation. When publishing, set the traceparent header from the current Activity. When consuming, start a new activity using the traceparent header as the parent context."}},{"@type":"Question","name":"Can I customize which endpoints are instrumented?","acceptedAnswer":{"@type":"Answer","text":"Yes. Use the Filter option in ASP.NET Core instrumentation to selectively include or exclude endpoints based on the request path."}}]}
 ---
 
 # ASP.NET Core

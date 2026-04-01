@@ -3,9 +3,8 @@ title: Elysia (Bun) OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Elysia
 sidebar_position: 16
 description:
-  Instrument Elysia apps on Bun with OpenTelemetry SDK-based tracing, custom
-  metrics, structured OTel logging, and PostgreSQL auto-instrumentation. Export
-  traces, metrics, and logs to base14 Scout via OTLP HTTP.
+  Elysia (Bun) OpenTelemetry instrumentation. SDK-based tracing, custom
+  metrics, PostgreSQL auto-instrumentation. Export to base14 Scout.
 keywords:
   [
     bun opentelemetry,
@@ -33,80 +32,11 @@ head:
   - - script
     - type: application/ld+json
     - |
-      {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        "mainEntity": [
-          {
-            "@type": "Question",
-            "name": "Does OpenTelemetry work with Bun?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Yes. Bun supports the OpenTelemetry Node.js SDK (@opentelemetry/sdk-node) through its Node.js compatibility layer. Use bun run --preload to load tracing before your app starts. Auto-instrumentation packages that rely on monkey-patching (like getNodeAutoInstrumentations) may not work fully, but targeted instrumentations such as @opentelemetry/instrumentation-pg work correctly."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Why do I need manual spans in Elysia instead of auto-instrumentation?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Bun does not use Node.js http module internally, so @opentelemetry/instrumentation-http cannot intercept Elysia's request handling. You create manual spans with tracer.startActiveSpan() using a traced() helper function to wrap route handlers, giving you full control over span names and attributes."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "How do I instrument Drizzle ORM with OpenTelemetry?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Drizzle ORM uses the pg driver under the hood when configured with drizzle-orm/node-postgres. The @opentelemetry/instrumentation-pg package automatically instruments all pg Pool queries, so every Drizzle query generates a database span with no additional code."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "How do I propagate trace context between Bun services?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Use propagation.inject(context.active(), headers) before outgoing fetch calls to add W3C traceparent headers. On the receiving service, extract with propagation.extract(context.active(), carrier) and pass the returned context to startActiveSpan as the parent context."
-            }
-          }
-        ]
-      }
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does OpenTelemetry work with Bun?","acceptedAnswer":{"@type":"Answer","text":"Yes. Bun supports the OpenTelemetry Node.js SDK (@opentelemetry/sdk-node) through its Node.js compatibility layer. Use bun run --preload to load tracing before your app starts. Auto-instrumentation packages that rely on monkey-patching (like getNodeAutoInstrumentations) may not work fully, but targeted instrumentations such as @opentelemetry/instrumentation-pg work correctly."}},{"@type":"Question","name":"Why do I need manual spans in Elysia instead of auto-instrumentation?","acceptedAnswer":{"@type":"Answer","text":"Bun does not use Node.js http module internally, so @opentelemetry/instrumentation-http cannot intercept Elysia's request handling. You create manual spans with tracer.startActiveSpan() using a traced() helper function to wrap route handlers, giving you full control over span names and attributes."}},{"@type":"Question","name":"How do I instrument Drizzle ORM with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Drizzle ORM uses the pg driver under the hood when configured with drizzle-orm/node-postgres. The @opentelemetry/instrumentation-pg package automatically instruments all pg Pool queries, so every Drizzle query generates a database span with no additional code."}},{"@type":"Question","name":"How do I propagate trace context between Bun services?","acceptedAnswer":{"@type":"Answer","text":"Use propagation.inject(context.active(), headers) before outgoing fetch calls to add W3C traceparent headers. On the receiving service, extract with propagation.extract(context.active(), carrier) and pass the returned context to startActiveSpan as the parent context."}}]}
   - - script
     - type: application/ld+json
     - |
-      {
-        "@context": "https://schema.org",
-        "@type": "HowTo",
-        "name": "Instrument Elysia (Bun) with OpenTelemetry",
-        "description": "Add distributed tracing, metrics, and structured logging to an Elysia application running on Bun using the OpenTelemetry Node.js SDK.",
-        "step": [
-          {
-            "@type": "HowToStep",
-            "name": "Install OpenTelemetry packages",
-            "text": "Add @opentelemetry/sdk-node, OTLP exporters, instrumentation-pg, and api-logs packages with bun add."
-          },
-          {
-            "@type": "HowToStep",
-            "name": "Create tracing.ts",
-            "text": "Configure NodeSDK with OTLP HTTP exporters, PgInstrumentation, LoggerProvider, and resource attributes."
-          },
-          {
-            "@type": "HowToStep",
-            "name": "Preload tracing before app start",
-            "text": "Run with bun run --preload ./src/tracing.ts to initialize instrumentation before any imports."
-          },
-          {
-            "@type": "HowToStep",
-            "name": "Add manual spans and metrics",
-            "text": "Use a traced() helper with tracer.startActiveSpan() to wrap route handlers. Create counters with metrics.getMeter().createCounter()."
-          },
-          {
-            "@type": "HowToStep",
-            "name": "Deploy with Docker Compose",
-            "text": "Use oven/bun:1.3-alpine base image and configure OTLP endpoint to point at the Scout Collector."
-          }
-        ]
-      }
+      {"@context":"https://schema.org","@type":"HowTo","name":"Instrument Elysia (Bun) with OpenTelemetry","description":"Add distributed tracing, metrics, and structured logging to an Elysia application running on Bun using the OpenTelemetry Node.js SDK.","step":[{"@type":"HowToStep","name":"Install OpenTelemetry packages","text":"Add @opentelemetry/sdk-node, OTLP exporters, instrumentation-pg, and api-logs packages with bun add."},{"@type":"HowToStep","name":"Create tracing.ts","text":"Configure NodeSDK with OTLP HTTP exporters, PgInstrumentation, LoggerProvider, and resource attributes."},{"@type":"HowToStep","name":"Preload tracing before app start","text":"Run with bun run --preload ./src/tracing.ts to initialize instrumentation before any imports."},{"@type":"HowToStep","name":"Add manual spans and metrics","text":"Use a traced() helper with tracer.startActiveSpan() to wrap route handlers. Create counters with metrics.getMeter().createCounter()."},{"@type":"HowToStep","name":"Deploy with Docker Compose","text":"Use oven/bun:1.3-alpine base image and configure OTLP endpoint to point at the Scout Collector."}]}
 ---
 
 # Elysia (Bun)

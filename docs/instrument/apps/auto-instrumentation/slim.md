@@ -4,9 +4,8 @@ title:
 sidebar_label: Slim
 sidebar_position: 30
 description:
-  Slim Framework OpenTelemetry instrumentation for traces, MongoDB monitoring,
-  metrics, and log correlation with base14 Scout. Covers both Slim 4
-  (auto-instrumented) and Slim 3 (manual middleware).
+  Slim Framework OpenTelemetry instrumentation for Slim 4 (auto) and
+  Slim 3 (manual). Trace HTTP, MongoDB, and logs. Export to Scout.
 keywords:
   [
     slim opentelemetry,
@@ -28,6 +27,11 @@ keywords:
     slim 3 manual instrumentation,
     php fpm opentelemetry,
   ]
+head:
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why are no traces appearing from my Slim OpenTelemetry setup?","acceptedAnswer":{"@type":"Answer","text":"Check collector logs with docker compose logs otel-collector. Verify Scout credentials are set correctly. Ensure OTEL_PHP_AUTOLOAD_ENABLED=true is set. Check the extension is loaded with php -m | grep opentelemetry."}},{"@type":"Question","name":"Why is the OpenTelemetry PHP extension not loaded?","acceptedAnswer":{"@type":"Answer","text":"Verify extension installation with pecl list | grep opentelemetry. Check php.ini includes the extension directive. Restart PHP-FPM if using FastCGI."}},{"@type":"Question","name":"Why are no MongoDB spans appearing in my Slim application?","acceptedAnswer":{"@type":"Answer","text":"Verify opentelemetry-auto-mongodb is installed with composer show | grep auto-mongodb. Confirm OTEL_PHP_AUTOLOAD_ENABLED=true is set. Check that the mongodb PHP extension is loaded with php -m | grep mongodb."}},{"@type":"Question","name":"Why do Slim 3 span names show raw paths instead of route patterns?","acceptedAnswer":{"@type":"Answer","text":"Ensure determineRouteBeforeAppMiddleware is set to true in your Slim 3 settings. Without it, the TelemetryMiddleware cannot read the matched route pattern and span names will contain high-cardinality paths like GET /api/articles/abc123 instead of GET /api/articles/{id}."}},{"@type":"Question","name":"Why is telemetry lost on PHP-FPM process exit?","acceptedAnswer":{"@type":"Answer","text":"PHP-FPM workers can exit before the SDK flushes its buffer. Ensure the shutdown handler is registered and loaded early via src/telemetry.php. Without it, spans from the final request before worker recycling may be lost."}}]}
 ---
 
 # Slim Framework

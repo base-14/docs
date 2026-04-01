@@ -4,9 +4,8 @@ title:
 sidebar_label: Actix Web
 sidebar_position: 26
 description:
-  Trace HTTP requests, database queries, and background jobs in Rust Actix Web
-  apps with OpenTelemetry. Production-ready APM setup with distributed tracing
-  in base14 Scout.
+  Actix Web OpenTelemetry instrumentation for Rust. Trace HTTP requests,
+  SQLx queries, and Tokio async tasks. Export to base14 Scout via OTLP.
 keywords:
   [
     rust opentelemetry instrumentation,
@@ -28,6 +27,11 @@ keywords:
     actix web instrumentation guide,
     rust observability stack,
   ]
+head:
+  - - script
+    - type: application/ld+json
+    - |
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does OpenTelemetry impact Rust application performance?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry adds approximately less than 1ms of latency per request in typical Actix Web applications. Rust's zero-cost abstractions and the efficient tracing crate minimize overhead. With batch processing, the performance impact is negligible for most production workloads."}},{"@type":"Question","name":"What is the difference between Actix Web and Axum instrumentation?","acceptedAnswer":{"@type":"Answer","text":"Actix Web uses tracing-actix-web with TracingLogger middleware, while Axum uses tower-http with TraceLayer. Actix Web shares state via web::Data<T>, while Axum uses State extractors. Error handling in Actix Web uses the ResponseError trait, and authentication uses FromRequest extractors instead of middleware layers."}},{"@type":"Question","name":"Which Rust versions are supported?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry Rust supports Rust 1.80+ with edition 2021 or 2024. Rust 1.92+ is recommended for optimal compatibility and performance."}},{"@type":"Question","name":"Can I use OpenTelemetry with async Rust and Tokio?","acceptedAnswer":{"@type":"Answer","text":"Yes. The tracing crate handles async context propagation automatically, and tracing-opentelemetry bridges tracing spans to OpenTelemetry. Use opentelemetry_sdk with the rt-tokio feature for Tokio runtime support."}},{"@type":"Question","name":"How do I trace async tasks spawned with tokio::spawn?","acceptedAnswer":{"@type":"Answer","text":"Use tracing::Instrument to propagate context to spawned tasks. Create a tracing info_span and call .instrument(span) on the async block passed to tokio::spawn."}},{"@type":"Question","name":"How do I propagate traces to background job workers?","acceptedAnswer":{"@type":"Answer","text":"Store the W3C traceparent header in your job payload when enqueuing, then extract it with TraceContextPropagator in the worker and set it as the parent context using span.set_parent(). See the Job Queue section."}},{"@type":"Question","name":"How do I handle multi-tenant applications?","acceptedAnswer":{"@type":"Answer","text":"Add tenant context to spans using tracing fields such as tenant.id and tenant.name in a tracing info_span."}},{"@type":"Question","name":"How do I monitor SQLx connection pool health?","acceptedAnswer":{"@type":"Answer","text":"SQLx emits tracing spans for pool operations. Monitor these for connection acquisition times and pool exhaustion. Configure the pool with appropriate acquire_timeout and max_connections settings."}},{"@type":"Question","name":"Can I include trace IDs in error responses?","acceptedAnswer":{"@type":"Answer","text":"Yes. Use the get_trace_id() helper function in your ResponseError implementation to extract the current trace ID and include it in JSON error responses. See the Error Handling section."}}]}
 ---
 
 # Actix Web
