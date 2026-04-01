@@ -1,7 +1,7 @@
 ---
 title: Spring Boot OpenTelemetry Instrumentation - Java Agent, SDK & Starter
 sidebar_label: Spring Boot
-sidebar_position: 16
+sidebar_position: 20
 description:
   Set up OpenTelemetry in Spring Boot using the Java agent, SDK,
   or spring-boot-starter-opentelemetry. Covers

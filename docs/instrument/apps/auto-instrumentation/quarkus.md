@@ -1,7 +1,7 @@
 ---
 title: Quarkus OpenTelemetry Instrumentation - Native Image & REST Tracing
 sidebar_label: Quarkus
-sidebar_position: 15
+sidebar_position: 18
 description:
   Set up OpenTelemetry in Quarkus using the built-in extension. Trace
   REST endpoints, Hibernate Panache, and native images. Zero agent

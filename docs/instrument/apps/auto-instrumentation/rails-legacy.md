@@ -2,7 +2,7 @@
 title:
   Rails Legacy OpenTelemetry Instrumentation - Rails 5 & 6 Setup Guide
 sidebar_label: Ruby on Rails (Legacy)
-sidebar_position: 20
+sidebar_position: 25
 description:
   Legacy Rails OpenTelemetry instrumentation for Ruby 3.0 / Rails 6.1 and Ruby
   2.7 / Rails 5.x with pinned SDK versions and upgrade recommendations using

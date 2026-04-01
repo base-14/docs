@@ -1,7 +1,7 @@
 ---
 title: Laravel OpenTelemetry Instrumentation - Eloquent, Queues & HTTP
 sidebar_label: Laravel
-sidebar_position: 23
+sidebar_position: 28
 description:
   composer require open-telemetry/opentelemetry-auto-laravel and
   get traces with zero code changes. Capture Eloquent queries,

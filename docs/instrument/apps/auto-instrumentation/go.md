@@ -1,7 +1,7 @@
 ---
 title: Go OpenTelemetry Instrumentation - Echo, Fiber, Chi & GORM Tracing
 sidebar_label: Go
-sidebar_position: 18
+sidebar_position: 23
 description:
   Add OpenTelemetry to Go. Trace HTTP requests across Echo, Fiber, and
   Chi. Covers GORM, sqlx, Redis, and gRPC.

@@ -2,7 +2,7 @@
 title:
   Actix Web OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Actix Web
-sidebar_position: 21
+sidebar_position: 26
 description:
   Trace HTTP requests, database queries, and background jobs in Rust Actix Web
   apps with OpenTelemetry. Production-ready APM setup with distributed tracing

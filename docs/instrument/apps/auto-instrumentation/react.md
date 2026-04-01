@@ -1,7 +1,7 @@
 ---
 title: React OpenTelemetry Instrumentation - Browser Tracing & Web Vitals
 sidebar_label: React
-sidebar_position: 14
+sidebar_position: 17
 description:
   Add OpenTelemetry to React. Trace browser interactions, HTTP requests,
   and Core Web Vitals. Works with any backend.

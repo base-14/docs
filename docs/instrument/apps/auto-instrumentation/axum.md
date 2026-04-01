@@ -2,7 +2,7 @@
 title:
   Axum OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: Axum
-sidebar_position: 22
+sidebar_position: 27
 description:
   Trace HTTP requests, database queries, and background jobs in Rust Axum apps
   with OpenTelemetry. Production-ready APM setup with tower middleware,

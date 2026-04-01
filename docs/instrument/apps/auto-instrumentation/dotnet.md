@@ -2,7 +2,7 @@
 title:
   ASP.NET Core OpenTelemetry Instrumentation - Complete APM Setup Guide
 sidebar_label: ASP.NET Core
-sidebar_position: 25
+sidebar_position: 31
 description:
   Trace HTTP requests, database queries, and background jobs in ASP.NET Core
   apps with OpenTelemetry auto-instrumentation. Export traces, metrics, and logs
