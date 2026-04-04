@@ -3,12 +3,104 @@ title: "New Relic alternative: observability without the seat tax"
 description: "Replace New Relic's per-seat pricing with signal-based observability at $250/mo. Unlimited users, zero sampling, 30-day retention. Built on OpenTelemetry."
 ---
 
-import Head from '@docusaurus/Head';
+import Head from "@docusaurus/Head";
 
 <Head>
-  <meta name="keywords" content="new relic alternative, new relic replacement, cheaper than new relic, new relic pricing too expensive, new relic per seat pricing, switch from new relic, new relic cost reduction" />
-  <script type="application/ld+json">{JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Can a ~$5,375/month tool really replace a ~$19,250/month tool?","acceptedAnswer":{"@type":"Answer","text":"See the cost comparison above. The price gap reflects an architecture difference, not a capability gap. Purpose-built storage means we store every signal at full resolution for less than legacy platforms spend storing a sampled subset. And 61% of New Relic's cost in the example is seat licenses -- a cost axis Scout eliminates entirely, while giving every engineer full access."}},{"@type":"Question","name":"What do I lose compared to New Relic?","acceptedAnswer":{"@type":"Answer","text":"Browser and mobile real-user monitoring. Scout doesn't cover frontend RUM or mobile app monitoring. If those are critical, keep New Relic's Browser/Mobile products (they can coexist with Scout) or evaluate dedicated tools like Sentry or Datadog RUM. For backend observability, logs, metrics, traces, APM, and LLM telemetry, Scout is a full replacement."}},{"@type":"Question","name":"Do I need to learn a new query language?","acceptedAnswer":{"@type":"Answer","text":"No. Scout uses standard SQL. If you can write SELECT * FROM traces WHERE service = 'checkout' AND duration > 500ms, you can query Scout. Your existing NRQL queries map to SQL with minimal translation."}},{"@type":"Question","name":"Can I use my existing New Relic OTel instrumentation?","acceptedAnswer":{"@type":"Answer","text":"Yes. If you've already configured OTel exporters for New Relic, add Scout as a second exporter. Run both platforms in parallel without re-instrumenting a single service."}},{"@type":"Question","name":"How long does migration take?","acceptedAnswer":{"@type":"Answer","text":"4-6 weeks for a typical mid-size team. The most time-consuming part is dashboard recreation, not instrumentation. Our onboarding team handles dashboard setup, alert configuration, and collector tuning during the first month (free)."}},{"@type":"Question","name":"Can I try Scout before committing to a full migration?","acceptedAnswer":{"@type":"Answer","text":"Yes. We run a one-week proof of concept on a subset of your services with custom dashboards and alerts. No migration required. Your team evaluates Scout on real traffic alongside New Relic."}},{"@type":"Question","name":"Is base14 enterprise-ready?","acceptedAnswer":{"@type":"Answer","text":"SOC 2 Type II and ISO 27001 compliant. Enterprise tier includes eBPF support and BYOC (bring your own cloud) deployment on AWS, GCP, and Azure. Data residency options and custom SLAs available. We work with teams in regulated industries."}},{"@type":"Question","name":"What support is included with base14 Scout?","acceptedAnswer":{"@type":"Answer","text":"Every customer gets an SRE partnership: 24/7 support with response times under 15 minutes via Slack, fortnightly reliability reviews with a senior SRE, assisted onboarding (first month free), and custom training. No premium tier required."}},{"@type":"Question","name":"Why does New Relic get expensive for large teams?","acceptedAnswer":{"@type":"Answer","text":"New Relic's per-seat pricing forces teams to create tiered access. A 100-person team with 100 K8s hosts pays ~$19,245/month even with an optimized license mix (30 Full Platform, 25 Core, 45 Basic). Seat licenses are still 61% of the bill, and 70 of 100 engineers have restricted access to APM, tracing, or infrastructure."}},{"@type":"Question","name":"How does signal-based pricing compare to per-GB pricing?","acceptedAnswer":{"@type":"Answer","text":"Signal-based pricing charges per event (log line, trace span, metric data point) regardless of size. Per-GB pricing charges by data volume, so adding stack traces or metadata increases cost. Signal-based pricing removes the incentive to strip context. Scout: $250/month platform fee + $0.10/M metrics + $0.25/M logs & traces. No per-seat charges at any volume."}}]})}</script>
+  <meta
+    name="keywords"
+    content="new relic alternative, new relic replacement, cheaper than new relic, new relic pricing too expensive, new relic per seat pricing, switch from new relic, new relic cost reduction"
+  />
+  <script type="application/ld+json">
+    {JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "Can a ~$5,375/month tool really replace a ~$19,250/month tool?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "See the cost comparison above. The price gap reflects an architecture difference, not a capability gap. Purpose-built storage means we store every signal at full resolution for less than legacy platforms spend storing a sampled subset. And 61% of New Relic's cost in the example is seat licenses -- a cost axis Scout eliminates entirely, while giving every engineer full access.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "What do I lose compared to New Relic?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Browser and mobile real-user monitoring. Scout doesn't cover frontend RUM or mobile app monitoring. If those are critical, keep New Relic's Browser/Mobile products (they can coexist with Scout) or evaluate dedicated tools like Sentry or Datadog RUM. For backend observability, logs, metrics, traces, APM, and LLM telemetry, Scout is a full replacement.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Do I need to learn a new query language?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "No. Scout uses standard SQL. If you can write SELECT * FROM traces WHERE service = 'checkout' AND duration > 500ms, you can query Scout. Your existing NRQL queries map to SQL with minimal translation.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Can I use my existing New Relic OTel instrumentation?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Yes. If you've already configured OTel exporters for New Relic, add Scout as a second exporter. Run both platforms in parallel without re-instrumenting a single service.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "How long does migration take?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "4-6 weeks for a typical mid-size team. The most time-consuming part is dashboard recreation, not instrumentation. Our onboarding team handles dashboard setup, alert configuration, and collector tuning during the first month (free).",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Can I try Scout before committing to a full migration?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Yes. We run a one-week proof of concept on a subset of your services with custom dashboards and alerts. No migration required. Your team evaluates Scout on real traffic alongside New Relic.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Is base14 enterprise-ready?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "SOC 2 Type II and ISO 27001 compliant. Enterprise tier includes eBPF support and BYOC (bring your own cloud) deployment on AWS, GCP, and Azure. Data residency options and custom SLAs available. We work with teams in regulated industries.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "What support is included with base14 Scout?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Every customer gets an SRE partnership: 24/7 support with response times under 15 minutes via Slack, fortnightly reliability reviews with a senior SRE, assisted onboarding (first month free), and custom training. No premium tier required.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Why does New Relic get expensive for large teams?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "New Relic's per-seat pricing forces teams to create tiered access. A 100-person team with 100 K8s hosts pays ~$19,245/month even with an optimized license mix (30 Full Platform, 25 Core, 45 Basic). Seat licenses are still 61% of the bill, and 70 of 100 engineers have restricted access to APM, tracing, or infrastructure.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "How does signal-based pricing compare to per-GB pricing?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Signal-based pricing charges per event (log line, trace span, metric data point) regardless of size. Per-GB pricing charges by data volume, so adding stack traces or metadata increases cost. Signal-based pricing removes the incentive to strip context. Scout: $250/month platform fee + $0.10/M metrics + $0.25/M logs & traces. No per-seat charges at any volume.",
+          },
+        },
+      ],
+    })}
+  </script>
 </Head>
+
+# New Relic Alternative: Unlimited Users, Signal-Based Pricing
 
 > **TL;DR:** New Relic's per-seat pricing forces teams to choose
 > between access and budget. A 100-engineer team with 100 K8s hosts
@@ -19,7 +111,7 @@ import Head from '@docusaurus/Head';
 > Same infrastructure, ~$5,375/month. Built on OpenTelemetry.
 
 A growing payments company went from 45 to 100 engineers. The New
-Relic bill didn't just grow — it forced a conversation nobody wanted
+Relic bill didn't just grow - it forced a conversation nobody wanted
 to have: who gets full access, and who gets locked out?
 
 They ended up with 30 Full Platform licenses at $349/month, 25 Core
@@ -54,12 +146,12 @@ that doesn't penalize team growth.
 New Relic's cost has two axes: users and data. The user axis is where
 it hurts most.
 
-| User type | Cost | Access |
-| :--- | :--- | :--- |
-| Basic | Free | Dashboards, queries, alerts. No APM, no infra, no tracing |
-| Core | $49/user/month | Adds Errors Inbox, Logs UI, CodeStream. Still no APM, infra, K8s, or distributed tracing |
-| Full Platform | $349/user/month (Pro) | Everything: APM, distributed tracing, infrastructure, K8s, synthetics |
-| Data ingest | $0.40/GB standard | After 100 GB free/month. Data Plus at $0.60/GB for longer retention |
+| User type     | Cost                  | Access                                                                                   |
+| :------------ | :-------------------- | :--------------------------------------------------------------------------------------- |
+| Basic         | Free                  | Dashboards, queries, alerts. No APM, no infra, no tracing                                |
+| Core          | $49/user/month        | Adds Errors Inbox, Logs UI, CodeStream. Still no APM, infra, K8s, or distributed tracing |
+| Full Platform | $349/user/month (Pro) | Everything: APM, distributed tracing, infrastructure, K8s, synthetics                    |
+| Data ingest   | $0.40/GB standard     | After 100 GB free/month. Data Plus at $0.60/GB for longer retention                      |
 
 The features that matter most during incidents - APM, distributed
 tracing, infrastructure monitoring, Kubernetes - require Full Platform
@@ -104,7 +196,7 @@ A memory leak developing over weeks? Invisible. A latency
 regression that started 10 days ago? Gone. By the time someone
 investigates, the data has already expired.
 
-Getting 90-day retention requires the Data Plus plan at $0.60/GB —
+Getting 90-day retention requires the Data Plus plan at $0.60/GB -
 nearly double the standard $0.40/GB rate. No additional features,
 just longer storage. Most teams stay on standard and lose the
 ability to look back.
@@ -147,19 +239,19 @@ The comparison table gives you the overview. The paragraphs below
 explain why each difference matters when you're actually debugging at
 midnight.
 
-| Factor | New Relic | base14 Scout |
-| :--- | :--- | :--- |
-| Pricing model | Per-seat ($349/user) + per-GB ($0.40) | $250/mo base + per-signal |
-| Per-signal rates | $0.40/GB standard, $0.60/GB Data Plus | $0.10/M metrics, $0.25/M logs & traces |
-| Per-seat pricing | $49-349/user (Basic free, limited access) | No (unlimited users, full access) |
-| Default retention | 8 days (standard) | 30 days (extended available) |
-| Longer retention cost | Data Plus at $0.60/GB | Minimal extra cost |
-| Sampling | Adaptive at scale | Zero |
-| Query language | NRQL (proprietary) | SQL |
-| LLM observability | Limited | Native |
-| Support | Tiered (community to premium) | SRE partnership included |
-| Lock-in | Proprietary agents + OTel support | OpenTelemetry-native |
-| Enterprise | Standard offering | eBPF support, BYOC available |
+| Factor                | New Relic                                 | base14 Scout                           |
+| :-------------------- | :---------------------------------------- | :------------------------------------- |
+| Pricing model         | Per-seat ($349/user) + per-GB ($0.40)     | $250/mo base + per-signal              |
+| Per-signal rates      | $0.40/GB standard, $0.60/GB Data Plus     | $0.10/M metrics, $0.25/M logs & traces |
+| Per-seat pricing      | $49-349/user (Basic free, limited access) | No (unlimited users, full access)      |
+| Default retention     | 8 days (standard)                         | 30 days (extended available)           |
+| Longer retention cost | Data Plus at $0.60/GB                     | Minimal extra cost                     |
+| Sampling              | Adaptive at scale                         | Zero                                   |
+| Query language        | NRQL (proprietary)                        | SQL                                    |
+| LLM observability     | Limited                                   | Native                                 |
+| Support               | Tiered (community to premium)             | SRE partnership included               |
+| Lock-in               | Proprietary agents + OTel support         | OpenTelemetry-native                   |
+| Enterprise            | Standard offering                         | eBPF support, BYOC available           |
 
 ### What Scout actually feels like to use
 
@@ -186,11 +278,11 @@ Generate more telemetry, costs go up. Both at the same time.
 Even with an optimized license mix (30 Full Platform, 25 Core, 45
 Basic for a 100-person team), seat costs still dominate.
 ~$11,700/month on seats. ~$7,550/month on data. Seats are 61% of
-the bill — after restricting 45 engineers to dashboard-only access.
+the bill - after restricting 45 engineers to dashboard-only access.
 
 Scout's pricing has one axis:
 [signals](/observability-cost-optimization). A signal is a single
-telemetry event — a log line, a metric point, a trace span — and
+telemetry event - a log line, a metric point, a trace span - and
 you pay a $250/month platform fee plus per-signal rates:
 
 - **Metrics**: $0.10 per million signals
@@ -228,7 +320,7 @@ that trace," "go back to the previous view." With direct dashboard
 access, she'd have found the failing
 [database query](https://base14.io/scout/pgx) much faster.
 
-Per-seat pricing doesn't just cost money — it costs time during
+Per-seat pricing doesn't just cost money - it costs time during
 incidents, it costs the junior engineers who never develop debugging
 intuition because they can't explore dashboards on quiet days, and
 it costs the [observability culture](/blog/observability-theatre)
@@ -237,7 +329,7 @@ you're trying to build.
 When full access costs $349/month per person, teams create tiers
 where a core group of licensed experts become bottlenecks and
 everyone else debugs with partial visibility. That's not a team
-scaling problem — it's a vendor-imposed ceiling on your engineering
+scaling problem - it's a vendor-imposed ceiling on your engineering
 culture.
 
 Scout includes unlimited users. Every engineer, every SRE, every
@@ -318,13 +410,13 @@ that most teams actually use.
 Most teams don't put everyone on Full Platform. They optimize with
 a tiered license mix:
 
-| Role | Count | User type | Monthly cost |
-| :--- | :--- | :--- | :--- |
-| SREs + platform engineers | 15 | Full Platform ($349) | $5,235 |
-| Backend engineers (on-call) | 15 | Full Platform ($349) | $5,235 |
-| Backend engineers (not on-call) | 25 | Core ($49) | $1,225 |
-| Frontend, QA, support, managers | 45 | Basic (free) | $0 |
-| **Seat total** | **100** | | **$11,695** |
+| Role                            | Count   | User type            | Monthly cost |
+| :------------------------------ | :------ | :------------------- | :----------- |
+| SREs + platform engineers       | 15      | Full Platform ($349) | $5,235       |
+| Backend engineers (on-call)     | 15      | Full Platform ($349) | $5,235       |
+| Backend engineers (not on-call) | 25      | Core ($49)           | $1,225       |
+| Frontend, QA, support, managers | 45      | Basic (free)         | $0           |
+| **Seat total**                  | **100** |                      | **$11,695**  |
 
 **Data ingest calculation:**
 
@@ -333,17 +425,17 @@ a tiered license mix:
 - Metrics: 7,500M data points × ~10 bytes avg = ~75 GB
 - Total: ~18,975 GB/month
 
-| Line item | Calculation | Monthly cost |
-| :--- | :--- | :--- |
-| Seat licenses (mixed) | 30 Full + 25 Core + 45 Basic | $11,695 |
-| Data ingest (standard) | (18,975 - 100 free) GB × $0.40 | $7,550 |
-| **Monthly total** | | **~$19,245** |
-| **Annual total** | | **~$230,940** |
+| Line item              | Calculation                    | Monthly cost  |
+| :--------------------- | :----------------------------- | :------------ |
+| Seat licenses (mixed)  | 30 Full + 25 Core + 45 Basic   | $11,695       |
+| Data ingest (standard) | (18,975 - 100 free) GB × $0.40 | $7,550        |
+| **Monthly total**      |                                | **~$19,245**  |
+| **Annual total**       |                                | **~$230,940** |
 
-*Pricing as of March 2026. Published rates at
+_Pricing as of March 2026. Published rates at
 [newrelic.com/pricing](https://newrelic.com/pricing), annual
 billing. Even with a negotiated contract, per-seat and per-GB
-charges still compound the same way.*
+charges still compound the same way._
 
 Even with an optimized mix, seat licenses are 61% of the bill,
 and the optimization has a real cost: 25 Core users can't access
@@ -359,17 +451,17 @@ On Scout, every telemetry signal is metered - including
 infrastructure metrics. There are no per-seat charges. Every
 engineer gets full access.
 
-| Line item | Calculation | Monthly cost |
-| :--- | :--- | :--- |
-| Platform fee | Flat rate | $250 |
-| Metrics | 7,500M × $0.10/M | $750 |
-| Logs | 10,000M × $0.25/M | $2,500 |
-| Traces | 7,500M × $0.25/M | $1,875 |
-| Per-seat (100 engineers) | Unlimited, included | $0 |
-| 30-day retention | Included | $0 |
-| SRE partnership | Included | $0 |
-| **Monthly total** | | **~$5,375** |
-| **Annual total** | | **~$64,500** |
+| Line item                | Calculation         | Monthly cost |
+| :----------------------- | :------------------ | :----------- |
+| Platform fee             | Flat rate           | $250         |
+| Metrics                  | 7,500M × $0.10/M    | $750         |
+| Logs                     | 10,000M × $0.25/M   | $2,500       |
+| Traces                   | 7,500M × $0.25/M    | $1,875       |
+| Per-seat (100 engineers) | Unlimited, included | $0           |
+| 30-day retention         | Included            | $0           |
+| SRE partnership          | Included            | $0           |
+| **Monthly total**        |                     | **~$5,375**  |
+| **Annual total**         |                     | **~$64,500** |
 
 No egress fees. No infrastructure to run. No feature add-ons.
 No per-seat charges at any team size.
@@ -447,7 +539,7 @@ Our onboarding team works with your engineers during this period; this
 is where they add the most value.
 
 The most common gotcha is that dashboard recreation takes longer
-than collector setup — expect 2-3 days on the collector and 1-2
+than collector setup - expect 2-3 days on the collector and 1-2
 weeks refining dashboards and alerts. Our onboarding engineers
 handle the heavy lifting, but your team knows what questions the
 dashboards need to answer, so plan for that conversation time.

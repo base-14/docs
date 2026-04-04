@@ -353,3 +353,4 @@ with real visibility?
 
 - [Why Unified Observability Matters](/blog/unified-observability/)
 - [Reducing Bus Factor in Observability](/blog/reducing-bus-factor-in-observability/)
+- [Observability Cost Optimization: Beyond Volume Discounts](/observability-cost-optimization/)

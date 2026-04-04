@@ -3,12 +3,80 @@ title: "CloudWatch alternative: unified observability beyond AWS"
 description: "Replace AWS CloudWatch with signal-based pricing ($250/mo + $0.10/M metrics + $0.25/M logs & traces). Multi-cloud, zero-sampling friendly, 30-day retention."
 ---
 
-import Head from '@docusaurus/Head';
+import Head from "@docusaurus/Head";
 
 <Head>
-  <meta name="keywords" content="cloudwatch alternative, aws cloudwatch alternative, cloudwatch replacement, cloudwatch pricing too expensive, aws monitoring beyond cloudwatch, cloudwatch limitations multi-cloud, aws observability without cloudwatch" />
-  <script type="application/ld+json">{JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Can base14 pull existing CloudWatch metrics?","acceptedAnswer":{"@type":"Answer","text":"The OTel Collector has a CloudWatch receiver that can pull existing CloudWatch metrics and forward them to Scout. This lets you keep historical continuity during migration."}},{"@type":"Question","name":"How long does migration take?","acceptedAnswer":{"@type":"Answer","text":"4-6 weeks for a typical mid-size team. base14's onboarding team handles dashboard recreation, alert setup, and collector configuration during the first month (free)."}},{"@type":"Question","name":"What about CloudWatch Alarms and Auto Scaling triggers?","acceptedAnswer":{"@type":"Answer","text":"Keep CloudWatch for AWS-native triggers. Use Scout for observability. They coexist naturally. CloudWatch Alarms firing Auto Scaling actions don't require CloudWatch to be your primary monitoring tool."}},{"@type":"Question","name":"Is base14 enterprise-ready?","acceptedAnswer":{"@type":"Answer","text":"Yes. SOC 2 Type II and ISO 27001 compliant. BYOC deployment on AWS, GCP, and Azure. Data residency options and custom SLAs available."}},{"@type":"Question","name":"How does Scout pricing work?","acceptedAnswer":{"@type":"Answer","text":"You pay a $250/month platform fee plus usage: $0.10 per million metrics and $0.25 per million logs and traces. No throttling, no sampling kicks in, no surprise tier changes. Linear, predictable pricing."}},{"@type":"Question","name":"What is the best CloudWatch alternative for multi-cloud teams?","acceptedAnswer":{"@type":"Answer","text":"base14 Scout is built for teams running infrastructure across AWS, GCP, Azure, or on-prem. It replaces CloudWatch, X-Ray, and GCP Cloud Monitoring with a single unified platform. OpenTelemetry-native, so your instrumentation works across any cloud provider."}},{"@type":"Question","name":"How much cheaper is base14 Scout than CloudWatch?","acceptedAnswer":{"@type":"Answer","text":"For a 70-host multi-cloud team (50 AWS + 20 GCP) with 300 GB/day of logs, 5.25B trace spans, and 5.25B metric data points/month, CloudWatch costs ~$5,786/month for the AWS portion alone (growing with storage accumulation). Scout costs ~$3,838/month covering both clouds. That's ~$23,400 in annual savings before accounting for GCP monitoring costs."}}]})}</script>
+  <meta
+    name="keywords"
+    content="cloudwatch alternative, aws cloudwatch alternative, cloudwatch replacement, cloudwatch pricing too expensive, aws monitoring beyond cloudwatch, cloudwatch limitations multi-cloud, aws observability without cloudwatch"
+  />
+  <script type="application/ld+json">
+    {JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "Can base14 pull existing CloudWatch metrics?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "The OTel Collector has a CloudWatch receiver that can pull existing CloudWatch metrics and forward them to Scout. This lets you keep historical continuity during migration.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "How long does migration take?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "4-6 weeks for a typical mid-size team. base14's onboarding team handles dashboard recreation, alert setup, and collector configuration during the first month (free).",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "What about CloudWatch Alarms and Auto Scaling triggers?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Keep CloudWatch for AWS-native triggers. Use Scout for observability. They coexist naturally. CloudWatch Alarms firing Auto Scaling actions don't require CloudWatch to be your primary monitoring tool.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Is base14 enterprise-ready?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Yes. SOC 2 Type II and ISO 27001 compliant. BYOC deployment on AWS, GCP, and Azure. Data residency options and custom SLAs available.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "How does Scout pricing work?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "You pay a $250/month platform fee plus usage: $0.10 per million metrics and $0.25 per million logs and traces. No throttling, no sampling kicks in, no surprise tier changes. Linear, predictable pricing.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "What is the best CloudWatch alternative for multi-cloud teams?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "base14 Scout is built for teams running infrastructure across AWS, GCP, Azure, or on-prem. It replaces CloudWatch, X-Ray, and GCP Cloud Monitoring with a single unified platform. OpenTelemetry-native, so your instrumentation works across any cloud provider.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "How much cheaper is base14 Scout than CloudWatch?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "For a 70-host multi-cloud team (50 AWS + 20 GCP) with 300 GB/day of logs, 5.25B trace spans, and 5.25B metric data points/month, CloudWatch costs ~$5,786/month for the AWS portion alone (growing with storage accumulation). Scout costs ~$3,838/month covering both clouds. That's ~$23,400 in annual savings before accounting for GCP monitoring costs.",
+          },
+        },
+      ],
+    })}
+  </script>
 </Head>
+
+# CloudWatch Alternative: Unified Observability Beyond AWS
 
 > **TL;DR:** base14 Scout is a multi-cloud observability platform
 > that replaces CloudWatch, X-Ray, and fragmented AWS dashboards.
@@ -20,7 +88,7 @@ import Head from '@docusaurus/Head';
 
 A platform team ran their payments API on AWS and their fraud
 detection service on GCP. When checkout latency spiked on a Friday
-evening, they opened CloudWatch. The AWS services looked normal —
+evening, they opened CloudWatch. The AWS services looked normal -
 latency within bounds, error rates flat.
 
 But customers were still complaining.
@@ -81,12 +149,12 @@ CloudWatch pricing looks reasonable until you understand the
 billing model. AWS charges you three separate times for the same
 log data:
 
-| Charge | Rate | What you're paying for |
-| :--- | :--- | :--- |
-| Ingestion | [$0.50/GB](https://aws.amazon.com/cloudwatch/pricing/) (first 10TB/mo) | Getting data into CloudWatch |
-| Storage | $0.03/GB/month (on compressed data) | Keeping it there |
-| Queries (Logs Insights) | $0.005/GB scanned | Looking at it |
-| Alarms | $0.10-0.50/alarm/month | Being notified |
+| Charge                  | Rate                                                                   | What you're paying for       |
+| :---------------------- | :--------------------------------------------------------------------- | :--------------------------- |
+| Ingestion               | [$0.50/GB](https://aws.amazon.com/cloudwatch/pricing/) (first 10TB/mo) | Getting data into CloudWatch |
+| Storage                 | $0.03/GB/month (on compressed data)                                    | Keeping it there             |
+| Queries (Logs Insights) | $0.005/GB scanned                                                      | Looking at it                |
+| Alarms                  | $0.10-0.50/alarm/month                                                 | Being notified               |
 
 Storage is charged on compressed data (roughly 6:1 ratio), so
 $0.03/GB compressed ≈ $0.18/GB on raw data. And storage is
@@ -107,12 +175,12 @@ actually looks like after six months:
 Teams often discover this when preparing quarterly budgets. With
 default retention set to "Never expire" (CloudWatch's default),
 the actual bill after six months can be several times the
-initial estimate — because nobody changed the retention policy
+initial estimate - because nobody changed the retention policy
 and the storage charges had been growing silently since day one.
 
 The per-query charge creates a subtler problem by putting a price
 tag on investigation. At $0.005/GB scanned, every debugging
-session costs money, so engineers start self-censoring — running
+session costs money, so engineers start self-censoring - running
 fewer queries, scanning smaller time windows, avoiding exploratory
 analysis. The financial incentive works against exactly the
 behavior you want during incidents.
@@ -171,7 +239,7 @@ metrics, costing $4,500/month in metric charges alone.
 ### Dashboard and alerting limitations
 
 CloudWatch dashboards use fixed layouts with limited
-customization. Standard metrics refresh every 1-5 minutes —
+customization. Standard metrics refresh every 1-5 minutes -
 usable for capacity planning, but too slow for real-time
 incident response. During an active outage, you're watching
 data that's already minutes old.
@@ -257,21 +325,21 @@ this is the foundation that makes portability real.
 
 ## CloudWatch vs base14 Scout: detailed comparison
 
-| Factor | AWS CloudWatch | base14 Scout |
-| :--- | :--- | :--- |
-| Pricing model | GB ingest + storage + query + per-metric | Signal-based ($0.10/M metrics, $0.25/M logs & traces) |
-| Base cost | Unpredictable, scales with usage | $250/month platform fee |
-| Per-seat pricing | IAM-based access management | Unlimited users included |
-| Default retention | Indefinite (storage cost grows forever) | 30 days (extended available) |
-| Sampling | Limited trace sampling via X-Ray | Zero-sampling friendly |
-| Multi-cloud | AWS only | Any cloud, any infrastructure |
-| Query cost | $0.005/GB scanned (degrades on large log groups) | Included, fast over terabytes |
-| APM | Application Insights (limited) | Native, full-featured |
-| Alerting | Static thresholds only | Configurable alerts |
-| Distributed tracing | X-Ray (separate service) | Native, unified |
-| LLM observability | None | Native |
-| Support | Standard AWS support tiers | SRE partnership included |
-| Data portability | AWS-locked | OpenTelemetry-native |
+| Factor              | AWS CloudWatch                                   | base14 Scout                                          |
+| :------------------ | :----------------------------------------------- | :---------------------------------------------------- |
+| Pricing model       | GB ingest + storage + query + per-metric         | Signal-based ($0.10/M metrics, $0.25/M logs & traces) |
+| Base cost           | Unpredictable, scales with usage                 | $250/month platform fee                               |
+| Per-seat pricing    | IAM-based access management                      | Unlimited users included                              |
+| Default retention   | Indefinite (storage cost grows forever)          | 30 days (extended available)                          |
+| Sampling            | Limited trace sampling via X-Ray                 | Zero-sampling friendly                                |
+| Multi-cloud         | AWS only                                         | Any cloud, any infrastructure                         |
+| Query cost          | $0.005/GB scanned (degrades on large log groups) | Included, fast over terabytes                         |
+| APM                 | Application Insights (limited)                   | Native, full-featured                                 |
+| Alerting            | Static thresholds only                           | Configurable alerts                                   |
+| Distributed tracing | X-Ray (separate service)                         | Native, unified                                       |
+| LLM observability   | None                                             | Native                                                |
+| Support             | Standard AWS support tiers                       | SRE partnership included                              |
+| Data portability    | AWS-locked                                       | OpenTelemetry-native                                  |
 
 ### Pricing: pay three times vs pay once
 
@@ -335,23 +403,23 @@ rest is on GCP). Monthly: 180 × 30 = 5,400 GB.
 15 spans per trace = ~350M traces. AWS portion (~70%): ~250M
 traces/month.
 
-| Line item | Calculation | Monthly cost |
-| :--- | :--- | :--- |
-| Log ingestion | 5,400 GB × $0.50/GB | $2,700 |
-| Log storage (6 months) | ~5.4 TB compressed × $0.03/GB | $162 (growing) |
-| Log queries (Insights) | ~200 GB scanned/day × 30 × $0.005/GB | $30 |
-| Custom metrics (5K) | 5,000 × $0.30 | $1,500 |
-| X-Ray traces recorded | 250M × $5.00/M | $1,250 |
-| Dashboards (30) | 30 × $3.00 | $90 |
-| Alarms (300 mixed) | 200 standard + 80 high-res + 20 composite | $54 |
-| **Monthly total** | | **~$5,786** |
-| **Annual total** | | **~$69,432** |
+| Line item              | Calculation                               | Monthly cost   |
+| :--------------------- | :---------------------------------------- | :------------- |
+| Log ingestion          | 5,400 GB × $0.50/GB                       | $2,700         |
+| Log storage (6 months) | ~5.4 TB compressed × $0.03/GB             | $162 (growing) |
+| Log queries (Insights) | ~200 GB scanned/day × 30 × $0.005/GB      | $30            |
+| Custom metrics (5K)    | 5,000 × $0.30                             | $1,500         |
+| X-Ray traces recorded  | 250M × $5.00/M                            | $1,250         |
+| Dashboards (30)        | 30 × $3.00                                | $90            |
+| Alarms (300 mixed)     | 200 standard + 80 high-res + 20 composite | $54            |
+| **Monthly total**      |                                           | **~$5,786**    |
+| **Annual total**       |                                           | **~$69,432**   |
 
-*Pricing as of March 2026. Published rates at
+_Pricing as of March 2026. Published rates at
 [aws.amazon.com/cloudwatch/pricing](https://aws.amazon.com/cloudwatch/pricing/),
 US East (N. Virginia). Other regions may vary. AWS enterprise
 agreements may discount these rates, but the triple-charge
-structure remains.*
+structure remains._
 
 **Storage accumulates.** CloudWatch's default retention is "Never
 expire." After 12 months, log storage climbs to ~$324/month
@@ -374,18 +442,18 @@ GCP hosts.
   60s/30s scrape = ~5,250M data points/month
 - **Traces**: 5,250M trace spans/month
 
-| Line item | Calculation | Monthly cost |
-| :--- | :--- | :--- |
-| Platform fee | Flat rate | $250 |
-| Metrics | 5,250M × $0.10/M | $525 |
-| Logs | 7,000M × $0.25/M | $1,750 |
-| Traces | 5,250M × $0.25/M | $1,313 |
-| Per-seat (30 engineers) | Unlimited users included | $0 |
-| 30-day retention | Included | $0 |
-| Query costs | Included | $0 |
-| SRE partnership | Included | $0 |
-| **Monthly total** | | **~$3,838** |
-| **Annual total** | | **~$46,056** |
+| Line item               | Calculation              | Monthly cost |
+| :---------------------- | :----------------------- | :----------- |
+| Platform fee            | Flat rate                | $250         |
+| Metrics                 | 5,250M × $0.10/M         | $525         |
+| Logs                    | 7,000M × $0.25/M         | $1,750       |
+| Traces                  | 5,250M × $0.25/M         | $1,313       |
+| Per-seat (30 engineers) | Unlimited users included | $0           |
+| 30-day retention        | Included                 | $0           |
+| Query costs             | Included                 | $0           |
+| SRE partnership         | Included                 | $0           |
+| **Monthly total**       |                          | **~$3,838**  |
+| **Annual total**        |                          | **~$46,056** |
 
 No egress fees. No infrastructure to run. No feature add-ons.
 No per-seat charges at any team size.

@@ -3,12 +3,80 @@ title: "Observability cost optimization: why the pricing model matters more than
 description: "Cost is the #1 observability selection criterion. The fix isn't sampling - it's signal-based pricing: $250/mo + $0.10/M metrics + $0.25/M logs & traces."
 ---
 
-import Head from '@docusaurus/Head';
+import Head from "@docusaurus/Head";
 
 <Head>
-  <meta name="keywords" content="observability cost optimization, reduce observability costs, observability pricing comparison, observability cost reduction, observability TCO, signal-based observability pricing, observability without sampling" />
-  <script type="application/ld+json">{JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How much can teams realistically save on observability costs?","acceptedAnswer":{"@type":"Answer","text":"It depends on your current stack and how much you index. A 100-host Kubernetes team on full-indexing list pricing saves ~$370K/year moving to signal-based pricing. With negotiated discounts and partial indexing the gap narrows, but the structural savings from eliminating per-host fees, dual-cost logging, and per-metric charges remain."}},{"@type":"Question","name":"Does reducing observability costs mean losing visibility?","acceptedAnswer":{"@type":"Answer","text":"With the usual approaches (sampling, filtering, shorter retention), yes. But signal-based pricing with a zero-sampling friendly architecture and 30-day retention gives you more visibility at lower cost. The goal shifts from send less data to pick the right pricing model."}},{"@type":"Question","name":"How does signal-based pricing handle large log lines or traces?","acceptedAnswer":{"@type":"Answer","text":"Every signal counts equally regardless of size. A 100-byte log line and a 50KB log line with full stack trace are both one signal. This removes the incentive to strip context from your telemetry."}},{"@type":"Question","name":"Is it worth migrating if we've already optimized our current setup?","acceptedAnswer":{"@type":"Answer","text":"Ask whether you've optimized within a broken model. If your team spends real hours on cost management (tuning logs, managing sampling, building filtering pipelines), that time is a cost migration removes."}},{"@type":"Question","name":"Can we migrate incrementally or is it all-or-nothing?","acceptedAnswer":{"@type":"Answer","text":"Go incremental. OTel-based platforms support dual-shipping during evaluation, so you can move one service at a time and compare results before committing fully. A 50-host environment typically reaches full parallel operation in about a week. At 200 hosts, plan for 2-3 weeks."}},{"@type":"Question","name":"What is signal-based pricing for observability?","acceptedAnswer":{"@type":"Answer","text":"You pay per event (log line, trace span, metric data point), not per byte. Adding rich context like stack traces doesn't raise the bill. base14 Scout: $250/month platform fee + $0.10 per million metrics + $0.25 per million logs and traces. Unlimited seats and 30-day default retention included."}},{"@type":"Question","name":"How do I calculate my observability TCO?","acceptedAnswer":{"@type":"Answer","text":"Start with direct vendor costs. Then add hidden costs: hours spent on pipeline building, log tuning, and cardinality management. Add extra incident time from sampled or expired data. Add lost output from limited seat access. Most teams find hidden costs add significantly on top of direct fees."}}]})}</script>
+  <meta
+    name="keywords"
+    content="observability cost optimization, reduce observability costs, observability pricing comparison, observability cost reduction, observability TCO, signal-based observability pricing, observability without sampling"
+  />
+  <script type="application/ld+json">
+    {JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "How much can teams realistically save on observability costs?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "It depends on your current stack and how much you index. A 100-host Kubernetes team on full-indexing list pricing saves ~$370K/year moving to signal-based pricing. With negotiated discounts and partial indexing the gap narrows, but the structural savings from eliminating per-host fees, dual-cost logging, and per-metric charges remain.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Does reducing observability costs mean losing visibility?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "With the usual approaches (sampling, filtering, shorter retention), yes. But signal-based pricing with a zero-sampling friendly architecture and 30-day retention gives you more visibility at lower cost. The goal shifts from send less data to pick the right pricing model.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "How does signal-based pricing handle large log lines or traces?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Every signal counts equally regardless of size. A 100-byte log line and a 50KB log line with full stack trace are both one signal. This removes the incentive to strip context from your telemetry.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Is it worth migrating if we've already optimized our current setup?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Ask whether you've optimized within a broken model. If your team spends real hours on cost management (tuning logs, managing sampling, building filtering pipelines), that time is a cost migration removes.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Can we migrate incrementally or is it all-or-nothing?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Go incremental. OTel-based platforms support dual-shipping during evaluation, so you can move one service at a time and compare results before committing fully. A 50-host environment typically reaches full parallel operation in about a week. At 200 hosts, plan for 2-3 weeks.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "What is signal-based pricing for observability?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "You pay per event (log line, trace span, metric data point), not per byte. Adding rich context like stack traces doesn't raise the bill. base14 Scout: $250/month platform fee + $0.10 per million metrics + $0.25 per million logs and traces. Unlimited seats and 30-day default retention included.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "How do I calculate my observability TCO?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Start with direct vendor costs. Then add hidden costs: hours spent on pipeline building, log tuning, and cardinality management. Add extra incident time from sampled or expired data. Add lost output from limited seat access. Most teams find hidden costs add significantly on top of direct fees.",
+          },
+        },
+      ],
+    })}
+  </script>
 </Head>
+
+# Observability Cost Optimization: Beyond Volume Discounts
 
 > **TL;DR:** Cost is the #1 observability tool selection criterion
 > for the third year running (65% of teams). But the biggest lever
@@ -51,7 +119,7 @@ you stop paying for bytes and start paying for signals.
 
 ## The state of observability spending in 2026
 
-Cost is the number one selection criterion for observability tools —
+Cost is the number one selection criterion for observability tools -
 for the third year running. 65% of teams rank it first, ahead of ease
 of use (49%), according to Grafana's
 [2026 Observability Survey](https://grafana.com/observability-survey/)
@@ -70,12 +138,12 @@ there. The execution isn't.
 Where does the money go? For most teams working on observability cost
 optimization, the breakdown looks like this:
 
-| Cost category | Share of spend | Driver |
-| :--- | :--- | :--- |
-| Log ingestion and storage | 50-60% | GB-based pricing penalizes verbose logs |
-| APM and tracing | 20-25% | Per-host pricing scales with infrastructure |
-| Metrics and custom dashboards | 10-15% | Cardinality charges, per-metric pricing |
-| Additional seats and features | 5-10% | Per-user pricing, feature gating |
+| Cost category                 | Share of spend | Driver                                      |
+| :---------------------------- | :------------- | :------------------------------------------ |
+| Log ingestion and storage     | 50-60%         | GB-based pricing penalizes verbose logs     |
+| APM and tracing               | 20-25%         | Per-host pricing scales with infrastructure |
+| Metrics and custom dashboards | 10-15%         | Cardinality charges, per-metric pricing     |
+| Additional seats and features | 5-10%          | Per-user pricing, feature gating            |
 
 The pattern is clear. Most observability spend goes to
 [log management](https://base14.io/scout/logs). And most of that cost
@@ -89,8 +157,8 @@ for it.
 GB-based pricing creates a broken incentive. More context means a
 higher bill.
 
-A log line with full request context — user ID, session ID, trace
-ID, custom attributes — can be 10x larger than a stripped-down
+A log line with full request context - user ID, session ID, trace
+ID, custom attributes - can be 10x larger than a stripped-down
 entry. Under GB pricing, that rich log line costs 10x more.
 
 So teams strip context, removing stack traces from non-error logs,
@@ -109,7 +177,7 @@ dangerous.
 
 Consider what 10% sampling means during a P1. Your payment service
 handles 100 million transactions per day, and a rare race condition
-hits 0.1% of requests — 100,000 affected transactions, plenty to
+hits 0.1% of requests - 100,000 affected transactions, plenty to
 trigger alerts.
 
 But with 10% sampling, you've kept traces for only 10,000 of those
@@ -146,9 +214,9 @@ the data you need has already expired.
 ### The hidden "observability tax"
 
 Beyond the direct costs, there's a tax that never appears on any
-invoice — the engineering time spent managing observability costs:
+invoice - the engineering time spent managing observability costs:
 
-- Constant log-level tuning to stay under ingestion limits —
+- Constant log-level tuning to stay under ingestion limits -
   not a one-time fix, but an ongoing negotiation every time a
   service ships new telemetry
 - Pipeline maintenance: adjusting filters, reviewing budget
@@ -161,7 +229,7 @@ invoice — the engineering time spent managing observability costs:
   read-only, who gets nothing
 
 This tax is real overhead. For mid-size teams, it consumes 2-4
-days per month of a platform engineer's time — roughly 10% of
+days per month of a platform engineer's time - roughly 10% of
 their capacity diverted from building product to managing a
 billing model. Any serious observability cost optimization effort
 needs to account for this hidden spend.
@@ -196,7 +264,7 @@ bounce between systems and lose context.
 ### Consolidate tools
 
 Replace your separate logging, metrics, tracing, and APM tools
-with one platform. Solid advice — one of the most impactful
+with one platform. Solid advice - one of the most impactful
 changes a team can make. But most "consolidation" guides don't
 show the savings math or cover the migration path.
 
@@ -230,7 +298,7 @@ decision: should this service log at INFO or DEBUG, should the
 request body go into traces, is this metric dimension worth the
 cardinality charge?
 
-These aren't engineering questions — they're accounting questions
+These aren't engineering questions - they're accounting questions
 wearing engineering clothes.
 
 With signal-based pricing, they disappear. You can send
@@ -253,24 +321,24 @@ Let's work through a concrete scenario.
 
 #### GB-based pricing (typical mid-market vendor)
 
-| Line item | Calculation | Monthly cost |
-| :--- | :--- | :--- |
-| Infrastructure (Enterprise) | 100 hosts × $23/host | $2,300 |
-| APM (base) | 100 hosts × $31/host | $3,100 |
-| APM indexed span overage | (7,500M - 100M included) × $1.70/M | $12,580 |
-| Log ingestion | 12,900 GB × $0.10/GB | $1,290 |
-| Log indexing (15-day retention) | 10,000M events × $1.70/M | $17,000 |
-| Custom metrics | Within included (100 × 200 = 20K) | $0 |
-| **Total (full indexing)** | | **~$36,270/month** |
+| Line item                       | Calculation                        | Monthly cost       |
+| :------------------------------ | :--------------------------------- | :----------------- |
+| Infrastructure (Enterprise)     | 100 hosts × $23/host               | $2,300             |
+| APM (base)                      | 100 hosts × $31/host               | $3,100             |
+| APM indexed span overage        | (7,500M - 100M included) × $1.70/M | $12,580            |
+| Log ingestion                   | 12,900 GB × $0.10/GB               | $1,290             |
+| Log indexing (15-day retention) | 10,000M events × $1.70/M           | $17,000            |
+| Custom metrics                  | Within included (100 × 200 = 20K)  | $0                 |
+| **Total (full indexing)**       |                                    | **~$36,270/month** |
 
 Most teams don't index everything. Indexing 30% of logs and spans
-brings this down to ~$15,400/month — but 70% of your logs and
+brings this down to ~$15,400/month - but 70% of your logs and
 traces become unsearchable during incidents.
 
-*Pricing as of March 2026. Published list rates at
+_Pricing as of March 2026. Published list rates at
 [datadoghq.com/pricing](https://www.datadoghq.com/pricing/),
 annual billing. Even after negotiated contracts, the structural
-gap remains.*
+gap remains._
 
 **How we calculated:** 430 GB/day ÷ 1.3 KB average (observed
 median across containerized workloads) = ~333M log lines/day × 30
@@ -292,24 +360,24 @@ infrastructure metrics that GB-based vendors bundle into host fees.
   = ~7.5B data points/month
 - **Traces**: 7.5B trace spans/month
 
-| Line item | Calculation | Monthly cost |
-| :--- | :--- | :--- |
-| Platform fee | Flat rate | $250 |
-| Metrics | 7,500M × $0.10/M | $750 |
-| Logs | 10,000M × $0.25/M | $2,500 |
-| Traces | 7,500M × $0.25/M | $1,875 |
-| All features ([APM](https://base14.io/scout/apm), logs, traces, metrics) | | Included |
-| Unlimited seats (20 engineers) | | Included |
-| 30-day full-resolution retention | | Included |
-| **Total** | | **~$5,375/month** |
+| Line item                                                                | Calculation       | Monthly cost      |
+| :----------------------------------------------------------------------- | :---------------- | :---------------- |
+| Platform fee                                                             | Flat rate         | $250              |
+| Metrics                                                                  | 7,500M × $0.10/M  | $750              |
+| Logs                                                                     | 10,000M × $0.25/M | $2,500            |
+| Traces                                                                   | 7,500M × $0.25/M  | $1,875            |
+| All features ([APM](https://base14.io/scout/apm), logs, traces, metrics) |                   | Included          |
+| Unlimited seats (20 engineers)                                           |                   | Included          |
+| 30-day full-resolution retention                                         |                   | Included          |
+| **Total**                                                                |                   | **~$5,375/month** |
 
 No egress fees. No infrastructure to run. No feature add-ons.
 No per-seat charges at any team size.
 
 Against published list pricing with full indexing, the gap is
 ~$370K/year. The spread narrows with negotiated discounts and
-partial indexing, but the structural advantage — no per-host fees,
-no dual-cost logging, no indexing tax — holds regardless.
+partial indexing, but the structural advantage - no per-host fees,
+no dual-cost logging, no indexing tax - holds regardless.
 
 [See the full pricing breakdown](https://base14.io/pricing) to model
 your own infrastructure.
@@ -373,7 +441,7 @@ compounding costs:
 
 The consolidation math is straightforward. When teams run separate
 tools for APM, log management, metrics, and incident management,
-overlapping licensing alone can run into thousands per month —
+overlapping licensing alone can run into thousands per month -
 before counting the engineering overhead of keeping them connected.
 
 During audits, teams often find significant unused capacity in
@@ -387,7 +455,7 @@ biggest cost drivers are organizational.
 
 ### Unlimited seats: no per-user pricing
 
-When platforms charge per seat, organizations limit access —
+When platforms charge per seat, organizations limit access -
 senior engineers get full dashboards, junior developers request
 access through tickets, and product managers can't see
 performance data at all.
@@ -434,7 +502,7 @@ making your telemetry pipeline portable. You're building on a
 by design, which means you can evaluate alternatives without
 touching application code.
 
-That portability is the ultimate cost lever — permanent
+That portability is the ultimate cost lever - permanent
 negotiating power over every vendor you'll ever work with.
 
 base14 Scout is built on OpenTelemetry - no proprietary agents, no
@@ -500,7 +568,7 @@ matters. Look for platforms that let you adopt step by step:
 4. Migrate service by service, not all at once
 
 For a 50-host environment, expect about a week from first
-collector to full parallel operation. At 200 hosts, 2-3 weeks —
+collector to full parallel operation. At 200 hosts, 2-3 weeks -
 the collector rollout is fast, but dashboard recreation and alert
 parity take longer at scale.
 
@@ -510,13 +578,13 @@ backend. Data flows.
 
 ## Observability cost optimization at a glance
 
-| Approach | What it does | Risk |
-| :--- | :--- | :--- |
-| Filter at source | Cuts log volume 70-80% | Loses debug data needed in incidents |
-| Reduce cardinality | Lowers metric costs | Loses per-user drill-down |
-| Shorten retention | Saves storage costs | Blinds you to slow-burn issues |
-| Consolidate tools | Cuts overlapping licenses | Migration effort required |
-| **Switch pricing model** | **Up to ~$370K/year savings (see math above)** | **None: keep all data, all access** |
+| Approach                 | What it does                                   | Risk                                 |
+| :----------------------- | :--------------------------------------------- | :----------------------------------- |
+| Filter at source         | Cuts log volume 70-80%                         | Loses debug data needed in incidents |
+| Reduce cardinality       | Lowers metric costs                            | Loses per-user drill-down            |
+| Shorten retention        | Saves storage costs                            | Blinds you to slow-burn issues       |
+| Consolidate tools        | Cuts overlapping licenses                      | Migration effort required            |
+| **Switch pricing model** | **Up to ~$370K/year savings (see math above)** | **None: keep all data, all access**  |
 
 ## FAQ
 
@@ -578,7 +646,7 @@ significantly on top of direct fees.
 ## The pricing model is the optimization
 
 Every conventional guide teaches you to work around your pricing
-model — filter harder, sample more aggressively, retain less data,
+model - filter harder, sample more aggressively, retain less data,
 limit seats. These strategies accept a broken incentive structure
 and ask you to absorb its costs.
 

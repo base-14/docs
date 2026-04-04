@@ -260,3 +260,7 @@ significantly less painful
 _Thanks for reading. If you're in the process of evaluating or implementing
 unified observability for your team, I'd love to hear about your experience. The
 patterns I've described are common, but every team's journey is unique._
+
+## Related reading
+
+- [Observability Cost Optimization: Beyond Volume Discounts](/observability-cost-optimization/)

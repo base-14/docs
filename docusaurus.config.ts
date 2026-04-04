@@ -338,6 +338,27 @@ const config: Config = {
             },
           ],
         },
+        {
+          title: "Compare",
+          items: [
+            {
+              label: "Datadog Alternative",
+              to: "/datadog-alternative/",
+            },
+            {
+              label: "New Relic Alternative",
+              to: "/new-relic-alternative/",
+            },
+            {
+              label: "CloudWatch Alternative",
+              to: "/cloudwatch-alternative/",
+            },
+            {
+              label: "Cost Optimization Guide",
+              to: "/observability-cost-optimization/",
+            },
+          ],
+        },
       ],
       copyright: `Copyright © ${new Date().getFullYear()} base14, Inc. All rights reserved.`,
     },

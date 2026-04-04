@@ -156,6 +156,10 @@ no setup required.
   Applying vendor-neutral principles to your monitoring stack
 * [Observability Theatre][theatre] —
   The cost of fragmented tooling and how to escape it
+* [CloudWatch Alternative][cloudwatch] —
+  Why multi-cloud teams outgrow CloudWatch
+
+[cloudwatch]: /cloudwatch-alternative/
 
 [foundation]: /blog/cloud-native-foundation-layer
 [unified]: /blog/unified-observability

@@ -151,3 +151,4 @@ Want to see how unified observability reduces MTTR?
 
 * [Effective War Room Management](/blog/effective-warroom-management/)
 * [Making Certificate Expiry Boring](/blog/make-certificate-expiry-boring/)
+* [The Datadog Alternative That Doesn't Charge Per Host](/datadog-alternative/)

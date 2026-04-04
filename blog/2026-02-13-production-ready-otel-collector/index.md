@@ -525,3 +525,9 @@ For detailed reference on each topic covered here, see the
 
 Need help hardening your collector setup?
 [Book a 15-minute demo](https://base14.io/contact), no setup required.
+
+## Related reading
+
+- [The Datadog Alternative That Doesn't Charge Per Host](/datadog-alternative/)
+- [New Relic Alternative: Unlimited Users, Signal-Based Pricing](/new-relic-alternative/)
+- [CloudWatch Alternative: Unified Observability Beyond AWS](/cloudwatch-alternative/)
