@@ -1,30 +1,22 @@
 ---
-draft: true
-slug: datadog-alternative
-date: 2026-03-25
 title: "The Datadog Alternative That Doesn't Charge Per Host"
 description: "Compare Datadog vs base14 Scout with real pricing math for 100 K8s hosts. Signal-based pricing, zero sampling, OTel-native. No per-host fees."
-authors: [nilakanta-mallick]
-tags: [datadog alternative, observability, signal-based pricing, OpenTelemetry, cost comparison]
-keywords:
-  - datadog alternative
-  - datadog replacement
-  - cheaper than datadog
-  - switch from datadog to opentelemetry
-  - datadog cost reduction
-head:
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How long does migration from Datadog take?","acceptedAnswer":{"@type":"Answer","text":"4-6 weeks for a typical mid-size team. base14's onboarding team handles the heavy lifting during the first month (free)."}},{"@type":"Question","name":"Can I run base14 and Datadog in parallel?","acceptedAnswer":{"@type":"Answer","text":"Yes. OTel Collectors support multiple exporters. Run both platforms simultaneously until your team is confident in Scout."}},{"@type":"Question","name":"What about Datadog's 600+ integrations?","acceptedAnswer":{"@type":"Answer","text":"Most modern infrastructure and application frameworks support OpenTelemetry natively. For services that don't, the OTel Collector has receivers for common data sources."}},{"@type":"Question","name":"Is base14 enterprise-ready?","acceptedAnswer":{"@type":"Answer","text":"Yes. SOC 2 Type II and ISO 27001 compliant. BYOC (Bring Your Own Cloud) deployment available on AWS, GCP, and Azure. Data residency options included."}},{"@type":"Question","name":"How does Scout pricing work?","acceptedAnswer":{"@type":"Answer","text":"You pay a $250/month platform fee plus usage: $0.10 per million metrics and $0.25 per million logs and traces. No throttling, no sampling, no surprise tier changes. The pricing is linear and predictable."}},{"@type":"Question","name":"Does Scout support alerting and dashboards?","acceptedAnswer":{"@type":"Answer","text":"Yes. Custom dashboards, alerting rules, and SLO tracking are included for all customers. No feature gating based on plan tier."}},{"@type":"Question","name":"What is the best Datadog alternative for mid-size teams?","acceptedAnswer":{"@type":"Answer","text":"base14 Scout is built for mid-size engineering teams (50-200 engineers) who need full observability without per-host pricing. Signal-based pricing keeps costs predictable as you scale."}},{"@type":"Question","name":"How much cheaper is base14 Scout than Datadog?","acceptedAnswer":{"@type":"Answer","text":"For a 100-host Kubernetes team with 430GB/day of logs, 7.5B metrics, and 7.5B trace spans/month, Scout costs ~$5,375/month. Datadog's published list pricing for the same profile comes to ~$23,700/month, though actual costs vary with contract terms."}}]}
 ---
+
+import Head from '@docusaurus/Head';
+
+<Head>
+  <meta name="keywords" content="datadog alternative, datadog replacement, cheaper than datadog, switch from datadog to opentelemetry, datadog cost reduction" />
+  <script type="application/ld+json">{JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How long does migration from Datadog take?","acceptedAnswer":{"@type":"Answer","text":"4-6 weeks for a typical mid-size team. base14's onboarding team handles the heavy lifting during the first month (free)."}},{"@type":"Question","name":"Can I run base14 and Datadog in parallel?","acceptedAnswer":{"@type":"Answer","text":"Yes. OTel Collectors support multiple exporters. Run both platforms simultaneously until your team is confident in Scout."}},{"@type":"Question","name":"What about Datadog's 600+ integrations?","acceptedAnswer":{"@type":"Answer","text":"Most modern infrastructure and application frameworks support OpenTelemetry natively. For services that don't, the OTel Collector has receivers for common data sources."}},{"@type":"Question","name":"Is base14 enterprise-ready?","acceptedAnswer":{"@type":"Answer","text":"Yes. SOC 2 Type II and ISO 27001 compliant. BYOC (Bring Your Own Cloud) deployment available on AWS, GCP, and Azure. Data residency options included."}},{"@type":"Question","name":"How does Scout pricing work?","acceptedAnswer":{"@type":"Answer","text":"You pay a $250/month platform fee plus usage: $0.10 per million metrics and $0.25 per million logs and traces. No throttling, no sampling, no surprise tier changes. The pricing is linear and predictable."}},{"@type":"Question","name":"Does Scout support alerting and dashboards?","acceptedAnswer":{"@type":"Answer","text":"Yes. Custom dashboards, alerting rules, and SLO tracking are included for all customers. No feature gating based on plan tier."}},{"@type":"Question","name":"What is the best Datadog alternative for mid-size teams?","acceptedAnswer":{"@type":"Answer","text":"base14 Scout is built for mid-size engineering teams (50-200 engineers) who need full observability without per-host pricing. Signal-based pricing keeps costs predictable as you scale."}},{"@type":"Question","name":"How much cheaper is base14 Scout than Datadog?","acceptedAnswer":{"@type":"Answer","text":"For a 100-host Kubernetes team with 430GB/day of logs, 7.5B metrics, and 7.5B trace spans/month, Scout costs ~$5,375/month. Datadog's published list pricing with full indexing comes to ~$36,270/month. Most teams index less to control costs, but that means less data available during incidents."}}]})}</script>
+</Head>
 
 > **TL;DR:** base14 Scout is an OpenTelemetry-native observability
 > platform with signal-based pricing ($250/month platform fee +
 > $0.10/M metrics + $0.25/M logs and traces). No per-host fees,
 > zero sampling, 30-day default retention with affordable extended
-> retention. A 100-host Kubernetes team paying ~$23,700/month on
-> Datadog (published pricing) typically pays ~$5,375/month on Scout.
+> retention. A 100-host Kubernetes team paying ~$36,270/month on
+> Datadog with full indexing (published pricing) typically pays
+> ~$5,375/month on Scout.
 
 Your Datadog bill just doubled. Nobody changed anything. No new
 services, no new team members, no spike in traffic. But somewhere
@@ -32,8 +24,6 @@ between custom metrics from an integration you forgot you installed
 and high-water mark billing that counted last Tuesday's load test
 as your "sustained peak," your observability budget quietly became
 your second-largest infrastructure cost.
-
-<!--truncate-->
 
 If Datadog pricing feels too expensive for what you actually use,
 you're not imagining things. You're not the first team to stare at
@@ -61,17 +51,17 @@ Here's how the bill compounds:
 | Custom metrics | $1/100 metrics/month (beyond included) |
 | Synthetics | $5-12/1000 test runs |
 
-*Pricing as of March 2026. Based on publicly listed rates, annual
-billing. Verify at
-[datadoghq.com/pricing](https://www.datadoghq.com/pricing/).
-Actual costs vary based on contract terms and volume.*
+*Pricing as of March 2026. Published rates at
+[datadoghq.com/pricing](https://www.datadoghq.com/pricing/),
+annual billing. Contract pricing varies, but the billing
+mechanics work the same way.*
 
 The total cost of logging runs approximately $1.41/GB when you
-account for both ingestion and indexing (assuming ~770K events/GB,
-i.e. average log line ~1.3 KB). Smaller logs increase the
-events-per-GB ratio and the effective rate. But the real surprises
-come from three billing mechanics that aren't obvious until you get
-the invoice:
+account for both ingestion and indexing, assuming roughly 770K
+events per GB (average log line of ~1.3 KB). Smaller logs increase
+the events-per-GB ratio and the effective rate. But the real
+surprises come from three billing mechanics that aren't obvious
+until you get the invoice:
 
 #### High-water mark billing
 
@@ -93,11 +83,10 @@ don't realize this until the bill arrives with two line items for
 what feels like the same data.
 
 When a mid-stage fintech team hit 80 hosts and 300GB of daily
-logs, their Datadog bill crossed $18,000/month. They'd budgeted
-$8,000. The gap wasn't caused by growth; it was caused by billing
-mechanics they hadn't modeled. The dual-cost logging (ingestion +
-indexing) on 300GB/day alone was responsible for the bulk of the
-overage they never anticipated.
+logs, their Datadog bill crossed $18,000/month against a budget
+of $8,000. The gap wasn't caused by growth — it was caused by
+billing mechanics they hadn't modeled, with dual-cost logging on
+300GB/day responsible for the bulk of the overage.
 
 ### Vendor lock-in through proprietary agents
 
@@ -193,7 +182,7 @@ Stack traces. Request metadata. User IDs. All make your bill
 bigger. So teams strip context to save money, which makes their
 observability less useful exactly when they need it most.
 
-[Signal-based pricing](/blog/observability-cost-optimization) works
+[Signal-based pricing](/observability-cost-optimization) works
 differently. A signal is one telemetry event: a log line, a metric
 data point, a trace span. You pay $0.10 per million metrics and
 $0.25 per million logs and traces, regardless of size.
@@ -230,10 +219,13 @@ simply doesn't exist.
 
 When a logistics platform team investigated a payment bug affecting
 0.3% of transactions, they couldn't find the traces in Datadog
-APM. Sampling had discarded them. They spent four hours reproducing
-the issue in staging just to generate new traces. With zero
-sampling, those traces would have been in Scout, queryable
-immediately.
+APM because sampling had discarded them. What followed wasn't a
+four-hour fix but a full-shift investigation: reproducing the issue
+in staging, cross-referencing fragmentary logs, an executive
+review, and customer credits for the extended resolution time.
+
+With zero sampling, those traces would have been in Scout,
+queryable immediately.
 
 Scout's zero-sampling friendly architecture is possible because of
 purpose-built storage that achieves significantly better efficiency
@@ -303,21 +295,29 @@ Let's do the math that no other Datadog alternative page shows you.
 | Line item | Calculation | Monthly cost |
 | :--- | :--- | :--- |
 | Infrastructure (Enterprise) | 100 hosts × $23/host | $2,300 |
-| APM | 100 hosts × $31/host | $3,100 |
+| APM (base) | 100 hosts × $31/host | $3,100 |
+| APM indexed span overage | (7,500M - 100M included) × $1.70/M | $12,580 |
 | Log ingestion | 12,900 GB × $0.10 | $1,290 |
 | Log indexing (15-day) | 10,000M events × $1.70/M | $17,000 |
 | Custom metrics | Within included (100 × 200 = 20K) | $0 |
-| **Monthly total** | | **~$23,700** |
-| **Annual total** | | **~$284,280** |
+| **Monthly total (full indexing)** | | **~$36,270** |
+| **Annual total** | | **~$435,240** |
 
-*Pricing as of March 2026. Based on
-[Datadog published pricing](https://www.datadoghq.com/pricing/),
-annual billing. Actual costs vary based on contract terms and
-volume.*
+Most teams index 20-30% of logs and a fraction of spans to control
+costs — bringing this closer to ~$15,400/month, but making most
+data unsearchable during incidents.
 
-**How we calculated log events:** 430 GB/day ÷ 1.3 KB average =
-~333M log lines/day × 30 = ~10,000M indexed events/month.
-Monthly ingestion: 430 × 30 = 12,900 GB.
+*Pricing as of March 2026. Published rates at
+[datadoghq.com/pricing](https://www.datadoghq.com/pricing/),
+annual billing. Negotiated discounts lower the total but don't
+change the billing structure.*
+
+**How we calculated log events:** 430 GB/day ÷ 1.3 KB average
+(observed median across containerized workloads) = ~333M log
+lines/day × 30 = ~10,000M indexed events/month. Monthly
+ingestion: 430 × 30 = 12,900 GB. APM includes 1M indexed
+spans/host/month; 100 hosts = 100M included, leaving 7,400M
+in overage.
 
 **How we calculated metrics:** Datadog bundles infrastructure and
 Kubernetes metrics into the per-host fee. Only custom metrics
@@ -352,13 +352,14 @@ the signal math for the same 100-host profile:
 | **Monthly total** | | **~$5,375** |
 | **Annual total** | | **~$64,500** |
 
+No egress fees. No infrastructure to run. No feature add-ons.
+No per-seat charges at any team size.
+
 That's transparent math you can verify. No per-host multipliers
-and no dual-cost logging. For this profile based on published list
-pricing, the annual difference is ~$220,000. Actual Datadog costs
-vary based on contract terms, committed spend, and negotiated
-agreements - but the structural pricing difference remains: Scout
-charges per signal regardless of type, while Datadog layers host
-fees, ingestion fees, and indexing fees separately.
+and no dual-cost logging. Your negotiated Datadog rate may be
+lower than list — the structural difference stays: Scout charges
+per signal, Datadog layers host fees, ingestion fees, and
+indexing fees separately.
 
 ### Estimating your signal count from a Datadog bill
 
@@ -544,11 +545,11 @@ enterprise vendors charge extra for.
 
 For a 100-host Kubernetes team with 430GB/day of logs, 7.5B
 metrics, and 7.5B trace spans/month, Scout costs ~$5,375/month.
-Datadog's published list pricing for the same profile comes to
-~$23,700/month, though actual costs vary with contract terms. The
-structural difference comes from Scout's flat per-signal pricing
-versus Datadog's layered host fees, ingestion fees, and indexing
-fees.
+Datadog's published list pricing with full indexing comes to
+~$36,270/month. Most teams index less to control costs, but that
+means less data available during incidents. The structural
+difference is Scout's flat per-signal pricing versus Datadog's
+layered host fees, ingestion fees, and indexing fees.
 
 ## Start evaluating your Datadog alternative
 
@@ -574,8 +575,8 @@ systems. Not become another system you have to manage.
 
 ## Related reading
 
-- [New Relic alternative: observability without the seat tax](/blog/new-relic-alternative)
-- [CloudWatch alternative: unified observability beyond AWS](/blog/cloudwatch-alternative)
-- [Observability cost optimization: why the pricing model matters more than your data volume](/blog/observability-cost-optimization)
+- [New Relic alternative: observability without the seat tax](/new-relic-alternative)
+- [CloudWatch alternative: unified observability beyond AWS](/cloudwatch-alternative)
+- [Observability cost optimization: why the pricing model matters more than your data volume](/observability-cost-optimization)
 - [The problem with observability theatre](/blog/observability-theatre)
 - [Multi-cloud design and vendor neutrality](/blog/multi-cloud-design)

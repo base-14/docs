@@ -1,25 +1,14 @@
 ---
-draft: true
-slug: cloudwatch-alternative
-date: 2026-03-29
 title: "CloudWatch alternative: unified observability beyond AWS"
 description: "Replace AWS CloudWatch with signal-based pricing ($250/mo + $0.10/M metrics + $0.25/M logs & traces). Multi-cloud, zero-sampling friendly, 30-day retention."
-authors: [nilakanta-mallick]
-tags: [CloudWatch, AWS, observability, OpenTelemetry, monitoring, multi-cloud, pricing]
-keywords:
-  - cloudwatch alternative
-  - aws cloudwatch alternative
-  - cloudwatch replacement
-  - cloudwatch pricing too expensive
-  - aws monitoring beyond cloudwatch
-  - cloudwatch limitations multi-cloud
-  - aws observability without cloudwatch
-head:
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Can base14 pull existing CloudWatch metrics?","acceptedAnswer":{"@type":"Answer","text":"The OTel Collector has a CloudWatch receiver that can pull existing CloudWatch metrics and forward them to Scout. This lets you keep historical continuity during migration."}},{"@type":"Question","name":"How long does migration take?","acceptedAnswer":{"@type":"Answer","text":"4-6 weeks for a typical mid-size team. base14's onboarding team handles dashboard recreation, alert setup, and collector configuration during the first month (free)."}},{"@type":"Question","name":"What about CloudWatch Alarms and Auto Scaling triggers?","acceptedAnswer":{"@type":"Answer","text":"Keep CloudWatch for AWS-native triggers. Use Scout for observability. They coexist naturally. CloudWatch Alarms firing Auto Scaling actions don't require CloudWatch to be your primary monitoring tool."}},{"@type":"Question","name":"Is base14 enterprise-ready?","acceptedAnswer":{"@type":"Answer","text":"Yes. SOC 2 Type II and ISO 27001 compliant. BYOC deployment on AWS, GCP, and Azure. Data residency options and custom SLAs available."}},{"@type":"Question","name":"How does Scout pricing work?","acceptedAnswer":{"@type":"Answer","text":"You pay a $250/month platform fee plus usage: $0.10 per million metrics and $0.25 per million logs and traces. No throttling, no sampling kicks in, no surprise tier changes. Linear, predictable pricing."}},{"@type":"Question","name":"What is the best CloudWatch alternative for multi-cloud teams?","acceptedAnswer":{"@type":"Answer","text":"base14 Scout is built for teams running infrastructure across AWS, GCP, Azure, or on-prem. It replaces CloudWatch, X-Ray, and GCP Cloud Monitoring with a single unified platform. OpenTelemetry-native, so your instrumentation works across any cloud provider."}},{"@type":"Question","name":"How much cheaper is base14 Scout than CloudWatch?","acceptedAnswer":{"@type":"Answer","text":"For a 70-host multi-cloud team (50 AWS + 20 GCP) with 300 GB/day of logs, 5.25B trace spans, and 5.25B metric data points/month, CloudWatch costs ~$5,786/month for the AWS portion alone (growing with storage accumulation). Scout costs ~$3,838/month covering both clouds. That's ~$23,400 in annual savings before accounting for GCP monitoring costs."}}]}
 ---
+
+import Head from '@docusaurus/Head';
+
+<Head>
+  <meta name="keywords" content="cloudwatch alternative, aws cloudwatch alternative, cloudwatch replacement, cloudwatch pricing too expensive, aws monitoring beyond cloudwatch, cloudwatch limitations multi-cloud, aws observability without cloudwatch" />
+  <script type="application/ld+json">{JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Can base14 pull existing CloudWatch metrics?","acceptedAnswer":{"@type":"Answer","text":"The OTel Collector has a CloudWatch receiver that can pull existing CloudWatch metrics and forward them to Scout. This lets you keep historical continuity during migration."}},{"@type":"Question","name":"How long does migration take?","acceptedAnswer":{"@type":"Answer","text":"4-6 weeks for a typical mid-size team. base14's onboarding team handles dashboard recreation, alert setup, and collector configuration during the first month (free)."}},{"@type":"Question","name":"What about CloudWatch Alarms and Auto Scaling triggers?","acceptedAnswer":{"@type":"Answer","text":"Keep CloudWatch for AWS-native triggers. Use Scout for observability. They coexist naturally. CloudWatch Alarms firing Auto Scaling actions don't require CloudWatch to be your primary monitoring tool."}},{"@type":"Question","name":"Is base14 enterprise-ready?","acceptedAnswer":{"@type":"Answer","text":"Yes. SOC 2 Type II and ISO 27001 compliant. BYOC deployment on AWS, GCP, and Azure. Data residency options and custom SLAs available."}},{"@type":"Question","name":"How does Scout pricing work?","acceptedAnswer":{"@type":"Answer","text":"You pay a $250/month platform fee plus usage: $0.10 per million metrics and $0.25 per million logs and traces. No throttling, no sampling kicks in, no surprise tier changes. Linear, predictable pricing."}},{"@type":"Question","name":"What is the best CloudWatch alternative for multi-cloud teams?","acceptedAnswer":{"@type":"Answer","text":"base14 Scout is built for teams running infrastructure across AWS, GCP, Azure, or on-prem. It replaces CloudWatch, X-Ray, and GCP Cloud Monitoring with a single unified platform. OpenTelemetry-native, so your instrumentation works across any cloud provider."}},{"@type":"Question","name":"How much cheaper is base14 Scout than CloudWatch?","acceptedAnswer":{"@type":"Answer","text":"For a 70-host multi-cloud team (50 AWS + 20 GCP) with 300 GB/day of logs, 5.25B trace spans, and 5.25B metric data points/month, CloudWatch costs ~$5,786/month for the AWS portion alone (growing with storage accumulation). Scout costs ~$3,838/month covering both clouds. That's ~$23,400 in annual savings before accounting for GCP monitoring costs."}}]})}</script>
+</Head>
 
 > **TL;DR:** base14 Scout is a multi-cloud observability platform
 > that replaces CloudWatch, X-Ray, and fragmented AWS dashboards.
@@ -44,8 +33,6 @@ If you're searching for an AWS CloudWatch alternative, you've
 probably hit a version of this ceiling. CloudWatch works for what
 it monitors. The problem is everything it doesn't: anything that
 isn't AWS.
-
-<!--truncate-->
 
 This page covers the structural reasons engineering teams outgrow
 CloudWatch, the real cost of CloudWatch's pricing model (it's
@@ -120,21 +107,17 @@ actually looks like after six months:
 Teams often discover this when preparing quarterly budgets. With
 default retention set to "Never expire" (CloudWatch's default),
 the actual bill after six months can be several times the
-initial estimate.
+initial estimate — because nobody changed the retention policy
+and the storage charges had been growing silently since day one.
 
-Nobody had changed the retention policy because nobody knew it
-mattered. The storage charges had been growing silently since day
-one.
-
-The per-query charge creates a subtler problem: it puts a price
+The per-query charge creates a subtler problem by putting a price
 tag on investigation. At $0.005/GB scanned, every debugging
-session costs money. Engineers start self-censoring - running
-fewer queries, scanning smaller time windows, avoiding
-exploratory analysis. The financial incentive works against the
-behavior you want during incidents: broad, fast, thorough
-investigation.
+session costs money, so engineers start self-censoring — running
+fewer queries, scanning smaller time windows, avoiding exploratory
+analysis. The financial incentive works against exactly the
+behavior you want during incidents.
 
-Scout's [signal-based pricing](/blog/observability-cost-optimization)
+Scout's [signal-based pricing](/observability-cost-optimization)
 works differently: $250/month platform fee plus $0.10/M metrics
 and $0.25/M logs & traces. Storage and queries? Included. No
 triple-charge, no meter running while your team debugs.
@@ -177,10 +160,12 @@ CloudWatch charges $0.30/month per custom metric for the first
 CloudWatch counts metrics.
 
 Every unique combination of metric name, namespace, and dimension
-values is a separate billable metric. Add a single high-cardinality
-tag (like `user_id` or `request_id`) and one metric becomes
-thousands. A team with 50 services, each emitting 20 metrics across
-5 environments and 3 regions, can easily generate 15,000+ custom
+values is a separate billable metric. Adding a single
+high-cardinality tag like `user_id` or `request_id` turns one
+metric into thousands.
+
+A team with 50 services emitting 20 metrics each across 5
+environments and 3 regions can easily reach 15,000+ custom
 metrics, costing $4,500/month in metric charges alone.
 
 ### Dashboard and alerting limitations
@@ -233,9 +218,9 @@ a single data lake with one query surface.
 
 ### Signal-based pricing
 
-$250/month platform fee. $0.10 per million metrics, $0.25 per
-million logs and traces. No per-host pricing, no per-seat pricing,
-no triple-charge logging.
+[$250/month platform fee](https://base14.io/pricing). $0.10 per
+million metrics, $0.25 per million logs and traces. No per-host
+pricing, no per-seat pricing, no triple-charge logging.
 
 A signal is a single telemetry event: a log line, a metric point,
 a trace span. The price depends on signal type, not size. Adding
@@ -362,10 +347,11 @@ traces/month.
 | **Monthly total** | | **~$5,786** |
 | **Annual total** | | **~$69,432** |
 
-*Pricing as of March 2026. Based on publicly listed rates at
+*Pricing as of March 2026. Published rates at
 [aws.amazon.com/cloudwatch/pricing](https://aws.amazon.com/cloudwatch/pricing/),
-US East (N. Virginia). Other regions may vary. Actual costs vary
-based on contract terms and volume.*
+US East (N. Virginia). Other regions may vary. AWS enterprise
+agreements may discount these rates, but the triple-charge
+structure remains.*
 
 **Storage accumulates.** CloudWatch's default retention is "Never
 expire." After 12 months, log storage climbs to ~$324/month
@@ -381,7 +367,8 @@ Scout covers both clouds in a single bill. Every telemetry signal
 is metered - including infrastructure metrics from both AWS and
 GCP hosts.
 
-- **Logs**: 300 GB/day at ~1.3 KB avg = ~231M logs/day =
+- **Logs**: 300 GB/day at ~1.3 KB avg (observed median across
+  containerized workloads) = ~231M logs/day =
   ~7,000M log signals/month
 - **Metrics**: ~1,185 time series per host × 70 hosts at blended
   60s/30s scrape = ~5,250M data points/month
@@ -399,6 +386,9 @@ GCP hosts.
 | SRE partnership | Included | $0 |
 | **Monthly total** | | **~$3,838** |
 | **Annual total** | | **~$46,056** |
+
+No egress fees. No infrastructure to run. No feature add-ons.
+No per-seat charges at any team size.
 
 CloudWatch (AWS only): ~$69,432/year. Scout (both clouds):
 ~$46,056/year. That's ~$23,400 in annual savings - and Scout
@@ -533,10 +523,10 @@ base14's [SOC 2 Type II and ISO 27001 compliance](https://base14.io/security),
 BYOC deployment, and data residency controls mean you don't need a
 separate compliance project to adopt a new observability platform.
 
-Teams that make the switch typically see the cost impact within the
-first month. The savings from eliminating triple-charge logging and
-cumulative storage often free up budget for actual engineering
-investment. Understanding
+Teams that make the switch typically see the cost impact within
+the first month, as the savings from eliminating triple-charge
+logging and cumulative storage often free up budget for actual
+engineering investment. Understanding
 [what factors influence MTTR](/blog/factors-influencing-mttr)
 helps set realistic expectations for the operational improvements
 that follow.
@@ -613,9 +603,8 @@ monitoring should grow with it. Not fight against it.
 
 ## Related reading
 
-- [The Datadog alternative that doesn't charge per host](/blog/datadog-alternative)
-- [New Relic alternative: observability without the seat tax](/blog/new-relic-alternative)
-
-- [Observability cost optimization: why the pricing model matters more than your data volume](/blog/observability-cost-optimization)
+- [The Datadog alternative that doesn't charge per host](/datadog-alternative)
+- [New Relic alternative: observability without the seat tax](/new-relic-alternative)
+- [Observability cost optimization: why the pricing model matters more than your data volume](/observability-cost-optimization)
 - [The problem with observability theatre](/blog/observability-theatre)
 - [Multi-cloud design and vendor neutrality](/blog/multi-cloud-design)
