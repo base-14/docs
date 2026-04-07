@@ -1,0 +1,10 @@
+{
+  "label": "Reference",
+  "position": 5,
+  "collapsed": true,
+  "link": {
+    "type": "generated-index",
+    "title": "Scout CLI Reference",
+    "description": "Environment variables, configuration files, and global flags for the Scout CLI."
+  }
+}

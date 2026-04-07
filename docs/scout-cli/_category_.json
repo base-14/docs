@@ -1,0 +1,9 @@
+{
+  "label": "Scout CLI",
+  "position": 3,
+  "collapsed": false,
+  "link": {
+    "type": "doc",
+    "id": "scout-cli/index"
+  }
+}
