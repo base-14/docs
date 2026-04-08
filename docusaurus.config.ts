@@ -386,6 +386,21 @@ const config: Config = {
         "jsx",
         "tsx",
       ],
+      magicComments: [
+        {
+          className: "theme-code-block-highlighted-line",
+          line: "highlight-next-line",
+          block: { start: "highlight-start", end: "highlight-end" },
+        },
+        {
+          className: "code-line-error",
+          line: "error-line",
+        },
+        {
+          className: "code-line-warning",
+          line: "warning-line",
+        },
+      ],
       theme: prismThemes.vsLight,
       darkTheme: prismThemes.dracula,
     },
