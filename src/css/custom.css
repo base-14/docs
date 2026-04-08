@@ -1551,4 +1551,29 @@ code {
   background: var(--ifm-menu-color-background-hover);
 }
 
+/* ========================================
+   Code block error/warning line highlights
+   ======================================== */
+.code-line-error {
+  background-color: rgba(255, 0, 0, 0.1);
+  border-left: 3px solid #e53e3e;
+  display: block;
+}
+
+.code-line-warning {
+  background-color: rgba(221, 160, 0, 0.1);
+  border-left: 3px solid #d69e2e;
+  display: block;
+}
+
+[data-theme="dark"] .code-line-error {
+  background-color: rgba(254, 178, 178, 0.1);
+  border-left-color: #fc8181;
+}
+
+[data-theme="dark"] .code-line-warning {
+  background-color: rgba(246, 224, 94, 0.1);
+  border-left-color: #f6e05e;
+}
+
 
