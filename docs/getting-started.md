@@ -46,6 +46,13 @@ for a quick win and a clear next step.
 - [Kubernetes](/instrument/collector-setup/kubernetes-helm-setup)
 - [Docker](/instrument/collector-setup/docker-compose-example)
 
+## I want to use the CLI
+
+- [Install Scout CLI](/scout-cli/installation)
+- [Generate an OTel Collector config](/scout-cli/open-source/config-init)
+- [Validate a collector config](/scout-cli/open-source/config-validate)
+- [Query logs, traces, and metrics](/scout-cli/platform/logs)
+
 ## I want CI/CD observability
 
 - [GitHub Actions Observability](/guides/cicd-observability/github-actions-observability)

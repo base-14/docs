@@ -1,0 +1,10 @@
+{
+  "label": "Open Source Commands",
+  "position": 4,
+  "collapsed": false,
+  "link": {
+    "type": "generated-index",
+    "title": "Open Source Commands",
+    "description": "Offline commands for validating, generating, and testing OpenTelemetry Collector configurations. No Scout backend required."
+  }
+}
