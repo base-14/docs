@@ -30,7 +30,7 @@ scout status [flags]
 | Flag | Type | Default | Description |
 |------|------|---------|-------------|
 | `--raw` | bool | `false` | Output JSON |
-| `--check` | bool | `false` | Verify the active token with a live API call to the Keycloak userinfo endpoint |
+| `--check` | bool | `false` | Verify the active token with a live API call to the auth server userinfo endpoint |
 
 ## Examples
 

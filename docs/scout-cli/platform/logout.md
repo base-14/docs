@@ -4,7 +4,7 @@ sidebar_label: logout
 sidebar_position: 2
 description:
   Remove stored Scout credentials for one or all accounts. Optionally revokes
-  the Keycloak session.
+  the authentication session.
 keywords:
   - scout logout
   - remove credentials
@@ -14,8 +14,8 @@ keywords:
 
 # scout logout
 
-Remove stored credentials for a specific account or all accounts. If a Keycloak
-session is active, the command attempts to revoke it.
+Remove stored credentials for a specific account or all accounts. If an
+authentication session is active, the command attempts to revoke it.
 
 ![scout logout demo](/img/scout-cli/11-logout.gif)
 
@@ -61,7 +61,7 @@ command prompts you to select an account interactively.
 ## Behavior
 
 - Removes credentials from the system keychain (or `~/.scout/credentials.json`)
-- Attempts Keycloak session revocation (best-effort — succeeds even if the
+- Attempts auth session revocation (best-effort — succeeds even if the
   server is unreachable)
 - Keeps profile configuration intact so you can re-authenticate later
 - Shows remaining available sessions after logout

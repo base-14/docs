@@ -21,8 +21,8 @@ environment variables when both are set.
 
 | Variable | Description | Default | Used By |
 |----------|-------------|---------|---------|
-| `SCOUT_ACCOUNT_SLUG` | Default account slug (Keycloak realm) | — | [login](../platform/login.md) |
-| `SCOUT_AUTH_URL` | Keycloak server URL | `https://id.base14.io` | [login](../platform/login.md) |
+| `SCOUT_ACCOUNT_SLUG` | Default account slug | — | [login](../platform/login.md) |
+| `SCOUT_AUTH_URL` | Authentication server URL | `https://id.base14.io` | [login](../platform/login.md) |
 
 ## API
 

@@ -4,13 +4,12 @@ sidebar_label: login
 sidebar_position: 1
 description:
   Authenticate with the Scout platform using OAuth2. Opens a browser for
-  Keycloak-based PKCE authentication and stores credentials locally.
+  PKCE authentication and stores credentials locally.
 keywords:
   - scout login
   - scout authentication
   - oauth2 pkce
   - scout cli auth
-  - keycloak login
 ---
 
 # scout login
@@ -31,8 +30,8 @@ scout login --account <SLUG> [flags]
 
 | Flag | Type | Default | Description |
 |------|------|---------|-------------|
-| `--account` | string | *(required)* | Account slug (Keycloak realm). Env: `SCOUT_ACCOUNT_SLUG` |
-| `--auth-url` | string | `https://id.base14.io` | Keycloak server URL. Env: `SCOUT_AUTH_URL` |
+| `-a, --account` | string | *(required)* | Account slug. Env: `SCOUT_ACCOUNT_SLUG` |
+| `--auth-url` | string | `https://id.base14.io` | Authentication server URL. Env: `SCOUT_AUTH_URL` |
 | `--force` | bool | `false` | Re-authenticate even if a valid session exists |
 
 ## Examples
@@ -64,7 +63,7 @@ scout login
 
 ## How It Works
 
-1. Validates the account realm exists on the Keycloak server
+1. Validates the account exists on the authentication server
 2. Starts a local HTTP listener for the OAuth2 callback
 3. Opens your browser to the authorization URL
 4. Exchanges the authorization code for access and refresh tokens

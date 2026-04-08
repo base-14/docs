@@ -16,7 +16,7 @@ keywords:
 # scout context
 
 Manage authentication contexts when working with multiple Scout organizations.
-Each context stores an account name, Keycloak endpoint, and Scout API URL.
+Each context stores an account name, authentication endpoint, and Scout API URL.
 
 ![scout context demo](/img/scout-cli/03-context.gif)
 
