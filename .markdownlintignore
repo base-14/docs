@@ -2,3 +2,4 @@ node_modules
 build
 plans/
 docs/superpowers/
+.claude/

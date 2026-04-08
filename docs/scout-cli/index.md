@@ -81,3 +81,10 @@ Every command accepts these flags:
 | `-a, --account <NAME>` | Override the active account context |
 
 See [Global Flags](./reference/global-flags.md) for details.
+
+## See Also
+
+- [Installation](./installation.md) — install Scout CLI
+- [Global Flags](./reference/global-flags.md) — flags available on every command
+- [Environment Variables](./reference/environment-variables.md)
+  — configure Scout via env vars
