@@ -57,4 +57,4 @@ scout -v logs payment-service --raw 2>debug.log | jq .
 
 - [Environment Variables](./environment-variables.md) — configure Scout CLI
   via environment
-- [context](../platform/context.md) — manage account contexts persistently
+- [context](../scout-access/context.md) — manage account contexts persistently

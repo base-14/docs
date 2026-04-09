@@ -21,32 +21,32 @@ Scout platform to query logs, metrics, traces, alerts, and service topology — 
 use the open-source config commands to validate, generate, and test
 OpenTelemetry Collector configurations without a backend.
 
-## Platform Commands
+## Scout Access
 
 These commands require authentication with a
 [Scout](https://base14.io) backend.
 
 | Command | Description |
 |---------|-------------|
-| [login](./platform/login.md) | Authenticate with the Scout platform |
-| [logout](./platform/logout.md) | Remove stored credentials |
-| [status](./platform/status.md) | Check authentication status |
-| [context](./platform/context.md) | Manage multiple account contexts |
-| [alerts](./platform/alerts.md) | Query alert history |
-| [logs](./platform/logs.md) | Query service logs |
-| [metrics](./platform/metrics.md) | Query service metrics |
-| [traces](./platform/traces.md) | Query distributed traces |
-| [service-map](./platform/service-map.md) | Visualize service topology |
+| [login](./scout-access/login.md) | Authenticate with the Scout platform |
+| [logout](./scout-access/logout.md) | Remove stored credentials |
+| [status](./scout-access/status.md) | Check authentication status |
+| [context](./scout-access/context.md) | Manage multiple account contexts |
+| [alerts](./scout-access/alerts.md) | Query alert history |
+| [logs](./scout-access/logs.md) | Query service logs |
+| [metrics](./scout-access/metrics.md) | Query service metrics |
+| [traces](./scout-access/traces.md) | Query distributed traces |
+| [service-map](./scout-access/service-map.md) | Visualize service topology |
 
-## Open Source Commands
+## OTel Config
 
 These commands work entirely offline with no Scout account required.
 
 | Command | Description |
 |---------|-------------|
-| [config validate](./open-source/config-validate.md) | Validate an OTel Collector YAML config |
-| [config init](./open-source/config-init.md) | Generate a production-ready OTel Collector config |
-| [config test](./open-source/config-test.md) | Live-test an OTel Collector config |
+| [config validate](./otel-config/config-validate.md) | Validate an OTel Collector YAML config |
+| [config init](./otel-config/config-init.md) | Generate a production-ready OTel Collector config |
+| [config test](./otel-config/config-test.md) | Live-test an OTel Collector config |
 
 :::tip No account needed
 The `scout config` commands are fully open source. You can validate, generate,

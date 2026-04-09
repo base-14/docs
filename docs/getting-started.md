@@ -49,9 +49,9 @@ for a quick win and a clear next step.
 ## I want to use the CLI
 
 - [Install Scout CLI](/scout-cli/installation)
-- [Generate an OTel Collector config](/scout-cli/open-source/config-init)
-- [Validate a collector config](/scout-cli/open-source/config-validate)
-- [Query logs, traces, and metrics](/scout-cli/platform/logs)
+- [Generate an OTel Collector config](/scout-cli/otel-config/config-init)
+- [Validate a collector config](/scout-cli/otel-config/config-validate)
+- [Query logs, traces, and metrics](/scout-cli/scout-access/logs)
 
 ## I want CI/CD observability
 
