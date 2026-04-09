@@ -30,7 +30,7 @@ passed `kubectl apply` without complaint.
 
 OpenTelemetry Collector configurations are YAML files. There's no
 schema, no type system, and no IDE that will tell you that
-`memorylimitter` isn't a real processor. You find out when your pipeline
+`tail_smapling` isn't a real processor. You find out when your pipeline
 goes dark and someone starts paging the on-call.
 
 The collector ships with `otelcol validate`, which catches syntax errors
@@ -107,18 +107,18 @@ and 70+ exporters. The match is underscore-insensitive, so
 ```yaml showLineNumbers title="otel-collector-config.yaml"
 processors:
   # warning-line
-  memorylimitter:       # typo
-    check_interval: 1s
-    limit_mib: 512
+  tail_smapling:        # typo
+    decision_wait: 10s
+    num_traces: 100
 ```
 
 ```text
-[WARN] processors: "memorylimitter" is not a known otelcol-contrib component
+[WARN] processors: "tail_smapling" is not a known otelcol-contrib component
 ```
 
 This is one of the most common config mistakes. The collector loads the
 config without complaint, the processor does nothing, and your pipeline
-runs without memory protection.
+runs without tail-based sampling.
 
 ### Stage 4: Cross-references
 
