@@ -34,7 +34,7 @@ scout --version
 
 ## Next Steps
 
-- **Platform users** — [Authenticate with Scout](./platform/login.md) to start
+- **Platform users** — [Authenticate with Scout](./scout-access/login.md) to start
   querying telemetry data
-- **Open-source users** — [Generate an OTel Collector config](./open-source/config-init.md)
+- **Open-source users** — [Generate an OTel Collector config](./otel-config/config-init.md)
   to get started without a backend
