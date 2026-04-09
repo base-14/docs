@@ -375,4 +375,4 @@ then run `scout config validate --file your-config.yaml`.
   command reference
 
 [prod-ready]: /blog/production-ready-otel-collector
-[config-validate-docs]: /scout-cli/open-source/config-validate
+[config-validate-docs]: /scout-cli/otel-config/config-validate

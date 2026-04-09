@@ -1,10 +1,10 @@
 {
-  "label": "Open Source Commands",
+  "label": "OTel Config",
   "position": 4,
   "collapsed": false,
   "link": {
     "type": "generated-index",
-    "title": "Open Source Commands",
+    "title": "OTel Config",
     "description": "Offline commands for validating, generating, and testing OpenTelemetry Collector configurations. No Scout backend required."
   }
 }

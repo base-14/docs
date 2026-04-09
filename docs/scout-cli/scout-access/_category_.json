@@ -1,10 +1,10 @@
 {
-  "label": "Platform Commands",
+  "label": "Scout Access",
   "position": 3,
   "collapsed": false,
   "link": {
     "type": "generated-index",
-    "title": "Platform Commands",
+    "title": "Scout Access",
     "description": "Commands that interact with the Scout backend for authentication, querying telemetry data, and managing account contexts."
   }
 }
