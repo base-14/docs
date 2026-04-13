@@ -1,8 +1,8 @@
 ---
 slug: stop-deploying-broken-otel-configs
 date: 2026-04-08
-title: "Stop Deploying Broken OTel Configs: Validate Before You Ship"
-description: "OpenTelemetry Collector configs are plain YAML with no schema enforcement. Typos, missing references, and insecure patterns silently break telemetry. Here's how to catch them before deployment."
+title: "Stop Deploying Broken OTel Configs: Validate & Test Before You Ship"
+description: "OpenTelemetry Collector configs are plain YAML with no schema enforcement. Typos, missing references, and insecure patterns silently break telemetry. Here's how to validate and live-test them before deployment."
 authors: [nitin]
 tags:
   [
@@ -11,6 +11,7 @@ tags:
     otel-collector,
     configuration,
     validation,
+    testing,
     scout,
     devops,
     ci-cd,
@@ -20,7 +21,7 @@ head:
   - - script
     - type: application/ld+json
     - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why doesn't the OpenTelemetry Collector catch config errors at startup?","acceptedAnswer":{"@type":"Answer","text":"The collector validates YAML syntax and known component types, but it won't catch semantic issues like a send_batch_max_size smaller than send_batch_size, a memory limiter with check_interval set to 0, or hardcoded secrets. These configs parse correctly but cause silent failures in production."}},{"@type":"Question","name":"What does scout config validate check that otelcol validate does not?","acceptedAnswer":{"@type":"Answer","text":"scout config validate runs a 6 stage pipeline: YAML parsing, top-level structure, component name registry checks against otelcol-contrib v0.147.0, cross-reference integrity, semantic correctness (contradictory values, disabled components), and best-practice and security checks (processor ordering, missing memory limiters, hardcoded secrets, missing TLS)."}},{"@type":"Question","name":"How do I integrate OTel config validation into CI/CD?","acceptedAnswer":{"@type":"Answer","text":"scout config validate uses exit codes 0 (valid), 1 (errors), and 2 (I/O error), making it pipe-friendly. Add it as a GitHub Actions step, a pre-commit hook, or pipe generated configs through stdin. The --raw flag outputs structured JSON for programmatic parsing."}},{"@type":"Question","name":"What are the most common OpenTelemetry Collector misconfigurations?","acceptedAnswer":{"@type":"Answer","text":"The most common issues include misspelled component names (the collector silently ignores them), pipelines referencing undefined components, missing memory_limiter processors (leading to OOM kills), hardcoded API keys, and processors in the wrong order (e.g., filter after batch, which wastes resources)."}},{"@type":"Question","name":"Does scout config validate require an account or network access?","acceptedAnswer":{"@type":"Answer","text":"No. The validation runs entirely on your machine with no telemetry sent anywhere. The otelcol-contrib component registry is bundled locally. Install with brew install base14/tap/scout-cli."}}]}
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why doesn't the OpenTelemetry Collector catch config errors at startup?","acceptedAnswer":{"@type":"Answer","text":"The collector validates YAML syntax and known component types, but it won't catch semantic issues like a send_batch_max_size smaller than send_batch_size, a memory limiter with check_interval set to 0, or hardcoded secrets. These configs parse correctly but cause silent failures in production."}},{"@type":"Question","name":"What does scout config validate check that otelcol validate does not?","acceptedAnswer":{"@type":"Answer","text":"scout config validate runs a 6 stage pipeline: YAML parsing, top-level structure, component name registry checks against otelcol-contrib v0.147.0, cross-reference integrity, semantic correctness (contradictory values, disabled components), and best-practice and security checks (processor ordering, missing memory limiters, hardcoded secrets, missing TLS)."}},{"@type":"Question","name":"What does scout config test do?","acceptedAnswer":{"@type":"Answer","text":"scout config test live-tests your OTel Collector config by spawning an actual collector, patching it with debug components, and sending OTLP probes to verify each pipeline works end-to-end. It reports per-pipeline pass/fail verdicts for traces, metrics, and logs."}},{"@type":"Question","name":"How is scout config test different from scout config validate?","acceptedAnswer":{"@type":"Answer","text":"scout config validate is static analysis that runs offline without a collector binary. scout config test is dynamic — it starts a real collector, sends test data through each pipeline, and confirms data flows end-to-end. Validate catches config errors; test catches runtime failures."}},{"@type":"Question","name":"How do I integrate OTel config validation and testing into CI/CD?","acceptedAnswer":{"@type":"Answer","text":"Both commands use pipe-friendly exit codes. Run scout config validate first (fast, no binary needed) to catch config errors, then scout config test --isolated (requires collector binary) to verify pipelines. Add them as GitHub Actions steps, pre-commit hooks, or pipe generated configs through stdin."}},{"@type":"Question","name":"What are the most common OpenTelemetry Collector misconfigurations?","acceptedAnswer":{"@type":"Answer","text":"The most common issues include misspelled component names (the collector silently ignores them), pipelines referencing undefined components, missing memory_limiter processors (leading to OOM kills), hardcoded API keys, and processors in the wrong order (e.g., filter after batch, which wastes resources)."}},{"@type":"Question","name":"Does scout config validate require an account or network access?","acceptedAnswer":{"@type":"Answer","text":"No. The validation runs entirely on your machine with no telemetry sent anywhere. The otelcol-contrib component registry is bundled locally. Install with brew install base14/tap/scout-cli."}}]}
 ---
 
 Your dashboards are empty. Alerts are silent, which is its own problem,
@@ -41,10 +42,23 @@ disabled, or that you've hardcoded an API key in plain text.
 
 <!--truncate-->
 
-Scout CLI's `scout config validate` addresses all of these. It
-validates structure, component names, pipeline references, semantic
-correctness, and security anti-patterns in a single command. It runs
-offline against the otelcol-contrib component registry.
+Scout CLI addresses all of these with two complementary commands.
+`scout config validate` runs a 6-stage static analysis pipeline
+offline against the otelcol-contrib component registry. It validates
+structure, component names, pipeline references, semantic correctness,
+and security anti-patterns in a single command. `scout config test`
+goes further — it spawns an actual collector, sends OTLP probes
+through each pipeline, and confirms data flows end-to-end.
+Together they catch both configuration errors and runtime failures
+before deployment.
+
+## See it in action
+
+<img
+  src="/img/scout-cli/14-config-validate-test.gif"
+  alt="scout config validate and scout config test demo"
+  style={{minWidth: '900px', maxWidth: '100%'}}
+/>
 
 ## The 6 stage validation pipeline
 
@@ -247,7 +261,7 @@ Other security checks:
 - Receivers binding to `0.0.0.0` without TLS
 - Non-localhost receiver endpoints without TLS configured
 
-## What the output looks like
+### What the output looks like
 
 For valid configs, the validator renders a swimlane diagram of your
 pipeline topology:
@@ -294,20 +308,116 @@ For CI and scripting, `--raw` outputs structured JSON:
 }
 ```
 
-## Exit codes
+## Live pipeline testing with scout config test
 
-The validator uses three exit codes, designed for scripting:
+Static validation catches a wide range of config errors, but it cannot
+confirm that data actually flows through your pipelines. A config can
+pass all six validation stages and still fail at runtime — the
+collector binary might not support a component, a network path might
+be unreachable, or a processor chain might silently drop data.
 
-| Code | Meaning |
-|------|---------|
-| 0 | Valid (warnings are fine) |
-| 1 | Validation errors found |
-| 2 | I/O or usage error (file not found, no input) |
+`scout config test` fills this gap. It spawns an actual OTel Collector
+with your config, sends test data through each pipeline, and verifies
+the data comes out the other end.
+
+### How it works
+
+1. **Validates** the configuration (exits early if invalid)
+2. **Patches** the config with a debug exporter and extensions
+   (zpages, pprof)
+3. **Starts** the OTel Collector binary with the patched config
+4. **Waits** for the health check endpoint
+5. **Sends** OTLP probes for each configured pipeline (traces,
+   metrics, logs)
+6. **Monitors** the debug exporter output for probe data
+7. **Reports** per-pipeline pass/fail verdicts
+8. **Exits** with the appropriate code
+
+The patching step is key. The command injects a debug exporter into
+every pipeline so it can observe what comes out without interfering
+with your existing pipeline structure. Use `--dry-run` to preview the
+patched config without starting the collector:
+
+```bash
+scout config test --file otel-collector-config.yaml --dry-run
+```
+
+### Safe testing with --isolated
+
+The `--isolated` flag removes all non-debug exporters from your
+pipelines. This prevents the test from sending probe data to
+production backends — useful when testing against a config that
+exports to a live endpoint:
+
+```bash
+scout config test --file otel-collector-config.yaml --isolated
+```
+
+### Interactive debugging
+
+The `--interactive` flag keeps the collector running after probes
+complete. This gives you access to zpages and pprof endpoints for
+manual inspection:
+
+```bash
+scout config test --file otel-collector-config.yaml --interactive
+```
+
+### What the output looks like
+
+When all pipelines pass, the output shows per-pipeline verdicts:
+
+```text
+Scout CLI v0.7.1 — testing against otelcol-contrib v0.147.0
+
+Starting collector... ✔ healthy (1.2s)
+
+traces
+  ✔ sent probe → debug exporter received probe data
+
+metrics
+  ✔ sent probe → debug exporter received probe data
+
+logs
+  ✔ sent probe → debug exporter received probe data
+
+─────────────────────────────────────
+3/3 pipelines passed · All pipelines working
+```
+
+When a pipeline fails, the output identifies which one and why:
+
+```text
+Scout CLI v0.7.1 — testing against otelcol-contrib v0.147.0
+
+Starting collector... ✔ healthy (1.4s)
+
+traces
+  ✔ sent probe → debug exporter received probe data
+
+metrics
+  ✗ sent probe → no data received within timeout
+
+logs
+  ✔ sent probe → debug exporter received probe data
+
+─────────────────────────────────────
+2/3 pipelines passed · 1 pipeline failed
+```
+
+For CI and scripting, `--raw` outputs structured JSON with the full
+lifecycle result, including per-pipeline verdicts and timing.
+
+The test command requires an OTel Collector binary. It searches for
+`otelcol-contrib` or `otelcol` in your `$PATH`, or in
+`~/.scout/bin/`. You can also specify a binary explicitly with
+`--collector-bin`.
 
 ## CI integration
 
-The validator reads from `--file` or stdin, so it fits into any
-pipeline.
+Both commands read from `--file` or stdin, so they fit into any
+pipeline. Run validation first (fast, no binary needed), then
+testing (requires a collector binary).
 
 **GitHub Actions:**
 
@@ -315,6 +425,10 @@ pipeline.
 - name: Validate OTel Collector config
   run: |
     scout config validate --file otel-collector-config.yaml
+
+- name: Test OTel Collector pipelines
+  run: |
+    scout config test --file otel-collector-config.yaml --isolated --timeout 60
 ```
 
 For machine-readable output in a larger workflow:
@@ -351,18 +465,43 @@ This works with config generation tools that write to stdout. Generate
 your config, pipe it through validation, and only write the file if it
 passes.
 
+## Exit codes
+
+Both commands use exit codes designed for scripting.
+
+**scout config validate:**
+
+| Code | Meaning |
+|------|---------|
+| 0 | Valid (warnings are fine) |
+| 1 | Validation errors found |
+| 2 | I/O or usage error (file not found, no input) |
+
+**scout config test:**
+
+| Code | Meaning |
+|------|---------|
+| 0 | All pipelines passed |
+| 1 | One or more pipelines failed or partially passed |
+| 2 | Configuration validation errors |
+| 3 | Collector failed to start |
+| 4 | No OTel Collector binary found |
+
 The collector is the narrowest point in your telemetry pipeline.
 Everything flows through it. A broken config doesn't just lose data,
 it blinds you to the problems that data was supposed to reveal.
-Validating configs before they reach production is the cheapest fix
-for a class of incidents that are expensive to diagnose after the
-fact.
+Validating and testing configs before they reach production is the
+cheapest fix for a class of incidents that are expensive to diagnose
+after the fact. Validate catches the structural and semantic errors.
+Test confirms the pipelines actually work.
 
 ---
 
 **Try it.** Install Scout CLI with the
 [installation guide](https://docs.base14.io/scout-cli/installation/),
-then run `scout config validate --file your-config.yaml`.
+then run `scout config validate --file your-config.yaml` to check for
+errors and `scout config test --file your-config.yaml` to verify your
+pipelines work end-to-end.
 
 ---
 
@@ -372,7 +511,10 @@ then run `scout config validate --file your-config.yaml`.
   Collector][prod-ready] covers the runtime hardening that complements
   pre-deploy validation
 - [scout config validate reference][config-validate-docs] is the full
-  command reference
+  command reference for static validation
+- [scout config test reference][config-test-docs] is the full command
+  reference for live pipeline testing
 
 [prod-ready]: /blog/production-ready-otel-collector
 [config-validate-docs]: /scout-cli/otel-config/config-validate
+[config-test-docs]: /scout-cli/otel-config/config-test
