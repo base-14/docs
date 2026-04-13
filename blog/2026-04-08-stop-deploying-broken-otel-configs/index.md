@@ -516,5 +516,5 @@ pipelines work end-to-end.
   reference for live pipeline testing
 
 [prod-ready]: /blog/production-ready-otel-collector
-[config-validate-docs]: /scout-cli/open-source/config-validate
-[config-test-docs]: /scout-cli/open-source/config-test
+[config-validate-docs]: /scout-cli/otel-config/config-validate
+[config-test-docs]: /scout-cli/otel-config/config-test
