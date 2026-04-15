@@ -16,7 +16,6 @@ tags:
     devops,
     ci-cd,
   ]
-unlisted: true
 head:
   - - script
     - type: application/ld+json
