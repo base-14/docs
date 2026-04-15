@@ -24,11 +24,6 @@ head:
       {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why doesn't the OpenTelemetry Collector catch config errors at startup?","acceptedAnswer":{"@type":"Answer","text":"The collector validates YAML syntax and known component types, but it won't catch semantic issues like a send_batch_max_size smaller than send_batch_size, a memory limiter with check_interval set to 0, or hardcoded secrets. These configs parse correctly but cause silent failures in production."}},{"@type":"Question","name":"What does scout config validate check that otelcol validate does not?","acceptedAnswer":{"@type":"Answer","text":"scout config validate runs a 6 stage pipeline: YAML parsing, top-level structure, component name registry checks against otelcol-contrib v0.147.0, cross-reference integrity, semantic correctness (contradictory values, disabled components), and best-practice and security checks (processor ordering, missing memory limiters, hardcoded secrets, missing TLS)."}},{"@type":"Question","name":"What does scout config test do?","acceptedAnswer":{"@type":"Answer","text":"scout config test live-tests your OTel Collector config by spawning an actual collector, patching it with debug components, and sending OTLP probes to verify each pipeline works end-to-end. It reports per-pipeline pass/fail verdicts for traces, metrics, and logs."}},{"@type":"Question","name":"How is scout config test different from scout config validate?","acceptedAnswer":{"@type":"Answer","text":"scout config validate is static analysis that runs offline without a collector binary. scout config test is dynamic — it starts a real collector, sends test data through each pipeline, and confirms data flows end-to-end. Validate catches config errors; test catches runtime failures."}},{"@type":"Question","name":"How do I integrate OTel config validation and testing into CI/CD?","acceptedAnswer":{"@type":"Answer","text":"Both commands use pipe-friendly exit codes. Run scout config validate first (fast, no binary needed) to catch config errors, then scout config test --isolated (requires collector binary) to verify pipelines. Add them as GitHub Actions steps, pre-commit hooks, or pipe generated configs through stdin."}},{"@type":"Question","name":"What are the most common OpenTelemetry Collector misconfigurations?","acceptedAnswer":{"@type":"Answer","text":"The most common issues include misspelled component names (the collector silently ignores them), pipelines referencing undefined components, missing memory_limiter processors (leading to OOM kills), hardcoded API keys, and processors in the wrong order (e.g., filter after batch, which wastes resources)."}},{"@type":"Question","name":"Does scout config validate require an account or network access?","acceptedAnswer":{"@type":"Answer","text":"No. The validation runs entirely on your machine with no telemetry sent anywhere. The otelcol-contrib component registry is bundled locally. Install with brew install base14/tap/scout-cli."}}]}
 ---
 
-Your dashboards are empty. Alerts are silent, which is its own problem,
-because the system that sends alerts is the one that broke. The root
-cause turns out to be a one-character typo in the collector config that
-passed `kubectl apply` without complaint.
-
 OpenTelemetry Collector configurations are YAML files. There's no
 schema, no type system, and no IDE that will tell you that
 `tail_smapling` isn't a real processor. You find out when your pipeline
@@ -61,6 +56,12 @@ before deployment.
 />
 
 ## The 6 stage validation pipeline
+
+<img
+  src={require('./scout-config-validate.png').default}
+  alt="Scout Config Validation Stages"
+  
+/>
 
 The validation runs as a 6 stage pipeline. Each stage builds on the
 results of the previous one, and here's what each stage catches. Later
