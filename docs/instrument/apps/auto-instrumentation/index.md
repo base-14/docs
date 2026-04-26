@@ -81,9 +81,10 @@ your collector is working first, try the
 
 ### Go
 
-| Framework     | Guide      | What's Instrumented               |
-| ------------- | ---------- | --------------------------------- |
-| Go (net/http) | [Go](./go) | HTTP handlers, database/sql, gRPC |
+| Framework            | Guide                                              | What's Instrumented                              |
+| -------------------- | -------------------------------------------------- | ------------------------------------------------ |
+| Go (net/http)        | [Go](./go)                                         | HTTP handlers, database/sql, gRPC                |
+| Go stdlib + Postgres | [Go stdlib + Postgres](./go-stdlib-postgres)       | net/http server + client, pgx queries, slog logs |
 
 ### Rust
 
