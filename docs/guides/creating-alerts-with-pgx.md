@@ -3,6 +3,7 @@ title: Creating Alerts with pgX
 description:
   Create alerts from pgX panel queries. Export ClickHouse queries to Grafana
   dashboards and configure alert rules with thresholds and notifications.
+unlisted: true
 keywords:
   [
     pgx alerts,
