@@ -1020,7 +1020,7 @@ metadata:
   namespace: observability
 spec:
   exporter:
-    endpoint: http://scout-collector-collector.observability.svc.cluster.local:4317
+    endpoint: http://scout-agent-collector.observability.svc.cluster.local:4318
   propagators:
     - tracecontext
     - baggage
