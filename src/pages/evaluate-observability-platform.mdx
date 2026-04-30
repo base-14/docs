@@ -1,0 +1,631 @@
+---
+title: "How to evaluate an observability platform (without getting locked in)"
+description: "Evaluate observability platforms on what matters: pricing model, retention, sampling, lock-in. Weighted framework + vendor comparison + one-week PoC model."
+---
+
+import Head from "@docusaurus/Head";
+
+<Head>
+  <meta
+    name="keywords"
+    content="observability platform comparison, evaluate observability tools, how to choose observability platform, observability tool evaluation, observability platform checklist, observability vendor comparison"
+  />
+  <script type="application/ld+json">
+    {JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "What is the most important factor when evaluating observability platforms?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "The pricing model. It determines your cost trajectory at 2x scale. Per-host and per-GB pricing penalize growth and rich telemetry. Per-seat pricing gates access during incidents. Signal-based pricing (per event, regardless of size) removes these constraints.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "How long should an observability platform evaluation take?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Plan for 4-6 weeks total: 1 week for a proof of concept on 3-5 services with real traffic, 2-3 weeks running both platforms in parallel, and 1-2 weeks for dashboard recreation and alert parity. The instrumentation is the easy part; rebuilding operational workflows takes longer.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Should I evaluate observability tools using a free tier?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Free tiers are useful for initial exploration but misleading for evaluation. They typically cap data volume, limit retention to 7-15 days, restrict user access, and disable features you need in production. Evaluate on a realistic subset of your actual workload instead.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "How do I compare observability pricing across vendors?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Normalize to a common scenario: pick your actual host count, daily log volume, trace span count, metric data points, and team size. Calculate each vendor's cost for that exact profile. Include hidden costs like per-seat charges, indexing fees, and retention upgrades. base14 Scout uses signal-based pricing: $250/month platform fee + $0.10/M metrics + $0.25/M logs and traces, with unlimited users.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "What does OpenTelemetry-native mean for vendor evaluation?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "An OpenTelemetry-native platform uses OTel as its primary data ingestion path, not as an afterthought alongside proprietary agents. This matters because your instrumentation becomes portable. If you ever need to switch vendors, you change collector configuration, not application code.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "How do I estimate my signal volume for pricing comparisons?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Logs: divide daily GB by average log line size (typically 1.0-2.0 KB) to get signals per day, multiply by 30. Traces: your indexed span count maps 1:1 to signals. Metrics: count time series and multiply by data points per month based on scrape interval (43,200 for 1/min, 86,400 for 1/30s).",
+          },
+        },
+      ],
+    })}
+  </script>
+</Head>
+
+# How to Evaluate an Observability Platform
+
+> **TL;DR:** Most observability evaluations focus on features and
+> dashboards. The decisions that actually matter are pricing model,
+> data retention, sampling policy, and vendor lock-in. This guide
+> provides a weighted evaluation framework, a vendor comparison
+> across five platforms, and a structured one-week proof of concept
+> model. The goal is to help you make a decision you won't regret
+> in two years.
+
+An engineering leader at a logistics company spent three months
+evaluating observability platforms. The team built a detailed
+feature comparison spreadsheet, ran demos with four vendors, and
+picked the one with the most impressive dashboard experience.
+
+Eighteen months later, they were evaluating again. The platform
+they chose charged per host and per GB, so every scaling event
+increased costs unpredictably. The proprietary agents meant their
+instrumentation was locked to a single vendor, and switching would
+require re-instrumenting 80+ services. They were stuck, paying
+more every quarter for a decision that felt right at the time.
+
+The problem wasn't the platform. It was the evaluation criteria.
+They optimized for features instead of structure, and the
+structural decisions are the ones that compound over time.
+
+This guide covers what actually matters when you evaluate
+observability tools, how to weight each criterion for your team,
+and how to run a proof of concept that answers the right questions
+before you commit.
+
+## Why most observability evaluations fail
+
+Teams evaluate observability platforms the same way they evaluate
+most SaaS tools: schedule demos, compare feature lists, check
+pricing pages, pick the one that looks best.
+
+The problem is that observability costs and constraints don't show
+up during a demo. They show up at 2x scale, during a P1 incident
+at 3 AM, or when contract renewal comes with a 40% price increase
+and your switching costs are too high to walk away.
+
+The features that differentiate vendors during evaluation (prettier
+dashboards, more integrations, slicker onboarding) are rarely the
+features that differentiate them in production. What matters in
+production is whether you can afford to keep all your data, whether
+every engineer can access the tools, and whether you can leave if
+the vendor stops earning your business.
+
+**Evaluating on features answers the question "which tool looks
+best today?"** The better question is "which tool will cost the
+least to operate and the least to leave in two years?"
+
+## The seven criteria that actually matter
+
+Not all evaluation criteria carry equal weight. Pricing model and
+vendor lock-in are structural decisions that determine your cost
+trajectory and switching costs for years. Dashboard aesthetics are
+a preference you can adapt to in a week.
+
+Here's a weighted framework based on what we've seen from teams
+that evaluated well and teams that had to re-evaluate eighteen
+months later.
+
+### 1. Pricing model (weight: 25%)
+
+This is the single most important evaluation criterion because it
+determines how your costs scale with growth.
+
+| Model      | How it works                       | Risk                                                    |
+| :--------- | :--------------------------------- | :------------------------------------------------------ |
+| Per-host   | Pay per server/container monitored | Kubernetes and auto-scaling make this unpredictable     |
+| Per-GB     | Pay by data volume ingested        | Penalizes rich telemetry (stack traces, metadata)       |
+| Per-seat   | Pay per user with access           | Gates access during incidents, creates license politics |
+| Per-signal | Pay per event regardless of size   | Costs scale with usage, not infrastructure or team size |
+
+The pricing model isn't just about cost - it shapes behavior. Per-GB
+pricing incentivizes teams to strip context from logs and traces to
+save money, which makes debugging harder. Per-seat pricing creates
+access tiers where junior engineers can't view dashboards during
+incidents. Per-host pricing punishes auto-scaling and
+[Kubernetes workloads](https://docs.base14.io/blog/kubernetes-observability-cost) in
+particular.
+
+**What to evaluate:** Calculate your cost at current scale and at
+2x scale under each vendor's pricing model. If the cost at 2x is
+more than 2x your current bill, the pricing model is working
+against you.
+
+For a deeper breakdown of how pricing models affect total cost, see
+our [observability cost optimization](/observability-cost-optimization)
+guide.
+
+### 2. Vendor lock-in (weight: 20%)
+
+Lock-in is a cost multiplier you don't feel until renewal. If
+switching vendors requires re-instrumenting every service, you
+have no leverage when prices increase.
+
+**What to evaluate:**
+
+- Does the platform use proprietary agents or
+  [OpenTelemetry](https://opentelemetry.io/docs/)?
+- Can you export your data to another backend without changing
+  application code?
+- Are dashboards, alerts, and queries in a proprietary format or
+  standard (SQL, PromQL)?
+- Can you run two backends simultaneously during evaluation?
+
+OpenTelemetry-native platforms give you permanent portability.
+Your instrumentation is an investment that works with any
+OTel-compatible backend. Proprietary instrumentation is a cost
+that compounds every month you stay.
+
+### 3. Data retention (weight: 15%)
+
+Default retention determines whether you can investigate slow-burn
+issues, establish performance baselines, and satisfy compliance
+requirements.
+
+| Vendor type   | Typical default | Extended retention cost   |
+| :------------ | :-------------- | :------------------------ |
+| Budget tier   | 7-8 days        | 2-3x base rate            |
+| Standard tier | 15 days         | 1.5-2x base rate          |
+| Premium tier  | 30 days         | Included or minimal extra |
+
+A memory leak that develops over three weeks is invisible with
+15-day retention. A latency regression that started 20 days ago
+can't be correlated with the deployment that caused it. Capacity
+planning without 30+ days of baseline data is guesswork.
+
+**What to evaluate:** What's the default retention, and what does
+extending it cost? Can you query extended data at full resolution,
+or does it require rehydration from cold storage?
+
+### 4. Sampling policy (weight: 15%)
+
+Sampling determines whether the data you need during an incident
+actually exists. At scale, many platforms sample traces to control
+storage costs.
+
+The problem is statistical: if 0.1% of requests fail and you
+sample at 10%, the specific trace showing root cause may not have
+survived. Investigation time goes from hours to shifts when the
+critical trace was discarded.
+
+**What to evaluate:** Does the platform sample by default? Is
+sampling configurable or mandatory? What happens to sampled data
+(discarded or archived)? Can you achieve
+[zero-sampling friendly architecture](/datadog-alternative#sampling-aggressive-vs-zero)
+at your data volume without cost penalty?
+
+### 5. Unified signals (weight: 10%)
+
+Running separate tools for logs, metrics, traces, and APM creates
+context-switching costs during incidents and licensing overlap
+across vendors.
+
+**What to evaluate:** Can you correlate a trace with associated
+logs and infrastructure metrics in a single query surface? Or does
+the platform require switching between separate products with
+separate UIs?
+
+### 6. Support model (weight: 10%)
+
+The gap between "submit a ticket" and "talk to someone who knows
+your stack" is measured in incident resolution time.
+
+**What to evaluate:** What's the response time SLA? Is support
+tiered by plan, or does every customer get the same level? Does
+the vendor provide onboarding assistance, and for how long? Are
+reliability reviews or SRE partnerships included, or are they a
+premium add-on?
+
+### 7. Compliance and deployment (weight: 5%)
+
+Table stakes for regulated industries, but still worth verifying
+early in the evaluation.
+
+**What to evaluate:** SOC 2 Type II and ISO 27001 certification?
+Data residency options? BYOC (bring your own cloud) deployment?
+Can the platform meet your security team's requirements without a
+separate compliance project?
+
+## Vendor comparison: five platforms on the seven criteria
+
+This table uses the weighted criteria above. For detailed cost
+breakdowns, see the linked deep-dive pages.
+
+| Criterion (weight)          | Datadog                            | New Relic                    | Grafana Cloud                       | AWS CloudWatch                    | base14 Scout                                          |
+| :-------------------------- | :--------------------------------- | :--------------------------- | :---------------------------------- | :-------------------------------- | :---------------------------------------------------- |
+| **Pricing model** (25%)     | Per-host + per-GB + per-metric     | Per-seat + per-GB            | Per-GB (logs), per-series (metrics) | Per-GB ingest + storage + query   | Signal-based ($0.10/M metrics, $0.25/M logs & traces) |
+| **Lock-in** (20%)           | Proprietary agents, OTel supported | Proprietary + OTel supported | Open source core, cloud-managed     | AWS-only                          | OpenTelemetry-native                                  |
+| **Default retention** (15%) | 15 days                            | 8 days (standard)            | 30 days (logs)                      | Never expire (storage cost grows) | 30 days (extended available)                          |
+| **Sampling** (15%)          | Adaptive at scale                  | Adaptive at scale            | Configurable                        | Limited via X-Ray                 | Zero-sampling friendly architecture                   |
+| **Unified signals** (10%)   | Yes (single platform)              | Yes (single platform)        | Separate Loki/Mimir/Tempo           | Separate CW Logs/Metrics/X-Ray    | Yes (single data lake)                                |
+| **Support** (10%)           | Tiered by plan                     | Tiered by plan               | Community + paid support            | AWS support tiers                 | SRE partnership included                              |
+| **Compliance** (5%)         | SOC 2, ISO 27001, HIPAA            | SOC 2, ISO 27001             | SOC 2                               | AWS compliance framework          | SOC 2 Type II, ISO 27001, BYOC                        |
+
+Each platform has genuine strengths. Datadog's integration breadth
+is unmatched, New Relic's APM is mature and polished, Grafana's
+open-source ecosystem gives you control, and CloudWatch is
+zero-setup for AWS workloads.
+
+The question isn't which platform has the most features, but which
+platform's structural decisions on pricing, retention, and lock-in
+align with where your team is headed.
+
+### What these differences cost in practice
+
+The comparison table shows structural differences. Here's what
+they mean in dollars for a concrete scenario.
+
+> **Scenario:** 100 hosts running Kubernetes (30 pods/host),
+> 430 GB logs/day, 7.5B trace spans/month, 7.5B metric data
+> points/month, annual billing. Team size varies by vendor
+> (20 engineers for Datadog/CloudWatch, 100 for New Relic's
+> per-seat analysis).
+
+| Platform      | Key cost drivers                                                                                                   | Estimated monthly cost           |
+| :------------ | :----------------------------------------------------------------------------------------------------------------- | :------------------------------- |
+| Datadog       | Infrastructure ($23/host) + APM ($31/host) + log ingestion + log indexing ($1.70/M events)                         | ~$36,270 (full indexing)         |
+| New Relic     | 30 Full Platform seats ($349) + 25 Core ($49) + 45 Basic (free) + data ingest ($0.40/GB)                           | ~$19,245 (optimized mix)         |
+| CloudWatch    | Log ingestion ($0.50/GB) + growing storage + per-query charges + X-Ray traces (AWS portion of 70-host multi-cloud) | ~$5,786 (AWS only)               |
+| Grafana Cloud | Log volume ($0.50/GB) + metric active series + trace volume                                                        | Varies widely by usage           |
+| base14 Scout  | $250 platform + 7,500M metrics ($750) + 10,000M logs ($2,500) + 7,500M traces ($1,875)                             | ~$5,375 (all signals, all users) |
+
+_Pricing as of March 2026. Published list rates. Negotiated
+discounts lower totals but don't change billing structures. See
+each alternative page for detailed calculation methodology._
+
+These are published list prices, and your negotiated rates will
+differ. But the structural gaps persist because they come from the
+billing model itself, not the discount applied on top of it.
+
+Datadog's per-host fees plus dual-cost logging, New Relic's
+per-seat axis, and CloudWatch's triple-charge on logs all create
+cost trajectories that diverge further as you scale.
+
+**Want the full cost breakdown for each vendor?**
+
+- [Datadog alternative: real pricing for 100 K8s hosts](/datadog-alternative)
+- [New Relic alternative: the per-seat pricing problem](/new-relic-alternative)
+- [CloudWatch alternative: multi-cloud without triple-charge](/cloudwatch-alternative)
+- [Why the pricing model matters more than data volume](/observability-cost-optimization)
+
+## What base14 Scout covers
+
+The comparison table above shows where Scout sits on the structural
+criteria. Here's what the platform actually includes, since most
+evaluation guides skip this part and leave you checking feature
+pages.
+
+[Scout](https://base14.io/scout) is a unified observability
+platform built on OpenTelemetry. All signals go into a single data
+lake with one query surface (SQL, not a proprietary DSL).
+
+- **Infrastructure monitoring**: Hosts, containers, Kubernetes
+  clusters across any cloud provider. No per-host fees.
+- **Application monitoring**: APM with RED metrics, distributed
+  tracing, service maps, and error tracking at the code level.
+- **Logs, metrics, traces**: All three signal types in a single
+  view. Correlate across signal types without switching tools.
+- **Component monitoring**: Databases
+  ([pgX](https://base14.io/scout/pgx) for PostgreSQL), caches,
+  proxies, and message queues through OTel receivers and
+  auto-instrumentation.
+- **LLM and AI observability**:
+  [Native LLM monitoring](https://base14.io/scout/llm-observability)
+  across 50+ providers. Token tracking, cost attribution, prompt
+  performance, and multi-agent workflow tracing in the same data
+  lake as your infrastructure signals. See
+  [why a separate LLM tool doubles your spend](https://docs.base14.io/blog/llm-observability-cost).
+- **AI-assisted operations**: Scout MCP gives AI agents direct
+  access to your observability data via the Model Context Protocol.
+  Scout CLI for config validation, gap discovery, and
+  terminal-based querying.
+- **Real User Monitoring**: Mobile and web application monitoring
+  with full OpenTelemetry correlation from client to backend.
+
+All features are included at every tier. No feature gating, no
+add-on pricing for LLM observability or APM. Unlimited users.
+SRE partnership with fortnightly reliability reviews and 24/7
+support included for every customer.
+
+[See pricing details](https://base14.io/pricing): $250/month
+platform fee + $0.10/M metrics + $0.25/M logs and traces.
+
+## Common evaluation traps
+
+### The free tier trap
+
+Free tiers are useful for exploration but misleading for
+evaluation. They typically cap ingestion at 100GB/month, limit
+retention to 7-15 days, restrict users to 1-5 seats, and disable
+features like distributed tracing or custom dashboards.
+
+Evaluating on a free tier is like test-driving a car in a parking
+lot. You learn where the buttons are, but nothing about how it
+handles at highway speed.
+
+### The feature checklist trap
+
+A spreadsheet with 50 feature rows and checkmarks across five
+vendors tells you very little about which platform your team will
+actually use during incidents. The features that matter most
+(query speed under load, correlation across signal types, alert
+routing during P1s) don't show up in a checklist.
+
+### The demo trap
+
+Vendor demos show the platform at its best: fast queries on
+pre-loaded data, beautiful dashboards built by product teams, and
+scenarios designed to highlight differentiators. Your team's
+experience will involve real data with messy cardinality,
+dashboards you build yourself, and incidents that don't follow
+the demo script.
+
+**The antidote to all three traps is the same: run a proof of
+concept on your actual workload.**
+
+### The sunk cost trap
+
+Teams that have invested months instrumenting with a proprietary
+agent often stay with an underperforming vendor because switching
+feels too expensive. This is where the lock-in criterion pays off:
+if you evaluated for portability upfront, switching is a collector
+configuration change, not a re-instrumentation project.
+
+**Already know what you're looking for?**
+[Book a cost comparison call](https://base14.io/contact) and we'll
+model your actual infrastructure against Scout's signal-based
+pricing.
+
+## How to run a one-week proof of concept
+
+A structured PoC answers questions that demos, free tiers, and
+feature checklists can't. Here's a model that works for mid-size
+teams (50-200 engineers).
+
+### Preparation (1-2 days before)
+
+Pick 3-5 services that represent your stack: one high-traffic
+service, one with complex distributed traces, one that's been
+problematic, and optionally one that uses LLM APIs. Document the
+questions your team currently answers in your existing tooling
+(latency percentiles, error rates by endpoint, log search during
+incidents).
+
+### Week 1: parallel operation
+
+**Days 1-2: Instrumentation.** Deploy
+[OpenTelemetry Collectors](/instrument/collector-setup/otel-collector-config)
+alongside your existing agents. Configure dual export to both your
+current platform and the evaluation platform. Application code
+stays untouched. For a detailed setup guide, see our
+[production-ready OTel Collector](/blog/production-ready-otel-collector)
+walkthrough.
+
+**Days 3-4: Dashboard and alert recreation.** Rebuild your
+critical dashboards and alerts in the evaluation platform. This is
+the most time-consuming step and the most informative. How long
+does it take to recreate what your team depends on? How intuitive
+is the query language? Can your on-call engineers build dashboards
+without specialized training?
+
+**Days 5-7: Real-world usage.** Your team uses both platforms
+side by side on real traffic. Ideally, an incident happens during
+this window (they usually do). If not, pick a recent incident from
+your postmortem log and walk through the investigation in both
+platforms.
+
+### Evaluation criteria for the PoC
+
+Score each platform on these dimensions after the week:
+
+- **Time to answer:** How long does it take to answer "why is
+  checkout slow?" in each platform?
+- **Query speed:** How fast do dashboards load with your actual
+  data volumes?
+- **Correlation:** Can you follow a trace to its associated logs
+  and metrics without switching tools?
+- **Onboarding friction:** Can a new engineer (not the person who
+  set it up) navigate the platform and find useful information?
+- **Dashboard build time:** How long did it take to recreate your
+  critical dashboards?
+- **Cost projection:** What does each platform cost at your current
+  volume and at 2x?
+
+### After the PoC
+
+If the evaluation platform works well during the PoC, extend the
+parallel operation for 2-3 more weeks before committing. Verify
+alert parity, test edge cases, and make sure the team has had time
+to develop confidence in the new platform.
+
+The migration from parallel operation to full cutover is
+straightforward with OTel instrumentation: remove the old exporter
+from your collector configuration and decommission the old
+platform's agents. Your application code stays exactly the same.
+
+## Building your evaluation scorecard
+
+Here's a template you can adapt for your team. Weight the criteria
+based on your priorities, and score each vendor on a 1-5 scale
+after your PoC.
+
+| Criterion                           | Weight   | Vendor A | Vendor B | Vendor C |
+| :---------------------------------- | :------- | :------- | :------- | :------- |
+| Pricing model (cost at 2x scale)    | 25%      | \_\_\_   | \_\_\_   | \_\_\_   |
+| Vendor lock-in (portability)        | 20%      | \_\_\_   | \_\_\_   | \_\_\_   |
+| Data retention (default + extended) | 15%      | \_\_\_   | \_\_\_   | \_\_\_   |
+| Sampling policy                     | 15%      | \_\_\_   | \_\_\_   | \_\_\_   |
+| Unified signals                     | 10%      | \_\_\_   | \_\_\_   | \_\_\_   |
+| Support model                       | 10%      | \_\_\_   | \_\_\_   | \_\_\_   |
+| Compliance and deployment           | 5%       | \_\_\_   | \_\_\_   | \_\_\_   |
+| **Weighted total**                  | **100%** | \_\_\_   | \_\_\_   | \_\_\_   |
+
+The scorecard isn't the decision. It's a tool for structuring the
+conversation with your team and ensuring the evaluation covers the
+dimensions that matter long-term, not just the ones that impress
+during a demo.
+
+## FAQ
+
+### What is the most important factor when evaluating observability platforms?
+
+The pricing model. It determines your cost trajectory at 2x scale.
+Per-host and per-GB pricing penalize growth and rich telemetry.
+Per-seat pricing gates access during incidents. Signal-based
+pricing (per event, regardless of size) removes these constraints.
+
+### How long should an observability platform evaluation take?
+
+Plan for 4-6 weeks total: 1 week for a proof of concept on 3-5
+services with real traffic, 2-3 weeks running both platforms in
+parallel, and 1-2 weeks for dashboard recreation and alert parity.
+The instrumentation is the easy part; rebuilding operational
+workflows takes longer.
+
+### Should I evaluate observability tools using a free tier?
+
+Free tiers are useful for initial exploration but misleading for
+evaluation. They typically cap data volume, limit retention to
+7-15 days, restrict user access, and disable features you need in
+production. Evaluate on a realistic subset of your actual workload
+instead.
+
+### How do I compare observability pricing across vendors?
+
+Normalize to a common scenario: pick your actual host count, daily
+log volume, trace span count, metric data points, and team size.
+Calculate each vendor's cost for that exact profile. Include hidden
+costs like per-seat charges, indexing fees, and retention upgrades.
+base14 Scout uses signal-based pricing: $250/month platform fee +
+$0.10/M metrics + $0.25/M logs and traces, unlimited users
+included.
+
+### What does OpenTelemetry-native mean for vendor evaluation?
+
+An OpenTelemetry-native platform uses OTel as its primary data
+ingestion path, not as an afterthought alongside proprietary
+agents. This matters because your instrumentation becomes portable.
+If you ever need to switch vendors, you change collector
+configuration, not application code.
+
+### How do I estimate my signal volume for pricing comparisons?
+
+Logs: divide daily GB by average log line size (typically 1.0-2.0
+KB) to get signals per day, then multiply by 30. Traces: your
+indexed span count maps 1:1 to signals. Metrics: count time series
+and multiply by data points per month based on scrape interval
+(43,200 for 1/min, 86,400 for 1/30s).
+
+## Who this guide is for (and who it's not)
+
+### Use this framework if
+
+- **You're evaluating for the first time.** Your team has outgrown
+  basic monitoring and needs a real observability platform. The
+  seven criteria help you avoid the traps that catch first-time
+  evaluators.
+- **You're re-evaluating after a bad fit.** Your current vendor's
+  costs have grown unpredictably, or your team has hit the limits
+  of proprietary lock-in. The framework helps you focus on the
+  structural decisions that went wrong last time.
+- **You're consolidating tools.** Running separate platforms for
+  logs, metrics, traces, and APM creates compounding costs and
+  context-switching during incidents. The unified signals criterion
+  helps you evaluate whether a single platform can replace your
+  current stack.
+- **Your team is growing past 30 engineers.** This is the
+  inflection point where per-seat pricing starts hurting, access
+  gaps become visible during incidents, and the cost of the wrong
+  decision multiplies.
+
+### Skip this guide if
+
+- **You're a solo developer or team of under 5.** Free tiers from
+  New Relic, Grafana Cloud, or CloudWatch are genuinely useful at
+  small scale, and the structural concerns in this guide don't
+  apply until you're dealing with real team coordination and cost
+  management.
+- **You're 100% AWS and basic CloudWatch alarms are sufficient.**
+  CloudWatch is free for basic metrics and deeply integrated with
+  AWS services. If your monitoring needs are simple and
+  single-cloud, don't add complexity you don't need.
+
+## What teams say after switching
+
+> "Improved reliability without increasing cost."
+> -- **Glomo**
+>
+> "Unified visibility across our stack, with faster MTTR and cost
+> reductions."
+> -- **DPDZero**
+>
+> "Our engineers are excited to improve reliability. We're building
+> an observability culture, not just installing a tool."
+> -- **Zinc Learning Labs**
+
+These outcomes reflect what happens after teams evaluate on the
+criteria in this guide and choose a platform whose structural
+decisions align with how they operate. The shift from fragmented
+tools to [unified observability](/blog/unified-observability)
+changes how teams work, not just what they pay.
+
+## The evaluation that pays for itself
+
+The difference between a good observability evaluation and a bad
+one shows up over years, not weeks. Teams that evaluate on pricing
+model, lock-in, and retention make decisions that save hundreds of
+thousands of dollars and hours of engineering time. Teams that
+evaluate on features and dashboard aesthetics often find themselves
+re-evaluating eighteen months later.
+
+The framework in this guide is designed to surface the structural
+differences between platforms so the decision you make today still
+makes sense at 2x scale.
+
+**Ready to run a structured evaluation?**
+[Book a one-week PoC](https://base14.io/contact) with base14
+Scout. We build custom dashboards on your actual services, and
+your team evaluates on real traffic alongside your current
+platform. No migration required.
+
+- [SOC 2 Type II and ISO 27001 compliant](https://base14.io/security).
+- Assisted onboarding included at no extra cost.
+- OpenTelemetry-native. Keep your instrumentation if you leave.
+
+---
+
+## Related reading
+
+- [The Datadog alternative that doesn't charge per host](/datadog-alternative)
+- [New Relic alternative: observability without the seat tax](/new-relic-alternative)
+- [CloudWatch alternative: unified observability beyond AWS](/cloudwatch-alternative)
+- [Observability cost optimization: why the pricing model matters more than your data volume](/observability-cost-optimization)
+- [Why Kubernetes breaks your observability bill](https://docs.base14.io/blog/kubernetes-observability-cost)
+- [Why a separate LLM tool doubles your observability spend](https://docs.base14.io/blog/llm-observability-cost)
+- [The problem with observability theatre](/blog/observability-theatre)

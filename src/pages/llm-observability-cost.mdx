@@ -1,0 +1,336 @@
+---
+title: "LLM observability cost: why a separate monitoring tool doubles your spend"
+description: "LLM observability cost breakdown: running Langfuse or Helicone alongside Datadog adds $15K-36K/month. See why unified platforms cut that in half."
+---
+
+import Head from "@docusaurus/Head";
+
+<Head>
+  <meta
+    name="keywords"
+    content="llm observability cost, llm monitoring platform, langfuse cost, llm observability, ai observability cost, unified llm monitoring, llm monitoring tool"
+  />
+  <script type="application/ld+json">
+    {JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "How much does LLM observability cost with separate tools?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Running a standalone LLM monitoring tool like Langfuse or Helicone alongside an infrastructure platform like Datadog typically costs $15K-40K per month combined. The infrastructure platform alone accounts for the majority of that spend, and the LLM tool adds an additional monthly cost on top.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Can you monitor LLM workloads without a separate tool?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Yes. OpenTelemetry GenAI semantic conventions allow LLM telemetry to flow through the same pipeline as infrastructure metrics, logs, and traces. Unified observability platforms like base14 Scout include LLM monitoring natively with no add-on cost.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "What is the main problem with running separate LLM and infrastructure monitoring?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Two dashboards, two billing models, and zero correlation between them. When an LLM incident is caused by infrastructure issues like memory pressure or network latency, you cannot trace across the boundary without manual investigation across tools.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "How does signal-based pricing reduce LLM observability cost?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Signal-based pricing charges per event regardless of payload size. LLM telemetry is high-cardinality by nature, with prompt content, token counts, and model metadata. On GB-based platforms this rich metadata inflates your bill. Signal-based pricing keeps costs predictable.",
+          },
+        },
+      ],
+    })}
+  </script>
+</Head>
+
+# LLM Observability Cost: Why a Separate Monitoring Tool Doubles Your Spend
+
+> **TL;DR:** Running a standalone LLM monitoring tool alongside your
+> infrastructure platform creates two bills, two dashboards, and zero
+> correlation between them. Most production LLM incidents trace back to
+> infrastructure issues that a separate tool can't see. Unified platforms
+> with signal-based pricing eliminate the operational tax and cut
+> monitoring costs by more than half.
+
+Your team ships an AI feature. The LLM calls work, users are happy, and someone asks the
+reasonable question: how do we monitor this in production?
+
+The default answer, for most teams, is to add a standalone LLM monitoring tool. Langfuse,
+Helicone, LangSmith - pick one. It takes an afternoon to integrate. You get prompt traces,
+token counts, and a dashboard that shows cost per model.
+
+Then the on-call engineer gets paged at 3 AM because the chatbot is returning hallucinated
+product descriptions. They open the LLM tool. Traces look normal, no errors. They switch to
+Datadog and spot an API latency spike on the retrieval service.
+
+They check the Kubernetes cluster. The vector database pod was OOM-killed, returning degraded
+results that the model confidently elaborated into fiction.
+
+Three tools, three browser tabs, thirty minutes of context-switching before they find the root
+cause. The fix takes two minutes.
+
+This is the real llm observability cost that nobody puts on a pricing page - not just the
+subscription fees, but the operational tax of running parallel monitoring stacks that can't
+talk to each other.
+
+## The current landscape: two tools for one problem
+
+The LLM observability market has split into two camps, and most teams end up paying for both.
+
+**Standalone LLM tools** like Langfuse, LangSmith, Helicone, and Arize handle prompt tracing,
+token tracking, and evaluation frameworks. They're genuinely useful for early experimentation.
+Langfuse alone has 19K+ GitHub stars, which reflects real demand for LLM visibility.
+
+**Infrastructure platforms** like Datadog, New Relic, and Grafana have bolted on LLM monitoring
+modules. The data model is the core issue: LLM telemetry lands in a separate query surface
+from infrastructure metrics. You see LLM latency on one dashboard and app latency on another,
+but correlating them during an incident still requires manual work.
+
+Neither camp solves the full problem alone. So teams run both - a standalone tool for the AI
+team's day-to-day prompt debugging, and the infrastructure platform for everything else.
+
+Two dashboards. Two bills. Zero correlation between them.
+
+## The real problem: another silo
+
+Teams already manage four or five monitoring tools on average.
+[Observability theatre](/blog/observability-theatre) - the illusion of
+visibility without substance - is already endemic. Adding a dedicated LLM tool makes it worse.
+
+### What a production LLM incident actually looks like
+
+Your AI-powered customer support chatbot starts giving slow, low-quality responses. The LLM
+monitoring tool shows latency jumped from 800ms to 3.2 seconds, token usage per response is up
+40%, and quality scores dropped. But why?
+
+The answer lives in the infrastructure. A batch embedding job consumed 80% of the Kubernetes
+node's memory. The vector database pod got OOM-killed and restarted. During the restart window,
+retrieval queries returned empty results.
+
+The LLM, receiving no context from your knowledge base, started generating longer responses
+from its training data. More tokens, worse quality, higher latency.
+
+In the standalone LLM tool, you see symptoms. You don't see the cause. In a
+[unified observability platform](https://base14.io/scout), the connection between the
+Kubernetes memory spike, the vector DB restart, the empty retrieval results, and the LLM
+behavior change shows up in a single trace.
+
+One platform engineer described this exact pattern after spending a full day debugging degraded
+chatbot quality. Their LLM tool showed the model generating longer, less relevant responses,
+but it took most of the day to trace it back to a Redis memory issue starving their embedding
+service.
+
+With unified telemetry, the Kubernetes pod event, the Redis metrics, and the LLM trace would
+have been in the same query. The difference between a full day and a few minutes isn't a better
+LLM tool - it's eliminating the gap between AI and infrastructure observability.
+
+**Tired of investigating AI incidents across multiple dashboards?**
+[Book a 15-minute demo](https://base14.io/contact) and see LLM telemetry alongside your full
+infrastructure stack in one view.
+
+## Cost comparison: Langfuse + Datadog vs unified observability
+
+This is where the llm observability cost argument gets concrete. Here's what a mid-size
+engineering team (100 hosts, Kubernetes, 25B signals/month) actually pays.
+
+### The two-tool stack
+
+**Infrastructure monitoring (Datadog):**
+Most teams running Datadog at this scale land between $15,000 and $36,000 per month, depending
+on the mix of APM, logs, custom metrics, and containers. Per-host pricing, GB-based log
+ingestion, and custom metric fees add up fast. See our
+[cost optimization breakdown](/observability-cost-optimization) for the
+full math.
+
+**LLM monitoring (standalone tool):**
+On top of that infrastructure bill, the standalone LLM tool adds its own monthly cost. Pricing
+models vary - some charge per trace, some per seat, some per GB of prompt data stored. The
+range depends on call volume and retention, but it's an extra line item that scales with your
+AI usage.
+
+**Combined monthly cost: $15K-36K+ for infrastructure, plus the LLM tool on top.**
+
+And that's before you account for the hidden costs: engineering time maintaining two
+integrations, context-switching during incidents, and the coverage gaps when something falls
+between the two systems.
+
+### The unified stack
+
+**base14 Scout** includes LLM observability natively. There's no add-on module, no separate
+pricing tier for AI monitoring. LLM traces, token costs, prompt analytics, and multi-agent
+workflow visibility are part of the same platform that handles your
+[logs](https://base14.io/scout/logs), [metrics](https://base14.io/scout/metrics),
+[traces](https://base14.io/scout/traces), and [APM](https://base14.io/scout/apm).
+
+The pricing model is signal-based: $250/month platform fee, $0.10 per million metrics, and
+$0.25 per million logs and traces. For the same 100-host environment with 25B signals, that
+works out to roughly $5,375 per month - infrastructure and LLM monitoring included.
+
+### What the numbers mean
+
+|                                      | Two-tool stack          | Unified (base14 Scout) |
+| :----------------------------------- | :---------------------- | :--------------------- |
+| Infrastructure monitoring            | $15K-36K/month          | Included               |
+| LLM monitoring                       | Additional monthly cost | Included               |
+| Total monthly cost                   | $15K-36K+               | ~$5,375                |
+| Dashboards to check during incidents | 2+                      | 1                      |
+| Integration points to maintain       | 2+                      | 1 (OpenTelemetry)      |
+| Cross-stack correlation              | Manual                  | Automatic              |
+
+The cost difference matters, but the operational difference matters more. When your LLM incident
+is caused by an infrastructure issue - and most of them are - you need both data sets in the
+same query surface. Paying for two tools that can't correlate their data is paying twice for
+incomplete visibility.
+
+## What your AI team actually needs from observability
+
+The conversation about LLM observability tends to focus on prompt tracing and token counting.
+Those matter, but they're table stakes. Here's what production AI teams actually need when they
+move past experimentation.
+
+### Infrastructure-aware LLM monitoring
+
+Every LLM call depends on infrastructure: the API gateway, the retrieval layer, the vector
+database, the Kubernetes pods running your agent code. When any of these degrade, LLM behavior
+degrades too. Your monitoring has to show that link, not just the LLM side.
+
+A single trace should capture the full request path. From the user's API call, through the
+retrieval query, the LLM call, any tool calls the agent makes, and the response assembly.
+When the vector database is slow, you should see that in the same trace as the LLM latency
+spike - not in a different tool.
+
+### Token economics with context
+
+Token cost tracking on its own is useful. Token cost tracking correlated with infrastructure
+costs is actionable. Your engineering lead sees the search feature costs $8,000/month in LLM
+tokens and $250/month in compute. That ratio tells a story neither number tells alone, and it
+only exists when both data sets live in the same platform.
+
+Per-provider cost breakdowns (OpenAI, Anthropic, Google, AWS Bedrock), per-feature attribution,
+and per-team budgets should all be queryable alongside your infrastructure spend.
+
+If a new prompt template costs three times more than the previous version, the alert should
+fire in the same system that tracks your container costs.
+
+### Multi-agent workflow visibility
+
+As teams deploy multi-agent setups with CrewAI, LangGraph, or AutoGen, the debug surface grows
+fast. Agent handoff tracing, tool call visibility, and decision path analysis all require
+[distributed tracing](https://base14.io/scout/traces) across the full workflow - not just the
+LLM calls, but every tool call, database query, and API request in the chain.
+
+For a deeper look at how to instrument these workflows, see our guide on
+[coding agent observability](/blog/coding-agent-observability).
+
+### Prompt lifecycle management
+
+Prompts are code. They need versioning, A/B testing, and production monitoring tied to real
+outcomes. Did the new system prompt improve response quality, or did it quietly increase token
+usage by 40%? You can't answer that without closing the loop between prompt changes and
+production telemetry. We cover this in detail in
+[the LLM prompt lifecycle](/blog/llm-prompt-lifecycle).
+
+### Provider comparison and failover
+
+If you use multiple LLM providers (and most production teams do), you need comparative data.
+Latency by provider, model, and region. Error rates and rate-limit frequency. Cost per task
+across providers. Regression detection when providers push model updates.
+
+This data drives failover strategies and cost optimization that a single-provider monitoring
+tool can't support.
+
+## Choosing an LLM monitoring approach
+
+| Factor                     | Standalone tool | Bolt-on module   | Unified platform |
+| :------------------------- | :-------------- | :--------------- | :--------------- |
+| Setup speed                | Fast            | Medium           | Medium           |
+| LLM-specific features      | Deep            | Moderate         | Deep             |
+| Infrastructure correlation | None            | Partial          | Full             |
+| Incident investigation     | LLM-only        | Tab-switching    | Single view      |
+| Additional vendor          | Yes             | No (existing)    | No (existing)    |
+| Pricing impact             | Separate bill   | Per-GB surcharge | Included         |
+| Multi-agent tracing        | Basic           | Basic            | Full-stack       |
+| Provider coverage          | 5-10            | 10-20            | 50+              |
+
+### When standalone tools make sense
+
+Standalone LLM monitoring tools earn their place during early experimentation - when you're
+running a single provider, your infrastructure monitoring needs are minimal, and prompt testing
+is the main workflow. There's nothing wrong with Langfuse for a team of three building their
+first AI feature.
+
+### When the cost stops making sense
+
+The economics shift when you hit production. Multiple LLM providers, multi-agent architectures,
+LLM costs exceeding $5,000 per month, and an existing infrastructure stack that already costs
+five figures - at that point, the standalone tool isn't saving you money. It's adding another
+bill on top of a bill, another silo on top of a silo.
+
+The question isn't whether you need LLM observability. You do. The question is whether it
+should be a separate line item with a separate dashboard, or a native capability of the
+platform you already use for everything else.
+
+For teams evaluating their options, our
+[observability platform evaluation framework](/evaluate-observability-platform)
+covers what to look for beyond feature checklists.
+
+## OpenTelemetry: the bridge between AI and infrastructure telemetry
+
+The reason unified LLM monitoring is technically feasible - not just a sales pitch - is
+OpenTelemetry. The OTel
+[GenAI semantic conventions](https://opentelemetry.io/blog/2024/otel-generative-ai/) standardize
+how LLM telemetry is captured, using the same trace and metric primitives that already carry
+your infrastructure data.
+
+If your stack already uses OpenTelemetry for application traces, database metrics, and log
+collection, your LLM telemetry flows through the same pipeline. One collector, one exporter, one
+backend. Libraries like [OpenLLMetry](https://github.com/traceloop/openllmetry) provide
+auto-instrumentation for popular frameworks including LangChain, LlamaIndex, CrewAI, and the
+OpenAI and Anthropic SDKs.
+
+This is the key insight that makes the two-tool approach unnecessary. LLM calls become spans
+with standard attributes - `gen_ai.system`, `gen_ai.request.model`,
+`gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens` - living in the same trace as your
+HTTP spans, database queries, and Kubernetes events. The data model is unified at the source,
+so the correlation is automatic.
+
+base14 Scout supports [LLM observability](https://base14.io/scout/llm-observability) across 50+
+providers natively through this OpenTelemetry foundation: OpenAI, Anthropic, Google
+(Gemini/Vertex), AWS Bedrock, Cohere, Mistral, Together AI, Groq, and dozens more. For agent
+design patterns that take advantage of this unified telemetry, see
+[building for agents](/blog/building-for-agents).
+
+## Two things to carry forward
+
+Every production LLM incident eventually crosses into infrastructure. Your observability stack
+should make that crossing visible in a single query, not a tab-switching exercise across two
+dashboards with two separate billing models.
+
+The llm observability cost that matters most isn't the subscription fee. It's the operational
+cost of running parallel monitoring stacks that fragment your team's context during the
+incidents where speed matters most. Unified platforms eliminate that cost by putting AI
+telemetry and infrastructure telemetry in the same data lake, on the same bill.
+
+**Ready to consolidate your AI and infrastructure monitoring?**
+[Book a 15-minute demo](https://base14.io/contact) and see what unified LLM observability
+looks like at your scale.
+
+---
+
+## Related reading
+
+- [Why Kubernetes breaks your observability bill](/kubernetes-observability-cost)
+- [How to evaluate an observability platform](/evaluate-observability-platform)
+- [Observability cost optimization: why the pricing model matters](/observability-cost-optimization)
+- [The LLM prompt lifecycle: from experiment to production](/blog/llm-prompt-lifecycle)
+- [Coding agent observability: instrumenting AI workflows](/blog/coding-agent-observability)
+- [The problem with observability theatre](/blog/observability-theatre)

@@ -1,0 +1,410 @@
+---
+title: "Kubernetes observability cost: why K8s breaks your Datadog bill"
+description: "Kubernetes observability cost compared across Datadog, New Relic, and signal-based pricing. See what a 50-node cluster actually costs."
+---
+
+import Head from "@docusaurus/Head";
+
+<Head>
+  <meta
+    name="keywords"
+    content="kubernetes observability cost, kubernetes monitoring pricing, k8s observability, datadog kubernetes cost, signal-based pricing"
+  />
+  <script type="application/ld+json">
+    {JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "Why is Kubernetes monitoring so expensive on Datadog?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Kubernetes generates high-cardinality telemetry through unique pod names, container IDs, and label combinations. Datadog charges per host ($15-27/month for infrastructure, $31/month for APM) plus custom metrics at $1 per 100, which compounds quickly in dynamic K8s clusters where pods and labels multiply constantly.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "How much does monitoring a 50-node Kubernetes cluster cost on Datadog vs signal-based pricing?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "A 50-node K8s cluster on Datadog with infrastructure monitoring, APM, and logging typically costs $12,000-15,000/month at published rates. The same cluster on base14 Scout with signal-based pricing ($250/month platform fee + $0.10/M metrics + $0.25/M logs and traces) runs approximately $3,200-4,500/month depending on telemetry volume.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "What is signal-based pricing for observability?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Signal-based pricing charges per data point (metric sample, log line, or trace span) regardless of size or cardinality. This means rich Kubernetes labels, full stack traces, and custom annotations don't inflate costs, unlike GB-based or per-host models where metadata size directly affects your bill.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "How does Kubernetes cardinality affect observability costs?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Every Kubernetes pod gets a unique name with a random hash. Multiply by namespaces, deployments, labels, and annotations, and a 50-node cluster can generate hundreds of thousands of unique time series. On platforms that charge per custom metric or per GB, this cardinality explosion drives costs up without adding workload.",
+          },
+        },
+      ],
+    })}
+  </script>
+</Head>
+
+# Kubernetes observability cost: why K8s breaks your Datadog bill
+
+> **TL;DR:** Kubernetes telemetry is structurally expensive on
+> per-host and GB-based platforms. A 50-node cluster on Datadog runs
+> $12,000-15,000/month at published pricing. The same cluster on
+> base14 Scout with signal-based pricing ($250/month platform fee +
+> $0.10/M metrics + $0.25/M logs & traces) costs roughly
+> $3,200-4,500/month. The difference comes from how each model
+> handles cardinality, and Kubernetes generates a lot of it.
+
+Your Kubernetes observability bill doesn't scale with your workload.
+It scales with your cluster's cardinality. Every pod restart mints
+new label combinations. Every HPA scaling event creates new time
+series. Every namespace, annotation, and sidecar container
+multiplies the dimensions your observability platform tracks.
+
+On platforms that charge per host, per GB, or per custom metric,
+this is a structural problem. Kubernetes generates high-cardinality
+telemetry by design. Traditional pricing models punish you for it.
+
+Teams respond the way you'd expect: they strip labels, sample
+traces, shorten retention, and aggregate metrics. They reduce costs
+by reducing the context they'll need during the next incident.
+
+This is the kubernetes observability cost problem. It's not about
+choosing the cheapest vendor. It's about choosing a pricing model
+that doesn't force you to choose between cost control and debugging
+capability.
+
+## Why Kubernetes breaks per-host pricing
+
+Traditional infrastructure monitoring was built for a world where
+hosts were stable, identifiable, and countable. You had 50 servers,
+you paid for 50 hosts, and the math was straightforward. Kubernetes
+breaks every assumption in that model.
+
+### The cardinality explosion
+
+A single Kubernetes node doesn't generate telemetry like a single
+VM. Each node runs multiple pods. Each pod has one or more
+containers, and each container produces its own metrics, logs, and
+traces. The metadata attached to that telemetry includes pod names
+with random hash suffixes, container IDs, namespace labels,
+deployment labels, and replica set names.
+
+A 50-node cluster running 30 pods per node means 1,500 pods. Each
+pod carries 10-15 metadata dimensions. Multiply by the metrics
+each pod emits, and you're looking at hundreds of thousands of
+unique time series that churn constantly as pods restart and
+reschedule.
+
+On Datadog, every unique combination of metric name and tag set
+counts as a custom metric beyond a small included allotment. At
+[$1 per 100 custom metrics](https://www.datadoghq.com/pricing/),
+a K8s cluster that generates 50,000 custom metrics from
+kube-state-metrics and cAdvisor alone adds $500/month before you've
+instrumented a single application.
+
+### Ephemeral pods and billing floors
+
+Kubernetes pods are ephemeral by design. They crash, restart, get
+rescheduled to different nodes, and scale up and down with load.
+But observability billing often isn't ephemeral. Datadog uses
+high-water mark billing for per-host pricing: your monthly cost is
+based on the peak number of hosts observed during the billing
+period, not the average.
+
+That autoscaling event that spun up 20 extra nodes for a traffic
+spike last Tuesday? Those nodes count toward your monthly bill even
+if they only existed for two hours. For teams running Kubernetes
+with aggressive autoscaling, the gap between average utilization
+and peak billing can be significant.
+
+### Log volume from orchestration noise
+
+Kubernetes control plane components are verbose. The API server,
+scheduler, controller-manager, and etcd all produce logs. Add
+container stdout/stderr, kubelet logs, and sidecar containers
+(Istio envoy proxies are prolific log generators), and a 50-node
+cluster can produce hundreds of gigabytes of logs per day.
+
+Most of this volume is orchestration noise. Teams rarely query it,
+but they always pay for it on GB-based platforms. The alternative
+is dropping logs at the collector level. That saves money, but it
+also means losing the data that explains why the cluster made the
+decisions it did during an incident.
+
+## The five signals you actually need
+
+Most kubernetes monitoring pricing discussions focus on three
+signals: metrics, logs, traces. In Kubernetes, two additional signal
+types are equally critical for understanding what happened and why.
+
+### Metrics: pod, node, and cluster health
+
+Kubernetes metrics come from multiple sources. The kubelet reports
+pod-level resource usage. kube-state-metrics exposes cluster state
+like deployment status and pod phases. cAdvisor provides
+container-level data, and node exporters cover hardware metrics.
+
+The signals that matter most: CPU and memory per pod, pod restart
+counts,
+[RED metrics (request rate, error rate, duration)](https://base14.io/scout/apm)
+per service, and HPA scaling events. Each generates
+high-cardinality time series because label dimensions change
+constantly.
+
+### Logs: container, kubelet, and control plane
+
+Container logs stream from stdout/stderr. Kubelet logs capture
+node-level events. Control plane logs from the API server,
+scheduler, and etcd tell you why the cluster made scheduling and
+scaling decisions.
+
+The challenge is ephemeral pods. A DaemonSet log collector must
+ship logs off-node before the pod dies, or those final crash lines
+are gone permanently.
+
+### Distributed traces: request flow across services
+
+A single user request in a Kubernetes microservices architecture
+might traverse 5-15 services across dozens of pods. Without
+distributed tracing, debugging is guesswork. You see the symptom
+in one service and the cause lives in another, with no way to
+connect them.
+
+The trace that reveals root cause is often the one that gets
+sampled away on platforms where trace retention is expensive.
+
+### Kubernetes events: the cluster's own story
+
+Events are Kubernetes' native notification system: pod scheduling,
+image pulls, container starts and kills, probe failures, HPA
+decisions. These are often ignored in observability setups, but
+they answer the question that infrastructure metrics cannot: "What
+changed?" When a deployment rollout coincides with a latency spike,
+the event stream connects the two. For more on observing these
+silent failures, see
+[Kubernetes scheduling: observing silent failures](/blog/kubernetes-scheduling-observing-silent-failures).
+
+### Resource state: deployments, ConfigMaps, services
+
+Beyond events, the current state of Kubernetes resources tells a
+story. A ConfigMap change that propagated to 50 pods. A service
+endpoint update that rerouted traffic. Correlating resource state
+changes with performance anomalies is what separates reactive
+monitoring from useful Kubernetes observability.
+
+## What a 50-node cluster actually costs
+
+Let's put real numbers on this. The scenario: a 50-node Kubernetes
+cluster running microservices, averaging 30 pods per node, with
+standard observability requirements (infrastructure metrics, APM,
+logs, traces).
+
+### Datadog: per-host + per-metric + per-GB
+
+Datadog's published pricing breaks down across multiple billing
+dimensions. For a 50-node K8s cluster:
+
+| Component | Rate | Monthly Cost |
+| :--- | :--- | :--- |
+| Infrastructure (Pro, 50 hosts) | [$23/host/month](https://www.datadoghq.com/pricing/) | $1,150 |
+| APM (50 hosts) | $31/host/month | $1,550 |
+| Log ingestion (150 GB/day) | $0.10/GB | $450 |
+| Log indexing (150 GB/day, 15-day) | ~$1.70/M events | $5,775 |
+| Custom metrics (50K beyond included) | $1/100 | $500 |
+| **Subtotal** | | **$9,425** |
+| Container monitoring add-on | varies | +$1,000-2,000 |
+| **Estimated total** | | **$10,425-$11,425** |
+
+*Pricing as of April 2026. Based on publicly listed annual billing
+rates. Custom metrics count depends on integrations and labels
+enabled. Verify at
+[datadoghq.com/pricing](https://www.datadoghq.com/pricing/).
+Actual costs vary by contract.*
+
+And this is conservative. Teams that keep rich Kubernetes labels on
+their custom metrics, retain logs beyond 15 days, or run
+additional Datadog features (Synthetics, Database Monitoring, CSPM)
+regularly see bills in the $13,000-18,000/month range for clusters
+this size. For a deeper breakdown of Datadog's billing mechanics,
+see our
+[Datadog alternative](/datadog-alternative)
+comparison.
+
+### New Relic: per-seat + per-GB
+
+New Relic's model is structurally different but creates its own K8s
+cost pressure. The host count doesn't directly drive the bill, but
+data ingest does:
+
+| Component | Rate | Monthly Cost |
+| :--- | :--- | :--- |
+| Full Platform users (5 engineers) | [$349/user/month](https://newrelic.com/pricing) | $1,745 |
+| Core users (3 engineers) | $49/user/month | $147 |
+| Data ingest (beyond 100GB free) | $0.40/GB | $3,600 |
+| **Estimated total** | | **$5,492** |
+
+*Assumes 5 Full Platform + 3 Core users, ~300 GB/month total
+ingest beyond the free tier. Verify at
+[newrelic.com/pricing](https://newrelic.com/pricing).*
+
+New Relic's per-seat model means cost scales with team size, not
+cluster size. Small teams with large clusters may pay less than
+Datadog. Larger organizations where many engineers need query
+access see per-seat costs add up quickly. See our
+[New Relic alternative](/new-relic-alternative)
+analysis for more detail.
+
+### base14 Scout: signal-based pricing
+
+Scout charges per signal (one metric data point, one log line, or
+one trace span) regardless of size, cardinality, or metadata
+attached. Rich Kubernetes labels don't inflate costs.
+
+| Component | Rate | Monthly Cost |
+| :--- | :--- | :--- |
+| Platform fee | $250/month | $250 |
+| Metrics (~500M signals/month) | $0.10/M | $50 |
+| Logs (~3B signals/month) | $0.25/M | $750 |
+| Traces (~2B spans/month) | $0.25/M | $500 |
+| **Estimated total** | | **$1,550** |
+
+Even at higher volumes, say double the signals above, the total
+reaches approximately $3,350/month. There are no per-host charges,
+no custom metric surcharges, and no penalty for keeping every
+Kubernetes label on every signal.
+
+The key difference isn't just the number. It's what you keep. On
+Datadog, teams strip labels and sample traces to control costs. On
+Scout, you keep full cardinality because the pricing model doesn't
+punish it.
+
+### Side-by-side summary
+
+| | Datadog | New Relic | base14 Scout |
+| :--- | :--- | :--- | :--- |
+| 50-node K8s cluster | $10,000-15,000/mo | $5,000-7,000/mo | $1,550-3,350/mo |
+| Pricing scales with | Hosts + GB + metrics | Seats + GB | Signals only |
+| Custom metrics penalty | $1/100 beyond included | Included in GB | No penalty |
+| Trace sampling needed | Often, to control cost | Often, to control ingest | No, zero-sampling friendly architecture |
+| K8s label cardinality | Inflates custom metric cost | Inflates GB ingest cost | No cost impact |
+| Default retention | 15 days (logs) | 8-30 days | 30 days |
+| Team access | Unlimited seats | Per-seat pricing | Unlimited seats |
+
+*All estimates assume published pricing, annual billing, 50-node
+K8s cluster with moderate microservices workload. Actual costs vary
+by contract, volume commitments, and feature usage.*
+
+## The hidden cost: what you lose to save money
+
+The kubernetes observability cost problem isn't just about the
+invoice. It's about the debugging capability you sacrifice to keep
+the invoice manageable.
+
+### Label stripping
+
+When custom metrics cost $1/100 and your K8s cluster generates
+thousands of unique label combinations, teams respond rationally:
+they strip labels. Pod name? Aggregated away. Container ID?
+Dropped. Custom annotations? Never shipped.
+
+This works fine until the incident where you need to isolate a
+specific pod's behavior, and the label that would have identified
+it was stripped at collection time to save $200/month.
+
+### Trace sampling
+
+Sampling traces at 10% or 1% makes sense from a cost perspective.
+From a debugging perspective, it means the P99 latency spike
+affecting 0.5% of requests is invisible. The trace that would show
+root cause was never stored.
+
+Teams end up spending engineering hours reconstructing what a
+complete trace would have shown them instantly.
+
+### Short retention
+
+With 15-day log retention (Datadog's default indexed retention),
+you can't investigate last month's anomaly. You can't compare this
+week's deployment against a baseline from three weeks ago.
+
+Memory leaks build over days. Pod degradation takes weeks to
+surface. Configuration drift compounds silently. All invisible
+once the retention window closes.
+
+On Scout, 30-day default retention at full resolution means the
+data is there when you need it. Extended retention is available at
+minimal cost for teams that need longer lookback windows.
+
+**Running Kubernetes and wondering what your cluster actually costs
+to observe?**
+[Book a 15-minute demo](https://base14.io/contact) and we'll model
+your workload against signal-based pricing.
+
+## What to do about it
+
+If your kubernetes monitoring pricing doesn't match how Kubernetes
+actually generates telemetry, the fix isn't a better discount from
+your current vendor. It's a pricing model that aligns with the
+reality of dynamic, high-cardinality infrastructure.
+
+### Audit your current spend
+
+Before switching anything, understand where your money goes. Most
+teams are surprised by how much they spend on custom metrics from
+Kubernetes integrations they never configured intentionally. Check
+your Datadog custom metrics count, your log indexing volume versus
+what gets queried, and your trace sampling rate versus what you'd
+actually want during an incident.
+
+### Evaluate signal-based alternatives
+
+Signal-based pricing counts one log line, one metric data point,
+or one trace span as one signal. Size and labels don't matter.
+This eliminates the cardinality tax that makes Kubernetes expensive
+to observe. For a framework on evaluating platforms, see our
+[observability platform evaluation guide](/evaluate-observability-platform).
+
+### Keep OpenTelemetry as your collection layer
+
+Whatever backend you choose, instrument with
+[OpenTelemetry](https://opentelemetry.io/docs/). OTel is the
+second most active CNCF project after Kubernetes itself, and it
+ensures your instrumentation is portable. If you change backends
+next year, your code doesn't change. For production collector
+configuration, see
+[building a production-ready OTel collector](/blog/production-ready-otel-collector).
+
+### Stop treating observability cost as fixed
+
+Observability spend should scale predictably with your workload,
+not spike unpredictably with your cluster's cardinality. If your
+current platform penalizes you for keeping the context you need,
+that's not a budgeting problem; it's an architecture problem. For
+a broader analysis of how pricing models affect observability
+decisions, see our
+[observability cost optimization](/observability-cost-optimization)
+guide.
+
+Kubernetes generates high-cardinality, multi-signal telemetry
+across ephemeral infrastructure. That's not a bug; it's how
+container orchestration works. The question is whether your
+observability pricing model treats that reality as a feature or a
+penalty.
+
+---
+
+## Related reading
+
+- [Why a separate LLM tool doubles your observability spend](/llm-observability-cost)
+- [How to evaluate an observability platform](/evaluate-observability-platform)
+- [Observability cost optimization: why the pricing model matters](/observability-cost-optimization)
+- [Kubernetes scheduling: observing silent failures](/blog/kubernetes-scheduling-observing-silent-failures)
+- [The problem with observability theatre](/blog/observability-theatre)
