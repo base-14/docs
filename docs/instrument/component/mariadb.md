@@ -183,7 +183,7 @@ service:
   pipelines:
     metrics:
       receivers: [mysql]
-      processors: [batch, resource]
+      processors: [resource, batch]
       exporters: [otlphttp/b14]
 ```
 
