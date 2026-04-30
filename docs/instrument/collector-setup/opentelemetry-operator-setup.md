@@ -349,43 +349,43 @@ spec:
       pipelines:
         traces:
           receivers: [otlp]
-          processors: [batch]
+          processors: [memory_limiter, batch]
           exporters: [otlphttp/b14]
         logs:
           receivers: [otlp]
-          processors: [batch]
+          processors: [memory_limiter, batch]
           exporters: [otlphttp/b14]
         logs/k8s-events:
           receivers: [k8sobjects]
           processors:
             - memory_limiter
-            - batch
             - resource/k8s-events
             - resourcedetection/eks
             - resource/env
+            - batch
           exporters: [otlphttp/b14]
         logs/k8s-cluster:
           receivers: [k8s_cluster]
           processors:
             - memory_limiter
-            - batch
             - resource/k8s
             - resourcedetection/eks
             - resource/env
+            - batch
           exporters: [otlphttp/b14]
         metrics:
           receivers: [otlp]
-          processors: [memory_limiter, batch, resource/env]
+          processors: [memory_limiter, resource/env, batch]
           exporters: [otlphttp/b14]
         metrics/k8s:
           receivers: [k8s_cluster]
           processors:
             - memory_limiter
-            - batch
             - resource/k8s
             - resourcedetection/eks
             - resource/env
             - k8sattributes
+            - batch
           exporters: [otlphttp/b14]
       telemetry:
         logs:
@@ -513,6 +513,12 @@ spec:
           resource_attributes:
             k8s.cluster.name:
               enabled: true
+      transform/filelog:
+        error_mode: ignore
+        log_statements:
+          - context: log
+            statements:
+              - set(resource.attributes["service.name"], resource.attributes["k8s.container.name"]) where resource.attributes["k8s.container.name"] != nil
       k8sattributes:
         auth_type: serviceAccount
         extract:
@@ -592,25 +598,25 @@ spec:
       pipelines:
         traces:
           receivers: [otlp]
-          processors: [batch, resource, resource/env]
+          processors: [memory_limiter, resource, resource/env, batch]
           exporters: [otlp/agent]
         logs:
           receivers: [otlp, filelog]
-          processors: [batch, resource/env]
+          processors: [memory_limiter, transform/filelog, resource/env, batch]
           exporters: [otlp/agent]
         metrics:
           receivers: [otlp]
-          processors: [memory_limiter, batch, resource/env]
+          processors: [memory_limiter, resource/env, batch]
           exporters: [otlp/agent]
         metrics/k8s:
           receivers: [kubeletstats]
           processors:
             - memory_limiter
-            - batch
             - resource/k8s
             - resourcedetection/eks
             - resource/env
             - k8sattributes
+            - batch
           exporters: [otlp/agent]
       telemetry:
         logs:
@@ -838,43 +844,43 @@ spec:
       pipelines:
         traces:
           receivers: [otlp]
-          processors: [batch, resource, resource/env]
+          processors: [memory_limiter, resource, resource/env, batch]
           exporters: [otlphttp/b14]
         logs:
           receivers: [otlp]
-          processors: [batch, resource/env]
+          processors: [memory_limiter, resource/env, batch]
           exporters: [otlphttp/b14]
         logs/k8s-events:
           receivers: [k8sobjects]
           processors:
             - memory_limiter
-            - batch
             - resource/k8s-events
             - resourcedetection/eks
             - resource/env
+            - batch
           exporters: [otlphttp/b14]
         logs/k8s-cluster:
           receivers: [k8s_cluster]
           processors:
             - memory_limiter
-            - batch
             - resource/k8s
             - resourcedetection/eks
             - resource/env
+            - batch
           exporters: [otlphttp/b14]
         metrics:
           receivers: [otlp]
-          processors: [memory_limiter, batch, resource/env]
+          processors: [memory_limiter, resource/env, batch]
           exporters: [otlphttp/b14]
         metrics/k8s:
           receivers: [k8s_cluster]
           processors:
             - memory_limiter
-            - batch
             - resource/k8s
             - resourcedetection/eks
             - resource/env
             - k8sattributes
+            - batch
           exporters: [otlphttp/b14]
       telemetry:
         logs:
