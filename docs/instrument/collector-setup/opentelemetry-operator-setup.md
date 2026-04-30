@@ -1010,7 +1010,7 @@ applications without code changes.
 |----------|------------|----------|
 | Java | `instrumentation.opentelemetry.io/inject-java: "true"` | OTLP HTTP (4318) |
 | Python | `instrumentation.opentelemetry.io/inject-python: "true"` | OTLP HTTP (4318) |
-| Node.js | `instrumentation.opentelemetry.io/inject-nodejs: "true"` | OTLP gRPC (4317) |
+| Node.js | `instrumentation.opentelemetry.io/inject-nodejs: "true"` | OTLP HTTP (4318) |
 | .NET | `instrumentation.opentelemetry.io/inject-dotnet: "true"` | OTLP HTTP (4318) |
 | Go | `instrumentation.opentelemetry.io/inject-go: "true"` | eBPF (requires elevated permissions) |
 
