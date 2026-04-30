@@ -1008,11 +1008,11 @@ applications without code changes.
 
 | Language | Annotation | Protocol |
 |----------|------------|----------|
-| Java | `instrumentation.opentelemetry.io/inject-java: "true"` | OTLP HTTP (4318) |
-| Python | `instrumentation.opentelemetry.io/inject-python: "true"` | OTLP HTTP (4318) |
-| Node.js | `instrumentation.opentelemetry.io/inject-nodejs: "true"` | OTLP HTTP (4318) |
-| .NET | `instrumentation.opentelemetry.io/inject-dotnet: "true"` | OTLP HTTP (4318) |
-| Go | `instrumentation.opentelemetry.io/inject-go: "true"` | eBPF (requires elevated permissions) |
+| Java | `instrumentation.opentelemetry.io/inject-java: "observability/scout-instrumentation"` | OTLP HTTP (4318) |
+| Python | `instrumentation.opentelemetry.io/inject-python: "observability/scout-instrumentation"` | OTLP HTTP (4318) |
+| Node.js | `instrumentation.opentelemetry.io/inject-nodejs: "observability/scout-instrumentation"` | OTLP HTTP (4318) |
+| .NET | `instrumentation.opentelemetry.io/inject-dotnet: "observability/scout-instrumentation"` | OTLP HTTP (4318) |
+| Go | `instrumentation.opentelemetry.io/inject-go: "observability/scout-instrumentation"` | eBPF (requires elevated permissions) |
 
 ### Step 1: Create an Instrumentation Resource
 
@@ -1095,7 +1095,7 @@ spec:
       labels:
         app: my-java-app
       annotations:
-        instrumentation.opentelemetry.io/inject-java: "true"
+        instrumentation.opentelemetry.io/inject-java: "observability/scout-instrumentation"
     spec:
       containers:
         - name: app
@@ -1125,7 +1125,7 @@ spec:
       labels:
         app: my-python-app
       annotations:
-        instrumentation.opentelemetry.io/inject-python: "true"
+        instrumentation.opentelemetry.io/inject-python: "observability/scout-instrumentation"
     spec:
       containers:
         - name: app
@@ -1155,7 +1155,7 @@ spec:
       labels:
         app: my-nodejs-app
       annotations:
-        instrumentation.opentelemetry.io/inject-nodejs: "true"
+        instrumentation.opentelemetry.io/inject-nodejs: "observability/scout-instrumentation"
     spec:
       containers:
         - name: app
@@ -1185,7 +1185,7 @@ spec:
       labels:
         app: my-dotnet-app
       annotations:
-        instrumentation.opentelemetry.io/inject-dotnet: "true"
+        instrumentation.opentelemetry.io/inject-dotnet: "observability/scout-instrumentation"
     spec:
       containers:
         - name: app
@@ -1225,7 +1225,7 @@ To instrument specific containers in a multi-container pod:
 ```yaml showLineNumbers
 metadata:
   annotations:
-    instrumentation.opentelemetry.io/inject-java: "true"
+    instrumentation.opentelemetry.io/inject-java: "observability/scout-instrumentation"
     instrumentation.opentelemetry.io/container-names: "app-container"
 ```
 
@@ -1239,7 +1239,7 @@ kind: Namespace
 metadata:
   name: my-namespace
   annotations:
-    instrumentation.opentelemetry.io/inject-java: "scout-instrumentation"
+    instrumentation.opentelemetry.io/inject-java: "observability/scout-instrumentation"
 ```
 
 ## Troubleshooting
