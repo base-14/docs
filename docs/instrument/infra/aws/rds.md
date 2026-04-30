@@ -197,7 +197,7 @@ service:
   pipelines:
     metrics:
       receivers: [postgresql]
-      processors: [batch, resource]
+      processors: [resource, batch]
       exporters: [otlphttp/b14]
 ```
 

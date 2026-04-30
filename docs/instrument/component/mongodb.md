@@ -181,7 +181,7 @@ service:
   pipelines:
     metrics:
       receivers: [mongodb]
-      processors: [batch, resource]
+      processors: [resource, batch]
       exporters: [otlphttp/b14]
 ```
 

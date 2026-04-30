@@ -408,15 +408,15 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [batch, resource]
+      processors: [resource, batch]
       exporters: [otlphttp/scout]
     metrics:
       receivers: [otlp]
-      processors: [batch, resource]
+      processors: [resource, batch]
       exporters: [otlphttp/scout]
     logs:
       receivers: [otlp]
-      processors: [batch, resource]
+      processors: [resource, batch]
       exporters: [otlphttp/scout]
 ```
 

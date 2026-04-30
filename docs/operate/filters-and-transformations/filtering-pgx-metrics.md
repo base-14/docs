@@ -117,7 +117,7 @@ service:
   pipelines:
     metrics:
       receivers: [prometheus]
-      processors: [filter/drop_table_index, batch, resource]
+      processors: [filter/drop_table_index, resource, batch]
       exporters: [otlp/scout]
 ```
 
@@ -339,8 +339,8 @@ service:
           filter/drop_table_index,
           filter/drop_test_databases,
           filter/drop_progress_system,
-          batch,
           resource,
+          batch,
         ]
       exporters: [otlp/scout]
 ```

@@ -178,7 +178,7 @@ service:
   pipelines:
     metrics:
       receivers: [redis]
-      processors: [batch, resource]
+      processors: [resource, batch]
       exporters: [otlphttp/b14]
 ```
 

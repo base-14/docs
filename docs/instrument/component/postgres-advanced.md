@@ -211,11 +211,11 @@ service:
   pipelines:
     metrics:
       receivers: [prometheus]
-      processors: [batch, resource]
+      processors: [resource, batch]
       exporters: [otlp/scout]
     traces:
       receivers: [otlp]
-      processors: [batch, resource]
+      processors: [resource, batch]
       exporters: [otlp/scout]
 ```
 

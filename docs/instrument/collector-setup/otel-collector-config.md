@@ -191,11 +191,11 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [batch, memory_limiter]
+      processors: [memory_limiter, batch]
       exporters: [otlp, zipkin]
     metrics:
       receivers: [otlp, prometheus]
-      processors: [batch, memory_limiter]
+      processors: [memory_limiter, batch]
       exporters: [otlp, prometheus]
     logs:
       receivers: [otlp]
@@ -440,11 +440,11 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [batch, attributes, resourcedetection]
+      processors: [attributes, resourcedetection, batch]
       exporters: [otlp/traces]
     metrics:
       receivers: [otlp, prometheus]
-      processors: [batch, resourcedetection]
+      processors: [resourcedetection, batch]
       exporters: [otlp/metrics, prometheus]
 ```
 
