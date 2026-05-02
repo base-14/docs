@@ -876,18 +876,20 @@ operational signals live.
 
 ## Related Guides
 
-- [Kubernetes (Scout Helm chart)](../../collector-setup/kubernetes-helm-setup.md) —
-  alternative deployment pattern using Scout's own Helm chart instead of
-  the upstream OpenTelemetry chart this guide uses. Useful for non-AKS
-  Kubernetes platforms or operators who prefer a single Scout-curated
-  chart over the upstream + values-file approach.
+- [Kubernetes (Scout Helm chart)][scout-helm] — alternative deployment
+  pattern using Scout's own Helm chart instead of the upstream
+  OpenTelemetry chart this guide uses. Useful for non-AKS Kubernetes
+  platforms or operators who prefer a single Scout-curated chart over the
+  upstream + values-file approach.
 - [CloudWatch Metrics Stream](../aws/cloudwatch-metrics-stream.md) — the
   AWS infrastructure-metrics guide. Different pattern from this one
   (CloudWatch → Kinesis Firehose → Scout, push-stream forwarder; this
   guide is pull-based collectors).
-- [OpenTelemetry Collector Helm chart](https://github.com/open-telemetry/opentelemetry-helm-charts/tree/main/charts/opentelemetry-collector) —
-  upstream chart documentation.
-- [kube-state-metrics Helm chart](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-state-metrics) —
-  exporter source and configuration.
-- Working example with Bicep, Helm values, and demo workloads:
-  [`base-14/examples/components/azure-aks-telemetry`](https://github.com/base-14/examples/tree/main/components/azure-aks-telemetry).
+- [OpenTelemetry Collector Helm chart][otel-helm] — upstream chart
+  documentation.
+- [kube-state-metrics Helm chart][ksm-helm] — exporter source and
+  configuration.
+
+[scout-helm]: ../../collector-setup/kubernetes-helm-setup.md
+[otel-helm]: https://github.com/open-telemetry/opentelemetry-helm-charts/tree/main/charts/opentelemetry-collector
+[ksm-helm]: https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-state-metrics
