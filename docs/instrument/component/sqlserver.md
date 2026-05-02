@@ -380,8 +380,9 @@ are required.
 
 This guide targets self-hosted SQL Server. Azure SQL Database and
 Azure SQL Managed Instance expose metrics via Azure Monitor; collect
-them with the `azuremonitorreceiver` instead. The Azure SQL Database
-guide is published as part of the Microsoft / Azure track.
+them with the `azuremonitorreceiver` instead. See the
+[Azure SQL Database guide](../infra/azure/sql-database.md) for the
+managed PaaS path.
 
 **Why is `sqlserver.transaction_log.usage` not showing up?**
 
@@ -393,6 +394,9 @@ tempdb and per-database log usage queries you can wire up via the
 
 ## Related Guides
 
+- [Azure SQL Database](../infra/azure/sql-database.md) - Paired guide for
+  the managed PaaS (Azure SQL Database / Managed Instance). Uses the OTel
+  `azure_monitor` receiver instead of `sqlserverreceiver`.
 - [PostgreSQL Monitoring](./postgres.md) - Adjacent relational
   database guide
 - [MySQL Monitoring](./mysql.md) - Adjacent relational database

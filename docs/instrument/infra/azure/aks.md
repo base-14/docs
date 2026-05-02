@@ -22,12 +22,13 @@ head:
   - - script
     - type: application/ld+json
     - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I monitor an Azure Kubernetes Service cluster with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Deploy the upstream OpenTelemetry Collector Helm chart twice in your AKS cluster - once as a DaemonSet (kubeletstats + hostmetrics) for per-node metrics, once as a Deployment (k8s_cluster + prometheus scraping kube-state-metrics) for cluster-state and additional kube_* metrics. Both ship OTLP/HTTP to base14 Scout authenticated via OAuth2 client credentials. ServiceAccounts authenticate to Azure via Workload Identity Federation."}},{"@type":"Question","name":"How does the in-cluster collector authenticate to base14 Scout?","acceptedAnswer":{"@type":"Answer","text":"Via the OpenTelemetry Collector oauth2client extension. Store the Scout-issued client_id and client_secret in a Kubernetes Secret, reference them in the chart values via secretKeyRef, and the otlp_http/b14 exporter automatically fetches short-lived bearer tokens from your Keycloak token URL on each scrape interval (cached until expiry)."}},{"@type":"Question","name":"Why do I need two Helm releases instead of one?","acceptedAnswer":{"@type":"Answer","text":"The kubeletstats receiver runs per-node (DaemonSet mode) so each kubelet is scraped from its own pod. The k8s_cluster receiver pulls cluster-wide state from the K8s API once and would emit duplicates if scaled horizontally - it runs as a single-replica Deployment. Splitting into two releases gives each receiver the right Pod controller without compromise."}},{"@type":"Question","name":"How is this different from Microsoft's Managed Prometheus and Container Insights?","acceptedAnswer":{"@type":"Answer","text":"Managed Prometheus and Container Insights are Azure-tenant-bound, billed per-GB ingested, and visualized in Managed Grafana / Log Analytics. The OpenTelemetry Collector pattern is vendor-neutral - the same collectors can ship to base14 Scout, Datadog, Splunk, or any OTLP-compatible backend without redeployment. Customers running multi-cloud or migrating off Azure-native observability prefer this."}},{"@type":"Question","name":"What is kube-state-metrics and why is it part of this guide?","acceptedAnswer":{"@type":"Answer","text":"kube-state-metrics exposes detailed Kubernetes object state (HPA replicas, Job completions, PVC capacity, node allocatable resources) in Prometheus-format. The k8s_cluster OTel receiver covers some of this, but kube-state-metrics has wider coverage. The cluster-mode collector includes a prometheus receiver that scrapes kube-state-metrics so both metric families flow to Scout in one pipeline."}},{"@type":"Question","name":"How do I add control-plane metrics like API-server uptime?","acceptedAnswer":{"@type":"Answer","text":"Follow Step 6 in this guide. It deploys a standalone OpenTelemetry Collector with the azure_monitor receiver against the AKS resource, authenticated via Service Principal. You get 18 control-plane series (9 metrics emitted at two aggregations each — apiserver, etcd, autoscaler) on a vanilla cluster, or more if Container Insights / Managed Prometheus are enabled. Most workloads don't need this - the in-cluster pattern in Steps 1-5 covers pod / container / cluster-state visibility, which is where most operational signals live."}}]}
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I monitor an Azure Kubernetes Service cluster with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Deploy the upstream OpenTelemetry Collector Helm chart twice in your AKS cluster - once as a DaemonSet (kubeletstats + hostmetrics) for per-node metrics, once as a Deployment (k8s_cluster + prometheus scraping kube-state-metrics) for cluster-state and additional kube_* metrics. Both ship OTLP/HTTP to base14 Scout authenticated via OAuth2 client credentials. ServiceAccounts authenticate to Azure via Workload Identity Federation."}},{"@type":"Question","name":"How does the in-cluster collector authenticate to base14 Scout?","acceptedAnswer":{"@type":"Answer","text":"Via the OpenTelemetry Collector oauth2client extension. Store the Scout-issued client_id and client_secret in a Kubernetes Secret, reference them in the chart values via secretKeyRef, and the otlp_http/b14 exporter automatically fetches short-lived bearer tokens from your Keycloak token URL on each scrape interval (cached until expiry)."}},{"@type":"Question","name":"Why do I need two Helm releases instead of one?","acceptedAnswer":{"@type":"Answer","text":"The kubeletstats receiver runs per-node (DaemonSet mode) so each kubelet is scraped from its own pod. The k8s_cluster receiver pulls cluster-wide state from the K8s API once and would emit duplicates if scaled horizontally - it runs as a single-replica Deployment. Splitting into two releases gives each receiver the right Pod controller without compromise."}},{"@type":"Question","name":"How is this different from Microsoft's Managed Prometheus and Container Insights?","acceptedAnswer":{"@type":"Answer","text":"Managed Prometheus and Container Insights are Azure-tenant-bound, billed per-GB ingested, and visualized in Managed Grafana / Log Analytics. The OpenTelemetry Collector is vendor-neutral - the same image ships to base14 Scout or any OTLP-compatible backend without redeployment. Customers running multi-cloud or migrating off Azure-native observability prefer this."}},{"@type":"Question","name":"What is kube-state-metrics and why is it part of this guide?","acceptedAnswer":{"@type":"Answer","text":"kube-state-metrics exposes detailed Kubernetes object state (HPA replicas, Job completions, PVC capacity, node allocatable resources) in Prometheus-format. The k8s_cluster OTel receiver covers some of this, but kube-state-metrics has wider coverage. The cluster-mode collector includes a prometheus receiver that scrapes kube-state-metrics so both metric families flow to Scout in one pipeline."}},{"@type":"Question","name":"How do I add control-plane metrics like API-server uptime?","acceptedAnswer":{"@type":"Answer","text":"Follow Step 6 in this guide. It deploys a standalone OpenTelemetry Collector with the azure_monitor receiver against the AKS resource, authenticated via Service Principal. You get 18 control-plane series (9 metrics emitted at two aggregations each — apiserver, etcd, autoscaler) on a vanilla cluster, or more if Container Insights / Managed Prometheus are enabled. Most workloads don't need this - the in-cluster pattern in Steps 1-5 covers pod / container / cluster-state visibility, which is where most operational signals live."}}]}
 ---
 
-This guide deploys two OpenTelemetry Collectors on an Azure Kubernetes
-Service (AKS) cluster — a DaemonSet for per-node metrics and a single-replica
-Deployment for cluster-wide state — both shipping OTLP/HTTP to base14 Scout.
+This guide runs the OpenTelemetry Collector twice in an Azure Kubernetes
+Service (AKS) cluster — as a DaemonSet for per-node metrics, and as a
+single-replica Deployment for cluster-wide state. Both ship OTLP/HTTP to
+base14 Scout.
 
 ## Why Scout for AKS observability
 
@@ -37,10 +38,9 @@ Grafana** as the AKS observability stack
 updated 2026-01-20). It works, but it ties your telemetry to Azure: metrics
 land in a Log Analytics workspace, alerts route through Azure Monitor, and
 dashboards live in Managed Grafana. Multi-cloud, hybrid, or migrating
-customers prefer the OpenTelemetry Collector pattern in this guide because
-the same collectors can ship to Scout, to a self-hosted Prometheus, or to
-any OTLP-compatible backend — switching backends is a values-file change,
-not a redeployment of agents.
+customers prefer this guide because the same OpenTelemetry Collector ships
+to Scout, to a self-hosted Prometheus, or to any OTLP-compatible backend —
+switching backends is a values-file change, not a redeployment of agents.
 
 ## Choosing the right pattern
 
@@ -849,10 +849,10 @@ releases gives each receiver the right Pod controller without compromise.
 
 Managed Prometheus and Container Insights are Azure-tenant-bound, billed
 per-GB ingested, and visualized in Managed Grafana / Log Analytics. The
-OpenTelemetry Collector pattern is vendor-neutral — the same collectors
-can ship to base14 Scout, Datadog, Splunk, or any OTLP-compatible backend
-without redeployment. Customers running multi-cloud or migrating off
-Azure-native observability prefer this.
+OpenTelemetry Collector is vendor-neutral — the same image ships to base14
+Scout or any OTLP-compatible backend without redeployment. Customers
+running multi-cloud or migrating off Azure-native observability prefer
+this.
 
 ### What is kube-state-metrics and why is it part of this guide?
 
