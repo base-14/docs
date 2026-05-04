@@ -1,15 +1,13 @@
 ---
 date: 2026-05-02
 id: collecting-azure-sql-database-telemetry
-title: Azure SQL Database Monitoring with OpenTelemetry - DTU, Connections & Deadlocks
+title: Azure SQL Database Monitoring with OpenTelemetry - Database Transaction Unit (DTU), Connections & Deadlocks
 sidebar_label: Azure SQL Database
 sidebar_position: 3
 description:
-  Monitor Azure SQL Database (the managed PaaS) with the OpenTelemetry
-  Collector's azure_monitor receiver. Stream DTU consumption, connection
-  counts, blocked-by-firewall events, deadlocks, and storage metrics to
-  base14 Scout. Vendor-neutral alternative to Application Insights and
-  Azure Monitor dashboards. Pairs with the self-hosted SQL Server guide.
+  Monitor Azure SQL Database (managed Platform-as-a-Service) with the
+  OpenTelemetry Collector's azure_monitor receiver. Database Transaction
+  Unit (DTU), connections, deadlocks, geo-replication lag to base14 Scout.
 keywords:
   - azure sql database monitoring
   - azure sql opentelemetry
@@ -25,19 +23,20 @@ head:
   - - script
     - type: application/ld+json
     - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I monitor Azure SQL Database with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Run the OpenTelemetry Collector with the azure_monitor receiver targeting Microsoft.Sql/servers/databases (and optionally Microsoft.Sql/servers/elasticPools for pool-level metrics). The receiver polls Azure Monitor's REST API every 60 seconds, transforms metrics from Azure's lowercase names (like dtu_consumption_percent) to OTel-style names (azure_dtu_consumption_percent_average), and ships them via OTLP/HTTP to base14 Scout. Authentication uses the azure_auth extension in service-principal or managed-identity mode."}},{"@type":"Question","name":"Should I use this guide or the self-hosted SQL Server guide?","acceptedAnswer":{"@type":"Answer","text":"Use this guide for Azure SQL Database (the managed PaaS). Use the self-hosted SQL Server guide if you run SQL Server yourself on a VM, on-premises, or in a container - that path uses sqlserverreceiver to scrape DMVs directly instead of polling Azure Monitor. The two are complementary, not redundant: azure_monitor reports Azure's external view (DTU billing, blocked-by-firewall, geo-replication lag, storage-vs-cap), while sqlserverreceiver reports SQL Server internals (wait stats, buffer pool, query store). Production deployments commonly run both with distinct service.name values to keep the two views separate in dashboards."}},{"@type":"Question","name":"Why does connection_failed return no data points?","acceptedAnswer":{"@type":"Answer","text":"Azure Monitor does not emit zero-valued data points for connection_failed. The metric only surfaces in your collector logs when there are real connection failures (auth errors, firewall blocks, TLS handshake failures). This is consistent with how Azure handles several count-style metrics - missing data on a count metric implies zero occurrences, not a collection failure."}},{"@type":"Question","name":"Why does the receiver emit both _count and _total suffixes for connection_successful?","acceptedAnswer":{"@type":"Answer","text":"Azure Monitor publishes connection_successful with two supported aggregations: Total (sum) and Count. The receiver emits one OTel metric per published aggregation, producing azure_connection_successful_total and azure_connection_successful_count for the same source metric. Same applies to connection_failed, blocked_by_firewall, and deadlock. Pick whichever aggregation you prefer for dashboards; they carry the same information at the per-minute grain."}},{"@type":"Question","name":"Which metrics need higher tiers to emit non-zero values?","acceptedAnswer":{"@type":"Answer","text":"replication_lag_seconds requires geo-replication or active geo-replication to be configured (Premium / Business Critical / Hyperscale, or any tier with a configured geo-secondary). xtp_storage_percent requires Premium or Business Critical (in-memory OLTP is not available below Premium). app_cpu_billed and app_cpu_percent only emit on serverless databases. The receiver always polls these names; they simply return no series on tiers that don't support the underlying feature."}},{"@type":"Question","name":"Can I monitor elastic pools alongside individual databases?","acceptedAnswer":{"@type":"Answer","text":"Yes - the shipped config covers both Microsoft.Sql/servers/databases and Microsoft.Sql/servers/elasticPools. The receiver silently skips the elastic-pool namespace if the target server has no pools, so the same config is safe to run against servers that don't use pools."}},{"@type":"Question","name":"How does this differ from Application Insights for Azure SQL Database?","acceptedAnswer":{"@type":"Answer","text":"Application Insights for Azure SQL is Azure-tenant-bound, billed per-GB ingested, and visualised in Azure dashboards or workbooks. The OpenTelemetry Collector is vendor-neutral - the same image ships to base14 Scout or any OTLP-compatible backend without redeployment. Multi-cloud customers and customers migrating off Application Insights prefer this. The metric coverage is identical - both surfaces draw from the same Azure Monitor REST API."}}]}
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I monitor Azure SQL Database with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Run the OpenTelemetry Collector with the azure_monitor receiver targeting Microsoft.Sql/servers/databases (and optionally Microsoft.Sql/servers/elasticPools for pool-level metrics). The receiver polls Azure Monitor's REST API every 60 seconds, transforms metrics from Azure's lowercase names (like dtu_consumption_percent) to OTel-style names (azure_dtu_consumption_percent_average), and ships them via OTLP/HTTP to base14 Scout. Authentication uses the azure_auth extension in service-principal or managed-identity mode."}},{"@type":"Question","name":"Should I use this guide or the self-hosted SQL Server guide?","acceptedAnswer":{"@type":"Answer","text":"Use this guide for Azure SQL Database (the managed PaaS). Use the self-hosted SQL Server guide if you run SQL Server yourself on a VM, on-premises, or in a container - that path uses sqlserverreceiver to scrape DMVs directly instead of polling Azure Monitor. The two are complementary, not redundant: azure_monitor reports Azure's external view (DTU billing, blocked-by-firewall, geo-replication lag, storage-vs-cap), while sqlserverreceiver reports SQL Server internals (wait stats, buffer pool, query store). Production deployments commonly run both with distinct service.name values to keep the two views separate in dashboards."}},{"@type":"Question","name":"Why does connection_failed return no data points?","acceptedAnswer":{"@type":"Answer","text":"connection_failed is silent-when-quiet: Azure Monitor publishes a data point only when at least one connection failure (auth error, firewall block, TLS handshake failure) occurs in the time grain. Empty buckets return no point rather than a zero. Same shape applies to connection_failed_user_error, blocked_by_firewall, and deadlock. Wire alerts on these to fire on series presence in window, not on numeric thresholds."}},{"@type":"Question","name":"Why does the receiver emit both _count and _total suffixes for connection_successful?","acceptedAnswer":{"@type":"Answer","text":"Azure Monitor publishes connection_successful with two supported aggregations: Total (sum) and Count. The receiver emits one OTel metric per published aggregation, producing azure_connection_successful_total and azure_connection_successful_count for the same source metric. Same applies to connection_failed, blocked_by_firewall, and deadlock. Pick whichever aggregation you prefer for dashboards; they carry the same information at the per-minute grain."}},{"@type":"Question","name":"Which metrics need higher tiers to emit non-zero values?","acceptedAnswer":{"@type":"Answer","text":"replication_lag_seconds requires active geo-replication on the primary database (available on Standard tier and above; Basic excluded; only emitted on the primary). xtp_storage_percent requires Premium or Business Critical (in-memory Online Transaction Processing is not available below Premium). app_cpu_billed and app_cpu_percent only emit on Serverless databases. The receiver always polls these names; they simply return no series on tiers that don't support the underlying feature."}},{"@type":"Question","name":"Can I monitor elastic pools alongside individual databases?","acceptedAnswer":{"@type":"Answer","text":"Yes - the shipped config covers both Microsoft.Sql/servers/databases and Microsoft.Sql/servers/elasticPools. The receiver silently skips the elastic-pool namespace if the target server has no pools, so the same config is safe to run against servers that don't use pools."}},{"@type":"Question","name":"How does this differ from Application Insights for Azure SQL Database?","acceptedAnswer":{"@type":"Answer","text":"Application Insights for Azure SQL is Azure-tenant-bound, billed per-GB ingested, and visualised in Azure dashboards or workbooks. The OpenTelemetry Collector is vendor-neutral - the same image ships to base14 Scout or any OTLP-compatible backend without redeployment. Multi-cloud customers and customers migrating off Application Insights prefer this. The metric coverage is identical - both surfaces draw from the same Azure Monitor REST API."}}]}
 ---
 
 ## Overview
 
-This guide covers monitoring an **Azure SQL Database** (the managed PaaS) with
-the OpenTelemetry Collector's `azure_monitor` receiver. The collector polls
-Azure Monitor's REST API every 60 seconds for the metrics published by
+This guide covers monitoring an **Azure SQL Database** (the managed
+Platform-as-a-Service, PaaS) with the OpenTelemetry Collector's
+`azure_monitor` receiver. The collector polls Azure Monitor's REST API
+every 60 seconds for the metrics published by
 `Microsoft.Sql/servers/databases`, transforms them to OTel-style names, and
 ships them via OTLP/HTTP to base14 Scout.
 
 The `azure_monitor` receiver does not connect to SQL directly. It queries
-Azure Monitor's metrics surface for any database Azure auto-publishes to — so
+Azure Monitor's metrics surface for any database Azure auto-publishes to - so
 the same pattern applies across all SKUs (DTU model, vCore, Serverless,
 Hyperscale), single databases and elastic pools, and to other Azure
 services like Cosmos DB, Storage, and Service Bus. The configuration shape
@@ -45,7 +44,7 @@ below generalises to those.
 
 ## Self-hosted SQL Server vs Azure SQL Database
 
-If you run SQL Server yourself — on a VM, on-premises, or in a container —
+If you run SQL Server yourself - on a VM, on-premises, or in a container -
 use the [self-hosted SQL Server guide](../../component/sqlserver.md) instead.
 That path uses the OTel `sqlserverreceiver` to scrape Dynamic Management
 Views (DMVs) directly, which works without an Azure subscription and surfaces
@@ -55,7 +54,7 @@ Monitor doesn't expose.
 | Surface | Mechanism | Subscription | Internals |
 | --- | --- | --- | --- |
 | Azure SQL Database (PaaS) | `azure_monitor` receiver, this guide | Required | DTU, connections, storage |
-| SQL Server (VM / on-prem / container) | `sqlserverreceiver`, [other guide](../../component/sqlserver.md) | Not required | DMV scrapes — wait stats, query plans, buffer pool |
+| SQL Server (VM / on-prem / container) | `sqlserverreceiver`, [other guide](../../component/sqlserver.md) | Not required | DMV scrapes - wait stats, query plans, buffer pool |
 
 **Pick exactly one per database.** Running both against the same workload
 produces double-counted dashboards because the metric names overlap with
@@ -65,17 +64,27 @@ different dimensions.
 
 Two Azure namespaces, scraped together on each poll:
 
-1. **`Microsoft.Sql/servers/databases`** — per-database metrics: DTU,
-   connections, storage, deadlocks, replication lag, in-memory OLTP usage.
-2. **`Microsoft.Sql/servers/elasticPools`** — pool-level capacity and
+1. **`Microsoft.Sql/servers/databases`** - per-database metrics: Database
+   Transaction Unit (DTU), connections, storage, deadlocks, replication
+   lag, in-memory Online Transaction Processing (OLTP) usage.
+2. **`Microsoft.Sql/servers/elasticPools`** - pool-level capacity and
    saturation. Omitted if no elastic pools exist on the target server.
 
-The receiver emits one OTel metric per Azure aggregation; for example,
-`dtu_consumption_percent` becomes `azure_dtu_consumption_percent_average`,
-`azure_dtu_consumption_percent_maximum`, and `azure_dtu_consumption_percent_minimum`.
-Metrics with both `Total` and `Count` aggregations (e.g., `connection_successful`)
-emit two OTel series — pick whichever you prefer for dashboards; they carry
-the same information at the per-minute grain.
+The receiver emits one OTel metric per Azure aggregation. Two shapes:
+
+- **Gauge-style** (`dtu_consumption_percent`, `cpu_percent`, `storage_percent`,
+  `sessions_percent`, `workers_percent`, `xtp_storage_percent`,
+  `replication_lag_seconds`) - Azure publishes Average / Maximum / Minimum,
+  the receiver emits `_average`, `_maximum`, `_minimum`.
+- **Counter-style** (`connection_successful`, `connection_failed`,
+  `connection_failed_user_error`, `blocked_by_firewall`, `deadlock`) - Azure
+  publishes Total (Sum) and Count, the receiver emits `_total` and `_count`.
+  The two carry the same information at the per-minute grain; pick one for
+  dashboards.
+
+`availability` is the exception: Azure publishes all five aggregations
+(Average, Maximum, Minimum, Count, Total), so the receiver emits five OTel
+series. Use `_average` for SLO dashboards.
 
 ### Database-level (`Microsoft.Sql/servers/databases`)
 
@@ -83,7 +92,8 @@ the same information at the per-minute grain.
 | --- | --- | --- | --- |
 | `cpu_percent` | `azure_cpu_percent_{average,maximum,minimum}` | Percent | Database CPU usage. Page at sustained 80%+. |
 | `dtu_consumption_percent` | `azure_dtu_consumption_percent_*` | Percent | Composite DTU saturation (DTU model only). |
-| `dtu_used` / `dtu_limit` | `azure_dtu_used_*` / `azure_dtu_limit_*` | DTU | Absolute DTU consumption + tier ceiling. |
+| `dtu_used` / `dtu_limit` | `azure_dtu_used_*` / `azure_dtu_limit_*` | Count (DTU) | Absolute DTU consumption + tier ceiling. |
+| `cpu_used` / `cpu_limit` | `azure_cpu_used_*` / `azure_cpu_limit_*` | Count (vCore) | Absolute vCore consumption + tier ceiling (vCore SKUs only). |
 | `log_write_percent` | `azure_log_write_percent_*` | Percent | Write-log throughput saturation. |
 | `physical_data_read_percent` | `azure_physical_data_read_percent_*` | Percent | Read-IO saturation (page reads from storage). |
 | `storage` | `azure_storage_{average,maximum,minimum}` | Bytes | Allocated storage in bytes. |
@@ -91,18 +101,19 @@ the same information at the per-minute grain.
 | `sessions_percent` | `azure_sessions_percent_*` | Percent | Sessions vs. tier ceiling. |
 | `workers_percent` | `azure_workers_percent_*` | Percent | Workers vs. tier ceiling. |
 | `connection_successful` | `azure_connection_successful_{count,total}` | Count | Successful connections per minute. |
-| `connection_failed` | `azure_connection_failed_*` | Count | Failed connections — only emitted when non-zero. |
-| `blocked_by_firewall` | `azure_blocked_by_firewall_*` | Count | Connections rejected by server firewall rules. |
-| `deadlock` | `azure_deadlock_*` | Count | Deadlock count — page on any non-zero. |
-| `availability` | `azure_availability_*` | Percent | Database availability % (PT1H grain). |
-| `replication_lag_seconds` | `azure_replication_lag_seconds_*` | Seconds | Geo-replication / active geo-replication lag. Premium / Business Critical / Hyperscale / geo-replicated only. |
-| `xtp_storage_percent` | `azure_xtp_storage_percent_*` | Percent | In-memory OLTP storage. Premium / Business Critical only. |
+| `connection_failed` | `azure_connection_failed_{count,total}` | Count | Failed connections - system errors (auth, firewall, TLS). Silent-when-quiet: data points only when at least one failure occurs in the grain. |
+| `connection_failed_user_error` | `azure_connection_failed_user_error_{count,total}` | Count | Failed connections - user errors (login_failed, invalid_db). Different alert posture from `connection_failed`. |
+| `blocked_by_firewall` | `azure_blocked_by_firewall_{count,total}` | Count | Connections rejected by server firewall rules. Silent-when-quiet. |
+| `deadlock` | `azure_deadlock_{count,total}` | Count | Deadlock count - page on any non-zero. Silent-when-quiet. |
+| `availability` | `azure_availability_{average,maximum,minimum,count,total}` | Percent | Database availability % (PT1H grain). All 5 aggregations published. |
+| `replication_lag_seconds` | `azure_replication_lag_seconds_*` | Seconds | Geo-replication / active geo-replication lag. Emitted on the primary database when active geo-replication is configured (Standard tier and above; Basic excluded). |
+| `xtp_storage_percent` | `azure_xtp_storage_percent_*` | Percent | In-memory Online Transaction Processing (OLTP) storage. Premium / Business Critical only (in-memory OLTP is not available below Premium). |
 
 ### Pool-level (`Microsoft.Sql/servers/elasticPools`)
 
 | Azure REST name | OTel emitted | Unit | What it tells you |
 | --- | --- | --- | --- |
-| `eDTU_limit`, `eDTU_used` | `azure_edtu_limit_*`, `azure_edtu_used_*` | DTU | Pool capacity vs. used (DTU pools). |
+| `eDTU_limit`, `eDTU_used` | `azure_edtu_limit_*`, `azure_edtu_used_*` | Count (eDTU) | Pool capacity vs. used (DTU pools). |
 | `dtu_consumption_percent` | `azure_dtu_consumption_percent_*` | Percent | Pool DTU saturation. |
 | `cpu_percent`, `log_write_percent`, `physical_data_read_percent` | `azure_cpu_percent_*`, `azure_log_write_percent_*`, `azure_physical_data_read_percent_*` | Percent | Pool CPU + I/O saturation. |
 | `storage_used`, `storage_limit`, `storage_percent` | `azure_storage_used_*`, `azure_storage_limit_*`, `azure_storage_percent_*` | Bytes / Percent | Pool storage capacity vs. used. |
@@ -110,21 +121,27 @@ the same information at the per-minute grain.
 | `sessions_percent`, `sessions_count`, `workers_percent` | `azure_sessions_percent_*`, `azure_sessions_count_*`, `azure_workers_percent_*` | Percent / Count | Pool connection pressure. |
 | `xtp_storage_percent` | `azure_xtp_storage_percent_*` | Percent | Pool-level in-memory OLTP storage. |
 
-The `connection_failed`, `blocked_by_firewall`, and `deadlock` count metrics
-stay absent until real occurrences — Azure Monitor doesn't emit zero data
-points for them. The receiver also discovers the system `master` database
-alongside your application database and emits the same database-scope series
-for both; filter by `cloud.resource_id` (which encodes the full Azure
-resource ID for each emitted series) if you want to drop `master` in Scout.
+`connection_failed`, `connection_failed_user_error`, `blocked_by_firewall`,
+and `deadlock` are silent-when-quiet: Azure Monitor publishes a data point
+only when at least one event occurs in the time grain. Empty buckets return
+no point rather than a zero. Wire alerts on these to fire on series
+presence in window, not on numeric thresholds. (Note: this is not a
+universal "Azure Monitor doesn't emit zeros" rule. `availability` and
+several gauge metrics emit a point every grain regardless.)
+
+The receiver also discovers the system `master` database alongside your
+application database and emits the same database-scope series for both.
+Filter by `cloud.resource_id` (which encodes the full Azure resource ID
+for each emitted series) if you want to drop `master` in Scout.
 
 ### What Azure Monitor does NOT see
 
 Wait stats, buffer pool hit ratio, query store, individual replica health
 on Business Critical / Hyperscale, and the deadlock graph XML are SQL
-Server *internals* — Azure Monitor doesn't expose them. Point the OTel
+Server *internals* - Azure Monitor doesn't expose them. Point the OTel
 `sqlserverreceiver` at the SQL endpoint to add that depth; see the
 [self-hosted SQL Server guide](../../component/sqlserver.md). The two paths
-are complementary, not redundant — run both with distinct `service.name`
+are complementary, not redundant - run both with distinct `service.name`
 values when you need both views.
 
 ## Prerequisites
@@ -134,7 +151,7 @@ values when you need both views.
 | An Azure SQL Database (any tier)  | DTU, vCore, Serverless, Hyperscale |
 | OTel Collector contrib            | v0.148.0+ (snake_case YAML keys) |
 | `Microsoft.Sql` provider          | registered on the subscription   |
-| Service principal                 | `Monitoring Reader` on the SQL RG |
+| Service principal                 | `Monitoring Reader` on the SQL resource group |
 | base14 Scout                      | any tenant                       |
 
 This guide is the SQL-DB-specific addition to a working OpenTelemetry
@@ -149,32 +166,33 @@ the same for every Azure surface), see:
 
 ## Access setup
 
-The `azure_monitor` receiver needs read-only access to Azure Monitor metrics
-on the resource groups containing your SQL servers. Grant `Monitoring Reader`
-to a service principal:
+The `azure_monitor` receiver needs `Monitoring Reader` on the resource
+group containing your SQL servers. The role grants read on metric
+definitions and metric data only, no control-plane write.
 
 ```bash
-# Create the SP (once per tenant — reuse it for every Azure surface).
-az ad sp create-for-rbac --name sp-otel-azure-monitor --skip-assignment
-
-# Scope Monitoring Reader to each SQL resource group.
 RG_ID=$(az group show --name <your-rg> --query id -o tsv)
 az role assignment create \
-  --assignee <appId from the create-for-rbac output> \
+  --assignee <appId or principalId> \
   --role "Monitoring Reader" \
   --scope "$RG_ID"
 ```
 
-Capture `appId`, `password`, and `tenant` from the create output — they
-become `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, and `AZURE_TENANT_ID` in
-the collector's environment. RBAC propagation on the legacy ARM `/metrics`
-endpoint is immediate; the data-plane batch API can lag 5-30 minutes (see
-Operations).
+`azure_auth` supports four modes for the calling identity: `service_principal`
+(out-of-Azure collectors), `managed_identity` (Container Apps / Virtual
+Machine Scale Sets / Azure VM), `workload_identity` (Azure Kubernetes
+Service pods, federated to a ServiceAccount), and `use_default` (local
+dev). Full YAML for each mode and Workload Identity Federation setup is
+in the [Service Bus
+guide](./service-bus.md#authentication); the auth block is the only thing
+that differs between Azure surfaces, the rest of the config below is
+SQL-Database-specific.
 
-> **Inside Azure?** If your collector runs in Azure (VM, Container Apps,
-> AKS pod), prefer a User-assigned Managed Identity over a service
-> principal. The `azure_auth` extension supports `managed_identity:` and
-> `workload_identity:` modes; only the auth block changes.
+Role-Based Access Control (RBAC) propagation on the legacy Azure Resource
+Manager (ARM) `/metrics` endpoint is immediate. The data-plane batch API
+at `*.metrics.monitor.azure.com` requires separate propagation that lags
+5-30 minutes after grant; flip `use_batch_api: true` only after the role
+has settled.
 
 ## Receiver configuration
 
@@ -182,7 +200,7 @@ This is the SQL-DB-specific addition to your collector. Add the
 `azure_auth` extension and `azure_monitor` receiver to your existing
 config, then wire the receiver into a metrics pipeline that exports to
 Scout (see [Scout Exporter](../../collector-setup/scout-exporter.md) for the
-exporter half — it's the same OAuth2 + OTLP/HTTP setup used by every Azure
+exporter half - it's the same OAuth2 + OTLP/HTTP setup used by every Azure
 surface).
 
 ```yaml showLineNumbers title="otel-collector.yaml (excerpt)"
@@ -261,7 +279,7 @@ service:
 ```
 
 Once `metrics:` is set for a namespace, the receiver only emits the metrics
-you list — there is no implicit "default + my picks" merge. Extend the list
+you list - there is no implicit "default + my picks" merge. Extend the list
 to add more (e.g., `tempdb_data_size: []` on Premium tier). The empty
 aggregation list `[]` per metric collects all aggregations Azure publishes
 for that metric.
@@ -317,11 +335,11 @@ thresholds.
 
 ## Operations
 
-- **Collection interval.** 60 seconds is the sweet spot — Azure Monitor's
+- **Collection interval.** 60 seconds is the sweet spot - Azure Monitor's
   ingestion lag is 1-3 minutes, so faster polls just re-read stale data.
 - **`cache_resources`.** This is the receiver's resource-list cache TTL in
   seconds (default 24h). The shipped config sets it to `60` so newly-
-  created databases are visible to the receiver on the next poll —
+  created databases are visible to the receiver on the next poll -
   appropriate for a validation pass or for environments where databases
   come and go frequently. In a stable production fleet, raise it back
   toward the default (e.g., `3600` or higher) to skip the per-minute ARM
@@ -336,70 +354,123 @@ thresholds.
   settle before enabling.
 - **System `master` database.** The receiver auto-discovers the system
   `master` database alongside your application databases and emits the
-  same database-scope series for both. `master` is mostly noise — filter
+  same database-scope series for both. `master` is mostly noise - filter
   by `cloud.resource_id` in Scout if you want to ignore it.
-- **Tier-gated metrics.** A few names in the whitelist only emit on
-  specific tiers: `replication_lag_seconds` needs geo-replication or
-  active geo-replication; `xtp_storage_percent` needs Premium or Business
-  Critical (in-memory OLTP isn't available below Premium);
-  `app_cpu_billed` / `app_cpu_percent` only emit on Serverless databases.
+- **Tier-gated metrics.** A few names in the whitelist only emit when the
+  underlying feature is configured:
+  - `replication_lag_seconds` requires active geo-replication on the
+    primary database. Available on Standard tier and above; Basic excluded.
+    Only emitted on the primary, never on the secondary.
+  - `xtp_storage_percent` requires Premium or Business Critical (in-memory
+    Online Transaction Processing is not available below Premium).
+  - `app_cpu_billed` and `app_cpu_percent` only emit on Serverless
+    databases.
+
   The receiver polls these names regardless and silently returns no series
   on tiers that don't support the underlying feature, so the same config
-  works across DTU, vCore, Serverless, and Hyperscale fleets. Add
-  `tempdb_data_size`, `tempdb_log_size`, `tempdb_log_used_percent`,
-  `sql_instance_cpu_percent`, and `sql_instance_memory_percent` to the
-  whitelist if you need the `InstanceAndAppAdvanced` category on Premium
-  or Hyperscale.
+  works across Database Transaction Unit (DTU), vCore, Serverless, and
+  Hyperscale fleets.
+- **`InstanceAndAppAdvanced` category.** Add `tempdb_data_size`,
+  `tempdb_log_size`, `tempdb_log_used_percent`, `sql_instance_cpu_percent`,
+  and `sql_instance_memory_percent` to the whitelist if you want the
+  detailed `tempdb` and instance-level series. They are not tier-gated -
+  Microsoft's reference lists them without a tier minimum - but they emit
+  only on databases not configured as data warehouses.
+
+## Apps-side instrumentation
+
+This guide is metrics-only. For per-query distributed traces (the SQL
+client span linked through the application's request span), instrument
+your application code with the OTel SQL client integrations:
+
+- **.NET / C#:** `Microsoft.Data.SqlClient` 5.1+ emits OpenTelemetry spans
+  via its built-in ActivitySource. Register
+  `AddSource("OpenTelemetry.Instrumentation.SqlClient")` or use the
+  `OpenTelemetry.Instrumentation.SqlClient` package.
+- **Java:** the OTel Java agent auto-instruments JDBC drivers including
+  `mssql-jdbc`. No code changes.
+- **Python:** `opentelemetry-instrumentation-pymssql` and
+  `opentelemetry-instrumentation-pyodbc` wrap the respective drivers.
+
+Run the apps-side spans alongside this metrics collector with distinct
+`service.name` values to keep the database-server view and the
+request-flow view separately filterable in Scout.
+
+## Pairing with Diagnostic Settings
+
+Azure SQL Database Diagnostic Settings forward audit logs, query store
+runtime statistics, automatic tuning recommendations, errors, blocks,
+deadlocks, and timeouts to Log Analytics, Event Hubs, or a Storage
+account. The collector covers metrics; logs require a separate forwarder.
+
+Two integration paths:
+
+1. **Diagnostic Settings to Event Hubs to `azure_event_hub` receiver.** The
+   collector reads Event Hubs and ships logs alongside metrics. One
+   pipeline, OTLP-native. Recommended when migrating off Application
+   Insights.
+2. **Diagnostic Settings to Log Analytics workspace.** Keep Kusto Query
+   Language-based log investigation in Azure; Scout handles metrics +
+   alerts. Pragmatic when incident response runbooks already use the Log
+   Analytics surface.
+
+```bash
+az monitor diagnostic-settings create \
+  --resource <database-resource-id> \
+  --name sql-to-eventhubs \
+  --logs '[{"category":"SQLInsights","enabled":true},{"category":"AutomaticTuning","enabled":true},{"category":"QueryStoreRuntimeStatistics","enabled":true},{"category":"Errors","enabled":true},{"category":"Deadlocks","enabled":true},{"category":"Blocks","enabled":true},{"category":"Timeouts","enabled":true}]' \
+  --event-hub-rule <eh-namespace-rule-id>
+```
+
+Activity logs (control-plane operations on the SQL server) are
+subscription-scoped, not resource-scoped; configure them once per
+subscription via `az monitor diagnostic-settings subscription create`.
 
 ## Troubleshooting
 
-### `AuthorizationFailed` from the receiver
-
-The role assignment hasn't propagated. Wait 60 seconds after creating it; on
-the legacy ARM endpoint propagation is usually immediate. If you've enabled
-`use_batch_api: true`, allow up to 30 minutes for data-plane propagation —
-or temporarily flip back to `false` to confirm the role itself is correct.
-
-### `403 Forbidden` from the receiver
-
-The service principal client_secret has expired. Rotate with
-`az ad sp credential reset --id $AZURE_CLIENT_ID --years 1` and update your
-collector's `AZURE_CLIENT_SECRET` env var.
+For common `azure_auth` and Azure Monitor issues
+(`AuthorizationFailed`, `403 Forbidden`, token-acquire 401,
+`RequestThrottled`, Docker DNS resolution, Scout OAuth2 401), see the
+[Service Bus troubleshooting
+section](./service-bus.md#troubleshooting); the same diagnoses apply to
+every Azure surface scraped via `azure_monitor`. Below are the issues
+specific to Azure SQL Database.
 
 ### No metrics in the first 3 minutes
 
 Azure Monitor has a 1-3 minute ingestion lag. `azure_storage` and
-`azure_dtu_limit` emit on every database from the first poll. DTU,
-connection, and lock metrics only show non-zero values after real workload
-on the database — control-plane calls (`az sql db show`) don't drive
-them. If the database is idle, that's expected.
+`azure_dtu_limit` emit on every database from the first poll. Database
+Transaction Unit (DTU), connection, and lock metrics only show non-zero
+values after real workload on the database - control-plane calls
+(`az sql db show`) don't drive them. If the database is idle, that's
+expected.
 
 ### `connection_failed` / `blocked_by_firewall` / `deadlock` are absent
 
-Expected. Azure Monitor does not emit zero data points for these
-count-style metrics — they appear in your collector output only when real
-occurrences have happened in the polling window. Missing data implies
-zero, not a collection failure.
+Expected. These metrics are silent-when-quiet: Azure Monitor publishes a
+data point only when at least one event occurs in the time grain. Empty
+buckets return no point rather than a zero. Wire alerts on these to fire
+on series presence in window, not on numeric thresholds.
 
-### `RequestThrottled` warnings from the receiver
+### `master` system database appears alongside application databases
 
-Azure Monitor's per-tenant query rate limit (12,000/hour on the legacy
-endpoint, 360,000/hour on the batch API). Either lower polling rate
-(`collection_interval: 120s`), narrow the scope (`resource_groups:` filter),
-or enable `use_batch_api: true` once data-plane RBAC has settled.
+Expected. The `azure_monitor` receiver auto-discovers the system `master`
+database alongside your application database and emits the same
+database-scope series for both. `master` is mostly noise; filter by
+`cloud.resource_id` in Scout if you want to drop it.
 
-### Collector container can't resolve `login.microsoftonline.com`
+### `replication_lag_seconds` series missing on the secondary
 
-Docker Desktop networking glitch — the container's DNS resolver becomes
-unreachable. `docker compose down && docker compose up -d` typically fixes
-it. If persistent, restart Docker Desktop.
+Expected. The metric is only emitted on the primary database in an active
+geo-replication pair. The secondary's replication lag is observable from
+the primary's series, not from the secondary's.
 
-### Scout OAuth2 returns 401
+### `xtp_storage_percent` series missing on Standard tier
 
-Verify the `SCOUT_CLIENT_ID`, `SCOUT_CLIENT_SECRET`, and `SCOUT_TOKEN_URL`
-your collector is using match the values in your Scout console. The
-`endpoint_params.audience` MUST be `b14collector` — that's what the Scout
-token endpoint expects.
+Expected. In-memory Online Transaction Processing (OLTP) is only available
+on Premium and Business Critical tiers; the metric is never published on
+lower tiers. Same for `app_cpu_billed` and `app_cpu_percent`, which only
+emit on Serverless databases.
 
 ## Frequently Asked Questions
 
@@ -418,7 +489,7 @@ in service-principal or managed-identity mode.
 
 Use this guide for Azure SQL Database (the managed PaaS). Use the
 [self-hosted SQL Server guide](../../component/sqlserver.md) if you run SQL
-Server yourself on a VM, on-premises, or in a container — that path uses
+Server yourself on a VM, on-premises, or in a container - that path uses
 `sqlserverreceiver` to scrape DMVs directly instead of polling Azure
 Monitor. The two are complementary, not redundant: `azure_monitor` reports
 Azure's external view (DTU billing, blocked-by-firewall, geo-replication
@@ -429,12 +500,13 @@ views separate in dashboards.
 
 ### Why does `connection_failed` return no data points?
 
-Azure Monitor does not emit zero-valued data points for
-`connection_failed`. The metric only surfaces in your collector logs when
-there are real connection failures (auth errors, firewall blocks, TLS
-handshake failures). This is consistent with how Azure handles several
-count-style metrics — missing data on a count metric implies zero
-occurrences, not a collection failure.
+`connection_failed` is silent-when-quiet: Azure Monitor publishes a data
+point only when at least one connection failure (auth error, firewall
+block, TLS handshake failure) occurs in the time grain. Empty buckets
+return no point rather than a zero. Same shape applies to
+`connection_failed_user_error`, `blocked_by_firewall`, and `deadlock`.
+Wire alerts on these to fire on series presence in window, not on numeric
+thresholds.
 
 ### Why does the receiver emit both `_count` and `_total` suffixes for `connection_successful`?
 
@@ -449,17 +521,18 @@ grain.
 
 ### Which metrics need higher tiers to emit non-zero values?
 
-`replication_lag_seconds` requires geo-replication or active geo-replication
-to be configured (Premium / Business Critical / Hyperscale, or any tier
-with a configured geo-secondary). `xtp_storage_percent` requires Premium or
-Business Critical (in-memory OLTP is not available below Premium).
-`app_cpu_billed` and `app_cpu_percent` only emit on Serverless databases.
-The receiver always polls these names; they simply return no series on
-tiers that don't support the underlying feature.
+`replication_lag_seconds` requires active geo-replication on the primary
+database (available on Standard tier and above; Basic excluded; only
+emitted on the primary). `xtp_storage_percent` requires Premium or
+Business Critical (in-memory Online Transaction Processing is not
+available below Premium). `app_cpu_billed` and `app_cpu_percent` only
+emit on Serverless databases. The receiver always polls these names; they
+simply return no series on tiers that don't support the underlying
+feature.
 
 ### Can I monitor elastic pools alongside individual databases?
 
-Yes — the shipped config covers both `Microsoft.Sql/servers/databases` and
+Yes - the shipped config covers both `Microsoft.Sql/servers/databases` and
 `Microsoft.Sql/servers/elasticPools`. The receiver returns no series for
 the elastic-pool namespace if the target server has no pools, so the same
 config is safe to run against servers that don't use pools.
@@ -468,17 +541,17 @@ config is safe to run against servers that don't use pools.
 
 Application Insights for Azure SQL is Azure-tenant-bound, billed per-GB
 ingested, and visualised in Azure dashboards or workbooks. The
-OpenTelemetry Collector is vendor-neutral — the same image ships to base14
+OpenTelemetry Collector is vendor-neutral - the same image ships to base14
 Scout or any OTLP-compatible backend without redeployment. The metric
-coverage is identical — both surfaces draw from the same Azure Monitor
+coverage is identical - both surfaces draw from the same Azure Monitor
 REST API.
 
 ## Related Guides
 
-- [Self-hosted SQL Server](../../component/sqlserver.md) — paired guide for SQL
+- [Self-hosted SQL Server](../../component/sqlserver.md) - paired guide for SQL
   Server you run yourself (VM, on-prem, container). Uses `sqlserverreceiver`
   to scrape DMVs directly.
-- [Azure Cosmos DB](./cosmos-db.md) — sister guide; same `azure_monitor`
+- [Azure Cosmos DB](./cosmos-db.md) - sister guide; same `azure_monitor`
   pattern, NoSQL surface.
-- [Azure Kubernetes Service](./aks.md) — sister guide; same receiver
+- [Azure Kubernetes Service](./aks.md) - sister guide; same receiver
   pattern but adds in-cluster collectors for kubeletstats + cluster-state.

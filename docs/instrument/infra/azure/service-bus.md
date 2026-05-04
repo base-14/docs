@@ -24,7 +24,7 @@ head:
   - - script
     - type: application/ld+json
     - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I add Azure Service Bus metrics to my existing OpenTelemetry Collector?","acceptedAnswer":{"@type":"Answer","text":"Add the azure_auth extension and an azure_monitor receiver scoped to Microsoft.ServiceBus/namespaces, then route the receiver into a metrics pipeline that exports to Scout via the oauth2client-authenticated OTLP/HTTP exporter. The receiver polls Azure Monitor's REST API every 60 seconds and emits one OTel metric per Azure aggregation. No data-plane connection to Service Bus; the broker is never on the collector's path."}},{"@type":"Question","name":"Should I use a service principal or managed identity for the collector?","acceptedAnswer":{"@type":"Answer","text":"Managed identity if the collector runs in Azure, service principal if it doesn't. AKS pods use Workload Identity Federation with a federated credential bound to a Kubernetes ServiceAccount; Container Apps and Virtual Machine Scale Sets use system-assigned or user-assigned managed identity; out-of-Azure collectors fall back to service principal. The azure_auth extension's mode block is the only thing that changes; the rest of the receiver config is identical."}},{"@type":"Question","name":"How do I scope the receiver to multiple subscriptions and resource groups?","acceptedAnswer":{"@type":"Answer","text":"subscription_ids and resource_groups are both lists. The receiver fans out queries across all combinations, sharing one Azure Resource Manager rate-limit budget per subscription. With Monitoring Reader granted on each scope, one collector can poll dozens of namespaces across many subscriptions; flip use_batch_api to true once you exceed roughly fifty resources to lift the per-subscription ceiling from 12,000 to 360,000 calls per hour."}},{"@type":"Question","name":"How do I keep metric cardinality under control with thousands of entities?","acceptedAnswer":{"@type":"Answer","text":"By default the receiver emits a series per entity per metric per aggregation; a 50-namespace fleet with 200 entities each and 13 whitelisted metrics produces roughly 100,000 active series. Use dimensions.overrides on the receiver to drop EntityName or OperationResult on namespaces where per-entity granularity is not actionable. Drop the count and total aggregations on latency metrics; only average, minimum, and maximum are operationally meaningful for durations."}},{"@type":"Question","name":"How does Scout compare to Application Insights for Service Bus?","acceptedAnswer":{"@type":"Answer","text":"Both surfaces draw from the same Azure Monitor REST API, so metric coverage is identical. The differences are commercial and operational: Scout is vendor-neutral OTLP, queryable via PromQL and SQL, with ingest-volume pricing rather than per-GB ingestion fees; Application Insights is Kusto Query Language-only, Azure-tenant-bound, and bills for log ingestion alongside metric storage. The collector also unifies multi-cloud surfaces under one pipeline: Service Bus, Cosmos DB, AKS, and AWS or GCP equivalents flow through the same exporter."}},{"@type":"Question","name":"What is the service principal secret rotation procedure?","acceptedAnswer":{"@type":"Answer","text":"Generate a new credential with az ad app credential reset --append (the --append flag preserves the existing credential so the collector can roll over without downtime), update the AZURE_CLIENT_SECRET secret store the collector reads from, restart or hot-reload the collector, then revoke the old credential. The federated-credential alternative (Workload Identity Federation for AKS, system-assigned managed identity for Container Apps) eliminates the rotation entirely; if the collector runs in Azure, prefer that path."}},{"@type":"Question","name":"Do I need this guide AND Diagnostic Settings to Log Analytics?","acceptedAnswer":{"@type":"Answer","text":"Yes if you want logs alongside metrics. This guide ships metrics. For activity logs, operational logs, and runtime audit logs from the namespace, configure Diagnostic Settings on the namespace to forward to Log Analytics or to Event Hubs and pipe Event Hubs into the collector via the azure_event_hub receiver. The two paths are complementary: metrics for SLI and SLO dashboards and alerts, logs for incident investigation."}}]}
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I add Azure Service Bus metrics to my existing OpenTelemetry Collector?","acceptedAnswer":{"@type":"Answer","text":"Add the azure_auth extension and an azure_monitor receiver scoped to Microsoft.ServiceBus/namespaces, then route the receiver into a metrics pipeline that exports to Scout via the oauth2client-authenticated OTLP/HTTP exporter. The receiver polls Azure Monitor's REST API every 60 seconds and emits one OTel metric per Azure aggregation. No data-plane connection to Service Bus; the broker is never on the collector's path."}},{"@type":"Question","name":"Should I use a service principal or managed identity for the collector?","acceptedAnswer":{"@type":"Answer","text":"Managed identity if the collector runs in Azure, service principal if it doesn't. AKS pods use Workload Identity Federation with a federated credential bound to a Kubernetes ServiceAccount; Container Apps and Virtual Machine Scale Sets use system-assigned or user-assigned managed identity; out-of-Azure collectors fall back to service principal. The azure_auth extension's mode block is the only thing that changes; the rest of the receiver config is identical."}},{"@type":"Question","name":"How do I scope the receiver to multiple subscriptions and resource groups?","acceptedAnswer":{"@type":"Answer","text":"subscription_ids and resource_groups are both lists. The receiver fans out queries across all combinations, sharing one Azure Resource Manager rate-limit budget per subscription. With Monitoring Reader granted on each scope, one collector can poll dozens of namespaces across many subscriptions; flip use_batch_api to true once you exceed roughly fifty resources to lift the per-subscription ceiling from 12,000 to 360,000 calls per hour."}},{"@type":"Question","name":"How do I keep metric cardinality under control with thousands of entities?","acceptedAnswer":{"@type":"Answer","text":"By default the receiver emits a series per entity per metric per aggregation; a 50-namespace fleet with 200 entities each and 13 whitelisted metrics produces roughly 100,000 active series. Use dimensions.overrides on the receiver to drop EntityName or OperationResult on namespaces where per-entity granularity is not actionable. Drop the count and total aggregations on latency metrics; only average, minimum, and maximum are operationally meaningful for durations."}},{"@type":"Question","name":"How does Scout compare to Application Insights for Service Bus?","acceptedAnswer":{"@type":"Answer","text":"Both surfaces draw from the same Azure Monitor REST API, so metric coverage is identical. The differences are commercial and operational: Scout is vendor-neutral OTLP, queryable via SQL, with ingest-volume pricing rather than per-GB ingestion fees; Application Insights is Kusto Query Language-only, Azure-tenant-bound, and bills for log ingestion alongside metric storage. The collector also unifies multi-cloud surfaces under one pipeline: Service Bus, Cosmos DB, AKS, and AWS or GCP equivalents flow through the same exporter."}},{"@type":"Question","name":"What is the service principal secret rotation procedure?","acceptedAnswer":{"@type":"Answer","text":"Generate a new credential with az ad app credential reset --append (the --append flag preserves the existing credential so the collector can roll over without downtime), update the AZURE_CLIENT_SECRET secret store the collector reads from, restart or hot-reload the collector, then revoke the old credential. The federated-credential alternative (Workload Identity Federation for AKS, system-assigned managed identity for Container Apps) eliminates the rotation entirely; if the collector runs in Azure, prefer that path."}},{"@type":"Question","name":"Do I need this guide AND Diagnostic Settings to Log Analytics?","acceptedAnswer":{"@type":"Answer","text":"Yes if you want logs alongside metrics. This guide ships metrics. For activity logs, operational logs, and runtime audit logs from the namespace, configure Diagnostic Settings on the namespace to forward to Log Analytics or to Event Hubs and pipe Event Hubs into the collector via the azure_event_hub receiver. The two paths are complementary: metrics for SLI and SLO dashboards and alerts, logs for incident investigation."}}]}
 ---
 
 ## Overview
@@ -140,8 +140,9 @@ stays unchanged; one Scout pipeline serves every Azure surface.
 
 For multi-subscription scoping, the `subscription_ids:` list takes any
 number of entries; alternatively set `discover_subscriptions: true` to
-scrape every subscription the configured identity has `Monitoring Reader` on, with no
-explicit list. See [Scale and rate limits](#scale-and-rate-limits).
+scrape every subscription the configured identity has `Monitoring Reader`
+on, with no explicit list. See
+[Scale and rate limits](#scale-and-rate-limits).
 
 ## Authentication
 
@@ -191,8 +192,8 @@ Setup:
 
 4. Annotate the ServiceAccount: `azure.workload.identity/client-id: <mi-clientId>`.
 5. Label the collector pod: `azure.workload.identity/use: "true"`.
-6. Grant `Monitoring Reader` to the managed identity's `principalId` on every Service Bus
-   resource group it should scrape.
+6. Grant `Monitoring Reader` to the managed identity's `principalId` on
+   every Service Bus resource group it should scrape.
 
 ### Managed Identity (Container Apps, Virtual Machine Scale Sets, Azure VM)
 
@@ -241,10 +242,10 @@ For multi-subscription fleets, repeat the assignment on each subscription's
 resource group. Subscription-scoped assignments work too if the managed
 identity or service principal should see every namespace in a subscription.
 
-RBAC propagation on the legacy Azure Resource Manager `/metrics` endpoint is immediate. The
-data-plane batch API at `*.metrics.monitor.azure.com` requires separate
-propagation that lags 5-30 minutes after grant; flip `use_batch_api: true`
-only after the role has settled.
+RBAC propagation on the legacy Azure Resource Manager `/metrics` endpoint
+is immediate. The data-plane batch API at `*.metrics.monitor.azure.com`
+requires separate propagation that lags 5-30 minutes after grant; flip
+`use_batch_api: true` only after the role has settled.
 
 ## What you'll monitor
 
@@ -360,7 +361,8 @@ ceiling linearly.
 default is `86400` (24 hours), which is correct for a stable fleet. Lower
 to `3600` or `600` only if namespaces are created and destroyed frequently
 enough that 24-hour-stale resource lists become a problem; per-minute
-resource-list calls otherwise burn Azure Resource Manager rate-limit budget for no benefit.
+resource-list calls otherwise burn Azure Resource Manager rate-limit
+budget for no benefit.
 
 ## Cardinality control
 
@@ -376,7 +378,7 @@ subscription, dimensions enabled) emits ~29 active series during steady
 producer-only traffic. Extrapolating to a 50-namespace fleet averaging
 200 entities per namespace:
 
-```
+```text
 ~29 series × (50 namespaces / 1) × (200 entities / 3) ≈ 100,000 active series
 ```
 
@@ -454,8 +456,10 @@ objectives (SLOs), frame Service Bus metrics as RED (rate, errors,
 duration) on the broker:
 
 - **Rate.** `azure_incomingrequests_total` per namespace, sliced by entity.
-- **Errors.** Split into two service-level indicators (SLIs), since they map to different remediation:
-  - **Availability error rate** = `(azure_servererrors_total + azure_throttledrequests_total) / azure_incomingrequests_total`.
+- **Errors.** Split into two service-level indicators (SLIs), since they
+  map to different remediation:
+  - **Availability error rate** = `(azure_servererrors_total +
+    azure_throttledrequests_total) / azure_incomingrequests_total`.
     A spike here is "Service Bus or your capacity envelope is broken"; route
     to platform on-call.
   - **Request-quality error rate** = `azure_usererrors_total / azure_incomingrequests_total`.
@@ -545,8 +549,9 @@ az ad app credential delete --id "$AZURE_CLIENT_ID" --key-id "$OLD_KEY_ID"
 ```
 
 Set a calendar alert 30 days before secret expiry. `az ad app credential
-list --id $AZURE_CLIENT_ID --query "[].{keyId:keyId, endDateTime:endDateTime}" -o table`
-shows every active credential with its expiry. Tag credentials with
+list --id $AZURE_CLIENT_ID --query "[].{keyId:keyId,
+endDateTime:endDateTime}" -o table` shows every active credential with
+its expiry. Tag credentials with
 `displayName` at creation if you want to identify them later by purpose
 rather than `keyId`.
 
@@ -597,9 +602,10 @@ Two integration paths:
    collector reads Event Hubs and ships logs alongside metrics. One
    pipeline, OTLP-native. Recommended when migrating off Application
    Insights.
-2. **Diagnostic Settings to Log Analytics workspace.** Keep Kusto Query Language-based log
-   investigation in Azure; Scout handles metrics + alerts. Pragmatic when
-   incident response runbooks already use the Log Analytics surface.
+2. **Diagnostic Settings to Log Analytics workspace.** Keep Kusto Query
+   Language-based log investigation in Azure; Scout handles metrics +
+   alerts. Pragmatic when incident response runbooks already use the Log
+   Analytics surface.
 
 ```bash
 az monitor diagnostic-settings create \
@@ -613,47 +619,23 @@ Activity logs (control-plane operations on the namespace) are
 subscription-scoped, not resource-scoped; configure them once per
 subscription via `az monitor diagnostic-settings subscription create`.
 
-## Scout vs Application Insights
-
-Both surfaces draw from the same Azure Monitor REST API; metric coverage
-is identical. The choice is operational and commercial.
-
-| Dimension                  | Scout (this guide)                                   | Application Insights for Service Bus              |
-| -------------------------- | ---------------------------------------------------- | ------------------------------------------------- |
-| Pricing model              | Ingest-volume tier, OTLP-native                      | Per-GB ingestion, per-month log retention         |
-| Default retention          | Configurable per Scout plan                          | 90 days metrics + logs (extendable, billed)       |
-| Query                      | PromQL + SQL                                         | Kusto Query Language only                                          |
-| Alerting                   | Native + outbound integrations (PagerDuty / Slack / Linear / webhook) | Action Groups + Logic Apps               |
-| Multi-cloud surface        | Yes; AWS / GCP / on-prem feed the same exporter      | Azure-only                                        |
-| Vendor lock-in             | OTLP standard; switch backends without code changes  | Kusto Query Language queries and Azure-bound dashboards            |
-| Logs alongside metrics     | Via `azure_event_hub` receiver (see [Pairing with Diagnostic Settings](#pairing-with-diagnostic-settings)) | First-class, same workspace |
-
-For SREs migrating from Application Insights specifically:
-
-- Kusto Query Language queries do not port. Rewrite the high-value ones in PromQL or Scout
-  SQL; throw away the rest (most Kusto Query Language queries against Application Insights are
-  exploratory and accumulate technical debt).
-- Action Groups map to Scout-native alert routing. Map each Action Group to a Scout
-  notification channel during the cutover; keep Action Groups running in parallel for
-  one incident cycle to verify parity.
-- Workbooks do not port. Rebuild the operationally-loadbearing ones as
-  Scout dashboards.
-
 ## Troubleshooting
 
 ### `AuthorizationFailed` from the receiver
 
-Legacy Azure Resource Manager `/metrics` endpoint propagates `Monitoring Reader` immediately;
-data-plane batch API can lag 5-30 minutes. If `use_batch_api: true` is set
-and you've just granted the role, temporarily flip to `false` to confirm
-the role itself is correct.
+Legacy Azure Resource Manager `/metrics` endpoint propagates `Monitoring
+Reader` immediately; data-plane batch API can lag 5-30 minutes. If
+`use_batch_api: true` is set and you've just granted the role, temporarily
+flip to `false` to confirm the role itself is correct.
 
 ### `403 Forbidden` from the receiver
 
 If using a service principal: the client_secret has expired. See
-[Service principal credential lifecycle](#service-principal-credential-lifecycle) for the rotation
-procedure. If using managed identity: check that the namespace is in a subscription / resource group
-where the managed identity has `Monitoring Reader`.
+[Service principal credential
+lifecycle](#service-principal-credential-lifecycle) for the rotation
+procedure. If using managed identity: check that the namespace is in a
+subscription / resource group where the managed identity has `Monitoring
+Reader`.
 
 ### `RequestThrottled` warnings from the receiver
 
@@ -704,16 +686,18 @@ connection to Service Bus; the broker is never on the collector's path.
 
 Managed identity if the collector runs in Azure, service principal if it
 does not. AKS pods use Workload Identity Federation with a federated
-credential bound to a Kubernetes ServiceAccount; Container Apps and Virtual Machine Scale Sets
-use system-assigned or user-assigned managed identity; out-of-Azure collectors fall
-back to service principal. The `azure_auth` extension's mode block is the only thing that
-changes; the rest of the receiver config is identical.
+credential bound to a Kubernetes ServiceAccount; Container Apps and
+Virtual Machine Scale Sets use system-assigned or user-assigned managed
+identity; out-of-Azure collectors fall back to service principal. The
+`azure_auth` extension's mode block is the only thing that changes; the
+rest of the receiver config is identical.
 
 ### How do I scope the receiver to multiple subscriptions and resource groups?
 
 `subscription_ids` and `resource_groups` are both lists. The receiver fans
-out queries across all combinations, sharing one Azure Resource Manager rate-limit budget per
-subscription. With `Monitoring Reader` granted on each scope, one
+out queries across all combinations, sharing one Azure Resource Manager
+rate-limit budget per subscription. With `Monitoring Reader` granted on
+each scope, one
 collector can poll dozens of namespaces across many subscriptions; flip
 `use_batch_api: true` once you exceed roughly fifty resources to lift the
 per-subscription ceiling from 12,000 to 360,000 calls per hour.
@@ -733,7 +717,7 @@ for durations.
 
 Both surfaces draw from the same Azure Monitor REST API, so metric
 coverage is identical. The differences are commercial and operational:
-Scout is vendor-neutral OTLP, queryable via PromQL and SQL, with
+Scout is vendor-neutral OTLP, queryable via SQL, with
 ingest-volume pricing rather than per-GB ingestion fees; Application
 Insights uses Kusto Query Language only, is Azure-tenant-bound, and bills
 for log ingestion alongside metric storage. The collector also unifies
