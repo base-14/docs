@@ -263,6 +263,12 @@ spec:
           resource_attributes:
             k8s.cluster.name:
               enabled: true
+      transform/service_name_fallback:
+        error_mode: ignore
+        trace_statements:
+          - context: span
+            statements:
+              - set(resource.attributes["service.name"], resource.attributes["k8s.container.name"]) where resource.attributes["k8s.container.name"] != nil
       k8sattributes:
         auth_type: serviceAccount
         extract:
@@ -349,7 +355,7 @@ spec:
       pipelines:
         traces:
           receivers: [otlp]
-          processors: [memory_limiter, batch]
+          processors: [memory_limiter, transform/service_name_fallback, batch]
           exporters: [otlphttp/b14]
         logs:
           receivers: [otlp]
@@ -519,6 +525,12 @@ spec:
           - context: log
             statements:
               - set(resource.attributes["service.name"], resource.attributes["k8s.container.name"]) where resource.attributes["k8s.container.name"] != nil
+      transform/service_name_fallback:
+        error_mode: ignore
+        trace_statements:
+          - context: span
+            statements:
+              - set(resource.attributes["service.name"], resource.attributes["k8s.container.name"]) where resource.attributes["k8s.container.name"] != nil
       k8sattributes:
         auth_type: serviceAccount
         extract:
@@ -598,7 +610,7 @@ spec:
       pipelines:
         traces:
           receivers: [otlp]
-          processors: [memory_limiter, resource, resource/env, batch]
+          processors: [memory_limiter, resource, resource/env, transform/service_name_fallback, batch]
           exporters: [otlp/agent]
         logs:
           receivers: [otlp, filelog]
@@ -758,6 +770,12 @@ spec:
           resource_attributes:
             k8s.cluster.name:
               enabled: true
+      transform/service_name_fallback:
+        error_mode: ignore
+        trace_statements:
+          - context: span
+            statements:
+              - set(resource.attributes["service.name"], resource.attributes["k8s.container.name"]) where resource.attributes["k8s.container.name"] != nil
       k8sattributes:
         auth_type: serviceAccount
         extract:
@@ -844,7 +862,7 @@ spec:
       pipelines:
         traces:
           receivers: [otlp]
-          processors: [memory_limiter, resource, resource/env, batch]
+          processors: [memory_limiter, resource, resource/env, transform/service_name_fallback, batch]
           exporters: [otlphttp/b14]
         logs:
           receivers: [otlp]
