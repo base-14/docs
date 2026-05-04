@@ -572,7 +572,7 @@ Troubleshooting).
 
 ```yaml title="config/otel-collector-control-plane.yaml"
 extensions:
-  azureauth:
+  azure_auth:
     service_principal:
       tenant_id: ${env:AZURE_TENANT_ID}
       client_id: ${env:AZURE_CLIENT_ID}
@@ -594,7 +594,7 @@ receivers:
     subscription_ids: ["${env:AZURE_SUBSCRIPTION_ID}"]
     resource_groups: ["${env:AZURE_RESOURCE_GROUP}"]
     services: ["Microsoft.ContainerService/managedClusters"]
-    auth: {authenticator: azureauth}
+    auth: {authenticator: azure_auth}
     collection_interval: 60s
     # Legacy ARM /metrics endpoint — RBAC propagates immediately.
     # Switch to true once Monitoring Reader has propagated to the
@@ -648,7 +648,7 @@ exporters:
       max_elapsed_time: 300s
 
 service:
-  extensions: [health_check, azureauth, oauth2client]
+  extensions: [health_check, azure_auth, oauth2client]
   pipelines:
     metrics:
       receivers: [azure_monitor]
