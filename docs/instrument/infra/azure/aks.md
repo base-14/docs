@@ -64,7 +64,8 @@ The operator then reconciles all CRs to the collector image version you
 specify in `spec.image`. Upgrading the contrib image version across three
 collectors is one field change per CR.
 
-Prefer raw Helm releases? See the [Azure Kubernetes Service (Helm)](aks-with-helm.md) guide.
+Prefer raw Helm releases? See the
+[Azure Kubernetes Service (Helm)](aks-with-helm.md) guide.
 
 ## What you'll monitor
 
@@ -88,7 +89,10 @@ Prefer raw Helm releases? See the [Azure Kubernetes Service (Helm)](aks-with-hel
   TLS certificates issued by cert-manager). Step 1 covers this.
 - Scout OAuth2 client credentials: `SCOUT_CLIENT_ID`, `SCOUT_CLIENT_SECRET`,
   `SCOUT_TOKEN_URL`, `SCOUT_OTLP_ENDPOINT`.
-- A Service Principal with `Monitoring Reader` on the resource group (required only for the optional control-plane Step 7 - the operator-managed `azure_monitor` collector). Create one with:
+- A Service Principal with `Monitoring Reader` on the resource group
+  (required only for the optional control-plane Step 7 - the
+  operator-managed `azure_monitor` collector). Create one with:
+
   ```bash
   SP_JSON="$(az ad sp create-for-rbac --name otel-aks-control-plane --skip-assignment)"
   APP_ID="$(echo "$SP_JSON" | jq -r .appId)"
@@ -101,6 +105,7 @@ Prefer raw Helm releases? See the [Azure Kubernetes Service (Helm)](aks-with-hel
     --assignee-principal-type ServicePrincipal --role "Monitoring Reader" \
     --scope "/subscriptions/$SUB/resourceGroups/$RG"
   ```
+
   Capture `APP_ID`, `PASSWORD`, `TENANT` for Step 3's `azure-sp` Secret.
   The operator's v1beta1 CRD removed `spec.podLabels`, which means the
   Workload Identity webhook cannot inject the projected token into
@@ -375,9 +380,9 @@ kubectl apply -f manifests/rbac-kubeletstats.yaml
 
 ## Step 5: Install kube-state-metrics
 
-The cluster collector's `prometheus` receiver (Step 6) scrapes kube-state-metrics for
-`kube_*` metrics that `k8s_cluster` doesn't cover. Install it once per
-cluster before applying the cluster CR.
+The cluster collector's `prometheus` receiver (Step 6) scrapes
+kube-state-metrics for `kube_*` metrics that `k8s_cluster` doesn't cover.
+Install it once per cluster before applying the cluster CR.
 
 ```bash
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
@@ -1061,9 +1066,12 @@ and cluster-state visibility.
 
 - [Azure Kubernetes Service (Helm)](aks-with-helm.md) - alternative pattern
   using raw Helm releases, no operator required.
-- [OpenTelemetry Operator setup](../../collector-setup/opentelemetry-operator-setup.md) -
-  generic operator install and concepts.
-- [OpenTelemetry Operator GitHub](https://github.com/open-telemetry/opentelemetry-operator) -
-  CRD reference and release notes.
+- [OpenTelemetry Operator setup][otel-operator-setup] - generic operator
+  install and concepts.
+- [OpenTelemetry Operator GitHub][otel-operator-repo] - CRD reference and
+  release notes.
 - [cert-manager](https://cert-manager.io/) - required dependency for the
   operator's admission webhook.
+
+[otel-operator-setup]: ../../collector-setup/opentelemetry-operator-setup.md
+[otel-operator-repo]: https://github.com/open-telemetry/opentelemetry-operator

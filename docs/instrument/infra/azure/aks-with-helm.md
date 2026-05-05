@@ -26,7 +26,8 @@ head:
 ---
 
 :::note
-Looking for the canonical operator-managed AKS guide? See [the operator guide](aks.md). This
+Looking for the canonical operator-managed AKS guide? See
+[the operator guide](aks.md). This
 guide uses raw Helm releases for readers who prefer not to install the
 OpenTelemetry Operator (cluster-scoped CRDs blocked by org policy, or operator
 already in use for unrelated workloads).
@@ -896,7 +897,8 @@ operational signals live.
 
 ## Related Guides
 
-- [Azure Kubernetes Service (Operator)](aks.md) - the canonical pattern using the OpenTelemetry Operator and CRDs.
+- [Azure Kubernetes Service (Operator)](aks.md) - the canonical pattern
+  using the OpenTelemetry Operator and CRDs.
 - [Kubernetes (Scout Helm chart)][scout-helm] - alternative deployment
   pattern using Scout's own Helm chart instead of the upstream
   OpenTelemetry chart this guide uses. Useful for non-AKS Kubernetes
