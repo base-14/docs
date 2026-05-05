@@ -28,6 +28,11 @@ head:
 
 ## Overview
 
+This guide is the **execution playbook** for Azure SQL Database. For the
+cross-surface architecture (auth, push vs pull, latency, the trace gap),
+read [Azure Monitoring with OpenTelemetry - Architecture for base14
+Scout](./overview.md) first.
+
 This guide covers monitoring an **Azure SQL Database** (the managed
 Platform-as-a-Service, PaaS) with the OpenTelemetry Collector's
 `azure_monitor` receiver. The collector polls Azure Monitor's REST API
@@ -396,23 +401,21 @@ Run the apps-side spans alongside this metrics collector with distinct
 `service.name` values to keep the database-server view and the
 request-flow view separately filterable in Scout.
 
-## Pairing with Diagnostic Settings
+## Logs
 
-Azure SQL Database Diagnostic Settings forward audit logs, query store
-runtime statistics, automatic tuning recommendations, errors, blocks,
-deadlocks, and timeouts to Log Analytics, Event Hubs, or a Storage
-account. The collector covers metrics; logs require a separate forwarder.
+Architecture for the Diagnostic Settings → Event Hubs → `azure_event_hub`
+path is in the [overview](./overview.md#choosing-pull-push-or-both). The
+SQL Database log categories worth enabling:
 
-Two integration paths:
-
-1. **Diagnostic Settings to Event Hubs to `azure_event_hub` receiver.** The
-   collector reads Event Hubs and ships logs alongside metrics. One
-   pipeline, OTLP-native. Recommended when migrating off Application
-   Insights.
-2. **Diagnostic Settings to Log Analytics workspace.** Keep Kusto Query
-   Language-based log investigation in Azure; Scout handles metrics +
-   alerts. Pragmatic when incident response runbooks already use the Log
-   Analytics surface.
+| Log category | What it captures |
+| --- | --- |
+| `SQLInsights` | Performance insights from Query Store |
+| `QueryStoreRuntimeStatistics` | Per-query execution stats: duration, rows, CPU |
+| `AutomaticTuning` | Index recommendations and applied actions |
+| `Errors` | Server-side errors |
+| `Deadlocks` | Deadlock graphs (the gold-standard signal for contention) |
+| `Blocks` | Blocking sessions |
+| `Timeouts` | Query timeouts |
 
 ```bash
 az monitor diagnostic-settings create \
@@ -423,7 +426,7 @@ az monitor diagnostic-settings create \
 ```
 
 Activity logs (control-plane operations on the SQL server) are
-subscription-scoped, not resource-scoped; configure them once per
+**subscription-scoped**, not resource-scoped; configure them once per
 subscription via `az monitor diagnostic-settings subscription create`.
 
 ## Troubleshooting

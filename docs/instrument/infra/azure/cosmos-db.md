@@ -30,6 +30,11 @@ head:
 
 ## Overview
 
+This guide is the **execution playbook** for Cosmos DB. For the
+cross-surface architecture (auth, push vs pull, latency, the trace gap),
+read [Azure Monitoring with OpenTelemetry - Architecture for base14
+Scout](./overview.md) first.
+
 This guide covers monitoring an **Azure Cosmos DB** account (SQL / NoSQL API)
 with the OpenTelemetry Collector's `azure_monitor` receiver. The collector
 polls Azure Monitor's REST API every 60 seconds for the metrics published by
@@ -288,12 +293,19 @@ instrument your application code with the Cosmos OTel client SDKs:
 Run the apps-side spans alongside this metrics collector with distinct
 `service.name` values.
 
-## Pairing with Diagnostic Settings
+## Logs
 
-Azure Cosmos DB Diagnostic Settings forward data-plane request logs,
-query runtime statistics, partition key statistics, and control-plane
-events to Log Analytics, Event Hubs, or a Storage account. The collector
-covers metrics; logs require a separate forwarder.
+Architecture for the Diagnostic Settings → Event Hubs → `azure_event_hub`
+path is in the [overview](./overview.md#choosing-pull-push-or-both). The
+Cosmos-specific pieces below are the log categories worth enabling and
+the CLI to wire them up.
+
+| Log category | What it captures | When to enable |
+| --- | --- | --- |
+| `DataPlaneRequests` | Per-request audit: RU charge, status code, partition key range, operation type | Always |
+| `QueryRuntimeStatistics` | Per-query execution stats: index lookups, retrieved doc count, output doc count | Cost / performance investigation |
+| `PartitionKeyStatistics` | Storage and request distribution per partition key | Hot partition diagnosis |
+| `ControlPlaneRequests` | Account / container CRUD; throughput changes | Audit, change tracking |
 
 ```bash
 az monitor diagnostic-settings create \
@@ -302,9 +314,6 @@ az monitor diagnostic-settings create \
   --logs '[{"category":"DataPlaneRequests","enabled":true},{"category":"QueryRuntimeStatistics","enabled":true},{"category":"PartitionKeyStatistics","enabled":true},{"category":"ControlPlaneRequests","enabled":true}]' \
   --event-hub-rule <eh-namespace-rule-id>
 ```
-
-Pipe Event Hubs into the collector via the `azure_event_hub` receiver to
-ship logs alongside metrics through the same OTLP/HTTP pipeline.
 
 ## Troubleshooting
 

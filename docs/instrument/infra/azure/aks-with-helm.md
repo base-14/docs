@@ -38,6 +38,21 @@ Service (AKS) cluster - as a DaemonSet for per-node metrics, and as a
 single-replica Deployment for cluster-wide state. Both ship OTLP/HTTP to
 base14 Scout.
 
+:::tip Architecture overview
+This guide is the **execution playbook** for AKS via the OpenTelemetry
+Helm chart. For the cross-surface architecture (auth, push vs pull,
+latency, the trace gap), read [Azure Monitoring with OpenTelemetry -
+Architecture for base14 Scout](./overview.md) first.
+
+This guide covers the **in-cluster pattern** (agent DaemonSet + cluster
+collector + kube-state-metrics, plus pod-log collection via `filelog`) -
+the recommended default for AKS because it captures pod, node, and
+container signals natively. Scout accepts telemetry from any path you
+choose; if you also want AKS control-plane signals via the Diagnostic
+Settings → Event Hubs route described in the
+[overview](./overview.md), wire it alongside this in-cluster setup.
+:::
+
 ## Why Scout for AKS observability
 
 Microsoft recommends **Managed Prometheus + Container Insights + Managed

@@ -29,6 +29,11 @@ head:
 
 ## Overview
 
+This guide is the **execution playbook** for Service Bus. For the
+cross-surface architecture (auth, push vs pull, latency, the trace gap),
+read [Azure Monitoring with OpenTelemetry - Architecture for base14
+Scout](./overview.md) first.
+
 This guide is for engineers running Azure Service Bus in production who want
 to add Service Bus telemetry to an existing OpenTelemetry Collector and ship
 it to base14 Scout. The collector polls Azure Monitor's REST API for
@@ -589,23 +594,17 @@ Run the apps-side spans alongside this metrics collector with distinct
 `service.name` values to keep the broker view and the request-flow view
 separately filterable in Scout.
 
-## Pairing with Diagnostic Settings
+## Logs
 
-Service Bus Diagnostic Settings forward operational logs (operational,
-runtime audit, application metric logs) and activity logs to Log Analytics,
-Event Hubs, or a Storage account. The collector covers metrics; logs
-require a separate forwarder.
+Architecture for the Diagnostic Settings → Event Hubs → `azure_event_hub`
+path is in the [overview](./overview.md#choosing-pull-push-or-both). The
+Service Bus log categories worth enabling:
 
-Two integration paths:
-
-1. **Diagnostic Settings to Event Hubs to `azure_event_hub` receiver.** The
-   collector reads Event Hubs and ships logs alongside metrics. One
-   pipeline, OTLP-native. Recommended when migrating off Application
-   Insights.
-2. **Diagnostic Settings to Log Analytics workspace.** Keep Kusto Query
-   Language-based log investigation in Azure; Scout handles metrics +
-   alerts. Pragmatic when incident response runbooks already use the Log
-   Analytics surface.
+| Log category | What it captures |
+| --- | --- |
+| `OperationalLogs` | Namespace-level operational events |
+| `RuntimeAuditLogs` | Data-plane authentication and authorisation activity |
+| `ApplicationMetricsLogs` | Application-level metric events (where supported by your tier) |
 
 ```bash
 az monitor diagnostic-settings create \
@@ -616,7 +615,7 @@ az monitor diagnostic-settings create \
 ```
 
 Activity logs (control-plane operations on the namespace) are
-subscription-scoped, not resource-scoped; configure them once per
+**subscription-scoped**, not resource-scoped; configure them once per
 subscription via `az monitor diagnostic-settings subscription create`.
 
 ## Troubleshooting

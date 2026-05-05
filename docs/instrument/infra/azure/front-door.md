@@ -30,6 +30,11 @@ head:
 
 ## Overview
 
+This guide is the **execution playbook** for Front Door. For the
+cross-surface architecture (auth, push vs pull, latency, the trace gap),
+read [Azure Monitoring with OpenTelemetry - Architecture for base14
+Scout](./overview.md) first.
+
 This guide is for engineers running **Azure Front Door Standard** in
 production who want to add Front Door telemetry to an existing
 OpenTelemetry Collector and ship it to base14 Scout. The collector polls
@@ -53,8 +58,7 @@ a different `services:` value, but the metric namespace and aggregations
 differ.
 
 This guide is metrics-only. For per-request access logs, Web Application
-Firewall logs, and health-probe logs, see [Pairing with Diagnostic
-Settings](#pairing-with-diagnostic-settings).
+Firewall logs, and health-probe logs, see [Logs](#logs).
 
 ## What you'll monitor
 
@@ -465,20 +469,21 @@ ratio is your cache-shielding efficiency).
 requests, scrapers, etc.) and is best left as a dashboard metric, not
 an alert.
 
-## Pairing with Diagnostic Settings
+## Logs
 
-This guide ships metrics. For Front Door access logs, WAF logs, and
-health-probe logs, configure
-`Microsoft.Insights/diagnosticSettings` on the FD profile:
+Architecture for the Diagnostic Settings → Event Hubs → `azure_event_hub`
+path is in the [overview](./overview.md#choosing-pull-push-or-both). The
+Front Door-specific log categories worth enabling:
 
-- Forward `FrontDoorAccessLog` and `FrontDoorHealthProbeLog` (and
-  `FrontDoorWebApplicationFirewallLog` on Premium) to Log Analytics or
-  Event Hubs.
-- Pipe Event Hubs into the collector via the `azure_event_hub`
-  receiver for log-side ingestion to Scout.
+| Log category | What it captures | Tier |
+| --- | --- | --- |
+| `FrontDoorAccessLog` | Per-request access log: client IP, route, cache outcome, backend latency | Standard, Premium |
+| `FrontDoorHealthProbeLog` | Backend health probe results | Standard, Premium |
+| `FrontDoorWebApplicationFirewallLog` | WAF rule matches and block decisions | Premium only |
 
-The two paths are complementary: metrics for SLI / SLO dashboards and
-alerts, logs for per-request investigation.
+Metrics drive SLI / SLO dashboards and alerts; logs drive per-request
+investigation. WAF logs in particular are the path for security review
+and rule tuning - enable them on Premium tier.
 
 ## Troubleshooting
 
@@ -575,6 +580,10 @@ day before cardinality multiplication).
 
 ## Related Guides
 
+- [Azure Application Gateway](./application-gateway.md) - sister regional
+  L7 load balancer; same `azure_monitor` pattern, backend-pool +
+  listener metric framing. Customers running both global edge and
+  regional backend selection should monitor both surfaces.
 - [Azure Service Bus](./service-bus.md) - same `azure_monitor` receiver
   pattern, no #43648 caveat.
 - [Azure SQL Database](./sql-database.md) - same auth + RBAC shape.

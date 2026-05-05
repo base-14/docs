@@ -3,8 +3,7 @@
   "position": 5,
   "collapsed": false,
   "link": {
-    "type": "generated-index",
-    "title": "Azure Monitoring Guide",
-    "description": "Monitor Azure Kubernetes Service, Cosmos DB, Service Bus, Azure SQL Database, Front Door, and Application Gateway with OpenTelemetry. Vendor-neutral telemetry routing to base14 Scout, the OTel-native alternative to Application Insights and Container Insights."
+    "type": "doc",
+    "id": "instrument/infra/azure/azure-monitoring-overview"
   }
 }

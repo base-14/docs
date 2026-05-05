@@ -31,6 +31,22 @@ This guide deploys the OpenTelemetry Operator on AKS, then uses
 `OpenTelemetryCollector` CRs to manage three collectors in-cluster plus an
 `Instrumentation` CR for zero-code app auto-instrumentation.
 
+:::tip Architecture overview
+This guide is the **execution playbook** for AKS. For the cross-surface
+architecture (auth, push vs pull, latency, the trace gap), read [Azure
+Monitoring with OpenTelemetry - Architecture for base14
+Scout](./overview.md) first.
+
+This guide covers the **in-cluster pattern** (OTel agent DaemonSet +
+cluster collector + kube-state-metrics, plus pod-log collection via
+`filelog`) - the recommended default for AKS because it captures pod,
+node, and container signals natively without round-tripping through
+Azure Monitor. Scout accepts telemetry from any path you choose; if you
+also want AKS control-plane signals via the Diagnostic Settings → Event
+Hubs route described in the [overview](./overview.md), wire it
+alongside this in-cluster setup.
+:::
+
 ## Why Scout for AKS observability
 
 Microsoft recommends Managed Prometheus, Container Insights, and Managed
