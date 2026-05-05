@@ -3,7 +3,7 @@ date: 2026-05-02
 id: collecting-azure-sql-database-telemetry
 title: Azure SQL Database Monitoring with OpenTelemetry - Database Transaction Unit (DTU), Connections & Deadlocks
 sidebar_label: Azure SQL Database
-sidebar_position: 3
+sidebar_position: 4
 description:
   Monitor Azure SQL Database (managed Platform-as-a-Service) with the
   OpenTelemetry Collector's azure_monitor receiver. Database Transaction

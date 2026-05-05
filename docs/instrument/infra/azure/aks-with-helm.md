@@ -1,9 +1,9 @@
 ---
 date: 2026-05-01
-id: collecting-azure-aks-telemetry
-title: Azure Kubernetes Service Monitoring with OpenTelemetry - Cluster Metrics
-sidebar_label: Azure Kubernetes Service
-sidebar_position: 1
+id: collecting-azure-aks-telemetry-with-helm
+title: Azure Kubernetes Service Monitoring with OpenTelemetry Helm Releases
+sidebar_label: Azure Kubernetes Service (Helm)
+sidebar_position: 2
 description:
   Collect AKS pod, container, node, and cluster-state metrics with the
   OpenTelemetry Collector and ship them to base14 Scout. Vendor-neutral
@@ -22,11 +22,18 @@ head:
   - - script
     - type: application/ld+json
     - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I monitor an Azure Kubernetes Service cluster with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Deploy the upstream OpenTelemetry Collector Helm chart twice in your AKS cluster - once as a DaemonSet (kubeletstats + hostmetrics) for per-node metrics, once as a Deployment (k8s_cluster + prometheus scraping kube-state-metrics) for cluster-state and additional kube_* metrics. Both ship OTLP/HTTP to base14 Scout authenticated via OAuth2 client credentials. ServiceAccounts authenticate to Azure via Workload Identity Federation."}},{"@type":"Question","name":"How does the in-cluster collector authenticate to base14 Scout?","acceptedAnswer":{"@type":"Answer","text":"Via the OpenTelemetry Collector oauth2client extension. Store the Scout-issued client_id and client_secret in a Kubernetes Secret, reference them in the chart values via secretKeyRef, and the otlp_http/b14 exporter automatically fetches short-lived bearer tokens from your Keycloak token URL on each scrape interval (cached until expiry)."}},{"@type":"Question","name":"Why do I need two Helm releases instead of one?","acceptedAnswer":{"@type":"Answer","text":"The kubeletstats receiver runs per-node (DaemonSet mode) so each kubelet is scraped from its own pod. The k8s_cluster receiver pulls cluster-wide state from the K8s API once and would emit duplicates if scaled horizontally - it runs as a single-replica Deployment. Splitting into two releases gives each receiver the right Pod controller without compromise."}},{"@type":"Question","name":"How is this different from Microsoft's Managed Prometheus and Container Insights?","acceptedAnswer":{"@type":"Answer","text":"Managed Prometheus and Container Insights are Azure-tenant-bound, billed per-GB ingested, and visualized in Managed Grafana / Log Analytics. The OpenTelemetry Collector is vendor-neutral - the same image ships to base14 Scout or any OTLP-compatible backend without redeployment. Customers running multi-cloud or migrating off Azure-native observability prefer this."}},{"@type":"Question","name":"What is kube-state-metrics and why is it part of this guide?","acceptedAnswer":{"@type":"Answer","text":"kube-state-metrics exposes detailed Kubernetes object state (HPA replicas, Job completions, PVC capacity, node allocatable resources) in Prometheus-format. The k8s_cluster OTel receiver covers some of this, but kube-state-metrics has wider coverage. The cluster-mode collector includes a prometheus receiver that scrapes kube-state-metrics so both metric families flow to Scout in one pipeline."}},{"@type":"Question","name":"How do I add control-plane metrics like API-server uptime?","acceptedAnswer":{"@type":"Answer","text":"Follow Step 6 in this guide. It deploys a standalone OpenTelemetry Collector with the azure_monitor receiver against the AKS resource, authenticated via Service Principal. You get 18 control-plane series (9 metrics emitted at two aggregations each — apiserver, etcd, autoscaler) on a vanilla cluster, or more if Container Insights / Managed Prometheus are enabled. Most workloads don't need this - the in-cluster pattern in Steps 1-5 covers pod / container / cluster-state visibility, which is where most operational signals live."}}]}
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I monitor an Azure Kubernetes Service cluster with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Deploy the upstream OpenTelemetry Collector Helm chart twice in your AKS cluster - once as a DaemonSet (kubeletstats + hostmetrics) for per-node metrics, once as a Deployment (k8s_cluster + prometheus scraping kube-state-metrics) for cluster-state and additional kube_* metrics. Both ship OTLP/HTTP to base14 Scout authenticated via OAuth2 client credentials. ServiceAccounts authenticate to Azure via Workload Identity Federation."}},{"@type":"Question","name":"How does the in-cluster collector authenticate to base14 Scout?","acceptedAnswer":{"@type":"Answer","text":"Via the OpenTelemetry Collector oauth2client extension. Store the Scout-issued client_id and client_secret in a Kubernetes Secret, reference them in the chart values via secretKeyRef, and the otlp_http/b14 exporter automatically fetches short-lived bearer tokens from your Scout token URL, cached until expiry."}},{"@type":"Question","name":"Why do I need two Helm releases instead of one?","acceptedAnswer":{"@type":"Answer","text":"The kubeletstats receiver runs per-node (DaemonSet mode) so each kubelet is scraped from its own pod. The k8s_cluster receiver pulls cluster-wide state from the K8s API once and would emit duplicates if scaled horizontally - it runs as a single-replica Deployment. Splitting into two releases gives each receiver the right Pod controller without compromise."}},{"@type":"Question","name":"How is this different from Microsoft's Managed Prometheus and Container Insights?","acceptedAnswer":{"@type":"Answer","text":"Managed Prometheus and Container Insights are Azure-tenant-bound, billed per-GB ingested, and visualized in Managed Grafana / Log Analytics. The OpenTelemetry Collector is vendor-neutral - the same image ships to base14 Scout or any OTLP-compatible backend without redeployment. Customers running multi-cloud or migrating off Azure-native observability prefer this."}},{"@type":"Question","name":"What is kube-state-metrics and why is it part of this guide?","acceptedAnswer":{"@type":"Answer","text":"kube-state-metrics exposes detailed Kubernetes object state (HPA replicas, Job completions, PVC capacity, node allocatable resources) in Prometheus-format. The k8s_cluster OTel receiver covers some of this, but kube-state-metrics has wider coverage. The cluster-mode collector includes a prometheus receiver that scrapes kube-state-metrics so both metric families flow to Scout in one pipeline."}},{"@type":"Question","name":"How do I add control-plane metrics like API-server uptime?","acceptedAnswer":{"@type":"Answer","text":"Follow Step 6 in this guide. It deploys a standalone OpenTelemetry Collector with the azure_monitor receiver against the AKS resource, authenticated via Service Principal. You get 18 control-plane series (9 metrics emitted at two aggregations each - apiserver, etcd, autoscaler) on a vanilla cluster, or more if Container Insights / Managed Prometheus are enabled. Most workloads don't need this - the in-cluster pattern in Steps 1-5 covers pod / container / cluster-state visibility, which is where most operational signals live."}}]}
 ---
 
+:::note
+Looking for the canonical operator-managed AKS guide? See [the operator guide](aks.md). This
+guide uses raw Helm releases for readers who prefer not to install the
+OpenTelemetry Operator (cluster-scoped CRDs blocked by org policy, or operator
+already in use for unrelated workloads).
+:::
+
 This guide runs the OpenTelemetry Collector twice in an Azure Kubernetes
-Service (AKS) cluster — as a DaemonSet for per-node metrics, and as a
+Service (AKS) cluster - as a DaemonSet for per-node metrics, and as a
 single-replica Deployment for cluster-wide state. Both ship OTLP/HTTP to
 base14 Scout.
 
@@ -39,7 +46,7 @@ updated 2026-01-20). It works, but it ties your telemetry to Azure: metrics
 land in a Log Analytics workspace, alerts route through Azure Monitor, and
 dashboards live in Managed Grafana. Multi-cloud, hybrid, or migrating
 customers prefer this guide because the same OpenTelemetry Collector ships
-to Scout, to a self-hosted Prometheus, or to any OTLP-compatible backend —
+to Scout, to a self-hosted Prometheus, or to any OTLP-compatible backend -
 switching backends is a values-file change, not a redeployment of agents.
 
 ## Choosing the right pattern
@@ -86,7 +93,7 @@ attributes so you can group across them in Scout.
   (`oidcIssuerProfile.enabled: true`,
   `securityProfile.workloadIdentity.enabled: true`). These are off by default;
   enable via Bicep / ARM / `az aks update`.
-- `kubectl` ≥ 1.30, `helm` ≥ 3.14.
+- `kubectl` >= 1.30, `helm` >= 3.14.
 - A User-assigned Managed Identity (UAMI). The chart auto-creates one
   ServiceAccount per Helm release, so you'll federate two subjects:
   `system:serviceaccount:otel:otel-agent` and
@@ -165,7 +172,7 @@ clusterRole:
       resources: ["nodes/proxy"]
       verbs: ["get"]
 
-# Metrics-emitting collector — disable inbound ports.
+# Metrics-emitting collector - disable inbound ports.
 ports:
   otlp: {enabled: false}
   otlp-http: {enabled: false}
@@ -200,20 +207,20 @@ config:
     hostmetrics:
       collection_interval: 30s
       scrapers:
-        # Azure Linux mounts /boot/efi root-only — exclude to silence the
+        # Azure Linux mounts /boot/efi root-only - exclude to silence the
         # otherwise per-scrape "permission denied" noise.
         filesystem:
           exclude_mount_points:
             match_type: regexp
             mount_points:
-              - /dev/*
-              - /proc/*
-              - /sys/*
-              - /run/k3s/containerd/*
-              - /var/lib/docker/*
-              - /var/lib/kubelet/*
-              - /boot/efi
-              - /boot
+             - /dev/*
+             - /proc/*
+             - /sys/*
+             - /run/k3s/containerd/*
+             - /var/lib/docker/*
+             - /var/lib/kubelet/*
+             - /boot/efi
+             - /boot
         processes: {}
         system: {}
 
@@ -245,6 +252,7 @@ config:
         k8s.pod.memory.node.utilization: {enabled: true}
 
   extensions:
+    health_check: {}  # chart-injected default; override with explicit endpoint if needed
     oauth2client:
       client_id: ${env:SCOUT_CLIENT_ID}
       client_secret: ${env:SCOUT_CLIENT_SECRET}
@@ -254,17 +262,18 @@ config:
       timeout: 10s
 
   processors:
+    batch: {}  # chart-injected default; override e.g. with timeout: 5s, send_batch_size: 1024
     resource:
       attributes:
-        - {key: cloud.provider, value: azure, action: insert}
-        - {key: cloud.platform, value: azure_aks, action: insert}
-        - {key: cloud.account.id, value: "${env:AZURE_SUBSCRIPTION_ID}", action: insert}
-        - {key: cloud.region, value: "${env:AZURE_REGION}", action: insert}
-        - {key: k8s.cluster.name, value: "${env:AKS_CLUSTER_NAME}", action: insert}
-        - {key: deployment.environment.name, value: "${env:ENVIRONMENT}", action: insert}
-        - {key: deployment.environment, value: "${env:ENVIRONMENT}", action: insert}
-        - {key: environment, value: "${env:ENVIRONMENT}", action: insert}
-        - {key: service.name, value: otel-agent, action: insert}
+       - {key: cloud.provider, value: azure, action: insert}
+       - {key: cloud.platform, value: azure_aks, action: insert}
+       - {key: cloud.account.id, value: "${env:AZURE_SUBSCRIPTION_ID}", action: insert}
+       - {key: cloud.region, value: "${env:AZURE_REGION}", action: insert}
+       - {key: k8s.cluster.name, value: "${env:AKS_CLUSTER_NAME}", action: insert}
+       - {key: deployment.environment.name, value: "${env:ENVIRONMENT}", action: insert}
+       - {key: deployment.environment, value: "${env:ENVIRONMENT}", action: insert}
+       - {key: environment, value: "${env:ENVIRONMENT}", action: insert}
+       - {key: service.name, value: otel-agent, action: insert}
 
   exporters:
     debug: {verbosity: basic}
@@ -392,11 +401,11 @@ config:
     prometheus:
       config:
         scrape_configs:
-          - job_name: kube-state-metrics
+         - job_name: kube-state-metrics
             scrape_interval: 30s
             static_configs:
-              - targets:
-                  - kube-state-metrics.kube-state-metrics.svc.cluster.local:8080
+             - targets:
+                 - kube-state-metrics.kube-state-metrics.svc.cluster.local:8080
 
     k8s_cluster:
       collection_interval: 30s
@@ -416,6 +425,7 @@ config:
 
   extensions:
     # ---- IDENTICAL to values-agent.yaml ----
+    health_check: {}  # chart-injected default; override with explicit endpoint if needed
     oauth2client:
       client_id: ${env:SCOUT_CLIENT_ID}
       client_secret: ${env:SCOUT_CLIENT_SECRET}
@@ -425,18 +435,19 @@ config:
       timeout: 10s
 
   processors:
-    # ---- IDENTICAL to values-agent.yaml — except service.name = otel-cluster ----
+    # ---- IDENTICAL to values-agent.yaml - except service.name = otel-cluster ----
+    batch: {}  # chart-injected default; override e.g. with timeout: 5s, send_batch_size: 1024
     resource:
       attributes:
-        - {key: cloud.provider, value: azure, action: insert}
-        - {key: cloud.platform, value: azure_aks, action: insert}
-        - {key: cloud.account.id, value: "${env:AZURE_SUBSCRIPTION_ID}", action: insert}
-        - {key: cloud.region, value: "${env:AZURE_REGION}", action: insert}
-        - {key: k8s.cluster.name, value: "${env:AKS_CLUSTER_NAME}", action: insert}
-        - {key: deployment.environment.name, value: "${env:ENVIRONMENT}", action: insert}
-        - {key: deployment.environment, value: "${env:ENVIRONMENT}", action: insert}
-        - {key: environment, value: "${env:ENVIRONMENT}", action: insert}
-        - {key: service.name, value: otel-cluster, action: insert}
+       - {key: cloud.provider, value: azure, action: insert}
+       - {key: cloud.platform, value: azure_aks, action: insert}
+       - {key: cloud.account.id, value: "${env:AZURE_SUBSCRIPTION_ID}", action: insert}
+       - {key: cloud.region, value: "${env:AZURE_REGION}", action: insert}
+       - {key: k8s.cluster.name, value: "${env:AKS_CLUSTER_NAME}", action: insert}
+       - {key: deployment.environment.name, value: "${env:ENVIRONMENT}", action: insert}
+       - {key: deployment.environment, value: "${env:ENVIRONMENT}", action: insert}
+       - {key: environment, value: "${env:ENVIRONMENT}", action: insert}
+       - {key: service.name, value: otel-cluster, action: insert}
 
   exporters:
     # ---- IDENTICAL to values-agent.yaml ----
@@ -491,8 +502,8 @@ helm install kube-state-metrics prometheus-community/kube-state-metrics \
 ## Step 6 (optional): Add control-plane metrics with `azure_monitor`
 
 This is Pattern B from "Choosing the right pattern" (or Pattern C if you
-skipped Steps 1-5). Skip if control-plane visibility — API server uptime,
-etcd usage, autoscaler decisions — isn't a priority for your workload.
+skipped Steps 1-5). Skip if control-plane visibility - API server uptime,
+etcd usage, autoscaler decisions - isn't a priority for your workload.
 
 ### What you'll get
 
@@ -501,10 +512,10 @@ each emitted at two aggregations (18 distinct series total):
 
 | Metric | What it tells you |
 |---|---|
-| `apiserver_cpu_usage_percentage` (avg / max) | API server load — spikes correlate with kubectl traffic / controller storms. |
+| `apiserver_cpu_usage_percentage` (avg / max) | API server load - spikes correlate with kubectl traffic / controller storms. |
 | `apiserver_memory_usage_percentage` (avg / max) | API server memory pressure. |
-| `etcd_cpu_usage_percentage` (avg / max) | etcd CPU — affects write latency. |
-| `etcd_database_usage_percentage` (avg / max) | etcd storage usage — nearing 100% means writes will start failing. |
+| `etcd_cpu_usage_percentage` (avg / max) | etcd CPU - affects write latency. |
+| `etcd_database_usage_percentage` (avg / max) | etcd storage usage - nearing 100% means writes will start failing. |
 | `etcd_memory_usage_percentage` (avg / max) | etcd memory pressure. |
 | `cluster_autoscaler_cluster_safe_to_autoscale` (total / avg) | Whether the autoscaler is allowed to act. |
 | `cluster_autoscaler_scale_down_in_cooldown` (total / avg) | Why scale-down isn't happening. |
@@ -517,7 +528,7 @@ Azure Monitor registers more metric definitions for the AKS resource type
 (`kube_*`, `node_disk_usage_*`, `node_network_*`) but they only have data
 when the **Container Insights** or **Managed Prometheus** add-ons are
 enabled on the cluster. Without those, the `metrics:getBatch` call returns
-401 (not "no data") for those names — Azure's API surfaces "RBAC not
+401 (not "no data") for those names - Azure's API surfaces "RBAC not
 enabled for this metric source" as an authorization failure.
 
 Enabling Container Insights or Managed Prometheus is a customer choice
@@ -528,11 +539,18 @@ the rich data and Step 6 for control plane only when explicitly needed.
 
 ### Cluster autoscaling required for autoscaler metrics
 
-The four `cluster_autoscaler_*` metrics only have data if the autoscaler
-is enabled on at least one node pool (`enableAutoScaling: true,
-minCount: N, maxCount: M` in Bicep, or `--enable-cluster-autoscaler` via
-CLI). Without it, they 401 the same way. Either enable autoscaling or
-remove those four entries from the metric whitelist below.
+The four `cluster_autoscaler_*` metrics have two distinct behaviors depending
+on your node pool configuration:
+
+- If cluster autoscaling is not enabled on any node pool, the four metrics
+  return 401 (no backing data source). Remove them from the receiver's metric
+  whitelist in that case.
+- If cluster autoscaling is enabled but the pool is pinned (e.g.
+  `minCount = maxCount = 1`), the metrics emit with zero/idle values; that is
+  expected and indicates the autoscaler is healthy but inactive.
+
+Enable autoscaling with `enableAutoScaling: true, minCount: N, maxCount: M`
+in Bicep, or `--enable-cluster-autoscaler` via CLI.
 
 ### Service Principal + Monitoring Reader
 
@@ -584,7 +602,7 @@ extensions:
     endpoint_params: {audience: b14collector}
     timeout: 10s
 
-  # Liveness probe — useful when running this collector as a Container Apps
+  # Liveness probe - useful when running this collector as a Container Apps
   # job, in Container Instances, or behind a load balancer.
   health_check:
     endpoint: 0.0.0.0:13133
@@ -596,7 +614,7 @@ receivers:
     services: ["Microsoft.ContainerService/managedClusters"]
     auth: {authenticator: azure_auth}
     collection_interval: 60s
-    # Legacy ARM /metrics endpoint — RBAC propagates immediately.
+    # Legacy ARM /metrics endpoint - RBAC propagates immediately.
     # Switch to true once Monitoring Reader has propagated to the
     # metrics:getBatch data plane (5-30 min after grant).
     use_batch_api: false
@@ -612,7 +630,9 @@ receivers:
         etcd_cpu_usage_percentage: []
         etcd_database_usage_percentage: []
         etcd_memory_usage_percentage: []
-        # Remove these four if cluster autoscaling is not enabled.
+        # Remove these four if cluster autoscaling is not enabled on any node pool.
+        # If autoscaling IS enabled but the pool is pinned (minCount = maxCount),
+        # the metrics emit with zero/idle values - that is expected behavior.
         cluster_autoscaler_cluster_safe_to_autoscale: []
         cluster_autoscaler_scale_down_in_cooldown: []
         cluster_autoscaler_unneeded_nodes_count: []
@@ -621,16 +641,16 @@ receivers:
 processors:
   resource:
     attributes:
-      - {key: cloud.provider, value: azure, action: insert}
-      - {key: cloud.platform, value: azure_aks, action: insert}
-      - {key: cloud.account.id, value: "${env:AZURE_SUBSCRIPTION_ID}", action: insert}
-      - {key: cloud.region, value: "${env:AZURE_REGION}", action: insert}
-      - {key: cloud.resource_id, value: "${env:AKS_RESOURCE_ID}", action: insert}
-      - {key: k8s.cluster.name, value: "${env:AKS_CLUSTER_NAME}", action: insert}
-      - {key: deployment.environment.name, value: "${env:ENVIRONMENT}", action: insert}
-      - {key: deployment.environment, value: "${env:ENVIRONMENT}", action: insert}
-      - {key: environment, value: "${env:ENVIRONMENT}", action: insert}
-      - {key: service.name, value: aks-control-plane, action: insert}
+     - {key: cloud.provider, value: azure, action: insert}
+     - {key: cloud.platform, value: azure_aks, action: insert}
+     - {key: cloud.account.id, value: "${env:AZURE_SUBSCRIPTION_ID}", action: insert}
+     - {key: cloud.region, value: "${env:AZURE_REGION}", action: insert}
+     - {key: cloud.resource_id, value: "${env:AKS_RESOURCE_ID}", action: insert}
+     - {key: k8s.cluster.name, value: "${env:AKS_CLUSTER_NAME}", action: insert}
+     - {key: deployment.environment.name, value: "${env:ENVIRONMENT}", action: insert}
+     - {key: deployment.environment, value: "${env:ENVIRONMENT}", action: insert}
+     - {key: environment, value: "${env:ENVIRONMENT}", action: insert}
+     - {key: service.name, value: aks-control-plane, action: insert}
   batch: {timeout: 5s, send_batch_size: 1024}
   memory_limiter: {check_interval: 5s, limit_percentage: 80, spike_limit_percentage: 25}
 
@@ -654,14 +674,14 @@ service:
       receivers: [azure_monitor]
       processors: [memory_limiter, resource, batch]
       exporters: [debug, otlp_http/b14]
-  # Self-telemetry — exposes /metrics on :8888 inside the container so the
+  # Self-telemetry - exposes /metrics on :8888 inside the container so the
   # Verify section's curl-for-otelcol_exporter_sent_metric_points_total
   # check works for this standalone collector too.
   telemetry:
     logs: {level: info}
     metrics:
       readers:
-        - pull:
+       - pull:
             exporter:
               prometheus:
                 host: 0.0.0.0
@@ -713,7 +733,7 @@ docker run -d --name otel-aks-control-plane \
 ```
 
 Health check at `http://localhost:13133/`. Self-metrics at
-`http://localhost:8888/metrics` (use this to verify Scout export — see
+`http://localhost:8888/metrics` (use this to verify Scout export - see
 "Verify the setup" below).
 
 ## Verify the setup
@@ -733,7 +753,7 @@ sleep 1   # let the port-forward bind before curl
 curl -s localhost:8888/metrics | grep otelcol_exporter_sent_metric_points_total
 # otelcol_exporter_sent_metric_points_total{exporter="otlp_http/b14",...}  N
 # otelcol_exporter_sent_metric_points_total{exporter="debug",...}  N
-# (the two values should match — debug count == otlphttp count → 0 dropped)
+# (the two values should match - debug count == otlphttp count → 0 dropped)
 ```
 
 If you ran Step 6, verify the standalone collector the same way against its
@@ -747,18 +767,18 @@ curl -s localhost:8888/metrics | grep otelcol_exporter_sent_metric_points_total
 
 | Alert | Source | Warning | Critical | Why |
 |---|---|---|---|---|
-| Pod restart spike | `k8s.container.restarts` (k8s_cluster) | rate > 1/min for 5 min | rate > 5/min for 5 min | Container is crashlooping or being OOM-killed |
-| Node memory utilization | `k8s.node.memory.working_set / k8s.node.memory.usage` (kubeletstats) | > 80% for 10 min | > 90% for 5 min | Node pressure → eviction risk |
-| Pod CPU throttled | `k8s.pod.cpu_limit_utilization` (kubeletstats) | > 0.8 for 10 min | > 0.95 for 5 min | Workload exceeding its CPU limit; latency suffers |
-| HPA stuck at max | `k8s.hpa.current_replicas / k8s.hpa.max_replicas` (k8s_cluster) | >= 1.0 for 15 min | (alert at warning) | Workload demand exceeds the autoscaler ceiling |
-| Volume usage | `k8s.volume.available / k8s.volume.capacity` (kubeletstats) | > 80% | > 90% | PVC nearing capacity; risk of write failures |
-| PVC pending | `k8s.persistentvolumeclaim.status.phase == Pending` for 10 min | true | (alert at warning) | Storage class / provisioner issue |
-| Daemonset misscheduled | `k8s.daemonset.misscheduled_nodes` (k8s_cluster) | > 0 | > 0 for 30 min | Node-selector / taint mismatch |
-| Job failures | `kube_job_status_failed` (kube-state-metrics) | > 0 in 1 hour | > 5 in 1 hour | Scheduled work failing repeatedly |
-| Container restart by reason | `k8s.container.status.reason` (k8s_cluster) | OOMKilled count > 0 in 10 min | OOMKilled count > 3 in 5 min | OOM kills indicate undersized memory limits |
-| API server CPU (Step 6) | `azure_apiserver_cpu_usage_percentage_average` | > 60% for 10 min | > 80% for 5 min | Control plane stressed; possibly oversized cluster |
-| etcd database usage (Step 6) | `azure_etcd_database_usage_percentage_average` | > 60% | > 80% | etcd nearing storage limit; affects writes |
-| Autoscaler unschedulable pods (Step 6) | `azure_cluster_autoscaler_unschedulable_pods_count_total` | > 0 for 10 min | > 5 for 5 min | Autoscaler can't schedule due to taints, quotas, or VM SKU availability |
+| Pod restart spike | `k8s.container.restarts` (k8s_cluster) | rate > 1/min for 5 min | rate > 5/min for 5 min | Container is crashlooping or being OOM-killed. |
+| Node memory utilization | `k8s.node.memory.working_set / k8s.node.memory.usage` (kubeletstats) | > 80% for 10 min | > 90% for 5 min | Node pressure, eviction risk. |
+| Pod CPU throttled | `k8s.pod.cpu_limit_utilization` (kubeletstats) | > 0.8 for 10 min | > 0.95 for 5 min | Workload exceeding its CPU limit; latency suffers. |
+| HPA stuck at max | `k8s.hpa.current_replicas / k8s.hpa.max_replicas` (k8s_cluster) | >= 1.0 for 15 min | (alert at warning) | Workload demand exceeds the autoscaler ceiling. |
+| Volume usage | `k8s.volume.available / k8s.volume.capacity` (kubeletstats) | > 80% | > 90% | PVC nearing capacity; risk of write failures. |
+| PVC pending | `k8s.persistentvolumeclaim.status.phase == Pending` for 10 min | true | (alert at warning) | Storage class / provisioner issue. |
+| Daemonset misscheduled | `k8s.daemonset.misscheduled_nodes` (k8s_cluster) | > 0 | > 0 for 30 min | Node-selector / taint mismatch. |
+| Job failures | `kube_job_status_failed` (kube-state-metrics) | > 0 in 1 hour | > 5 in 1 hour | Scheduled work failing repeatedly. |
+| Container restart by reason | `k8s.container.status.reason` (k8s_cluster) | OOMKilled count > 0 in 10 min | OOMKilled count > 3 in 5 min | OOM kills indicate undersized memory limits. |
+| API server CPU (Step 6) | `azure_apiserver_cpu_usage_percentage_average` | > 60% for 10 min | > 80% for 5 min | Control plane stressed; possibly oversized cluster. |
+| etcd database usage (Step 6) | `azure_etcd_database_usage_percentage_average` | > 60% | > 80% | etcd nearing storage limit; affects writes. |
+| Autoscaler unschedulable pods (Step 6) | `azure_cluster_autoscaler_unschedulable_pods_count_total` | > 0 for 10 min | > 5 for 5 min | Autoscaler can't schedule due to taints, quotas, or VM SKU availability. |
 
 ## Troubleshooting
 
@@ -813,7 +833,7 @@ rate-limit-friendly at fleet scale.
 Those metric definitions exist in Azure Monitor for the AKS resource type
 but have no backing data source unless the **Container Insights** or
 **Managed Prometheus** add-on is enabled on the cluster. Without those,
-AzMon returns 401 (not "no data" — the API doesn't distinguish). The
+AzMon returns 401 (not "no data" - the API doesn't distinguish). The
 metric whitelist in the receiver config filters to ARM-only metrics that
 work everywhere. Extend the whitelist with names from your Azure Portal →
 Metrics blade if you've enabled the add-ons.
@@ -823,7 +843,7 @@ Metrics blade if you've enabled the add-ons.
 ### How do I monitor an Azure Kubernetes Service cluster with OpenTelemetry?
 
 Deploy the upstream OpenTelemetry Collector Helm chart twice in your AKS
-cluster — once as a DaemonSet (kubeletstats + hostmetrics) for per-node
+cluster - once as a DaemonSet (kubeletstats + hostmetrics) for per-node
 metrics, once as a Deployment (k8s_cluster + prometheus scraping
 kube-state-metrics) for cluster-state and additional `kube_*` metrics. Both
 ship OTLP/HTTP to base14 Scout authenticated via OAuth2 client credentials.
@@ -835,21 +855,21 @@ Via the OpenTelemetry Collector `oauth2client` extension. Store the
 Scout-issued `client_id` and `client_secret` in a Kubernetes Secret,
 reference them in the chart values via `secretKeyRef`, and the
 `otlp_http/b14` exporter automatically fetches short-lived bearer tokens
-from your Keycloak token URL on each scrape interval (cached until expiry).
+from your Scout token URL, cached until expiry.
 
 ### Why do I need two Helm releases instead of one?
 
 The `kubeletstats` receiver runs per-node (DaemonSet mode) so each kubelet
 is scraped from its own pod. The `k8s_cluster` receiver pulls cluster-wide
 state from the K8s API once and would emit duplicates if scaled
-horizontally — it runs as a single-replica Deployment. Splitting into two
+horizontally - it runs as a single-replica Deployment. Splitting into two
 releases gives each receiver the right Pod controller without compromise.
 
 ### How is this different from Microsoft's Managed Prometheus and Container Insights?
 
 Managed Prometheus and Container Insights are Azure-tenant-bound, billed
 per-GB ingested, and visualized in Managed Grafana / Log Analytics. The
-OpenTelemetry Collector is vendor-neutral — the same image ships to base14
+OpenTelemetry Collector is vendor-neutral - the same image ships to base14
 Scout or any OTLP-compatible backend without redeployment. Customers
 running multi-cloud or migrating off Azure-native observability prefer
 this.
@@ -868,26 +888,27 @@ metric families flow to Scout in one pipeline.
 Follow Step 6 above. It deploys a standalone OpenTelemetry Collector with
 the `azure_monitor` receiver against the AKS resource, authenticated via
 Service Principal. You get 18 control-plane series (9 metrics emitted at
-two aggregations each — apiserver, etcd, autoscaler) on a vanilla cluster,
+two aggregations each - apiserver, etcd, autoscaler) on a vanilla cluster,
 or more if Container Insights / Managed Prometheus are enabled. Most
-workloads don't need this — the in-cluster pattern in Steps 1-5 covers
+workloads don't need this - the in-cluster pattern in Steps 1-5 covers
 pod / container / cluster-state visibility, which is where most
 operational signals live.
 
 ## Related Guides
 
-- [Kubernetes (Scout Helm chart)][scout-helm] — alternative deployment
+- [Azure Kubernetes Service (Operator)](aks.md) - the canonical pattern using the OpenTelemetry Operator and CRDs.
+- [Kubernetes (Scout Helm chart)][scout-helm] - alternative deployment
   pattern using Scout's own Helm chart instead of the upstream
   OpenTelemetry chart this guide uses. Useful for non-AKS Kubernetes
   platforms or operators who prefer a single Scout-curated chart over the
   upstream + values-file approach.
-- [CloudWatch Metrics Stream](../aws/cloudwatch-metrics-stream.md) — the
+- [CloudWatch Metrics Stream](../aws/cloudwatch-metrics-stream.md) - the
   AWS infrastructure-metrics guide. Different pattern from this one
   (CloudWatch → Kinesis Firehose → Scout, push-stream forwarder; this
   guide is pull-based collectors).
-- [OpenTelemetry Collector Helm chart][otel-helm] — upstream chart
+- [OpenTelemetry Collector Helm chart][otel-helm] - upstream chart
   documentation.
-- [kube-state-metrics Helm chart][ksm-helm] — exporter source and
+- [kube-state-metrics Helm chart][ksm-helm] - exporter source and
   configuration.
 
 [scout-helm]: ../../collector-setup/kubernetes-helm-setup.md

@@ -3,7 +3,7 @@ date: 2026-05-03
 id: collecting-azure-service-bus-telemetry
 title: Azure Service Bus Monitoring with OpenTelemetry - Production Wiring for SREs
 sidebar_label: Azure Service Bus
-sidebar_position: 4
+sidebar_position: 5
 description:
   Wire Azure Service Bus metrics into your existing OpenTelemetry Collector
   and ship to base14 Scout. Production-shaped guidance on receiver config,

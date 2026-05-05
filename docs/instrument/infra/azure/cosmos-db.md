@@ -3,7 +3,7 @@ date: 2026-05-02
 id: collecting-azure-cosmosdb-telemetry
 title: Azure Cosmos DB Monitoring with OpenTelemetry - Request Unit (RU) Consumption & Latency
 sidebar_label: Azure Cosmos DB
-sidebar_position: 2
+sidebar_position: 3
 description:
   Monitor Azure Cosmos DB (SQL / NoSQL API) with the OpenTelemetry
   Collector's azure_monitor receiver. Stream Total Requests,

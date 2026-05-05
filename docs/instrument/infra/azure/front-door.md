@@ -3,8 +3,8 @@ date: 2026-05-04
 id: collecting-azure-front-door-telemetry
 title: Azure Front Door Monitoring with OpenTelemetry - Production Wiring for SREs
 sidebar_label: Azure Front Door
-sidebar_position: 5
-description:
+sidebar_position: 6
+description: >-
   Add Azure Front Door Standard metrics to your existing OpenTelemetry
   Collector and ship them to base14 Scout. Production-shaped guidance on
   receiver config, the explicit-aggregation workaround for receiver issue
@@ -580,5 +580,6 @@ day before cardinality multiplication).
 - [Azure SQL Database](./sql-database.md) - same auth + RBAC shape.
 - [Azure Cosmos DB](./cosmos-db.md) - same fragment composition, RU-based
   metrics.
-- [Azure Kubernetes Service](./aks.md) - uses in-cluster
-  `kubeletstats` and `k8s_cluster` receivers, not `azure_monitor`.
+- [Azure Kubernetes Service](../azure/aks.md) - operator-managed
+  collectors for in-cluster `kubeletstats`, `k8s_cluster`, and optional
+  `azure_monitor` control-plane metrics.
