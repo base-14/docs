@@ -51,7 +51,7 @@ your collector.
 ## Telemetry Architecture
 
 Before instrumenting your app, decide how telemetry gets from the device to
-Base14. There are two deployment models.
+Scout. There are two deployment models.
 
 ### Recommended: OTel Collector with API Gateway
 
@@ -59,32 +59,32 @@ Base14. There are two deployment models.
 
 Devices send OTLP data to a load balancer or API gateway, which handles
 authentication and rate limiting. The gateway forwards traffic to an OTel
-collector that applies server-side sampling before exporting to Base14.
+collector that applies server-side sampling before exporting to Scout.
 
-### Alternative: Direct to Base14
+### Alternative: Direct to Scout
 
-Devices send OTLP data directly to the Base14 ingestion endpoint, authenticating
+Devices send OTLP data directly to the Scout ingestion endpoint, authenticating
 with OAuth tokens that the app manages.
 
 ### Comparison
 
-| | Collector + API Gateway | Direct to Base14 |
+| | Collector + API Gateway | Direct to Scout |
 | :--- | :--- | :--- |
 | **Authentication** | API gateway handles auth centrally - app only needs an API key or static token | App must manage OAuth token lifecycle (acquire, refresh, retry on 401) |
 | **Credential security** | Credentials stay on your infra - app ships a lightweight key that the gateway validates | OAuth client secret must be embedded or fetched at runtime - risk of extraction from APK/IPA |
-| **Rate limiting** | API gateway enforces per-device or per-app rate limits - protects backend from traffic spikes | No rate limiting - a buggy release can flood Base14 with telemetry |
+| **Rate limiting** | API gateway enforces per-device or per-app rate limits - protects backend from traffic spikes | No rate limiting - a buggy release can flood Scout with telemetry |
 | **Server-side sampling** | OTel collector applies tail sampling (e.g. keep all errors, sample 10% of healthy spans) - reduces cost without losing signal | All sampling must happen on-device - you lose the ability to make sampling decisions with full context |
-| **Buffering and retry** | Collector buffers and retries on export failure - device fire-and-forget | App must handle retry logic and local buffering if Base14 is unreachable |
+| **Buffering and retry** | Collector buffers and retries on export failure - device fire-and-forget | App must handle retry logic and local buffering if Scout is unreachable |
 | **Schema evolution** | Collector processors can rename attributes, drop PII, or add resource attributes without app updates | Any schema change requires an app release and user update |
-| **Network efficiency** | Gateway can terminate TLS at the edge, compress, and batch - lower overhead per device | Each device opens its own TLS connection to Base14 - more overhead at scale |
+| **Network efficiency** | Gateway can terminate TLS at the edge, compress, and batch - lower overhead per device | Each device opens its own TLS connection to Scout - more overhead at scale |
 | **Operational cost** | Requires running a collector and gateway (but these are standard infra components) | No additional infra to manage |
-| **Deployment complexity** | Moderate - collector + gateway config | Low - just configure the Base14 endpoint in the app |
+| **Deployment complexity** | Moderate - collector + gateway config | Low - just configure the Scout endpoint in the app |
 | **Best for** | Production apps with multiple devices, teams that want control over sampling and PII | Prototypes, internal tools, or apps with a small user base |
 
 :::tip Recommendation
 Use the **Collector + API Gateway** approach for production apps. The ability to
 rate limit, sample server-side, strip PII, and rotate credentials without app
-updates far outweighs the small infra cost. Reserve **Direct to Base14** for
+updates far outweighs the small infra cost. Reserve **Direct to Scout** for
 prototypes or internal tools where simplicity matters more than control.
 :::
 
