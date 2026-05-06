@@ -1,5 +1,5 @@
 ---
-date: 2026-05-05
+date: 2026-05-06
 id: collecting-azure-application-gateway-telemetry
 title: Azure Application Gateway Monitoring with OpenTelemetry - Production Wiring for SREs
 sidebar_label: Azure Application Gateway
@@ -107,11 +107,13 @@ receivers:
       authenticator: azure_auth
     collection_interval: 60s
     initial_delay: 1s
-    # Legacy Azure Resource Manager /metrics path. Monitoring Reader
-    # propagates immediately on this endpoint. Flip to true once you exceed
-    # ~50 gateways per subscription to lift the rate ceiling from 12k to
-    # 360k calls/hour; see Scale and rate limits.
-    use_batch_api: false
+    # Metrics Data Plane (metrics:getBatch). Raises the per-subscription
+    # ceiling from 12k to 360k calls/hour and batches up to 50 resources
+    # per call - the only setting that survives a real fleet. RBAC
+    # propagates 5-30 min after the Monitoring Reader grant; flip to false
+    # as a temporary fallback to the legacy ARM /metrics endpoint if you
+    # see persistent 401s after that window. See Scale and rate limits.
+    use_batch_api: true
     # Resource-list cache TTL in seconds. Receiver default is 86400 (24h);
     # the right setting for a stable fleet. Lower (e.g. 3600 or 600) only
     # if gateways are added or removed frequently.
@@ -214,8 +216,10 @@ az role assignment create \
 
 For multi-subscription fleets, repeat per subscription. RBAC propagation
 on the legacy ARM `/metrics` endpoint is immediate; the data-plane batch
-API at `*.metrics.monitor.azure.com` lags 5-30 minutes after grant. Flip
-`use_batch_api: true` only after the role has settled.
+API at `*.metrics.monitor.azure.com` lags 5-30 minutes after grant.
+This guide defaults `use_batch_api: true`; if the data plane is still
+401-ing past that window, flip to `false` as a temporary fallback to the
+legacy ARM `/metrics` endpoint (RBAC there is immediate).
 
 ## What you'll monitor
 
@@ -384,14 +388,14 @@ Azure Monitor enforces two ceilings:
 
 | Endpoint | Rate limit | When it applies |
 | --- | --- | --- |
-| Legacy ARM `/metrics` (`use_batch_api: false`) | 12,000 calls / hour / subscription | Default; immediate RBAC propagation. |
-| Data-plane batch (`use_batch_api: true`) | 360,000 calls / hour / subscription | Higher ceiling but RBAC lags 5-30 min. |
+| Data-plane batch (`use_batch_api: true`) | 360,000 calls / hour / subscription | Default in this guide. RBAC lags 5-30 min after the Monitoring Reader grant. |
+| Legacy ARM `/metrics` (`use_batch_api: false`) | 12,000 calls / hour / subscription | Temporary fallback if the data plane is still 401-ing after RBAC propagation should have completed. Immediate RBAC propagation. |
 
 At a 60-second collection interval, a single gateway costs roughly 60
 calls per hour (one per metric per poll, deduplicated within the
-receiver). The break-even point for flipping `use_batch_api: true` is
-around 50 gateways per subscription; below that, the legacy endpoint is
-simpler.
+receiver). Even small fleets (5-10 gateways) benefit from
+`use_batch_api: true` because batched fan-out is more rate-limit-friendly
+across collectors that share a subscription.
 
 For multi-subscription discovery without an explicit list:
 
@@ -594,9 +598,9 @@ fresh definition.
 Monitor's per-subscription rate ceiling (12,000 / hour on legacy or
 360,000 / hour on batch). Lower polling rate
 (`collection_interval: 120s`), narrow scope (list specific
-`resource_groups:`), enable `use_batch_api: true` once data-plane RBAC
-has settled, or split heavy subscriptions across multiple collector
-instances.
+`resource_groups:`), or split heavy subscriptions across multiple
+collector instances. `use_batch_api: true` is already the default in
+this guide.
 
 **Scout OAuth2 returns 401.** Verify `SCOUT_CLIENT_ID`,
 `SCOUT_CLIENT_SECRET`, and `SCOUT_TOKEN_URL` match the values in your

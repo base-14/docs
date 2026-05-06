@@ -1,5 +1,5 @@
 ---
-date: 2026-05-02
+date: 2026-05-06
 id: collecting-azure-sql-database-telemetry
 title: Azure SQL Database Monitoring with OpenTelemetry - Database Transaction Unit (DTU), Connections & Deadlocks
 sidebar_label: Azure SQL Database
@@ -196,8 +196,10 @@ SQL-Database-specific.
 Role-Based Access Control (RBAC) propagation on the legacy Azure Resource
 Manager (ARM) `/metrics` endpoint is immediate. The data-plane batch API
 at `*.metrics.monitor.azure.com` requires separate propagation that lags
-5-30 minutes after grant; flip `use_batch_api: true` only after the role
-has settled.
+5-30 minutes after grant. This guide defaults `use_batch_api: true`; if
+the data plane is still 401-ing past that window, flip to `false` as a
+temporary fallback to the legacy ARM `/metrics` endpoint (RBAC there is
+immediate).
 
 ## Receiver configuration
 
@@ -225,7 +227,10 @@ receivers:
       - Microsoft.Sql/servers/elasticPools
     auth: { authenticator: azure_auth }
     collection_interval: 60s
-    use_batch_api: false
+    # Metrics Data Plane (12k -> 360k calls/hour ceiling). RBAC propagates
+    # 5-30 min after the Monitoring Reader grant; flip to false as a
+    # temporary fallback to the legacy ARM /metrics endpoint if needed.
+    use_batch_api: true
     cache_resources: 60
     dimensions: { enabled: true }
     metrics:
@@ -353,10 +358,12 @@ thresholds.
   `Monitoring Reader` immediately. The newer data-plane batch API at
   `*.metrics.monitor.azure.com` requires separate RBAC propagation that can
   lag 5-30 minutes after grant.
-- **Switching to `use_batch_api: true`** raises Azure Monitor's per-tenant
-  query rate ceiling from 12,000 to 360,000 calls/hour. Worth it once you're
-  scraping more than a handful of databases. Wait for data-plane RBAC to
-  settle before enabling.
+- **`use_batch_api: true` (default in this guide)** uses Azure Monitor's
+  data-plane batch endpoint, which raises the per-tenant query rate
+  ceiling from 12,000 to 360,000 calls/hour. RBAC propagation on the data
+  plane lags 5-30 min after the Monitoring Reader grant; flip to `false`
+  as a temporary fallback to the legacy ARM `/metrics` endpoint if you
+  see persistent 401s past that window.
 - **System `master` database.** The receiver auto-discovers the system
   `master` database alongside your application databases and emits the
   same database-scope series for both. `master` is mostly noise - filter

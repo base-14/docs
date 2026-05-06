@@ -1,5 +1,5 @@
 ---
-date: 2026-05-05
+date: 2026-05-06
 id: collecting-azure-aks-telemetry
 title: Azure Kubernetes Service Monitoring with OpenTelemetry Operator
 sidebar_label: Azure Kubernetes Service
@@ -127,6 +127,20 @@ Prefer raw Helm releases? See the
   Workload Identity webhook cannot inject the projected token into
   operator-managed pods. Service Principal env-var auth via a Kubernetes
   Secret is the workaround for any collector that needs Azure API access.
+
+## Collector image version
+
+This guide pins `otel/opentelemetry-collector-contrib:0.151.0` on every
+`OpenTelemetryCollector` CR. Contrib versions that change config behavior
+for the components used here:
+
+| Version | Change | Impact on this guide |
+|---|---|---|
+| **v0.124.0** (Apr 2025) | `azure_monitor` gains `use_batch_api` (12k → 360k Metrics API calls/hour ceiling). | Step 7 sets `use_batch_api: true`. Field does not exist on older images. |
+| **v0.129.0** (Jun 2025) | `azure_monitor` auth via the `azure_auth` extension (`auth.authenticator`) becomes canonical; inline `credentials:` block deprecated (extension pattern introduced v0.127.0). | Step 7 uses `auth: {authenticator: azure_auth}`. Pre-v0.127.0 images need an inline `credentials:` block on the receiver. |
+| **v0.144.0** (Jan 2026) | `otlphttp` → `otlp_http` exporter rename. | Deprecated alias kept; not a parse-time break either way. |
+| **v0.148.0** (Mar 2026) | Snake-case rename: `azuremonitor` → `azure_monitor` (receiver), `azureauth` → `azure_auth` (extension); `auth.authenticator` value follows. | **Parse-time pivot for Step 7.** v0.148.0+ accepts both forms (legacy logs a startup warning); pre-v0.148.0 rejects the snake-case form. Resource-attribute prefix `azuremonitor.*` (e.g. `azuremonitor.subscription_id`) is unchanged on both sides. |
+| **v0.150.0** (Apr 2026) | `kubeletstats` deprecated attrs off by default (`aws.volume.id`, `fs.type`, `gce.pd.name`, `glusterfs.*`, `partition`). `k8s_cluster` entity-event label keys prefixed `k8s.<resource>.label.<key>`. | Affects Step 4 and Step 6. Re-enable kubeletstats attrs under `metrics:` only if Scout dashboards depend on them. Update Scout queries keying on unprefixed pod / node labels. |
 
 ## Step 1: Install cert-manager
 
@@ -540,11 +554,14 @@ webhook never fires and WIF cannot be used. The control-plane collector falls
 back to Service Principal env-var auth via the `azure-sp` Secret created in
 Step 3.
 
-**Why `use_batch_api: false`:** the legacy ARM `/metrics` endpoint propagates
-Monitoring Reader RBAC immediately after the role assignment. The newer
-`metrics:getBatch` data-plane endpoint can lag 5-30 minutes after the grant.
-Leave `use_batch_api: false` until the data plane settles, then switch to
-`true` for better rate-limit headroom at fleet scale.
+**Why `use_batch_api: true`:** the `metrics:getBatch` data-plane endpoint
+raises the per-tenant ceiling from 12k to 360k API calls/hour and batches
+up to 50 resources per call - the only setting that survives a real fleet.
+The data-plane endpoint propagates Monitoring Reader RBAC 5-30 minutes
+after the role assignment, independently of the legacy ARM `/metrics`
+endpoint. If Step 7 returns 401 `AuthorizationFailed` immediately after
+SP creation, wait for propagation; flip to `false` only as a temporary
+fallback (see Troubleshooting).
 
 ```yaml
 apiVersion: opentelemetry.io/v1beta1
@@ -595,7 +612,7 @@ spec:
         services: ["Microsoft.ContainerService/managedClusters"]
         auth: {authenticator: azure_auth}
         collection_interval: 60s
-        use_batch_api: false
+        use_batch_api: true
         cache_resources: 60
         dimensions:
           enabled: true
@@ -1005,9 +1022,11 @@ or `maven:3.9-eclipse-temurin-21`).
 
 The data-plane RBAC for `metrics:getBatch` at
 `*.metrics.monitor.azure.com` propagates 5-30 minutes after the Monitoring
-Reader grant, independently of the legacy ARM `/metrics` endpoint. Keep
-`use_batch_api: false` until the RBAC has fully propagated, then switch to
-`true`.
+Reader grant, independently of the legacy ARM `/metrics` endpoint. Wait
+for propagation; the receiver retries automatically. If you need metrics
+flowing immediately, flip `use_batch_api` to `false` to fall back to the
+legacy ARM endpoint (RBAC there is immediate), then return to `true` once
+the data-plane RBAC has settled.
 
 ### `spec.podLabels` workaround
 

@@ -1,5 +1,5 @@
 ---
-date: 2026-05-04
+date: 2026-05-06
 id: collecting-azure-front-door-telemetry
 title: Azure Front Door Monitoring with OpenTelemetry - Production Wiring for SREs
 sidebar_label: Azure Front Door
@@ -150,10 +150,12 @@ az role assignment create \
   --scope "$RG_ID"
 ```
 
-For multi-subscription fleets, repeat per subscription. RBAC
-propagation on the legacy ARM `/metrics` endpoint is immediate; the
-data-plane batch API at `*.metrics.monitor.azure.com` lags 5-30 minutes
-after grant. Flip `use_batch_api: true` only after the role has settled.
+For multi-subscription fleets, repeat per subscription. The data-plane
+batch API at `*.metrics.monitor.azure.com` (`use_batch_api: true`, the
+default in this guide) lags 5-30 minutes after the role grant before
+RBAC propagates. The legacy ARM `/metrics` endpoint
+(`use_batch_api: false`) propagates immediately and is the temporary
+fallback if the data plane is still 401-ing past that window.
 
 The role assignment lifecycle for production: bind it to the resource
 group containing your Front Door profile (or to the subscription if
@@ -192,7 +194,10 @@ receivers:
       authenticator: azure_auth
     collection_interval: 60s
     initial_delay: 1s
-    use_batch_api: false
+    # Metrics Data Plane (12k -> 360k calls/hour ceiling). RBAC propagates
+    # 5-30 min after the Monitoring Reader grant; flip to false as a
+    # temporary fallback to the legacy ARM /metrics endpoint if needed.
+    use_batch_api: true
     cache_resources: 86400
     dimensions:
       enabled: true
@@ -403,9 +408,13 @@ receivers:
 
 `subscription_ids` and `resource_groups` are both lists; one collector
 can poll dozens of profiles across many subscriptions. With
-`Monitoring Reader` granted on each scope, switch to
-`use_batch_api: true` once you exceed roughly 50 profiles to lift the
-per-subscription rate ceiling from 12,000 to 360,000 calls per hour.
+`Monitoring Reader` granted on each scope, the default
+`use_batch_api: true` (see [Receiver configuration](#receiver-configuration))
+gives you the 360,000 calls/hour per-subscription ceiling and batched
+fan-out across resources. Flip to
+`false` only as a temporary fallback to the legacy ARM `/metrics`
+endpoint (12,000 calls/hour, immediate RBAC) while data-plane RBAC
+propagates.
 
 ### Edge propagation timing
 

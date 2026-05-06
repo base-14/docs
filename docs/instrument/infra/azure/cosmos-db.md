@@ -1,5 +1,5 @@
 ---
-date: 2026-05-02
+date: 2026-05-06
 id: collecting-azure-cosmosdb-telemetry
 title: Azure Cosmos DB Monitoring with OpenTelemetry - Request Unit (RU) Consumption & Latency
 sidebar_label: Azure Cosmos DB
@@ -25,7 +25,7 @@ head:
   - - script
     - type: application/ld+json
     - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I monitor Azure Cosmos DB with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Run the OpenTelemetry Collector with the azure_monitor receiver targeting Microsoft.DocumentDB/databaseAccounts. The receiver polls Azure Monitor's REST API every 60 seconds, transforms metrics from Azure's PascalCase names (like TotalRequests) to OTel-style names (azure_totalrequests_count), and ships them via OTLP/HTTP to base14 Scout. Authentication uses the azure_auth extension in service-principal or managed-identity mode."}},{"@type":"Question","name":"What RBAC role does the receiver need on the Cosmos account?","acceptedAnswer":{"@type":"Answer","text":"Monitoring Reader scoped to the resource group is sufficient. It grants read access to metric definitions and metric data without any control-plane write permissions. Reader is not needed unless a specific call returns AuthorizationFailed; Monitoring Reader alone covers the entire azure_monitor receiver surface."}},{"@type":"Question","name":"Why do some metrics show no data on a fresh Cosmos account?","acceptedAnswer":{"@type":"Answer","text":"Azure Monitor only emits metrics when there is activity to measure. ServerSideLatencyDirect and ServerSideLatencyGateway emit zero series until a real workload exercises latency. TotalRequests and TotalRequestUnits start emitting after the first data-plane call. DataUsage, DocumentCount, ProvisionedThroughput, and ServiceAvailability emit immediately on every account, regardless of traffic."}},{"@type":"Question","name":"What is NormalizedRUConsumption?","acceptedAnswer":{"@type":"Answer","text":"NormalizedRUConsumption is the per-minute maximum RU/s utilization expressed as a percentage of provisioned throughput, sliced by partition key range. It rises before throttling actually starts (visible in 429 status codes), making it a leading indicator for capacity decisions. Alert at 80% sustained to give yourself room to scale before requests fail."}},{"@type":"Question","name":"Should I use the data-plane batch API for higher throughput?","acceptedAnswer":{"@type":"Answer","text":"Switch to use_batch_api: true once your service principal RBAC has propagated through Azure Monitor's data plane (5-30 minutes after grant). The batch API raises Azure Monitor's query rate ceiling from 12,000 to 360,000 calls per hour. For a single-account validation pass, leave it false; the legacy ARM /metrics endpoint propagates Monitoring Reader immediately."}},{"@type":"Question","name":"How does this differ from Application Insights for Cosmos DB?","acceptedAnswer":{"@type":"Answer","text":"Application Insights for Cosmos DB is Azure-tenant-bound, billed per-GB ingested, and visualised in Azure dashboards or workbooks. The OpenTelemetry Collector is vendor-neutral - the same image ships to base14 Scout or any OTLP-compatible backend without redeployment. Multi-cloud customers and customers migrating off Application Insights prefer this. The metric coverage is identical - both surfaces draw from the same Azure Monitor REST API."}}]}
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I monitor Azure Cosmos DB with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Run the OpenTelemetry Collector with the azure_monitor receiver targeting Microsoft.DocumentDB/databaseAccounts. The receiver polls Azure Monitor's REST API every 60 seconds, transforms metrics from Azure's PascalCase names (like TotalRequests) to OTel-style names (azure_totalrequests_count), and ships them via OTLP/HTTP to base14 Scout. Authentication uses the azure_auth extension in service-principal or managed-identity mode."}},{"@type":"Question","name":"What RBAC role does the receiver need on the Cosmos account?","acceptedAnswer":{"@type":"Answer","text":"Monitoring Reader scoped to the resource group is sufficient. It grants read access to metric definitions and metric data without any control-plane write permissions. Reader is not needed unless a specific call returns AuthorizationFailed; Monitoring Reader alone covers the entire azure_monitor receiver surface."}},{"@type":"Question","name":"Why do some metrics show no data on a fresh Cosmos account?","acceptedAnswer":{"@type":"Answer","text":"Azure Monitor only emits metrics when there is activity to measure. ServerSideLatencyDirect and ServerSideLatencyGateway emit zero series until a real workload exercises latency. TotalRequests and TotalRequestUnits start emitting after the first data-plane call. DataUsage, DocumentCount, ProvisionedThroughput, and ServiceAvailability emit immediately on every account, regardless of traffic."}},{"@type":"Question","name":"What is NormalizedRUConsumption?","acceptedAnswer":{"@type":"Answer","text":"NormalizedRUConsumption is the per-minute maximum RU/s utilization expressed as a percentage of provisioned throughput, sliced by partition key range. It rises before throttling actually starts (visible in 429 status codes), making it a leading indicator for capacity decisions. Alert at 80% sustained to give yourself room to scale before requests fail."}},{"@type":"Question","name":"Should I use the data-plane batch API for higher throughput?","acceptedAnswer":{"@type":"Answer","text":"This guide already defaults use_batch_api: true, which uses Azure Monitor's data-plane batch endpoint and raises the query rate ceiling from 12,000 to 360,000 calls per hour. RBAC on the data plane propagates 5-30 minutes after the Monitoring Reader grant; flip to false as a temporary fallback to the legacy ARM /metrics endpoint (immediate propagation, 12,000 calls per hour) if you see persistent 401s past that window."}},{"@type":"Question","name":"How does this differ from Application Insights for Cosmos DB?","acceptedAnswer":{"@type":"Answer","text":"Application Insights for Cosmos DB is Azure-tenant-bound, billed per-GB ingested, and visualised in Azure dashboards or workbooks. The OpenTelemetry Collector is vendor-neutral - the same image ships to base14 Scout or any OTLP-compatible backend without redeployment. Multi-cloud customers and customers migrating off Application Insights prefer this. The metric coverage is identical - both surfaces draw from the same Azure Monitor REST API."}}]}
 ---
 
 ## Overview
@@ -126,8 +126,10 @@ Cosmos-DB-specific.
 Role-Based Access Control (RBAC) propagation on the legacy Azure Resource
 Manager (ARM) `/metrics` endpoint is immediate. The data-plane batch API
 at `*.metrics.monitor.azure.com` requires separate propagation that lags
-5-30 minutes after grant; flip `use_batch_api: true` only after the role
-has settled.
+5-30 minutes after grant. This guide defaults `use_batch_api: true`; if
+the data plane is still 401-ing past that window, flip to `false` as a
+temporary fallback to the legacy ARM `/metrics` endpoint (RBAC there is
+immediate).
 
 ## Receiver configuration
 
@@ -153,7 +155,10 @@ receivers:
     services: ["Microsoft.DocumentDB/databaseAccounts"]
     auth: { authenticator: azure_auth }
     collection_interval: 60s
-    use_batch_api: false
+    # Metrics Data Plane (12k -> 360k calls/hour ceiling). RBAC propagates
+    # 5-30 min after the Monitoring Reader grant; flip to false as a
+    # temporary fallback to the legacy ARM /metrics endpoint if needed.
+    use_batch_api: true
     cache_resources: 60
     dimensions: { enabled: true }
     metrics:
@@ -255,10 +260,12 @@ naturally tracks the consistency level.
   `Monitoring Reader` immediately. The newer data-plane batch API at
   `*.metrics.monitor.azure.com` requires separate RBAC propagation that can
   lag 5-30 minutes after grant.
-- **Switching to `use_batch_api: true`** raises Azure Monitor's per-tenant
-  query rate ceiling from 12,000 to 360,000 calls/hour. Worth it once you're
-  scraping more than a handful of accounts or polling at higher cadence.
-  Wait for data-plane RBAC to settle before enabling.
+- **`use_batch_api: true` (default in this guide)** uses Azure Monitor's
+  data-plane batch endpoint, which raises the per-tenant query rate
+  ceiling from 12,000 to 360,000 calls/hour. RBAC propagation on the data
+  plane lags 5-30 min after the Monitoring Reader grant; flip to `false`
+  as a temporary fallback to the legacy ARM `/metrics` endpoint if you
+  see persistent 401s past that window.
 - **Filtering metrics.** Use `metrics:` (a namespace-keyed nested map) to
   whitelist; use `dimensions.overrides` to drop high-cardinality dimensions
   like `metadata_statuscode` if your Scout volume is dominated by per-status-
@@ -392,12 +399,13 @@ at 80% sustained to give yourself room to scale before requests fail.
 
 ### Should I use the data-plane batch API for higher throughput?
 
-Switch to `use_batch_api: true` once your service principal RBAC has
-propagated through Azure Monitor's data plane (5-30 minutes after grant).
-The batch API raises Azure Monitor's query rate ceiling from 12,000 to
-360,000 calls per hour. For a single-account validation pass, leave it
-`false`; the legacy ARM `/metrics` endpoint propagates `Monitoring Reader`
-immediately.
+This guide already defaults `use_batch_api: true`, which uses Azure
+Monitor's data-plane batch endpoint and raises the query rate ceiling
+from 12,000 to 360,000 calls per hour. RBAC on the data plane propagates
+5-30 minutes after the `Monitoring Reader` grant; flip to `false` as a
+temporary fallback to the legacy ARM `/metrics` endpoint (immediate
+propagation, 12,000 calls / hour) if you see persistent 401s past that
+window.
 
 ### How does this differ from Application Insights for Cosmos DB?
 

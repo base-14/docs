@@ -1,5 +1,5 @@
 ---
-date: 2026-05-01
+date: 2026-05-06
 id: collecting-azure-aks-telemetry-with-helm
 title: Azure Kubernetes Service Monitoring with OpenTelemetry Helm Releases
 sidebar_label: Azure Kubernetes Service (Helm)
@@ -116,6 +116,21 @@ attributes so you can group across them in Scout.
   `system:serviceaccount:otel:otel-cluster`.
 - Scout OAuth2 client credentials (`SCOUT_CLIENT_ID`, `SCOUT_CLIENT_SECRET`,
   `SCOUT_TOKEN_URL`, `SCOUT_OTLP_ENDPOINT`).
+
+## Collector image version
+
+This guide uses upstream Helm chart `opentelemetry-collector` v0.153.0 and
+pins the image to `otel/opentelemetry-collector-contrib:0.151.0` on every
+release. Contrib versions that change config behavior for the components
+used here:
+
+| Version | Change | Impact on this guide |
+|---|---|---|
+| **v0.124.0** (Apr 2025) | `azure_monitor` gains `use_batch_api` (12k → 360k Metrics API calls/hour ceiling). | Step 6 sets `use_batch_api: true`. Field does not exist on older images. |
+| **v0.129.0** (Jun 2025) | `azure_monitor` auth via the `azure_auth` extension (`auth.authenticator`) becomes canonical; inline `credentials:` block deprecated (extension pattern introduced v0.127.0). | Step 6 uses `auth: {authenticator: azure_auth}`. Pre-v0.127.0 images need an inline `credentials:` block on the receiver. |
+| **v0.144.0** (Jan 2026) | `otlphttp` → `otlp_http` exporter rename. | Deprecated alias kept; not a parse-time break either way. |
+| **v0.148.0** (Mar 2026) | Snake-case rename: `azuremonitor` → `azure_monitor` (receiver), `azureauth` → `azure_auth` (extension); `auth.authenticator` value follows. | **Parse-time pivot for Step 6.** v0.148.0+ accepts both forms (legacy logs a startup warning); pre-v0.148.0 rejects the snake-case form. Resource-attribute prefix `azuremonitor.*` (e.g. `azuremonitor.subscription_id`) is unchanged on both sides. |
+| **v0.150.0** (Apr 2026) | `kubeletstats` deprecated attrs off by default (`aws.volume.id`, `fs.type`, `gce.pd.name`, `glusterfs.*`, `partition`). `k8s_cluster` entity-event label keys prefixed `k8s.<resource>.label.<key>`. | Affects Step 3 and Step 4. Re-enable kubeletstats attrs under `metrics:` only if Scout dashboards depend on them. Update Scout queries keying on unprefixed pod / node labels. |
 
 ## Step 1: Federate the UAMI to both ServiceAccounts
 
@@ -599,7 +614,10 @@ az role assignment create \
 
 `Monitoring Reader` propagates immediately on the legacy ARM `/metrics`
 endpoint. The newer `metrics:getBatch` data-plane endpoint can lag 5-30
-minutes; pin `use_batch_api: false` until the data plane has settled (see
+minutes after the grant. Step 6 pins `use_batch_api: true` for the higher
+rate-limit ceiling (12k → 360k calls/hour) and batched fan-out across
+resources; flip to `false` only as a temporary fallback if the data plane
+is still 401-ing after propagation should have completed (see
 Troubleshooting).
 
 ### Standalone collector config
@@ -630,10 +648,11 @@ receivers:
     services: ["Microsoft.ContainerService/managedClusters"]
     auth: {authenticator: azure_auth}
     collection_interval: 60s
-    # Legacy ARM /metrics endpoint - RBAC propagates immediately.
-    # Switch to true once Monitoring Reader has propagated to the
-    # metrics:getBatch data plane (5-30 min after grant).
-    use_batch_api: false
+    # Metrics Data Plane (metrics:getBatch). Raises ceiling 12k -> 360k
+    # calls/hour and batches up to 50 resources per call. RBAC propagates
+    # 5-30 min after the Monitoring Reader grant; flip to false as a
+    # temporary fallback to the legacy ARM /metrics endpoint if needed.
+    use_batch_api: true
     cache_resources: 60
     dimensions: {enabled: true}
     # Whitelist explicit metrics. Discovery-mode iterates EVERY metric
@@ -837,12 +856,14 @@ exist. Recreate it (Step 2) and the pods will progress to `Running`.
 
 ### Step 6 returns 401 `AuthorizationFailed` on `metrics:getBatch`
 
-Azure Monitor's newer data-plane API at `*.metrics.monitor.azure.com`
-requires separate RBAC propagation (5-30 min after the `Monitoring
-Reader` grant) on top of the legacy ARM `/metrics` endpoint. Default
-`use_batch_api: false` in the receiver until the data plane has settled.
-Switch to `true` once the RBAC has propagated; the batch API is more
-rate-limit-friendly at fleet scale.
+Azure Monitor's data-plane API at `*.metrics.monitor.azure.com` requires
+separate RBAC propagation (5-30 min after the `Monitoring Reader` grant)
+on top of the legacy ARM `/metrics` endpoint. Wait for propagation; the
+receiver retries automatically. If you need metrics flowing immediately,
+flip `use_batch_api` to `false` to fall back to the legacy ARM endpoint
+(RBAC there is immediate), then return to `true` once the data plane has
+settled - the batch API is the only setting that survives a real fleet's
+call volume.
 
 ### Step 6 returns 401 for `kube_*` / `node_disk_usage_*` metrics
 
