@@ -761,6 +761,11 @@ for SLI and SLO dashboards and alerts, logs for incident investigation.
 
 ## Related Guides
 
+- [Azure Event Hubs](./event-hubs.md) - the streaming sibling. Same
+  `azure_monitor` receiver pattern; pick Event Hubs for high-throughput,
+  partitioned, replay-capable workloads (telemetry pipelines, event
+  sourcing) and Service Bus for transactional messaging and work
+  distribution.
 - [Azure Cosmos DB](./cosmos-db.md) - sister guide; same `azure_monitor`
   pattern, NoSQL surface.
 - [Azure SQL Database](./sql-database.md) - sister guide; relational PaaS
