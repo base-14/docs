@@ -20,7 +20,7 @@ sidebar_position: 2
 
 # Send AWS VPC Flow Logs
 
-You can send AWS VPC Flow Logs through an S3 bucket to base14 endpoint using an
+You can send AWS VPC Flow Logs through an S3 bucket to a Scout endpoint using an
 AWS Lambda function. This approach uses S3 Event Notifications to trigger the
 Lambda function whenever a new Flow Log file arrives in the bucket.
 
@@ -348,7 +348,7 @@ def lambda_handler(event, context):
 
 1. **Wait for Logs:** Allow some time for VPC Flow Logs to generate new files in
    the S3 bucket.
-2. **Check Lambda Invocations:** Monitor the Lambda function in the Base14
+2. **Check Lambda Invocations:** Monitor the Lambda function in the Scout
    Dashboards under "Library" > "Logs View"
 3. **Check Lambda Logs:** Examine the Log Group associated with your Lambda
    function for detailed execution logs, including any print statements or error

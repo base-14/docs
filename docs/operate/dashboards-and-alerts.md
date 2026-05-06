@@ -38,13 +38,13 @@ advantages:
 
 ## Getting Started with Grizzly
 
-To begin using Grizzly with the Base14 Observability Platform, you need to
-configure it to connect to your Grafana instance hosted by Base14. This involves
+To begin using Grizzly with the Scout Observability Platform, you need to
+configure it to connect to your Grafana instance hosted by Scout. This involves
 setting the Grafana URL and API token.
 
 ### 1. Setting the Grafana URL
 
-The Grafana URL for your Base14 Observability Platform instance will be provided
+The Grafana URL for your Scout Observability Platform instance will be provided
 to you during the service setup. Use the following Grizzly command to configure
 it:
 
@@ -113,7 +113,7 @@ For more details, see the
 ## Applying Your Configurations with Grizzly
 
 Once you have defined your resources in YAML files, you can use Grizzly to apply
-them to your Base14 Grafana instance.
+them to your Scout Grafana instance.
 
 ### Applying All Resources in a Directory
 
@@ -148,7 +148,7 @@ grr diff -f dashboards/application-metrics.yaml
 ```
 
 This will show you a detailed comparison of the local file and the corresponding
-resource in your Base14 Grafana instance.
+resource in your Scout Grafana instance.
 
 ## Working with Jsonnet (Brief Overview)
 
@@ -254,11 +254,11 @@ grizzly_linux_amd64 -o grizzly
 ## Conclusion
 
 Grizzly provides a powerful and efficient way to manage your Grafana resources
-on the Base14 Observability Platform. By defining your configurations as code in
+on the Scout Observability Platform. By defining your configurations as code in
 YAML (or using Jsonnet for more advanced scenarios), you can streamline your
 observability workflows, improve consistency, and integrate seamlessly with your
 existing development practices. Start leveraging Grizzly today to take full
-control of your Grafana environment on Base14!
+control of your Grafana environment on Scout!
 
 ## Related Guides
 

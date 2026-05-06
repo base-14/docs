@@ -56,7 +56,7 @@ If you prefer lower-level control with the `opentelemetry` Dart SDK, see the
 
 Mobile devices send OTLP telemetry through a load balancer / API gateway (with
 authentication and rate limiting) to an OTel collector (with server-side
-sampling), which forwards to Base14.
+sampling), which forwards to Scout.
 
 ## What You Get
 
