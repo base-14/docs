@@ -1,21 +1,20 @@
 ---
 date: 2026-05-06
 id: collecting-azure-event-hubs-telemetry
-title: Azure Event Hubs Monitoring with OpenTelemetry - Throughput, Partitions and Capture
+title: Azure Event Hubs Monitoring with OpenTelemetry - Throughput, Connections, and Capture
 sidebar_label: Azure Event Hubs
 sidebar_position: 11
 description:
   Wire Azure Event Hubs metrics into your existing OpenTelemetry Collector
-  and ship to base14 Scout. Production-shaped guidance on receiver config,
-  managed-identity auth, tier choice (Basic to Dedicated), Capture metrics,
-  partition cardinality, and the streaming-vs-queueing distinction from
-  Service Bus.
+  and ship to base14 Scout. Covers receiver config, managed-identity auth,
+  tier choice (Basic to Dedicated), Capture metrics, partition cardinality,
+  and the streaming-vs-queueing distinction from Service Bus.
 keywords:
   - azure event hubs monitoring
   - event hubs opentelemetry
   - azure monitor receiver
   - kafka compatible streaming
-  - event hubs partitions
+  - event hubs connections
   - event hubs capture metrics
   - event hubs basic vs standard
   - event hubs production monitoring
@@ -39,16 +38,16 @@ This guide is for engineers running Event Hubs in production who want
 to add Event Hubs telemetry to an existing OpenTelemetry Collector and
 ship it to base14 Scout. The collector polls Azure Monitor's REST API
 for `Microsoft.EventHub/namespaces` metrics every 60 seconds, emits
-OTel metric series, and exports via OTLP/HTTP. Nothing on the data plane.
+OTel metric series, and exports via OTLP/HTTP. The receiver does not
+touch the Event Hubs data plane.
 
 The receiver does not connect to Event Hubs directly. It queries Azure
 Monitor for any namespace your subscription auto-publishes to, so the
 same configuration covers Basic, Standard, Premium, and Dedicated tiers
 across any number of event hubs and consumer groups per namespace.
 
-This guide is metrics-only. For per-message distributed traces or for
-ingesting the **events themselves** into the collector pipeline as logs
-or traces, see the
+This guide is metrics-only. For ingesting the events themselves into the
+collector pipeline as logs or traces, see
 [`azureeventhubreceiver` distinction](#azureeventhubreceiver-distinction).
 
 ## Event Hubs vs Service Bus
@@ -77,7 +76,7 @@ which in turn gates which metrics emit data.
 
 | Tier | Throughput / quotas | Capture | Retention | Consumer groups | Metric coverage |
 | --- | --- | --- | --- | --- | --- |
-| **Basic** | 1-20 TUs (1 MB/s ingress, 2 MB/s egress per TU) | No | Max 1 day | `$Default` only — user-created groups rejected | 14 of 17 in this guide's whitelist (no Capture metrics) |
+| **Basic** | 1-20 TUs (1 MB/s ingress, 2 MB/s egress per TU) | No | Max 1 day | `$Default` only — user-created groups rejected | 14 of 17 (all except Capture). `OutgoingMessages` and `OutgoingBytes` need an active consumer to emit. |
 | **Standard** | 1-20 TUs, same per-TU envelope | Yes (to Blob Storage / Data Lake) | Max 7 days | Up to 20 user-created | All 17 in this guide's whitelist |
 | **Premium** | Dedicated capacity units (CUs); per-CU envelope independent of TUs | Yes | Max 90 days | Up to 1,000 | All 17 + 4 Premium-only (`NamespaceCpuUsage`, `NamespaceMemoryUsage`, `ReplicationLagCount`, `ReplicationLagDuration`) |
 | **Dedicated** | Reserved cluster; multiple Premium namespaces share a cluster | Yes | Max 90 days | Up to 1,000 per namespace | Same as Premium |
@@ -173,7 +172,10 @@ processors:
       - {key: service.name,      value: "${env:EVENTHUBS_SERVICE_NAME}",     action: insert}
 
 service:
-  extensions: [azure_auth]   # keep your existing extensions alongside
+  # Merge `azure_auth` into your top-level extensions: block (defines it)
+  # AND list it under service.extensions: (enables it). The two lists are
+  # independent.
+  extensions: [azure_auth]
   pipelines:
     metrics/eventhubs:
       receivers: [azure_monitor/eventhubs]
@@ -187,58 +189,32 @@ Load Balancer, Firewall) in a single collector. Your Scout exporter
 (`oauth2client` + `otlphttp/b14`) stays unchanged; one Scout pipeline serves
 every Azure surface.
 
-For multi-subscription scoping, the `subscription_ids` list takes any
-number of entries. Alternatively, the example uses an explicit list for
-blast-radius control; to discover every namespace the configured identity
-has `Monitoring Reader` on across the tenant or management group, set
-`discover_subscriptions: true` instead. Recommend keeping the explicit list
-for production unless fleet inventory churns daily — `discover_subscriptions: true`
-will scrape every Event Hubs namespace in scope, which can surprise an
-operator who expected a tighter blast radius. See
-[Scale and rate limits](#scale-and-rate-limits).
+For multi-subscription scoping, add entries to `subscription_ids:`. The
+alternative `discover_subscriptions: true` scrapes every namespace the
+identity has `Monitoring Reader` on; prefer the explicit list in
+production, since discovery silently includes sandbox and dormant
+subscriptions. See [Scale and rate limits](#scale-and-rate-limits).
 
-## Authentication
+## Authentication and RBAC
 
-`azure_auth` supports four modes. Pick the one matching where the collector
-runs.
+Pick the `azure_auth` mode for where the collector runs:
 
-| Collector deployment | Recommended mode | Why |
-| --- | --- | --- |
-| Azure Kubernetes Service (AKS) pod | `workload_identity` | Federated credential, no secret to rotate, scoped to the ServiceAccount. |
-| Container Apps | `managed_identity` (system or user-assigned) | First-class integration, no secret to rotate. |
-| Virtual Machine Scale Sets / Azure VM | `managed_identity` (user-assigned) | User-assigned identity survives instance replacement. |
-| External or on-prem | `service_principal` | Only option without an Azure-resident identity. |
-| Local dev / ad-hoc | `use_default: true` | Falls back to the Azure SDK default credential chain (CLI, env, managed identity). Local dev only — never production; the chosen credential is non-deterministic across hosts. |
+- **AKS pod** — `workload_identity` (federated credential, no secret).
+- **Container Apps / VMSS / Azure VM** — `managed_identity` (user-assigned
+  survives instance replacement).
+- **External or on-prem** — `service_principal`.
+- **Local dev only** — `use_default: true` (Azure SDK credential chain).
 
-The Service Bus guide covers each mode in detail with copy-paste setup
-steps; the configuration is identical for Event Hubs except for the
-receiver's `services:` line. See
-[Service Bus → Authentication](./service-bus.md#authentication).
+Grant `Monitoring Reader` at the resource group containing your namespaces.
+For mode-by-mode YAML, federation-credential setup, and the
+`az role assignment create` snippet, see
+[Azure Service Bus § Authentication](./service-bus.md#authentication) —
+the configuration is identical except for the receiver's `services:` line
+and the resource processor's `cloud.platform` value.
 
-### RBAC scope
-
-`Monitoring Reader` at the resource group containing your namespaces is
-sufficient and minimal. The role grants read on metric definitions and
-metric data only, no control-plane write. `Reader` is not required.
-
-```bash
-RG_ID=$(az group show --name <your-rg> --query id -o tsv)
-az role assignment create \
-  --assignee <appId or principalId> \
-  --role "Monitoring Reader" \
-  --scope "$RG_ID"
-```
-
-For multi-subscription fleets, repeat the assignment on each subscription's
-resource group. Subscription-scoped assignments work too if the identity
-should see every Event Hubs namespace in a subscription.
-
-RBAC propagation on the legacy Azure Resource Manager `/metrics` endpoint
-is immediate. The data-plane batch API at `*.metrics.monitor.azure.com`
-requires separate propagation that lags 5-30 minutes after grant. This
-guide defaults `use_batch_api: false` (matching the Service Bus messaging
-sibling); flip to `true` once the data-plane RBAC has settled, for the
-360,000-calls/hour-per-subscription ceiling.
+This guide defaults `use_batch_api: false` to match the validated runnable
+example. Flip to `true` once the data-plane RBAC has settled (5-30 minutes
+after a fresh `Monitoring Reader` grant) for the 360k-calls/hour ceiling.
 
 ## What you'll monitor
 
@@ -250,22 +226,22 @@ OTel-style `azure_<lowercased>_<aggregation>` (e.g.
 | Azure REST name | OTel emitted | Unit | What it tells you |
 | --- | --- | --- | --- |
 | `IncomingMessages` | `azure_incomingmessages_total` | Count | Producer ingestion rate per event hub (`metadata_EntityName`). |
-| `OutgoingMessages`† | `azure_outgoingmessages_total` | Count | Consumer drain rate per event hub. Pair with `IncomingMessages` to see backlog growth. |
+| `OutgoingMessages` | `azure_outgoingmessages_total` | Count | Consumer drain rate per event hub. Pair with `IncomingMessages` to see backlog growth. *Silent-when-quiet.* |
 | `IncomingBytes` | `azure_incomingbytes_total` | Bytes | Producer byte rate. Track against TU envelope (1 MB/s per TU on Basic and Standard). |
-| `OutgoingBytes`† | `azure_outgoingbytes_total` | Bytes | Consumer byte rate. Track against TU egress envelope (2 MB/s per TU). |
+| `OutgoingBytes` | `azure_outgoingbytes_total` | Bytes | Consumer byte rate. Track against TU egress envelope (2 MB/s per TU). *Silent-when-quiet.* |
 | `IncomingRequests` | `azure_incomingrequests_total` | Count | Per-minute producer API call count. |
-| `SuccessfulRequests` | `azure_successfulrequests_total` | Count | Successful subset. Pair with error metrics via `OperationResult` dimension. |
-| `ServerErrors`† | `azure_servererrors_total` | Count | Service-side failures. Sustained > 0 is a page. |
-| `UserErrors`† | `azure_usererrors_total` | Count | Client-induced errors (auth, malformed, oversize). High with low `ServerErrors` means producer / consumer code. |
-| `ThrottledRequests`† | `azure_throttledrequests_total` | Count | TU ceiling hit. |
-| `QuotaExceededErrors`† | `azure_quotaexceedederrors_total` | Count | Per-event-hub or per-message size / partition / send-quota breaches. |
+| `SuccessfulRequests` | `azure_successfulrequests_total` | Count | Successful subset of `IncomingRequests`. The `OperationResult` dimension (see [Cardinality control](#cardinality-control)) splits by Success / Failure / Throttle codes for cross-referencing the error counters. |
+| `ServerErrors` | `azure_servererrors_total` | Count | Service-side failures. Alert on series presence. *Silent-when-quiet.* |
+| `UserErrors` | `azure_usererrors_total` | Count | Client-induced errors (auth, malformed, oversize). High with low `ServerErrors` means producer / consumer code. *Silent-when-quiet.* |
+| `ThrottledRequests` | `azure_throttledrequests_total` | Count | TU ceiling hit. *Silent-when-quiet.* |
+| `QuotaExceededErrors` | `azure_quotaexceedederrors_total` | Count | Per-event-hub or per-message size / partition / send-quota breaches. *Silent-when-quiet.* |
 | `ActiveConnections` | `azure_activeconnections_average` | Count | AMQP / Kafka connection count to the namespace. |
-| `ConnectionsOpened`◆ | `azure_connectionsopened_maximum` | Count | New connections established per poll. **Maximum aggregation only**; using `[Total]` silently emits nothing. |
-| `ConnectionsClosed`◆ | `azure_connectionsclosed_maximum` | Count | Connections closed per poll. Same Maximum-only constraint. |
+| `ConnectionsOpened` | `azure_connectionsopened_maximum` | Count | New connections established per poll. *Maximum-only aggregation* — `[Total]` silently emits nothing. |
+| `ConnectionsClosed` | `azure_connectionsclosed_maximum` | Count | Connections closed per poll. *Maximum-only aggregation.* |
 | `Size` | `azure_size_average` | Bytes | Bytes stored in the event hub. Pair with retention envelope. |
-| `CapturedMessages`* | `azure_capturedmessages_total` | Count | Messages archived by Capture (Standard+ feature). |
-| `CapturedBytes`* | `azure_capturedbytes_total` | Bytes | Bytes archived by Capture (Standard+ feature). |
-| `CaptureBacklog`* | `azure_capturebacklog_total` | Count | Bytes pending capture. Climbing means Capture target storage is throttling. |
+| `CapturedMessages` | `azure_capturedmessages_total` | Count | Messages archived by Capture. *Standard+ feature.* |
+| `CapturedBytes` | `azure_capturedbytes_total` | Bytes | Bytes archived by Capture. *Standard+ feature.* |
+| `CaptureBacklog` | `azure_capturebacklog_total` | Count | Bytes pending capture. Climbing means Capture target storage is throttling. *Standard+ feature.* |
 
 `metadata_EntityName` rides alongside every per-event-hub metric, splitting
 the namespace-scope series into per-event-hub series automatically. For
@@ -275,26 +251,24 @@ sentinel value `metadata_EntityName: "-NamespaceOnlyMetric-"` so the
 dimension column is stable across the full metric set. `ActiveConnections`
 omits `metadata_EntityName` entirely.
 
-**`†` silent-when-quiet.** Azure Monitor returns data points for these
+**Silent-when-quiet.** Azure Monitor returns data points for these
 metrics only when the underlying condition occurs. A healthy namespace
 emits zero series for `ServerErrors`, `UserErrors`, `ThrottledRequests`,
 and `QuotaExceededErrors`; a producer-only namespace with no consumer
 drain emits zero for `OutgoingMessages` and `OutgoingBytes`. Wire alerts
 on these metrics to fire on series presence in window (any non-zero point),
-not on threshold crossings — the absence of points is the steady state.
+not on threshold crossings.
 
-**`◆` Maximum-only aggregation.** `ConnectionsOpened` and `ConnectionsClosed`
-support **`Maximum` aggregation only** per the
+**Maximum-only aggregation.** `ConnectionsOpened` and `ConnectionsClosed`
+support `Maximum` aggregation only per the
 [Microsoft.EventHub/namespaces metric
 reference](https://learn.microsoft.com/azure/azure-monitor/reference/supported-metrics/microsoft-eventhub-namespaces-metrics).
-Listing them with `[Total]` returns no data points and no error from
-Azure Monitor; the metric simply does not appear in Scout. Use `[Maximum]`.
+Listing them with `[Total]` returns no data points and no error.
 
-**`*` Standard+ feature.** Capture metrics emit data points only when
-Capture is configured on the namespace, which requires Standard tier or
-higher and a target storage account. On Basic, these three metrics are
-silent; the whitelist is harmless to keep, but operators expecting
-non-zero values must upgrade to Standard.
+**Standard+ feature.** Capture metrics (`CapturedMessages`,
+`CapturedBytes`, `CaptureBacklog`) emit only when Capture is configured,
+which requires Standard tier or higher and a target storage account.
+On Basic, the three metrics are silent.
 
 **Premium-only metrics.** `NamespaceCpuUsage`, `NamespaceMemoryUsage`,
 `ReplicationLagCount`, and `ReplicationLagDuration` are Premium-tier only;
@@ -332,30 +306,36 @@ enough that 24-hour-stale resource lists become a problem.
 
 By default, the receiver emits one OTel series per
 `(resource × metric × aggregation × dimension-combination)`. With 17
-metrics each emitting one aggregation and `metadata_EntityName` as the
-sole dimension on the per-event-hub metrics, the per-namespace series
-count for a 1-event-hub namespace is roughly 17. Multi-event-hub fan-out
-multiplies linearly:
+metrics, one aggregation each, and `metadata_EntityName` as the sole
+dimension on per-event-hub metrics, a 1-event-hub namespace produces
+roughly 17 series. Multi-event-hub fan-out multiplies linearly on the
+12 metrics that split by `EntityName`; the 5 metrics without
+`EntityName` (`ActiveConnections`, `ConnectionsOpened`,
+`ConnectionsClosed`, and the 2 namespace-level Capture rollups) emit
+once per namespace regardless of event-hub count.
 
 ```text
-17 metrics × 1 agg × N namespaces × M event-hubs-per-namespace ≈ active series
+~5 + (12 × M event-hubs) per namespace × N namespaces ≈ active series
 ```
 
-A worked example: 5 namespaces × 2 event hubs × 4 partitions per event hub
-running through the standard whitelist produces approximately 520 active
-series. Partition-level dimension splits do not currently apply at the
-Azure Monitor metric level (partition is exposed via the SDK consumer
-group offsets, not the namespace-level metrics), so the fan-out is over
-event hubs rather than partitions.
+A worked example: 5 namespaces × 2 event hubs each ≈ 5 × (5 + 12 × 2)
+= 145 series before any `OperationResult` fan-out on the error
+counters. Partitions do not contribute extra series — partition is
+exposed via the SDK consumer-group offsets, not at the Azure Monitor
+namespace level.
 
 `OperationResult` adds a fan-out factor of 1.5-3x on `SuccessfulRequests`,
 `ServerErrors`, `UserErrors`, `ThrottledRequests`, and `QuotaExceededErrors`
 during error-heavy windows. Two control levers, in order of preference:
 
 1. **`dimensions.overrides`** drops or whitelists dimensions per metric.
-   Drop `metadata_EntityName` on namespaces where per-event-hub
-   granularity is not actionable for alerting; drop `OperationResult` on
-   metrics other than the error / throttle counters.
+   Drop `EntityName` on namespaces where per-event-hub granularity is
+   not actionable for alerting; drop `OperationResult` on metrics other
+   than the error / throttle counters.
+
+   The override config uses the **bare Azure dimension name** (e.g.
+   `EntityName`, not `metadata_EntityName`); the receiver adds the
+   `metadata_` prefix when it emits.
 
    ```yaml
    azure_monitor/eventhubs:
@@ -440,11 +420,16 @@ extend the whitelist:
 metrics:
   "Microsoft.EventHub/namespaces":
     # ...all 17 from the universal + Capture set above...
-    NamespaceCpuUsage: [Maximum, Minimum, Average]      # CU CPU saturation; alert > 70%
-    NamespaceMemoryUsage: [Maximum, Minimum, Average]   # CU memory saturation; alert > 70%
-    ReplicationLagCount: [Maximum, Minimum, Average]    # geo-DR lag in messages (paired only)
-    ReplicationLagDuration: [Maximum, Minimum, Average] # geo-DR lag in seconds (paired only)
+    NamespaceCpuUsage: [Average]      # CU CPU saturation; alert > 70%
+    NamespaceMemoryUsage: [Average]   # CU memory saturation; alert > 70%
+    ReplicationLagCount: [Maximum]    # geo-DR lag in messages (paired only)
+    ReplicationLagDuration: [Maximum] # geo-DR lag in seconds (paired only)
 ```
+
+Aggregations match the rest of the whitelist: one per metric. CPU /
+memory use Average for steady-state alerting; replication lag uses
+Maximum because the worst-case lag is the operationally relevant
+number.
 
 The `Replica` dimension splits replication-lag metrics across paired
 namespaces. A geo-DR failover changes which replica is active without
@@ -496,9 +481,15 @@ separately filterable in Scout.
 
 ## Logs
 
-Architecture for the Diagnostic Settings → Event Hubs → `azure_event_hub`
-path is in the [overview](./overview.md#choosing-pull-push-or-both). The
-Event Hubs log categories worth enabling:
+Two destinations, two purposes:
+
+- **Log Analytics workspace** (`--workspace`) — for ad-hoc query in the
+  Azure Portal or Log Analytics. Not in the Scout pipeline.
+- **Event Hubs** (`--event-hub-rule`) — for OTel ingest via the
+  `azureeventhubreceiver` into the same collector. Architecture in the
+  [overview](./overview.md#choosing-pull-push-or-both).
+
+The Event Hubs log categories worth enabling:
 
 | Log category | What it captures |
 | --- | --- |
@@ -508,6 +499,7 @@ Event Hubs log categories worth enabling:
 | `KafkaUserErrorLogs` (Standard+) | Kafka client errors |
 
 ```bash
+# Log Analytics destination (ad-hoc query):
 az monitor diagnostic-settings create \
   --resource <namespace-resource-id> \
   --name eventhubs-to-loganalytics \
@@ -551,10 +543,8 @@ metrics.
 
 ### `ConnectionsOpened` or `ConnectionsClosed` returns no points
 
-These metrics support **`Maximum` aggregation only** per the MS Learn
-reference. If your whitelist has them set to `[Total]` or `[Average]`,
-Azure Monitor returns nothing and the receiver passes the empty result
-through unchanged — no error logged. Use `[Maximum]`.
+`Maximum`-only aggregation; `[Total]` or `[Average]` returns no data and
+no error. See the [metric table](#what-youll-monitor) note.
 
 ### Capture metrics emit zero on Basic SKU
 
@@ -673,6 +663,9 @@ metrics](https://learn.microsoft.com/azure/azure-monitor/reference/supported-met
   and metric set.
 - [Azure Monitoring with OpenTelemetry — Architecture](./overview.md) —
   cross-surface architecture for the Azure track.
-- [Azure Storage](./storage.md), [Azure Cosmos DB](./cosmos-db.md),
-  [Azure SQL Database](./sql-database.md) — sister guides for adjacent
-  PaaS surfaces.
+- [Azure Storage](./storage.md) — multi-namespace receiver pattern
+  (blob/queue/table/file).
+- [Azure Cosmos DB](./cosmos-db.md) — single-namespace receiver, NoSQL
+  request/throughput metrics.
+- [Azure SQL Database](./sql-database.md) — single-namespace receiver,
+  DTU/vCore-based capacity metrics.
