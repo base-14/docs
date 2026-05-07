@@ -268,7 +268,7 @@ single-rule traffic, ~25 series for a multi-rule policy with
 non-trivial traffic). The dimension shape, however, has a
 significant gotcha:
 
-### Bug #45942 — case-mismatched dimension keys
+### Bug 45942 case-mismatched dimension keys
 
 Receiver bug
 [#45942](https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/45942)
