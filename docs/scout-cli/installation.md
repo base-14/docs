@@ -22,7 +22,7 @@ keywords:
 ## Install with Homebrew (macOS / Linux)
 
 ```bash
-brew tap base14/tap
+brew tap base-14/homebrew-tap
 brew install scout
 ```
 
