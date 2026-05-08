@@ -27,6 +27,13 @@ Redis 6.0+, including memory usage, keyspace hit ratios, connection
 counts, command latency, and replication status. This guide configures
 the receiver, verifies connectivity, and ships metrics to base14 Scout.
 
+> **Running Azure Cache for Redis (PaaS)?** Use the
+> [Azure Cache for Redis monitoring guide](../infra/azure/cache-for-redis.md)
+> instead. The PaaS surface publishes through Azure Monitor with
+> resource-level dimensions; this guide's `redisreceiver` path scrapes
+> raw INFO output and produces a different (richer per-key) metric set.
+> The two paths can run in the same collector for hybrid deployments.
+
 ## Prerequisites
 
 | Requirement            | Minimum | Recommended |
@@ -305,6 +312,8 @@ this is expected.
 
 ## Related Guides
 
+- [Azure Cache for Redis Monitoring](../infra/azure/cache-for-redis.md) —
+  the PaaS sibling for Azure-managed deployments
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md) —
   Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
