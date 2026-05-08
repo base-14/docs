@@ -379,9 +379,43 @@ the same `metadata_status="Deny"` alert fires in both.
 ## Logs
 
 Azure Firewall logs are **not optional** for any non-trivial
-deployment. The metric set in this guide gives you rate, errors,
-duration. The four log categories give you the per-flow and
-per-rule-firing detail required for incident investigation.
+deployment. Log-driven analysis fills three gaps that the metrics in
+this guide do not cover:
+
+- **Per-flow forensics.** `ApplicationRuleHit` and `NetworkRuleHit`
+  metrics aggregate by `metadata_Action`, `metadata_Status`,
+  `metadata_Reason`, and `metadata_Protocol`. They do not carry the
+  source IP, destination FQDN / IP, source port, destination port, or
+  the specific rule name that fired. `AzureFirewallApplicationRule`
+  and `AzureFirewallNetworkRule` records carry the full 5-tuple plus
+  the matched rule collection and rule name — required for any
+  incident requiring "which rule blocked which connection at which
+  time" attribution.
+- **Threat-intel context.** The `metadata_Status="Deny"` slice of the
+  rule-hit metrics tells you a deny happened. It does not say which
+  threat-intel signature matched, the source IP's reputation tier, or
+  whether the firewall was in Alert vs Alert-and-deny mode.
+  `AzureFirewallThreatIntelLog` records every threat-intel match with
+  source IP, destination, matched signature, and whether the action
+  was alert-only or block — required for security-team triage and
+  for "is this a real threat or noise" decisions.
+- **DNS-based exfiltration detection.** No metric in the namespace
+  captures DNS request volume per source IP per destination FQDN.
+  `AzureFirewallDnsProxy` records the firewall's DNS-proxy decisions
+  — the canonical source for spotting beaconing patterns, suspicious
+  TLD lookups, and DNS tunnelling exfiltration. Required for any
+  fleet that uses Azure Firewall as the egress DNS resolver.
+
+Azure Firewall publishes four Diagnostic Settings categories on
+Standard SKU plus two Premium-only categories (covered in
+[Premium log categories](#premium-log-categories) below):
+
+| Log category | What it captures | SKU |
+| --- | --- | --- |
+| `AzureFirewallApplicationRule` | Per-flow application-rule hits with source IP, destination FQDN, rule collection, rule name, action. | Standard, Premium |
+| `AzureFirewallNetworkRule` | Per-flow network-rule hits with full 5-tuple plus rule collection, rule name, action. | Standard, Premium |
+| `AzureFirewallThreatIntelLog` | Threat-intel matches with signature ID, action (alert / deny), source / destination. | Standard, Premium |
+| `AzureFirewallDnsProxy` | DNS-proxy decisions with source IP, queried FQDN, response code, latency. | Standard, Premium (only when DNS proxy is enabled) |
 
 ```bash
 FW_RES_ID=$(az network firewall show -n <fw> -g <rg> --query id -o tsv)
@@ -394,20 +428,23 @@ az monitor diagnostic-settings create \
     {"category":"AzureFirewallThreatIntelLog","enabled":true},
     {"category":"AzureFirewallDnsProxy","enabled":true}
   ]' \
+  --event-hub <hub-name> \
   --event-hub-rule <eh-namespace-rule-id>
 ```
 
-Architecture for the Diagnostic Settings → Event Hubs →
-`azure_event_hub` path is in the
-[overview](./overview.md#choosing-pull-push-or-both). Pair the log
-stream with the metric stream to correlate alert firings with the
-specific source IPs, destination FQDNs, and rule names involved.
-
-`AzureFirewallThreatIntelLog` records every threat-intel match with
-source IP, destination, and matched signature; pair it with the
-`metadata_status="Deny"` metric alerts above for security-team
-workflows. `AzureFirewallDnsProxy` captures the firewall's DNS-proxy
-decisions — the source for DNS-based exfiltration detection.
+The recommended pattern is **Diagnostic Settings to Event Hubs to the
+`azure_event_hub` receiver** in the same collector. The Storage logs
+example at `components/azure-storage-telemetry/` ships a runnable
+reference fragment (`config/scraper-fragment-logs.yaml`) plus
+`provision-logs.sh` that stands up an EH Basic namespace + 1 hub + 2
+SAS rules; the same fragment shape adapts to Azure Firewall by
+changing the `cloud.platform` resource attribute (`azure_firewall`)
+and the source Diagnostic Setting categories. Pair the log stream
+with the metric stream to correlate alert firings with the specific
+source IPs, destination FQDNs, and rule names involved — the
+threat-intel mode caveat in [Threat-intel mode](#threat-intel-mode)
+above means metric alerts on their own often need log context to
+distinguish "blocked attack" from "observed potential threat."
 
 ## Premium SKU additions
 

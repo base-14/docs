@@ -302,25 +302,63 @@ Run the apps-side spans alongside this metrics collector with distinct
 
 ## Logs
 
-Architecture for the Diagnostic Settings → Event Hubs → `azure_event_hub`
-path is in the [overview](./overview.md#choosing-pull-push-or-both). The
-Cosmos-specific pieces below are the log categories worth enabling and
-the CLI to wire them up.
+Log-driven analysis fills three gaps that the metrics in this guide do
+not cover:
+
+- **Per-request RU attribution.** `TotalRequestUnits` aggregates RU
+  consumption account-wide; `NormalizedRUConsumption` shows
+  utilization as a percentage of provisioned throughput. Neither
+  shows which document operation, query, or partition key range
+  consumed which RU. `DataPlaneRequests` log records carry the RU
+  charge per request alongside the operation type, status code, and
+  partition key range — required for cost attribution to specific
+  workloads and for triaging "who is blowing the RU budget" incidents.
+- **Hot partition diagnosis.** `NormalizedRUConsumption` sliced by
+  partition key range tells you that a hot partition exists but not
+  which key value is hot. `PartitionKeyStatistics` records storage
+  and request-rate distribution per partition key, surfacing the
+  specific keys whose access patterns are skewing throughput
+  consumption — required for sharding decisions and for re-keying
+  proposals.
+- **Query plan insight.** `TotalRequests` and `TotalRequestUnits`
+  aggregate request rate and RU consumption. They do not show that a
+  single query is reading 1 M documents to return 10, or doing a
+  cross-partition scan when a partition key was available.
+  `QueryRuntimeStatistics` records per-query index lookups, retrieved
+  document count, and output document count — required for query
+  optimization and for catching N+1-style anti-patterns at the data
+  layer.
+
+Cosmos DB publishes four Diagnostic Settings categories on
+`Microsoft.DocumentDB/databaseAccounts`:
 
 | Log category | What it captures | When to enable |
 | --- | --- | --- |
-| `DataPlaneRequests` | Per-request audit: RU charge, status code, partition key range, operation type | Always |
-| `QueryRuntimeStatistics` | Per-query execution stats: index lookups, retrieved doc count, output doc count | Cost / performance investigation |
-| `PartitionKeyStatistics` | Storage and request distribution per partition key | Hot partition diagnosis |
-| `ControlPlaneRequests` | Account / container CRUD; throughput changes | Audit, change tracking |
+| `DataPlaneRequests` | Per-request audit: RU charge, status code, partition key range, operation type. | Always |
+| `QueryRuntimeStatistics` | Per-query execution stats: index lookups, retrieved doc count, output doc count. | Cost / performance investigation |
+| `PartitionKeyStatistics` | Storage and request distribution per partition key. | Hot partition diagnosis |
+| `ControlPlaneRequests` | Account / container CRUD; throughput changes. | Audit, change tracking |
 
 ```bash
 az monitor diagnostic-settings create \
   --resource <cosmos-account-resource-id> \
   --name cosmos-to-eventhubs \
-  --logs '[{"category":"DataPlaneRequests","enabled":true},{"category":"QueryRuntimeStatistics","enabled":true},{"category":"PartitionKeyStatistics","enabled":true},{"category":"ControlPlaneRequests","enabled":true}]' \
+  --logs '[{"category":"DataPlaneRequests","enabled":true},
+           {"category":"QueryRuntimeStatistics","enabled":true},
+           {"category":"PartitionKeyStatistics","enabled":true},
+           {"category":"ControlPlaneRequests","enabled":true}]' \
+  --event-hub <hub-name> \
   --event-hub-rule <eh-namespace-rule-id>
 ```
+
+The recommended pattern is **Diagnostic Settings to Event Hubs to the
+`azure_event_hub` receiver** in the same collector. The Storage logs
+example at `components/azure-storage-telemetry/` ships a runnable
+reference fragment (`config/scraper-fragment-logs.yaml`) plus
+`provision-logs.sh` that stands up an EH Basic namespace + 1 hub + 2
+SAS rules; the same fragment shape adapts to Cosmos by changing the
+`cloud.platform` resource attribute (`azure_cosmosdb`) and the source
+Diagnostic Setting categories.
 
 ## Troubleshooting
 

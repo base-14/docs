@@ -43,8 +43,7 @@ listeners, backend pools, and rules per gateway. Standard_v1 is deprecated
 and not covered.
 
 This guide is metrics-only. For Application Gateway access logs,
-performance logs, firewall logs (WAF_v2), and health-probe logs, see
-[Pairing with Diagnostic Settings](#pairing-with-diagnostic-settings).
+firewall logs (WAF_v2), and health-probe logs, see [Logs](#logs).
 
 ## Front Door vs Application Gateway
 
@@ -548,22 +547,68 @@ for a WAF-in-detection-mode rollout. Track the ratio
 `BlockedCount / MatchedCount` to see how many matched-rule events are
 actually being blocked vs logged.
 
-## Pairing with Diagnostic Settings
+## Logs
 
-This guide ships metrics. For Application Gateway access logs,
-performance logs, firewall logs (WAF_v2), and health-probe logs,
-configure `Microsoft.Insights/diagnosticSettings` on the gateway:
+Log-driven analysis fills three gaps that the metrics in this guide do
+not cover:
 
-- Forward `ApplicationGatewayAccessLog`,
-  `ApplicationGatewayPerformanceLog`, and
-  `ApplicationGatewayHealthProbeLog` (and
-  `ApplicationGatewayFirewallLog` on WAF_v2) to Log Analytics or Event
-  Hubs.
-- Pipe Event Hubs into the collector via the `azure_event_hub` receiver
-  for log-side ingestion to Scout.
+- **Per-request URL and client-IP audit.** The metrics aggregate by
+  listener, backend pool, and `HttpStatusGroup`. Access logs carry the
+  actual request URL, query string, client IP, RuleName, server routed
+  to, TLS protocol, and per-request sent / received bytes. Required
+  for "why is this specific user's request slow" investigation and for
+  any compliance regime that needs a per-request audit trail.
+- **WAF rule attribution.** `BlockedCount`, `BlockedReqCount`, and
+  `MatchedCount` show how many requests were blocked or matched a WAF
+  rule, but not which OWASP rule fired, what the anomaly score was,
+  which fields matched, or whether Detection mode would have blocked.
+  `ApplicationGatewayFirewallLog` records the rule ID, action, mode,
+  and matched data per request. Required for tuning Detection-vs-
+  Prevention thresholds and false-positive triage.
+- **Per-backend probe-failure timing.** `UnhealthyHostCount` shows the
+  count of unhealthy backends per pool. A 1 → 0 transition is visible
+  but not which backend address failed at which exact moment, with
+  what response code or timeout. `ApplicationGatewayHealthProbeLog`
+  records each probe result individually with backend address, probe
+  response code, and probe response time.
 
-The two paths are complementary: metrics for SLI / SLO dashboards and
-alerts, logs for per-request investigation.
+Application Gateway publishes three Diagnostic Settings categories on
+Standard_v2 and WAF_v2:
+
+| Category | What it contains | When to enable |
+| --- | --- | --- |
+| `ApplicationGatewayAccessLog` | Per-request audit: URL, query string, client IP, listener, RuleName, server routed to, response code, response time, TLS protocol, sent / received bytes. | Always |
+| `ApplicationGatewayFirewallLog` | Per-request WAF outcome: rule ID, action (Allowed / Blocked / Detected), mode, anomaly score, matched data, request ID. | WAF_v2 only |
+| `ApplicationGatewayHealthProbeLog` | Per-probe result per backend: backend address, probe response code, probe response time, transition direction. | Required for any deployment with multiple backends in a pool |
+
+`ApplicationGatewayPerformanceLog` is not listed: it was a Standard_v1
+category and is not published by Standard_v2 / WAF_v2 (the equivalent
+data is in metrics).
+
+```bash
+az monitor diagnostic-settings create \
+  --resource <app-gateway-resource-id> \
+  --name appgw-to-eventhubs \
+  --logs '[{"category":"ApplicationGatewayAccessLog","enabled":true},
+           {"category":"ApplicationGatewayFirewallLog","enabled":true},
+           {"category":"ApplicationGatewayHealthProbeLog","enabled":true}]' \
+  --event-hub <hub-name> \
+  --event-hub-rule <eh-namespace-rule-id>
+```
+
+The recommended pattern is **Diagnostic Settings to Event Hubs to the
+`azure_event_hub` receiver** in the same collector. The receiver ingests
+events as OTel logs and routes them to Scout via the same `oauth2client`
+/ `otlphttp/b14` pipeline used for metrics. The Storage logs example at
+`components/azure-storage-telemetry/` ships a runnable reference fragment
+(`config/scraper-fragment-logs.yaml`) plus `provision-logs.sh` /
+`teardown-logs.sh` that stand up an EH Basic namespace + Diagnostic
+Setting wiring; the same fragment shape adapts to Application Gateway
+by changing the `cloud.platform` resource attribute and the source
+Diagnostic Setting categories. Drop `ApplicationGatewayFirewallLog`
+from the `--logs` array if the gateway is Standard_v2 (no WAF). The two
+paths are complementary: metrics for SLI / SLO dashboards and alerts,
+logs for per-request investigation.
 
 ## Troubleshooting
 
