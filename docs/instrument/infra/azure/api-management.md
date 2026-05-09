@@ -25,7 +25,7 @@ head:
   - - script
     - type: application/ld+json
     - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I add Azure API Management metrics to my existing OpenTelemetry Collector?","acceptedAnswer":{"@type":"Answer","text":"Add the azure_auth extension and an azure_monitor receiver scoped to Microsoft.ApiManagement/service, route the receiver into a metrics pipeline that exports to Scout via the oauth2client-authenticated OTLP/HTTP exporter, and grant the collector's service principal Monitoring Reader at the resource group containing your APIM service. The receiver polls Azure Monitor's REST API every 60 seconds. Consumption tier emits a smaller metric subset than Developer, Standard, Premium, and Premium v2; the receiver returns whatever the resource publishes without erroring on tier-gated metrics."}},{"@type":"Question","name":"Why are CpuPercent_Gateway and MemoryPercent_Gateway silent on Developer tier?","acceptedAnswer":{"@type":"Answer","text":"Both metrics are published by Azure Monitor at PT5M (5-minute) granularity and only emit data points when gateway load is measurable. A freshly-provisioned Developer instance with low traffic can keep these metrics silent for the first 10 to 30 minutes after deploy. Production fleets with steady traffic see them populate immediately. Wire alerts to fire on threshold crossings only when at least one data point has been observed in the prior hour; otherwise alert on series presence so a missing series does not trigger as a low-CPU positive."}},{"@type":"Question","name":"What is the difference between APIM gateway 429 and backend 429?","acceptedAnswer":{"@type":"Answer","text":"APIM gateway 429 means the rate-limit-by-key or rate-limit-by-subscription policy on the API tripped before the request reached the backend. Visible as metadata_BackendResponseCode 0 plus metadata_LastErrorReason RateLimitExceeded on the OtherRequests metric. Backend 429 means the upstream service returned 429 to APIM, which forwarded it as-is to the client. Visible as metadata_BackendResponseCode 429 plus metadata_LastErrorReason None. Distinguishing them is essential because the remediation is different — gateway 429 is APIM policy tuning, backend 429 is upstream capacity."}},{"@type":"Question","name":"Why do my APIM dimensions appear with both PascalCase and lowercase keys?","acceptedAnswer":{"@type":"Answer","text":"This is opentelemetry-collector-contrib bug #45942. The azure_monitor receiver currently emits metadata_ApiId alongside metadata_apiid, metadata_Hostname alongside metadata_hostname, and metadata_Location alongside metadata_location for the same metric series, doubling cardinality silently. Workaround: apply a transform processor in the collector pipeline to canonicalise the keys to lowercase. The bug is namespace-specific and has been observed on Azure Firewall, Azure Storage, and Azure API Management as of receiver v0.151.0. The transform processor pattern in this guide preserves both label families until the upstream fix lands."}},{"@type":"Question","name":"Should I run APIM Diagnostic Logs through this metrics collector?","acceptedAnswer":{"@type":"Answer","text":"No. APIM diagnostic logs (GatewayLogs, WebSocketConnectionLogs, DeveloperPortalAuditLogs) are handled by Diagnostic Settings forwarding to Event Hubs, then ingested by the azureeventhubreceiver as OTel logs. That is a separate fragment under the long-lived shared scraper and is documented separately from this metrics-only guide. The two pipelines coexist in one collector but use different receivers and different metric or log signals."}}]}
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I add Azure API Management metrics to my existing OpenTelemetry Collector?","acceptedAnswer":{"@type":"Answer","text":"Add the azure_auth extension and an azure_monitor receiver scoped to Microsoft.ApiManagement/service, route the receiver into a metrics pipeline that exports to Scout via the oauth2client-authenticated OTLP/HTTP exporter, and grant the collector's service principal Monitoring Reader at the resource group containing your APIM service. The receiver polls Azure Monitor's REST API every 60 seconds. Consumption tier emits a smaller metric subset than Developer, Standard, Premium, and Premium v2; the receiver returns whatever the resource publishes without erroring on tier-gated metrics."}},{"@type":"Question","name":"Why are CpuPercent_Gateway and MemoryPercent_Gateway silent on Developer tier?","acceptedAnswer":{"@type":"Answer","text":"Both metrics are published by Azure Monitor at PT5M (5-minute) granularity and only emit data points when gateway load is measurable. A freshly-provisioned Developer instance with low traffic can keep these metrics silent for the first 10 to 30 minutes after deploy. Production fleets with steady traffic see them populate immediately. Wire alerts to fire on threshold crossings only when at least one data point has been observed in the prior hour; otherwise alert on series presence so a missing series does not trigger as a low-CPU positive."}},{"@type":"Question","name":"What is the difference between APIM gateway 429 and backend 429?","acceptedAnswer":{"@type":"Answer","text":"APIM gateway 429 means the rate-limit-by-key or rate-limit-by-subscription policy on the API tripped before the request reached the backend. Visible as metadata_BackendResponseCode 0 plus metadata_LastErrorReason RateLimitExceeded on the OtherRequests metric. Backend 429 means the upstream service returned 429 to APIM, which forwarded it as-is to the client. Visible as metadata_BackendResponseCode 429 plus metadata_LastErrorReason None. Distinguishing them is essential because the remediation is different - gateway 429 is APIM policy tuning, backend 429 is upstream capacity."}},{"@type":"Question","name":"Why do my APIM dimensions appear with both PascalCase and lowercase keys?","acceptedAnswer":{"@type":"Answer","text":"This is opentelemetry-collector-contrib bug #45942. The azure_monitor receiver currently emits metadata_ApiId alongside metadata_apiid, metadata_Hostname alongside metadata_hostname, and metadata_Location alongside metadata_location for the same metric series, doubling cardinality silently. Workaround: apply a transform processor in the collector pipeline to canonicalise the keys to lowercase. The bug is namespace-specific and has been observed on Azure Firewall, Azure Storage, and Azure API Management as of receiver v0.151.0. The transform processor pattern in this guide preserves both label families until the upstream fix lands."}},{"@type":"Question","name":"Should I run APIM Diagnostic Logs through this metrics collector?","acceptedAnswer":{"@type":"Answer","text":"No. APIM diagnostic logs (GatewayLogs, WebSocketConnectionLogs, DeveloperPortalAuditLogs) are handled by Diagnostic Settings forwarding to Event Hubs, then ingested by the azureeventhubreceiver as OTel logs. That is a separate fragment under the long-lived shared scraper and is documented separately from this metrics-only guide. The two pipelines coexist in one collector but use different receivers and different metric or log signals."}}]}
 ---
 
 ## Overview
@@ -40,7 +40,7 @@ gateway telemetry to an existing OpenTelemetry Collector and ship it
 to base14 Scout. The collector polls Azure Monitor's REST API for
 `Microsoft.ApiManagement/service` metrics every 60 seconds, emits OTel
 metric series, and exports via OTLP/HTTP. The receiver does not
-proxy or terminate traffic — it queries Azure Monitor for whatever
+proxy or terminate traffic - it queries Azure Monitor for whatever
 your APIM service auto-publishes.
 
 The receiver does not connect to APIM directly. It queries Azure
@@ -68,7 +68,7 @@ chain on the way out. Every step contributes to observable signals.
 | Backend forwarding | One request per inbound request to the configured `serviceUrl` (or a backend pool). |
 | Response handling | Status code, latency, transformation, response cache lookup. |
 
-The receiver does not see the per-step breakdown — Azure Monitor
+The receiver does not see the per-step breakdown - Azure Monitor
 publishes coarse counters (request counts split by gateway response
 category, plus end-to-end and backend latency aggregations). For the
 per-step breakdown, ship logs via Diagnostic Settings.
@@ -89,7 +89,7 @@ feature availability, which in turn gates which metrics emit data.
 
 The receiver configuration is identical across tiers. Tier-gated
 metrics that the resource does not publish simply emit no data points
-— there is no error and no zero-valued series. The whitelist below
+- there is no error and no zero-valued series. The whitelist below
 intersects what every tier publishes; expand it for Developer and
 above by adding `Capacity` + `CpuPercent_Gateway` + `MemoryPercent_Gateway`.
 
@@ -155,7 +155,7 @@ processors:
       - {key: cloud.platform,    value: azure_api_management,                 action: insert}
       - {key: cloud.account.id,  value: "${env:AZURE_SUBSCRIPTION_ID}",       action: insert}
       - {key: cloud.region,      value: "${env:APIMANAGEMENT_REGION}",        action: insert}
-      # cloud.resource_id is recommended but optional — the receiver injects
+      # cloud.resource_id is recommended but optional - the receiver injects
       # azuremonitor.resource_id per data point automatically.
       - {key: cloud.resource_id, value: "${env:APIMANAGEMENT_RESOURCE_ID}",   action: insert}
       - {key: service.name,      value: "${env:APIMANAGEMENT_SERVICE_NAME}",  action: insert}
@@ -193,16 +193,16 @@ one Scout pipeline serves every Azure surface.
 
 Pick the `azure_auth` mode for where the collector runs:
 
-- **AKS pod** — `workload_identity` (federated credential, no secret).
-- **Container Apps / VMSS / Azure VM** — `managed_identity` (user-assigned
+- **AKS pod** - `workload_identity` (federated credential, no secret).
+- **Container Apps / VMSS / Azure VM** - `managed_identity` (user-assigned
   survives instance replacement).
-- **External or on-prem** — `service_principal`.
-- **Local dev only** — `use_default: true` (Azure SDK credential chain).
+- **External or on-prem** - `service_principal`.
+- **Local dev only** - `use_default: true` (Azure SDK credential chain).
 
 Grant `Monitoring Reader` at the resource group containing your APIM
 service. For mode-by-mode YAML, federation-credential setup, and the
 `az role assignment create` snippet, see
-[Azure Service Bus § Authentication](./service-bus.md#authentication) —
+[Azure Service Bus § Authentication](./service-bus.md#authentication) -
 the configuration is identical except for the receiver's `services:`
 line and the resource processor's `cloud.platform` value.
 
@@ -234,7 +234,7 @@ renames them from Azure's PascalCase (e.g. `Duration`) to OTel-style
 
 `metadata_apiid` rides alongside every per-API metric, splitting the
 service-scope series into per-API series automatically. Operations
-within an API are not split at the metric level — operation-level
+within an API are not split at the metric level - operation-level
 attribution requires Diagnostic Settings logs.
 
 **Silent-when-quiet.** Azure Monitor returns data points only for time
@@ -267,7 +267,7 @@ API. Azure Monitor enforces two ceilings:
 At a 60-second collection interval, a single APIM service costs
 roughly 60 calls per hour (one per metric per poll, deduplicated
 within the receiver). A 50-service fleet running on legacy `/metrics`
-consumes ~3,000 calls per hour — well within the 12k ceiling.
+consumes ~3,000 calls per hour - well within the 12k ceiling.
 Above ~150 services per subscription, switch to `use_batch_api: true`
 to lift the per-subscription ceiling and benefit from batched fan-out.
 
@@ -421,7 +421,7 @@ for `azure_unauthorizedrequests_total / azure_connectionattempts_total`
 to derive an attack-attempt ratio.
 
 The Diagnostic-Settings-to-Event-Hubs egress family is broader on
-production tiers — `EventHubSuccessfulEvents`, `EventHubTotalFailedEvents`,
+production tiers - `EventHubSuccessfulEvents`, `EventHubTotalFailedEvents`,
 `EventHubRejectedEvents`, `EventHubThrottledEvents`,
 `EventHubTimedoutEvents`, `EventHubDroppedEvents`. Add the variants
 you care about to the whitelist; otherwise stick with the two on the
@@ -434,7 +434,7 @@ source is essential because the remediation differs.
 
 | Source | Signature | Remediation |
 | --- | --- | --- |
-| **APIM gateway 429** (rate-limit policy tripped before backend forwarding) | `metadata_GatewayResponseCode: 429` + `metadata_BackendResponseCode: 0` + `metadata_LastErrorReason: RateLimitExceeded` | Tune the `rate-limit-by-key` or `rate-limit` policy — raise the threshold, change the scoping (per-key vs per-IP), or move rate-limit out of APIM into the backend. |
+| **APIM gateway 429** (rate-limit policy tripped before backend forwarding) | `metadata_GatewayResponseCode: 429` + `metadata_BackendResponseCode: 0` + `metadata_LastErrorReason: RateLimitExceeded` | Tune the `rate-limit-by-key` or `rate-limit` policy - raise the threshold, change the scoping (per-key vs per-IP), or move rate-limit out of APIM into the backend. |
 | **Backend 429** (upstream returned 429, APIM forwarded as-is) | `metadata_GatewayResponseCode: 429` + `metadata_BackendResponseCode: 429` + `metadata_LastErrorReason: None` | Investigate upstream capacity. APIM has done its job; the backend is the bottleneck. |
 | **Quota policy 429** (Quota or QuotaByKey policy hit, distinct from rate-limit) | `metadata_GatewayResponseCode: 429` + `metadata_BackendResponseCode: 0` + `metadata_LastErrorReason: QuotaExceeded` | Reset the quota window or raise the per-window allowance. Quota is daily / monthly; rate-limit is per-N-seconds. |
 
@@ -442,13 +442,13 @@ All three appear in `azure_otherrequests_total` (the 4xx bucket).
 Slicing by `metadata_LastErrorReason` separates them. APIM's default
 Developer-tier setup includes a permissive built-in rate-limit on the
 `starter` product that trips around 5 sustained requests / second per
-subscription key — surprising operators who expect throttling only
+subscription key - surprising operators who expect throttling only
 when an explicit policy is configured.
 
 ## Apps-side instrumentation
 
 This guide is metrics-only. APIM does not produce W3C trace context
-spans for the request path through the gateway — there is no current
+spans for the request path through the gateway - there is no current
 first-party way to link an inbound client span through the gateway
 to the backend span via the OTel receiver.
 
@@ -465,7 +465,7 @@ For end-to-end traces, instrument the client and backend code:
 
 For per-request audit (which API, which operation, which subscription
 key, which client IP, which response code), use Diagnostic Settings
-to Log Analytics or Event Hubs — see [Logs](#logs).
+to Log Analytics or Event Hubs - see [Logs](#logs).
 
 ## Logs
 
@@ -473,21 +473,21 @@ to Log Analytics or Event Hubs — see [Logs](#logs).
 code, latency, subscription-key prefix, and client IP. That row-level
 detail is what you reach for when you need:
 
-- **Per-operation latency** — operation-level attribution lives in
+- **Per-operation latency** - operation-level attribution lives in
   logs; metric series carry `ApiId` but not `OperationId`.
-- **Percentile aggregations** — Azure Monitor pre-aggregates `Duration`
+- **Percentile aggregations** - Azure Monitor pre-aggregates `Duration`
   as Average / Maximum / Minimum only. p99 and p95 are computed from
   raw per-request samples.
-- **Per-key or per-IP audit** — subscription-key prefix, client IP, and
+- **Per-key or per-IP audit** - subscription-key prefix, client IP, and
   per-request status code are log-only fields.
 
 APIM publishes three diagnostic log categories:
 
 | Category | What it contains | Volume guidance |
 | --- | --- | --- |
-| `GatewayLogs` | One row per request, with API + operation + response code + latency + subscription key prefix + client IP. | High — equivalent to one record per inbound request. Sample at the source if cost matters. |
-| `WebSocketConnectionLogs` | WebSocket connection lifecycle events. | Low — only emits when WS APIs are configured. |
-| `DeveloperPortalAuditLogs` | Developer portal admin operations. | Low — emits per portal admin action. |
+| `GatewayLogs` | One row per request, with API + operation + response code + latency + subscription key prefix + client IP. | High - equivalent to one record per inbound request. Sample at the source if cost matters. |
+| `WebSocketConnectionLogs` | WebSocket connection lifecycle events. | Low - only emits when WS APIs are configured. |
+| `DeveloperPortalAuditLogs` | Developer portal admin operations. | Low - emits per portal admin action. |
 
 The recommended pattern is **Diagnostic Settings → Event Hubs →
 `azureeventhubreceiver`** in the same collector. The receiver ingests
@@ -575,7 +575,7 @@ Symptom: Scout query latency degrades after onboarding APIM. Cause:
 the `metadata_GatewayResponseCode` × `metadata_BackendResponseCode` ×
 `metadata_LastErrorReason` × `metadata_apiid` product can produce
 hundreds of series per metric on busy gateways. Fix: apply
-`dimensions.overrides` on the noisy metrics — see
+`dimensions.overrides` on the noisy metrics - see
 [Cardinality control](#cardinality-control).
 
 ### Scout OAuth2 returns 401
@@ -604,7 +604,7 @@ latency to Scout via OpenTelemetry; the metric vocabulary differs.
 ### What changes between Consumption, Developer, and the production tiers for monitoring?
 
 Metric coverage is largely the same across Developer / Basic /
-Standard / Premium / Premium v2 — they all publish the universal
+Standard / Premium / Premium v2 - they all publish the universal
 counters, latency, capacity, and Diagnostic-Settings-to-Event-Hubs
 egress metrics. Consumption is the outlier: it does not publish
 `Capacity`, `CpuPercent_Gateway`, `MemoryPercent_Gateway`, or any of
@@ -627,7 +627,7 @@ on Consumption but is rarely set up for the lighter-weight tier.
 client response sent). `azure_backendduration_average` is just the
 backend leg (APIM-to-backend send to backend response received).
 The difference, `Duration - BackendDuration`, is APIM's own
-overhead — policy execution, transformation, response caching,
+overhead - policy execution, transformation, response caching,
 inbound / outbound formatting. On a healthy gateway with simple
 policies, the difference is sub-10 ms; if it climbs above 50 ms,
 investigate policy chain complexity (especially heavy XML / JSON
@@ -659,18 +659,17 @@ unified at query time.
   policies](https://learn.microsoft.com/azure/api-management/api-management-policies#rate-limiting-and-quotas)
 - [opentelemetry-collector-contrib
   azuremonitorreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/azuremonitorreceiver)
-- [Receiver bug #45942 — case-mismatch dimension
+- [Receiver bug #45942 - case-mismatch dimension
   keys](https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/45942)
 
 ## Related Guides
 
-- [Azure Monitoring with OpenTelemetry — Architecture](./overview.md) —
+- [Azure Monitoring with OpenTelemetry - Architecture](./overview.md) -
   start here for the cross-surface story.
-- [Azure Service Bus](./service-bus.md) — sibling messaging surface;
-  identical auth pattern.
-- [Azure Front Door](./front-door.md) — global edge in front of APIM;
+- [Azure Service Bus](./service-bus.md) - managed message broker for queues and topics.
+- [Azure Front Door](./front-door.md) - global edge in front of APIM;
   pair both for a full edge-to-origin view.
-- [Azure Application Gateway](./application-gateway.md) — regional load
+- [Azure Application Gateway](./application-gateway.md) - regional load
   balancer behind APIM in some VNet topologies.
-- [Azure Firewall](./azure-firewall.md) — exhibits the same Bug #45942
+- [Azure Firewall](./azure-firewall.md) - exhibits the same Bug #45942
   case-mismatch as APIM.

@@ -65,7 +65,7 @@ suffixed `/firewall` so the fragment composes cleanly with other
 Azure-surface receivers in the same collector.
 
 The `transform/firewall_dim_lowercase` processor below is a workaround
-for receiver bug #45942 — the receiver currently emits the rule-hit
+for receiver bug #45942 - the receiver currently emits the rule-hit
 metrics' dimensions in **both** `metadata_Status` and `metadata_status`
 forms, doubling cardinality. The transform lowercases and deduplicates
 them. See [Bug #45942](#bug-45942-case-mismatched-dimension-keys) for
@@ -173,16 +173,16 @@ subscriptions.
 
 Pick the `azure_auth` mode for where the collector runs:
 
-- **AKS pod** — `workload_identity` (federated credential, no secret).
-- **Container Apps / VMSS / Azure VM** — `managed_identity` (user-assigned
+- **AKS pod** - `workload_identity` (federated credential, no secret).
+- **Container Apps / VMSS / Azure VM** - `managed_identity` (user-assigned
   survives instance replacement; system-assigned dies with the instance).
-- **External or on-prem** — `service_principal`.
-- **Local dev only** — `use_default: true` (Azure SDK credential chain).
+- **External or on-prem** - `service_principal`.
+- **Local dev only** - `use_default: true` (Azure SDK credential chain).
 
 Grant `Monitoring Reader` at the resource group containing your firewalls.
 For mode-by-mode YAML, federation-credential setup, and the
 `az role assignment create` snippet, see
-[Azure Service Bus § Authentication](./service-bus.md#authentication) —
+[Azure Service Bus § Authentication](./service-bus.md#authentication) -
 the configuration is identical except for the receiver's `services:` line
 and the resource processor's `cloud.platform` value.
 
@@ -194,7 +194,7 @@ the data-plane RBAC settles.
 
 If you run a service principal (collector outside Azure), rotate the
 client secret before its expiry; procedure mirrors other azure-monitor
-surfaces — see
+surfaces - see
 [Service Bus § Service principal credential lifecycle](./service-bus.md#service-principal-credential-lifecycle).
 
 ## What you'll monitor
@@ -210,7 +210,7 @@ to OTel-style `azure_<lowercased>_<aggregation>` (e.g.
 | `NetworkRuleHit` | `azure_networkrulehit_total` | Count | Hits on network-rule collections (5-tuple TCP / UDP / ICMP filtering). Splits by `Status` (Allow / Deny / DNAT) and `Reason`. Primary L4 traffic-shape metric. |
 | `ApplicationRuleHit` | `azure_applicationrulehit_total` | Count | Hits on application-rule collections (FQDN-based filtering). Splits by `Status`, `Reason`, and `Protocol`. Only emits when application rules exist in the policy and traffic matches them. |
 | `DataProcessed` | `azure_dataprocessed_total` | Bytes | Total bytes processed by the firewall per minute. Primary data-volume metric; pairs with the data-processing fee ($0.016/GB) for cost forecasting. |
-| `Throughput` | `azure_throughput_average` | bps | Throughput in bits per second. Use for capacity-planning and alerting against the per-firewall ceiling — see [Azure Firewall performance](https://learn.microsoft.com/azure/firewall/firewall-performance) for current per-tier limits. |
+| `Throughput` | `azure_throughput_average` | bps | Throughput in bits per second. Use for capacity-planning and alerting against the per-firewall ceiling - see [Azure Firewall performance](https://learn.microsoft.com/azure/firewall/firewall-performance) for current per-tier limits. |
 | `FirewallHealth` | `azure_firewallhealth_average` | % | Overall firewall health gauge. Below 100% indicates Azure-side degradation; cross-check Service Health for the region. |
 | `SNATPortUtilization` | `azure_snatportutilization_average` (and `_maximum`) | % | Percentage of allocated SNAT ports currently in use. Above 80% indicates approaching SNAT exhaustion on outbound traffic. Splits by `Protocol`. |
 | `ObservedCapacity` | `azure_observedcapacity_average` (and `_maximum`) | Count | Reported capacity-unit usage. Tracks horizontal scale of the firewall instance; per-CU throughput and connection limits are documented in the [Azure Firewall performance reference](https://learn.microsoft.com/azure/firewall/firewall-performance). |
@@ -219,12 +219,12 @@ to OTel-style `azure_<lowercased>_<aggregation>` (e.g.
 Three `metadata_*` dimensions split the rule-hit and health metrics:
 
 - `metadata_Status` (NetworkRuleHit, ApplicationRuleHit,
-  FirewallHealth) — `Allow`, `Deny`, `DNAT`. The `Deny` slice on
+  FirewallHealth) - `Allow`, `Deny`, `DNAT`. The `Deny` slice on
   `NetworkRuleHit` is the primary security-incident signal.
 - `metadata_Reason` (NetworkRuleHit, ApplicationRuleHit,
-  FirewallHealth) — short reason code per rule firing (e.g.
+  FirewallHealth) - short reason code per rule firing (e.g.
   `RuleNotMatched`, `Allowed`, `RuleMatched`).
-- `metadata_Protocol` (ApplicationRuleHit, SNATPortUtilization) —
+- `metadata_Protocol` (ApplicationRuleHit, SNATPortUtilization) -
   `TCP`, `UDP`, `ICMP`, `Any`.
 
 Receiver bug #45942 emits these dimensions in both PascalCase and
@@ -257,7 +257,7 @@ Azure Monitor enforces two ceilings:
 | Legacy Azure Resource Manager `/metrics` (`use_batch_api: false`) | 12,000 calls / hour / subscription | Temporary fallback if the data plane is still 401-ing after RBAC propagation should have completed. Immediate RBAC propagation. |
 
 A 50-firewall fleet polling at 60s costs ~3,000 calls/hour against
-the 360k ceiling — under 1% utilization, leaving room for sibling
+the 360k ceiling - under 1% utilization, leaving room for sibling
 surfaces on the same collector. Even small fleets benefit from
 `use_batch_api: true`.
 
@@ -302,14 +302,14 @@ Three remediations, in order of operational ease:
    detail.
 
 Track the issue for upstream resolution; v0.151.0 (Apr 2026) has the
-bug, future releases may not — re-validate on each receiver upgrade.
+bug, future releases may not - re-validate on each receiver upgrade.
 
 ### Standard cardinality levers
 
 The override config uses the **bare Azure dimension name** (e.g.
 `Status`, not `metadata_Status`); the receiver adds the `metadata_`
 prefix when it emits. Overrides apply at the receiver, *before* the
-`transform/firewall_dim_lowercase` processor runs — so the override
+`transform/firewall_dim_lowercase` processor runs - so the override
 key matches Azure's PascalCase regardless of what the transform
 emits downstream.
 
@@ -342,14 +342,14 @@ a representative week.
 | Metric | Warning | Critical | Why it matters |
 | --- | --- | --- | --- |
 | `azure_firewallhealth_average` | < 100% over 5m | < 99% over 15m | Azure-side firewall degradation. Cross-check Azure Service Health for the region. |
-| `azure_snatportutilization_average` | > 80% over 5m | > 95% over 5m | SNAT-port exhaustion is imminent. Pool is **shared across every workload behind the firewall** (unlike Standard LB, where SNAT is per-backend), so a single noisy VM can exhaust the whole firewall — investigate the top-talker in firewall logs before scaling. Add public IPs (each adds ~2496 ports) once the offender is identified. |
+| `azure_snatportutilization_average` | > 80% over 5m | > 95% over 5m | SNAT-port exhaustion is imminent. Pool is **shared across every workload behind the firewall** (unlike Standard LB, where SNAT is per-backend), so a single noisy VM can exhaust the whole firewall - investigate the top-talker in firewall logs before scaling. Add public IPs (each adds ~2496 ports) once the offender is identified. |
 | `azure_networkrulehit_total` filtered to `metadata_status="Deny"` | sustained presence over 15m | spike > 10x baseline | Deny rules firing at unusual rate. Either you have a misconfigured client or an active probe / scan. Cross-check the Application / Network rule logs. |
 | `azure_observedcapacity_maximum` | sustained > 8 capacity units | sustained > 12 capacity units, or > 80% of your SKU's documented ceiling | Firewall is auto-scaling toward the per-instance limit. `ObservedCapacity` saturates before `Throughput` does, since the per-instance bandwidth ceiling moves with auto-scale state. Plan multi-firewall topology before this alert fires sustained. Verify your SKU's capacity-unit ceiling on the [Azure Firewall performance reference](https://learn.microsoft.com/azure/firewall/firewall-performance). |
-| `azure_throughput_average` | > 70% of capacity-unit headroom | > 90% of capacity-unit headroom | Approaching the firewall's bandwidth headroom (each capacity unit ≈ 250 Mbps). Use alongside `ObservedCapacity` rather than alone — the throughput ceiling moves with auto-scale state. |
+| `azure_throughput_average` | > 70% of capacity-unit headroom | > 90% of capacity-unit headroom | Approaching the firewall's bandwidth headroom (each capacity unit ≈ 250 Mbps). Use alongside `ObservedCapacity` rather than alone - the throughput ceiling moves with auto-scale state. |
 | `azure_applicationrulehit_total` filtered to `metadata_status="Deny"` | sustained presence over 15m | spike > 10x baseline | FQDN-rule denials. Indicates either policy misalignment with application traffic or active threat-intel-driven blocks (see Threat Intel section). |
 
 For Deny-filtered alerts, fire on series presence in window rather
-than numeric thresholds — see the
+than numeric thresholds - see the
 [silent-when-quiet caveat](#what-youll-monitor) above.
 
 ## Threat-intel mode
@@ -357,16 +357,16 @@ than numeric thresholds — see the
 Azure Firewall has three threat-intel modes that affect how
 `ApplicationRuleHit` and `NetworkRuleHit` slices appear:
 
-- **Off** — threat-intel signals do not generate rule hits.
-- **Alert** (default) — threat-intel matches surface as
+- **Off** - threat-intel signals do not generate rule hits.
+- **Alert** (default) - threat-intel matches surface as
   `metadata_Reason="ThreatIntelAlert"` data points without blocking
   traffic. Some Azure Monitor slices also tag these with
   `metadata_Status="Deny"` even though the packet was forwarded
   unchanged. A `Deny`-rate alert in Alert mode therefore reads as
   "potentially-malicious traffic observed but allowed", **not**
   "traffic blocked." On-call runbooks must distinguish between the
-  two — the metric on its own does not.
-- **Alert and deny** — threat-intel matches block traffic and the
+  two - the metric on its own does not.
+- **Alert and deny** - threat-intel matches block traffic and the
   rule-hit metric records them as `Status=Deny,
   Reason=ThreatIntelDeny`. Same metric shape, different operational
   meaning.
@@ -388,7 +388,7 @@ this guide do not cover:
   source IP, destination FQDN / IP, source port, destination port, or
   the specific rule name that fired. `AzureFirewallApplicationRule`
   and `AzureFirewallNetworkRule` records carry the full 5-tuple plus
-  the matched rule collection and rule name — required for any
+  the matched rule collection and rule name - required for any
   incident requiring "which rule blocked which connection at which
   time" attribution.
 - **Threat-intel context.** The `metadata_Status="Deny"` slice of the
@@ -397,12 +397,12 @@ this guide do not cover:
   whether the firewall was in Alert vs Alert-and-deny mode.
   `AzureFirewallThreatIntelLog` records every threat-intel match with
   source IP, destination, matched signature, and whether the action
-  was alert-only or block — required for security-team triage and
+  was alert-only or block - required for security-team triage and
   for "is this a real threat or noise" decisions.
 - **DNS-based exfiltration detection.** No metric in the namespace
   captures DNS request volume per source IP per destination FQDN.
   `AzureFirewallDnsProxy` records the firewall's DNS-proxy decisions
-  — the canonical source for spotting beaconing patterns, suspicious
+  - the canonical source for spotting beaconing patterns, suspicious
   TLD lookups, and DNS tunnelling exfiltration. Required for any
   fleet that uses Azure Firewall as the egress DNS resolver.
 
@@ -441,7 +441,7 @@ SAS rules; the same fragment shape adapts to Azure Firewall by
 changing the `cloud.platform` resource attribute (`azure_firewall`)
 and the source Diagnostic Setting categories. Pair the log stream
 with the metric stream to correlate alert firings with the specific
-source IPs, destination FQDNs, and rule names involved — the
+source IPs, destination FQDNs, and rule names involved - the
 threat-intel mode caveat in [Threat-intel mode](#threat-intel-mode)
 above means metric alerts on their own often need log context to
 distinguish "blocked attack" from "observed potential threat."
@@ -456,7 +456,7 @@ categories on the Diagnostic Settings stream described in
 
 ### Premium metrics
 
-Extend the whitelist on the existing receiver — shape is identical
+Extend the whitelist on the existing receiver - shape is identical
 to the Standard-tier metrics:
 
 ```yaml
@@ -473,7 +473,7 @@ signal.
 
 ### Premium log categories
 
-Premium adds two log categories. They are not metrics — they ride
+Premium adds two log categories. They are not metrics - they ride
 the same Diagnostic Settings → Event Hubs → `azure_event_hub` path
 as the four Standard categories:
 
@@ -484,7 +484,7 @@ as the four Standard categories:
 ```
 
 `AzureFirewallIDPSSignatureMatch` records each IDPS hit with the
-signature that triggered — pair it with the `SignatureLookupHits`
+signature that triggered - pair it with the `SignatureLookupHits`
 metric to follow an alert back to the specific signatures.
 `AzureFirewallApplicationRuleAggregation` is a pre-aggregated form
 of `AzureFirewallApplicationRule` that lowers log volume when
@@ -498,7 +498,7 @@ there is no apps-side trace integration on Standard.
 
 **Premium SKU caveat.** Premium TLS inspection decrypts and
 re-encrypts traffic on the firewall, so it is **not** transparent at
-L7 — `traceparent` headers and other request-context attributes may
+L7 - `traceparent` headers and other request-context attributes may
 not survive the round-trip. Validate trace continuity end-to-end
 before relying on cross-firewall span propagation under Premium.
 
@@ -612,8 +612,8 @@ Threat-Intel-derived blocks; see the threat-intel section above.
 
 ### Why are my rule-hit dimensions appearing twice with different casing?
 
-This is a known receiver bug — opentelemetry-collector-contrib
-issue 45942 — that manifests on `Microsoft.Network/azureFirewalls`.
+This is a known receiver bug - opentelemetry-collector-contrib
+issue 45942 - that manifests on `Microsoft.Network/azureFirewalls`.
 The same logical dimension value (`Status=Allow`, for example) appears
 under both `metadata_Status` and `metadata_status` keys, doubling
 cardinality silently. Workaround: apply a `transform` processor in
@@ -665,15 +665,9 @@ metrics](https://learn.microsoft.com/azure/azure-monitor/reference/supported-met
 
 ## Related Guides
 
-- [Azure Application Gateway](./application-gateway.md) — sister
-  guide; L7 load balancer with WAF v2.
-- [Azure Front Door](./front-door.md) — sister guide; CDN / global
-  edge with WAF.
-- [Azure Load Balancer](./load-balancer.md) — sister guide; L4
-  network LB.
-- [Azure Service Bus](./service-bus.md) — sister guide; same
-  `azure_monitor` pattern, single-namespace messaging surface.
-- [Azure Storage](./storage.md) — sister guide; multi-namespace
-  receiver pattern.
-- [Azure Kubernetes Service](./aks.md) — sister guide; in-cluster
-  collector pattern.
+- [Azure Application Gateway](./application-gateway.md) - regional L7 load balancer with WAF v2.
+- [Azure Front Door](./front-door.md) - global CDN and L7 edge with WAF.
+- [Azure Load Balancer](./load-balancer.md) - L4 network load balancer.
+- [Azure Service Bus](./service-bus.md) - managed message broker for queues and topics.
+- [Azure Storage](./storage.md) - managed object/blob/queue/table/file storage.
+- [Azure Kubernetes Service](./aks.md) - managed Kubernetes.

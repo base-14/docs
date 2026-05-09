@@ -324,17 +324,17 @@ account-level rollup plus four sub-services. The receiver renames Azure's
 PascalCase metric names (e.g. `BlobCapacity`) to OTel-style
 `azure_<lowercased>_<aggregation>` (e.g. `azure_blobcapacity_average`).
 The metric tables below cover Standard-tier accounts; Premium block-blob
-and Premium file-share accounts publish additional series — see
+and Premium file-share accounts publish additional series - see
 [Premium-tier additions](#premium-tier-additions).
 
 The metrics split into two grain bands with very different operational
 characteristics:
 
 - **PT1M Transaction-class** (request throughput, byte-throughput,
-  latency, availability) — flow through the receiver within 2-3
+  latency, availability) - flow through the receiver within 2-3
   minutes of the first traffic. Drives request-flow dashboards,
   latency SLOs, and availability alerts.
-- **PT1H Capacity-class** (capacity, count, message-count) — known
+- **PT1H Capacity-class** (capacity, count, message-count) - known
   receiver gap under v0.151.0 with sub-hour `collection_interval`.
   See [The PT1H capacity-metric gap](#the-pt1h-capacity-metric-gap).
 
@@ -348,7 +348,7 @@ characteristics:
 | `SuccessE2ELatency` | `azure_successe2elatency_average` | ms | End-to-end latency including network. |
 | `SuccessServerLatency` | `azure_successserverlatency_average` | ms | Server-side latency excluding network. Subtract from `SuccessE2ELatency` to get network round-trip. |
 | `Availability` | `azure_availability_average` | Percent | Fraction of successful billable requests, across the account. Drop below 99.9% is page-worthy. |
-| `UsedCapacity` | `azure_usedcapacity_average` | Bytes | Account-level total bytes stored. **PT1H grain — see capacity gap.** |
+| `UsedCapacity` | `azure_usedcapacity_average` | Bytes | Account-level total bytes stored. **PT1H grain - see capacity gap.** |
 
 ### Blob service (`.../blobServices`)
 
@@ -518,7 +518,7 @@ the capacity data inside Scout or queryable separately:
 - **Log Analytics (KQL only).** Configure Diagnostic Settings on each
   account to forward `AllMetrics` to a Log Analytics workspace.
   Capacity is queryable via KQL against the `AzureMetrics` table.
-  This path keeps capacity outside Scout — useful if Log Analytics is
+  This path keeps capacity outside Scout - useful if Log Analytics is
   already the source of truth for capacity reports, but dashboards
   alongside Scout metrics need a separate query surface.
 - **Event Hubs → `azure_event_hub` receiver.** Configure Diagnostic
@@ -586,7 +586,7 @@ receivers:
       - Microsoft.Storage/storageAccounts
       - Microsoft.Storage/storageAccounts/blobServices
       - Microsoft.Storage/storageAccounts/queueServices
-      # File and Table dropped — the workload uses only Blob and Queue.
+      # File and Table dropped - the workload uses only Blob and Queue.
     auth: { authenticator: azure_auth }
     use_batch_api: true        # 360k/h ceiling per sub
     cache_resources: 86400     # receiver default (24h)
@@ -611,21 +611,21 @@ By default, the receiver emits one OTel series per
 `metadata_*` dimension shape produces high cardinality on
 `Transactions` and the latency / availability metrics:
 
-- `metadata_apiname` — one value per distinct Storage API operation
+- `metadata_apiname` - one value per distinct Storage API operation
   (PutBlob, GetBlob, PutMessage, GetMessages, InsertEntity,
   QueryEntities, CreateFile, PutRange, etc.). Typical fleets
   exercise 20-50 distinct API operations per account; this is the
   dominant cardinality multiplier.
-- `metadata_authentication` — `OAuth`, `AccountKey`, or `SAS`.
+- `metadata_authentication` - `OAuth`, `AccountKey`, or `SAS`.
   Two-to-three values in mixed-mode environments; one-or-two in
   single-mode.
-- `metadata_geotype` — `Primary` for LRS / ZRS; both `Primary` and
+- `metadata_geotype` - `Primary` for LRS / ZRS; both `Primary` and
   `Secondary` for GRS / RA-GRS / GZRS.
-- `metadata_responsetype` — `Success` plus error classes
+- `metadata_responsetype` - `Success` plus error classes
   (`ClientThrottlingError`, `ClientOtherError`, `ServerOtherError`,
   `ServerTimeoutError`, etc.) emitted only when the condition occurs.
   Silent-when-quiet on healthy accounts.
-- `metadata_transactiontype` — `user` plus optionally `system` for
+- `metadata_transactiontype` - `user` plus optionally `system` for
   internal operations.
 
 A representative single-account baseline emits roughly **220 active
@@ -706,7 +706,7 @@ week.
 
 For `azure_responsetype`-split error series and the `Availability`
 metric, fire alerts on series presence in window rather than numeric
-thresholds — see the [silent-when-quiet caveat](#what-youll-monitor)
+thresholds - see the [silent-when-quiet caveat](#what-youll-monitor)
 above.
 
 | Metric (OTel name) | Warning | Critical | Why it matters |
@@ -734,7 +734,7 @@ account_quota` (PT1H), `azure_transactions_total` against the
 [per-account scalability
 ceiling](https://learn.microsoft.com/azure/storage/common/scalability-targets-standard-account),
 and the throttling-response signal above. Per-operation client-side
-latency belongs in the application code — see [Apps-side
+latency belongs in the application code - see [Apps-side
 instrumentation](#apps-side-instrumentation).
 
 ## Premium-tier additions
@@ -854,14 +854,14 @@ not cover:
   `metadata_authentication` and `metadata_responsetype` but no client
   IP or blob path. `StorageRead` log records carry the requester IP,
   the requested URL, and the blob / object key in their `properties`
-  envelope — required for any compliance regime that needs a
+  envelope - required for any compliance regime that needs a
   per-request audit trail.
 - **Per-blob write attribution.** `Ingress` and account-level
   `Transactions` show write throughput and counts but not which blob
   was overwritten by which principal at which timestamp.
   `StorageWrite` records carry the `identity` block (token type plus
   principal / oauth-app ID) alongside the blob path, etag, and request
-  URL — required for ransomware-style investigation and for tying
+  URL - required for ransomware-style investigation and for tying
   writes to specific service principals or applications.
 - **Per-key delete forensics.** Deletes are the destructive event most
   often investigated post-hoc; the metrics show counts only.
@@ -926,7 +926,7 @@ Two operational notes for production fleets:
   `StorageDelete` is the lowest-volume, highest-value category if
   budget pressure forces selective enablement.
 
-Activity logs (control-plane operations on the account itself —
+Activity logs (control-plane operations on the account itself -
 account creation, SKU change, key rotation) are **subscription-scoped**
 and not part of the per-sub-service Diagnostic Settings configured
 above. Configure once per subscription via `az monitor
@@ -968,7 +968,7 @@ capacity is not, the gap is the receiver, not RBAC.
 Verify both the `services:` list and the `metrics:` map include the
 sub-namespace key. Both must be present; listing one without the
 other silently drops the sub-service. Check the receiver log for
-`Loaded the list of Azure Metrics Definitions` per resource — there
+`Loaded the list of Azure Metrics Definitions` per resource - there
 should be one log line per `(account + sub-service)` pair on each
 poll cycle.
 
@@ -981,13 +981,13 @@ surfaces. Either:
 
 - Lower polling rate: `collection_interval: 120s` for the fast receiver.
 - Narrow scope: drop unused sub-services from `services:` and `metrics:`.
-- Confirm `use_batch_api: true` is set (the guide default) — the
+- Confirm `use_batch_api: true` is set (the guide default) - the
   legacy ARM endpoint caps at 12k/h versus 360k/h on data-plane batch.
 - Split heavy subscriptions across multiple collector instances.
 
 ### Cardinality blowup on Scout volume
 
-A single high-fanout account can dominate volume — `metadata_apiname`
+A single high-fanout account can dominate volume - `metadata_apiname`
 is the prime offender. Apply `dimensions.overrides` (see
 [Cardinality control](#cardinality-control)) or split the noisy
 account into a separate receiver instance with a narrower whitelist.
@@ -1032,7 +1032,7 @@ to Storage; the account is never on the collector's path.
 ### Why don't my UsedCapacity and BlobCount metrics appear?
 
 Capacity-class metrics on Microsoft.Storage namespaces have a PT1H
-time grain — Azure Monitor publishes them once per hour, not per
+time grain - Azure Monitor publishes them once per hour, not per
 minute. The v0.151.0 `azuremonitorreceiver` passes each metric's
 natural time grain as both `Interval` and `Timespan` when querying
 Azure Monitor; for fresh accounts this query window can fall outside
@@ -1049,7 +1049,7 @@ tracks the underlying class of problem.
 Whitelist `Transactions` on each of the five namespaces in the
 `metrics:` map. The receiver emits one `azure_transactions_total`
 series per resource scope, distinguishable by the
-`azuremonitor.resource_id` data-point attribute — account-level
+`azuremonitor.resource_id` data-point attribute - account-level
 rollup uses `.../storageAccounts/<sa>`, sub-services append
 `/<service>Services/default`. The account-level series is the
 rollup; sub-service series are per-service. If you only care about
@@ -1061,7 +1061,7 @@ you need per-sub-service granularity, keep all five.
 By default each `Transactions` data point carries `metadata_apiname`,
 `metadata_authentication`, `metadata_geotype`,
 `metadata_responsetype`, and `metadata_transactiontype`.
-`metadata_apiname` has the highest cardinality — one value per
+`metadata_apiname` has the highest cardinality - one value per
 distinct Storage API operation. For a 50-account fleet doing 30
 distinct API operations across all six PT1M metrics with dual-mode
 auth (`AccountKey` plus `OAuth`), the active series count grows to
@@ -1119,15 +1119,12 @@ metrics](https://learn.microsoft.com/azure/azure-monitor/reference/supported-met
 
 ## Related Guides
 
-- [Azure Service Bus](./service-bus.md) — sister guide; same
-  `azure_monitor` pattern, single-namespace messaging surface.
-- [Azure Cosmos DB](./cosmos-db.md) — sister guide; same pattern,
-  NoSQL surface.
-- [Azure SQL Database](./sql-database.md) — sister guide; same
-  pattern, relational PaaS surface.
-- [Azure Front Door](./front-door.md) — sister guide; CDN / edge
-  surface.
-- [Azure Application Gateway](./application-gateway.md) — sister
-  guide; L7 load balancer surface.
-- [Azure Kubernetes Service](./aks.md) — sister guide; in-cluster
-  collector pattern, complementary to this account-scope pattern.
+- [Azure Service Bus](./service-bus.md) - managed message broker for
+  queues and topics.
+- [Azure Cosmos DB](./cosmos-db.md) - globally-distributed multi-model
+  NoSQL database.
+- [Azure SQL Database](./sql-database.md) - managed relational database.
+- [Azure Front Door](./front-door.md) - global CDN and L7 edge with WAF.
+- [Azure Application Gateway](./application-gateway.md) - regional L7
+  load balancer with WAF v2.
+- [Azure Kubernetes Service](./aks.md) - managed Kubernetes.

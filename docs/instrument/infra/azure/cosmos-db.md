@@ -311,21 +311,21 @@ not cover:
   shows which document operation, query, or partition key range
   consumed which RU. `DataPlaneRequests` log records carry the RU
   charge per request alongside the operation type, status code, and
-  partition key range — required for cost attribution to specific
+  partition key range - required for cost attribution to specific
   workloads and for triaging "who is blowing the RU budget" incidents.
 - **Hot partition diagnosis.** `NormalizedRUConsumption` sliced by
   partition key range tells you that a hot partition exists but not
   which key value is hot. `PartitionKeyStatistics` records storage
   and request-rate distribution per partition key, surfacing the
   specific keys whose access patterns are skewing throughput
-  consumption — required for sharding decisions and for re-keying
+  consumption - required for sharding decisions and for re-keying
   proposals.
 - **Query plan insight.** `TotalRequests` and `TotalRequestUnits`
   aggregate request rate and RU consumption. They do not show that a
   single query is reading 1 M documents to return 10, or doing a
   cross-partition scan when a partition key was available.
   `QueryRuntimeStatistics` records per-query index lookups, retrieved
-  document count, and output document count — required for query
+  document count, and output document count - required for query
   optimization and for catching N+1-style anti-patterns at the data
   layer.
 
@@ -457,13 +457,10 @@ Monitor REST API.
 
 ## Related Guides
 
-- [Azure SQL Database](./sql-database.md) - sister guide; same
-  `azure_monitor` pattern, relational-PaaS surface. Pairs with the
-  self-hosted [SQL Server guide](../../component/sqlserver.md).
-- [Azure Kubernetes Service](./aks.md) - sister guide; uses the same
-  `azure_monitor` receiver pattern but scopes to
-  `Microsoft.ContainerService/managedClusters` and adds an in-cluster
-  collector pair (kubeletstats DaemonSet + k8s_cluster Deployment).
+- [Azure SQL Database](./sql-database.md) - managed relational database.
+  Pairs with the self-hosted
+  [SQL Server guide](../../component/sqlserver.md).
+- [Azure Kubernetes Service](./aks.md) - managed Kubernetes.
 - [AWS RDS PostgreSQL](../aws/rds.md) - equivalent guide for AWS managed
   PostgreSQL. Uses CloudWatch Metrics Stream (push) for infrastructure
   metrics plus the OTel PostgreSQL receiver for database internals; a

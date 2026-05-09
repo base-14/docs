@@ -761,20 +761,17 @@ for SLI and SLO dashboards and alerts, logs for incident investigation.
 
 ## Related Guides
 
-- [Azure Event Hubs](./event-hubs.md) - the streaming sibling. Same
-  `azure_monitor` receiver pattern; pick Event Hubs for high-throughput,
-  partitioned, replay-capable workloads (telemetry pipelines, event
-  sourcing) and Service Bus for transactional messaging and work
+- [Azure Event Hubs](./event-hubs.md) - managed event-streaming platform
+  (Kafka-compatible, partitioned, replay-capable). Pick Event Hubs for
+  high-throughput streaming workloads (telemetry pipelines, event
+  sourcing); pick Service Bus for transactional messaging and work
   distribution.
-- [Azure Cosmos DB](./cosmos-db.md) - sister guide; same `azure_monitor`
-  pattern, NoSQL surface.
-- [Azure SQL Database](./sql-database.md) - sister guide; relational PaaS
-  surface. Pairs with the self-hosted [SQL Server
-  guide](../../component/sqlserver.md).
-- [Azure Kubernetes Service](./aks.md) - sister guide; uses the same
-  `azure_monitor` receiver pattern but scopes to
-  `Microsoft.ContainerService/managedClusters` and adds an in-cluster
-  collector pair.
+- [Azure Cosmos DB](./cosmos-db.md) - globally-distributed multi-model
+  NoSQL database.
+- [Azure SQL Database](./sql-database.md) - managed relational database.
+  Pairs with the self-hosted
+  [SQL Server guide](../../component/sqlserver.md).
+- [Azure Kubernetes Service](./aks.md) - managed Kubernetes.
 - [Amazon MQ](../aws/amazonMQ.md) - managed messaging on AWS. Different
   collection pattern (CloudWatch Metrics Stream) and protocol, but the
   same observability question: depth, drain rate, dead-letter, throttling.

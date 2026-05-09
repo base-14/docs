@@ -452,7 +452,7 @@ after cache traffic begins), a long-running collector continues
 emitting only what it cached at startup until either the cache TTL
 expires or the collector restarts. If you wire a cache rule for
 `ByteHitRatio` and the metric still does not appear in Scout after
-30 minutes of cached traffic, restart the collector — the next
+30 minutes of cached traffic, restart the collector - the next
 discovery cycle will pick up the new definition and start emitting
 the metric on the following scrape.
 
@@ -532,7 +532,7 @@ profiles with weeks of history surface all 10 immediately.
 returns `Cache-Control: no-store`. Apply the [Cache
 configuration](#cache-configuration) override. If the cache rule is
 already in place and `x-cache: TCP_HIT` shows on the responses but
-the metric still does not appear in Scout, restart the collector —
+the metric still does not appear in Scout, restart the collector -
 the receiver caches the definitions list per container lifetime, so a
 metric that Azure begins publishing mid-run is only picked up after a
 fresh discovery cycle.
@@ -589,15 +589,12 @@ day before cardinality multiplication).
 
 ## Related Guides
 
-- [Azure Application Gateway](./application-gateway.md) - sister regional
-  L7 load balancer; same `azure_monitor` pattern, backend-pool +
-  listener metric framing. Customers running both global edge and
+- [Azure Application Gateway](./application-gateway.md) - regional L7
+  load balancer with WAF v2. Customers running both global edge and
   regional backend selection should monitor both surfaces.
-- [Azure Service Bus](./service-bus.md) - same `azure_monitor` receiver
-  pattern, no #43648 caveat.
-- [Azure SQL Database](./sql-database.md) - same auth + RBAC shape.
-- [Azure Cosmos DB](./cosmos-db.md) - same fragment composition, RU-based
-  metrics.
-- [Azure Kubernetes Service](../azure/aks.md) - operator-managed
-  collectors for in-cluster `kubeletstats`, `k8s_cluster`, and optional
-  `azure_monitor` control-plane metrics.
+- [Azure Service Bus](./service-bus.md) - managed message broker for
+  queues and topics.
+- [Azure SQL Database](./sql-database.md) - managed relational database.
+- [Azure Cosmos DB](./cosmos-db.md) - globally-distributed multi-model
+  NoSQL database.
+- [Azure Kubernetes Service](../azure/aks.md) - managed Kubernetes.

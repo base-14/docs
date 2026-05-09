@@ -561,7 +561,6 @@ REST API.
 - [Self-hosted SQL Server](../../component/sqlserver.md) - paired guide for SQL
   Server you run yourself (VM, on-prem, container). Uses `sqlserverreceiver`
   to scrape DMVs directly.
-- [Azure Cosmos DB](./cosmos-db.md) - sister guide; same `azure_monitor`
-  pattern, NoSQL surface.
-- [Azure Kubernetes Service](./aks.md) - sister guide; same receiver
-  pattern but adds in-cluster collectors for kubeletstats + cluster-state.
+- [Azure Cosmos DB](./cosmos-db.md) - globally-distributed multi-model
+  NoSQL database.
+- [Azure Kubernetes Service](./aks.md) - managed Kubernetes.

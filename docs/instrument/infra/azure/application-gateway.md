@@ -745,14 +745,12 @@ metrics](https://learn.microsoft.com/azure/azure-monitor/reference/supported-met
 
 ## Related Guides
 
-- [Azure Front Door](./front-door.md) - sister edge service; same
-  `azure_monitor` pattern, global-CDN metric framing.
-- [Azure Service Bus](./service-bus.md) - same `azure_monitor` receiver
-  pattern, messaging surface.
-- [Azure SQL Database](./sql-database.md) - same auth + RBAC shape,
-  relational PaaS surface.
-- [Azure Cosmos DB](./cosmos-db.md) - same fragment composition,
-  RU-based metrics.
-- [Azure Kubernetes Service](./aks.md) - operator-managed collectors for
-  in-cluster `kubeletstats`, `k8s_cluster`, and optional `azure_monitor`
-  control-plane metrics.
+- [Azure Front Door](./front-door.md) - global CDN and L7 edge with
+  WAF, typically deployed in front of Application Gateway for global
+  routing.
+- [Azure Service Bus](./service-bus.md) - managed message broker for
+  queues and topics.
+- [Azure SQL Database](./sql-database.md) - managed relational database.
+- [Azure Cosmos DB](./cosmos-db.md) - globally-distributed multi-model
+  NoSQL database.
+- [Azure Kubernetes Service](./aks.md) - managed Kubernetes.

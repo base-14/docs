@@ -44,7 +44,7 @@ LBs and Cross-region (Global) LBs.
 
 This guide focuses on regional LBs. Cross-region LBs use regional LBs
 as backends (a tier-2 fan-out topology) and add one extra metric,
-`GlobalBackendAvailability`. The receiver pattern works for both —
+`GlobalBackendAvailability`. The receiver pattern works for both -
 add `GlobalBackendAvailability: [Average]` to the whitelist for
 Cross-region LBs.
 
@@ -94,7 +94,7 @@ az network lb rule show -g <rg> --lb-name <lb> -n <rule-name> \
 Gateway routes outbound traffic through NAT Gateway, not the LB. The
 LB's outbound rule still emits `AllocatedSnatPorts` and `UsedSnatPorts`
 series for the same frontend, but the values do not reflect actual
-outbound capacity for NAT-attached subnets — treat NAT Gateway's
+outbound capacity for NAT-attached subnets - treat NAT Gateway's
 metrics as ground truth there.
 
 ## Receiver configuration
@@ -191,16 +191,16 @@ subscriptions.
 
 Pick the `azure_auth` mode for where the collector runs:
 
-- **AKS pod** — `workload_identity` (federated credential, no secret).
-- **Container Apps / VMSS / Azure VM** — `managed_identity` (user-assigned
+- **AKS pod** - `workload_identity` (federated credential, no secret).
+- **Container Apps / VMSS / Azure VM** - `managed_identity` (user-assigned
   survives instance replacement; system-assigned dies with the instance).
-- **External or on-prem** — `service_principal`.
-- **Local dev only** — `use_default: true` (Azure SDK credential chain).
+- **External or on-prem** - `service_principal`.
+- **Local dev only** - `use_default: true` (Azure SDK credential chain).
 
 Grant `Monitoring Reader` at the resource group containing your load
 balancers. For mode-by-mode YAML, federation-credential setup, and the
 `az role assignment create` snippet, see
-[Azure Service Bus § Authentication](./service-bus.md#authentication) —
+[Azure Service Bus § Authentication](./service-bus.md#authentication) -
 the configuration is identical except for the receiver's `services:`
 line and the resource processor's `cloud.platform` value.
 
@@ -232,14 +232,14 @@ to OTel-style `azure_<lowercased>_<aggregation>` (e.g.
 Eight `metadata_*` dimensions split these metrics:
 
 - `metadata_FrontendIPAddress`, `metadata_FrontendPort` (ByteCount,
-  PacketCount, SYNCount) — one series per LB rule.
+  PacketCount, SYNCount) - one series per LB rule.
 - `metadata_BackendIPAddress`, `metadata_BackendPort` (DipAvailability)
-  — one series per backend.
-- `metadata_Direction` (ByteCount, PacketCount, SYNCount) —
+  - one series per backend.
+- `metadata_Direction` (ByteCount, PacketCount, SYNCount) -
   `Inbound` / `Outbound`.
 - `metadata_Protocol`, `metadata_ProtocolType` (SnatConnectionCount,
-  AllocatedSnatPorts, UsedSnatPorts) — `TCP` / `UDP`.
-- `metadata_ConnectionState` (SnatConnectionCount only) —
+  AllocatedSnatPorts, UsedSnatPorts) - `TCP` / `UDP`.
+- `metadata_ConnectionState` (SnatConnectionCount only) -
   `Pending` / `Successful` / `Failed`.
 
 See [Cardinality control](#cardinality-control) for shaping advice.
@@ -292,15 +292,15 @@ steady traffic.
 
 Per-LB scaling factors:
 
-- `metadata_FrontendIPAddress` × `metadata_FrontendPort` — one series
+- `metadata_FrontendIPAddress` × `metadata_FrontendPort` - one series
   per LB rule. Most LBs have 1-3 rules.
-- `metadata_BackendIPAddress` — one series per backend. A 5-node
+- `metadata_BackendIPAddress` - one series per backend. A 5-node
   backend pool produces 5x the per-rule fan-out on
   `DipAvailability`.
-- `metadata_ConnectionState` (SnatConnectionCount only) — three values
+- `metadata_ConnectionState` (SnatConnectionCount only) - three values
   (Pending, Successful, Failed). The Failed slice is where SNAT
   exhaustion shows up.
-- `metadata_Direction` (ByteCount, PacketCount, SYNCount) — Inbound
+- `metadata_Direction` (ByteCount, PacketCount, SYNCount) - Inbound
   and Outbound; doubles the fan-out on those three metrics.
 
 A 50-LB fleet with 2 rules and 5 backends per LB lands around
@@ -327,7 +327,7 @@ Three control levers:
    ```
 
 2. **Aggregation-list narrowing.** Replace `[]` with explicit lists
-   (the snippet above already does this — `[Average]` and `[Total]`
+   (the snippet above already does this - `[Average]` and `[Total]`
    only). Adding `[Maximum, Minimum]` to gauges grows series by 2x
    without operational benefit on availability metrics.
 
@@ -386,10 +386,10 @@ representative week.
 | `azure_vipavailability_average` | < 99.9% over 5m | < 99.0% over 15m | LB-side degradation. Cross-check Azure Service Health for the region; this is rarely user-actionable. |
 | `azure_usedsnatports_average / azure_allocatedsnatports_average` | > 80% over 5m | > 95% over 5m | SNAT-port exhaustion is imminent. See SNAT exhaustion below. |
 | `azure_snatconnectioncount_total` filtered to `metadata_ConnectionState="Failed"` | `> 0` over 5m | `> 0` over 15m | SNAT exhaustion occurring now. Outbound from the backend pool is breaking. |
-| `azure_syncount_total / azure_packetcount_total` | tune to your fleet — no universal threshold | — | High SYN-to-packet ratio can indicate SYN floods or aggressive new-connection patterns, but the baseline ratio is entirely connection-pattern dependent (request-heavy services run high; long-lived bulk transfers run low). Establish a 7-day baseline before alerting; alert on deviation, not absolute value. |
+| `azure_syncount_total / azure_packetcount_total` | tune to your fleet - no universal threshold | - | High SYN-to-packet ratio can indicate SYN floods or aggressive new-connection patterns, but the baseline ratio is entirely connection-pattern dependent (request-heavy services run high; long-lived bulk transfers run low). Establish a 7-day baseline before alerting; alert on deviation, not absolute value. |
 
 For `azure_snatconnectioncount_total` filtered to Failed, fire alerts on
-series presence in window rather than numeric thresholds — see the
+series presence in window rather than numeric thresholds - see the
 [silent-when-quiet caveat](#what-youll-monitor) above.
 
 ### SNAT port exhaustion
@@ -436,7 +436,7 @@ This guide is metrics-only. Load Balancer is L4 (TCP / UDP) and is
 generally invisible to application-layer instrumentation. To produce
 per-request distributed traces, instrument your backend application
 code with an HTTP server SDK (e.g. OpenTelemetry instrumentation for
-your framework) — the LB itself does not emit per-connection traces.
+your framework) - the LB itself does not emit per-connection traces.
 
 Run apps-side spans alongside this metrics collector with distinct
 `service.name` values to keep the platform view (this guide) and the
@@ -493,7 +493,7 @@ the managed identity has `Monitoring Reader`.
 The receiver caches metric definitions for the `cache_resources`
 interval (default 86400s / 24h). On the first poll after a fresh LB
 is created, Azure Monitor's metric-definition catalogue may not yet
-have populated for the new resource — the receiver's first-poll
+have populated for the new resource - the receiver's first-poll
 `metrics_definitions_count: 0` log line confirms the diagnosis.
 Subsequent polls within the same `cache_resources` window will not
 retry the discovery.
@@ -503,7 +503,7 @@ minutes after `az network lb create` completes). The restart resets
 the discovery cache. To verify recovery, look for
 `metrics_definitions_count: <N>` with `N > 0` on the next poll cycle.
 If `N` is still `0`, Azure Monitor's catalogue has not populated yet
-— wait 2-3 minutes and restart again.
+- wait 2-3 minutes and restart again.
 
 If restarting the collector is operationally heavy, the alternatives
 are: lower `cache_resources` to `600` for the first hour of a new
@@ -532,7 +532,7 @@ You have hit Azure Monitor's per-subscription rate ceiling
 (12,000 / hour on legacy, 360,000 / hour on batch). Either:
 
 - Lower polling rate: `collection_interval: 120s` for the fast receiver.
-- Confirm `use_batch_api: true` is set (the guide default) — the
+- Confirm `use_batch_api: true` is set (the guide default) - the
   legacy ARM endpoint caps at 12k/h versus 360k/h on data-plane batch.
 - Split heavy subscriptions across multiple collector instances.
 
@@ -623,13 +623,11 @@ retirement](https://azure.microsoft.com/updates/azure-basic-load-balancer-will-b
 
 ## Related Guides
 
-- [Azure Application Gateway](./application-gateway.md) — sister guide;
-  L7 load balancer with WAF v2.
-- [Azure Front Door](./front-door.md) — sister guide; CDN / global edge
-  with WAF.
-- [Azure Service Bus](./service-bus.md) — sister guide; same
-  `azure_monitor` pattern, single-namespace messaging surface.
-- [Azure Storage](./storage.md) — sister guide; multi-namespace receiver
-  pattern (blob/queue/table/file).
-- [Azure Kubernetes Service](./aks.md) — sister guide; in-cluster
-  collector pattern.
+- [Azure Application Gateway](./application-gateway.md) - regional L7
+  load balancer with WAF v2.
+- [Azure Front Door](./front-door.md) - global CDN and L7 edge with WAF.
+- [Azure Service Bus](./service-bus.md) - managed message broker for
+  queues and topics.
+- [Azure Storage](./storage.md) - managed
+  object/blob/queue/table/file storage.
+- [Azure Kubernetes Service](./aks.md) - managed Kubernetes.

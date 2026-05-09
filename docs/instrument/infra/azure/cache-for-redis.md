@@ -24,14 +24,14 @@ head:
   - - script
     - type: application/ld+json
     - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I add Azure Cache for Redis metrics to my existing OpenTelemetry Collector?","acceptedAnswer":{"@type":"Answer","text":"Add the azure_auth extension and an azure_monitor receiver scoped to Microsoft.Cache/Redis, route the receiver into a metrics pipeline that exports to Scout via the oauth2client-authenticated OTLP/HTTP exporter, and grant the collector's service principal Monitoring Reader at the resource group containing your cache. The receiver polls Azure Monitor's REST API every 60 seconds. Basic tier emits a smaller metric subset than Standard, Premium, and Enterprise; the receiver returns whatever the resource publishes without erroring on tier-gated metrics. The collector itself does not connect to Redis on port 6380 and does not need the cache's primary access key."}},{"@type":"Question","name":"What is the difference between cache-managed metrics and self-hosted Redis metrics?","acceptedAnswer":{"@type":"Answer","text":"Azure Cache for Redis publishes metrics through Azure Monitor at a 1-minute aggregation granularity with resource-level dimensions only. Self-hosted Redis exposes raw INFO output that the OTel redisreceiver scrapes every poll interval, producing per-key and per-database metrics that Azure Monitor does not surface. Pick the azure_monitor approach when running PaaS Cache for Redis. Pick the redisreceiver approach when running Redis on a VM, in a container, in Kubernetes, or on-premises. Both pipelines can coexist if you operate hybrid deployments."}},{"@type":"Question","name":"Why is my Cache for Redis hit rate under 50% on a freshly-deployed cache?","acceptedAnswer":{"@type":"Answer","text":"Cold-cache misses dominate the first traffic window after a deploy because every key is a miss until the application has populated the working set. Hit rate climbs as keys are written and read back. Wait for at least 10 to 30 minutes of representative production traffic before reading the cachemissrate metric as an SLI. Sustained low hit rate after warm-up is a workload-fit signal: the application is asking for keys it never wrote (cache key drift) or TTLs are firing faster than the access pattern (TTL too aggressive)."}},{"@type":"Question","name":"How do I monitor the SKU connection cap on Basic versus Premium?","acceptedAnswer":{"@type":"Answer","text":"The connectedclients metric publishes both Average and Maximum aggregations. Alert on the Maximum approaching the SKU's documented cap: Basic C0 at 256, Basic C1 at 1000, Basic C2 at 2000, Standard C1 at 1000, Premium P1 at 7500 scaling up to 40000 on P5. Saturation manifests as MAX_CLIENTS_REACHED errors at the application layer; pre-saturation alerting on connectedclients_maximum at 80 percent of the SKU's documented cap gives time to scale the cache or pool clients before traffic fails. Look up the cap for your specific SKU when setting the threshold rather than assuming a single value."}},{"@type":"Question","name":"Should I run Cache for Redis Diagnostic Logs through this metrics collector?","acceptedAnswer":{"@type":"Answer","text":"No. Cache for Redis exposes two Diagnostic Settings categories — ConnectedClientList and MSEntraAuthenticationAuditLog — but both emit data only on Premium tier per Microsoft documentation. On Premium, the recommended pattern is Diagnostic Settings forwarding to Event Hubs with the azureeventhubreceiver ingesting events as OTel logs in the same collector. That fragment is documented separately. On Basic and Standard tiers, the categories are listed by the API but no log data is emitted, so wiring the log pipeline produces nothing useful. Stay with the metrics-only configuration in this guide unless you operate Premium fleets."}}]}
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I add Azure Cache for Redis metrics to my existing OpenTelemetry Collector?","acceptedAnswer":{"@type":"Answer","text":"Add the azure_auth extension and an azure_monitor receiver scoped to Microsoft.Cache/Redis, route the receiver into a metrics pipeline that exports to Scout via the oauth2client-authenticated OTLP/HTTP exporter, and grant the collector's service principal Monitoring Reader at the resource group containing your cache. The receiver polls Azure Monitor's REST API every 60 seconds. Basic tier emits a smaller metric subset than Standard, Premium, and Enterprise; the receiver returns whatever the resource publishes without erroring on tier-gated metrics. The collector itself does not connect to Redis on port 6380 and does not need the cache's primary access key."}},{"@type":"Question","name":"What is the difference between cache-managed metrics and self-hosted Redis metrics?","acceptedAnswer":{"@type":"Answer","text":"Azure Cache for Redis publishes metrics through Azure Monitor at a 1-minute aggregation granularity with resource-level dimensions only. Self-hosted Redis exposes raw INFO output that the OTel redisreceiver scrapes every poll interval, producing per-key and per-database metrics that Azure Monitor does not surface. Pick the azure_monitor approach when running PaaS Cache for Redis. Pick the redisreceiver approach when running Redis on a VM, in a container, in Kubernetes, or on-premises. Both pipelines can coexist if you operate hybrid deployments."}},{"@type":"Question","name":"Why is my Cache for Redis hit rate under 50% on a freshly-deployed cache?","acceptedAnswer":{"@type":"Answer","text":"Cold-cache misses dominate the first traffic window after a deploy because every key is a miss until the application has populated the working set. Hit rate climbs as keys are written and read back. Wait for at least 10 to 30 minutes of representative production traffic before reading the cachemissrate metric as an SLI. Sustained low hit rate after warm-up is a workload-fit signal: the application is asking for keys it never wrote (cache key drift) or TTLs are firing faster than the access pattern (TTL too aggressive)."}},{"@type":"Question","name":"How do I monitor the SKU connection cap on Basic versus Premium?","acceptedAnswer":{"@type":"Answer","text":"The connectedclients metric publishes both Average and Maximum aggregations. Alert on the Maximum approaching the SKU's documented cap: Basic C0 at 256, Basic C1 at 1000, Basic C2 at 2000, Standard C1 at 1000, Premium P1 at 7500 scaling up to 40000 on P5. Saturation manifests as MAX_CLIENTS_REACHED errors at the application layer; pre-saturation alerting on connectedclients_maximum at 80 percent of the SKU's documented cap gives time to scale the cache or pool clients before traffic fails. Look up the cap for your specific SKU when setting the threshold rather than assuming a single value."}},{"@type":"Question","name":"Should I run Cache for Redis Diagnostic Logs through this metrics collector?","acceptedAnswer":{"@type":"Answer","text":"No. Cache for Redis exposes two Diagnostic Settings categories - ConnectedClientList and MSEntraAuthenticationAuditLog - but both emit data only on Premium tier per Microsoft documentation. On Premium, the recommended pattern is Diagnostic Settings forwarding to Event Hubs with the azureeventhubreceiver ingesting events as OTel logs in the same collector. That fragment is documented separately. On Basic and Standard tiers, the categories are listed by the API but no log data is emitted, so wiring the log pipeline produces nothing useful. Stay with the metrics-only configuration in this guide unless you operate Premium fleets."}}]}
 ---
 
 ## Overview
 
 This guide is the **execution playbook** for Azure Cache for Redis. For
 the cross-surface architecture (auth, push vs pull, latency, the trace
-gap), read [Azure Monitoring with OpenTelemetry — Architecture for
+gap), read [Azure Monitoring with OpenTelemetry - Architecture for
 base14 Scout](./overview.md) first.
 
 This guide is for engineers running Azure Cache for Redis (PaaS) in
@@ -40,7 +40,7 @@ Collector and ship it to base14 Scout. The collector polls Azure
 Monitor's REST API for `Microsoft.Cache/Redis` metrics every 60
 seconds, emits OTel metric series, and exports via OTLP/HTTP. The
 receiver does not connect to the cache on port 6380 and does not need
-the primary access key — it queries Azure Monitor for whatever your
+the primary access key - it queries Azure Monitor for whatever your
 cache auto-publishes.
 
 The receiver does not connect to Redis directly. It queries Azure
@@ -72,9 +72,9 @@ Premium and Enterprise.
 | Listener | TLS connection accept, primary-key auth, optional Entra-ID auth on Premium. |
 | Command engine | Per-command counters split by command class (GET, SET), hit/miss counters, evictions, expirations. |
 | Memory subsystem | Used memory bytes + percentage, RSS bytes, eviction events when `maxmemory` trips. |
-| CPU subsystem | `serverLoad` — Redis is single-threaded, so this approximates per-core CPU saturation. |
+| CPU subsystem | `serverLoad` - Redis is single-threaded, so this approximates per-core CPU saturation. |
 
-The receiver does not see per-key or per-database breakdowns — Azure
+The receiver does not see per-key or per-database breakdowns - Azure
 Monitor publishes coarse aggregates. For per-key drill-down on
 Premium, ship logs via Diagnostic Settings.
 
@@ -92,7 +92,7 @@ feature availability, which in turn gates which metrics emit data.
 
 The receiver configuration is identical across Basic, Standard, and
 Premium (all under `Microsoft.Cache/Redis`). Tier-gated metrics that
-the resource does not publish simply emit no data points — there is
+the resource does not publish simply emit no data points - there is
 no error and no zero-valued series. The whitelist below intersects
 what every tier publishes; expand it for Premium fleets by adding
 geo-replication and persistence metrics from §[Premium-tier
@@ -178,7 +178,7 @@ service:
 ```
 
 The `service.name` env var should match what your alert routing
-expects — `cache-for-redis-monitor` is a reasonable default. The
+expects - `cache-for-redis-monitor` is a reasonable default. The
 receiver emits 21 OTel series from the 16 whitelist entries (5
 metrics are dual-aggregation Average + Maximum, producing two series
 each).
@@ -199,10 +199,10 @@ az role assignment create \
 
 Two propagation delays apply after first assignment:
 
-1. **Control-plane RBAC propagation** — typically 60-300 seconds before
+1. **Control-plane RBAC propagation** - typically 60-300 seconds before
    the receiver's `metricDefinitions` and `metrics` REST calls succeed.
    The receiver retries on its 60-second poll cycle.
-2. **First-poll metric-definitions race** — Azure Monitor's
+2. **First-poll metric-definitions race** - Azure Monitor's
    metricDefinitions catalog can take 60-180 seconds to populate after
    `provisioningState: Succeeded`. The receiver caches an empty list
    if it polls during that window. Mitigation: restart the scraper
@@ -258,12 +258,12 @@ emitted series in total.
   non-zero values as meaningful signal; treat near-zero on Basic /
   Standard as no-data-equivalent.
 - `evictedkeys` and `expiredkeys` are absolute counters that reset
-  only on Redis restart — graph them as derivatives (`$perSecond`) to
+  only on Redis restart - graph them as derivatives (`$perSecond`) to
   surface change rate.
 
 ## Cardinality control
 
-Cache for Redis emits resource-level dimensions only — no per-key,
+Cache for Redis emits resource-level dimensions only - no per-key,
 per-database, or per-shard breakdowns appear in metrics (Premium
 clustering produces per-shard splits via `metadata_shardid`, but
 that's the only built-in cardinality multiplier). The receiver
@@ -284,7 +284,7 @@ Standard (single-shard, no per-error split until errors fire).
 `metadata_errortype` adds up to ten per-type splits on `azure_errors_total`
 when the cache produces errors, taking steady state to ~30 datapoints
 per scrape per cache. Premium clusters with N shards multiply the
-single-shard total by N — a 10-shard P3 cluster lands at ~210 datapoints
+single-shard total by N - a 10-shard P3 cluster lands at ~210 datapoints
 per scrape per cache. Well within Scout's per-account default for
 fleets up to a few hundred caches.
 
@@ -336,7 +336,7 @@ Add them to the receiver whitelist when monitoring Premium fleets.
 | `connectedclients` (per shard) | Average + Maximum | Splits by `metadata_shardid`. |
 
 The receiver does not need configuration changes to handle the
-per-shard splits — `metadata_shardid` simply takes more values once
+per-shard splits - `metadata_shardid` simply takes more values once
 the cache is clustered. Existing dashboards and alerts that group by
 `metadata_shardid` work unchanged.
 
@@ -347,8 +347,8 @@ requires a separate receiver block. Out of scope for this guide.
 ## Apps-side instrumentation
 
 The metrics in this guide describe the cache itself. End-to-end
-visibility — application latency including cache lookup time, cache
-keys requested, miss-rate per code path — requires client-side OTel
+visibility - application latency including cache lookup time, cache
+keys requested, miss-rate per code path - requires client-side OTel
 instrumentation in the application. The OTel auto-instrumentation
 agents for Java, .NET, Python, Node.js, and Go all wrap the standard
 Redis client libraries (StackExchange.Redis, lettuce, redis-py,
@@ -526,7 +526,7 @@ Cache metrics describe the cache itself: `cacheLatency` on Premium
 (internal command-processing time), `serverLoad` on all tiers
 (saturation), `connectedclients_maximum` (cap pressure). Sustained
 high `serverLoad` plus rising `cacheLatency` means the cache is
-overloaded — scale up or pool clients differently. If cache metrics
+overloaded - scale up or pool clients differently. If cache metrics
 stay healthy but the application reports slow Redis calls, the
 bottleneck is between the application and the cache: TLS handshake
 overhead per connection (use connection pooling), DNS resolution
@@ -559,19 +559,19 @@ unify under one panel via Scout query overlays).
   tiers](https://azure.microsoft.com/pricing/details/cache/)
 - [opentelemetry-collector-contrib
   azuremonitorreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/azuremonitorreceiver)
-- [Self-hosted Redis component guide](../../component/redis.md) — the
+- [Self-hosted Redis component guide](../../component/redis.md) - the
   `redisreceiver` path for non-PaaS deployments.
 
 ## Related Guides
 
-- [Azure Monitoring with OpenTelemetry — Architecture](./overview.md) —
+- [Azure Monitoring with OpenTelemetry - Architecture](./overview.md) -
   start here for the cross-surface story.
-- [Self-hosted Redis](../../component/redis.md) — same metric vocabulary
+- [Self-hosted Redis](../../component/redis.md) - same metric vocabulary
   via the `redisreceiver` for VM, container, or on-prem deployments.
-- [Azure Cosmos DB](./cosmos-db.md) — sibling data-plane PaaS;
-  identical auth pattern.
-- [Azure SQL Database](./sql-database.md) — also a delta on a
-  shipped self-hosted component doc; bidirectional cross-link
-  precedent.
-- [Azure Service Bus](./service-bus.md) — sibling messaging surface;
-  identical auth pattern.
+- [Azure Cosmos DB](./cosmos-db.md) - globally-distributed multi-model
+  NoSQL database.
+- [Azure SQL Database](./sql-database.md) - managed relational database.
+  Pairs with the self-hosted
+  [SQL Server guide](../../component/sqlserver.md).
+- [Azure Service Bus](./service-bus.md) - managed message broker for
+  queues and topics.

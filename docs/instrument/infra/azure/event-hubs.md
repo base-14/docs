@@ -64,7 +64,7 @@ they solve different problems. Pick by workload, not by metric overlap.
 | Use cases | Telemetry pipelines, event sourcing, stream processing | Transactional messaging, work distribution, request/reply |
 | Compatible with | Apache Kafka clients (Standard+) | AMQP 1.0 + REST + .NET / Java SDKs |
 
-For the queueing surface, see the sister guide
+For the queueing surface, see
 [Azure Service Bus](./service-bus.md). The receiver configuration is
 nearly identical between the two; only the resource type and the metric
 whitelist change.
@@ -76,7 +76,7 @@ which in turn gates which metrics emit data.
 
 | Tier | Throughput / quotas | Capture | Retention | Consumer groups | Metric coverage |
 | --- | --- | --- | --- | --- | --- |
-| **Basic** | 1-20 TUs (1 MB/s ingress, 2 MB/s egress per TU) | No | Max 1 day | `$Default` only — user-created groups rejected | 14 of 17 (all except Capture). `OutgoingMessages` and `OutgoingBytes` need an active consumer to emit. |
+| **Basic** | 1-20 TUs (1 MB/s ingress, 2 MB/s egress per TU) | No | Max 1 day | `$Default` only - user-created groups rejected | 14 of 17 (all except Capture). `OutgoingMessages` and `OutgoingBytes` need an active consumer to emit. |
 | **Standard** | 1-20 TUs, same per-TU envelope | Yes (to Blob Storage / Data Lake) | Max 7 days | Up to 20 user-created | All 17 in this guide's whitelist |
 | **Premium** | Dedicated capacity units (CUs); per-CU envelope independent of TUs | Yes | Max 90 days | Up to 1,000 | All 17 + 4 Premium-only (`NamespaceCpuUsage`, `NamespaceMemoryUsage`, `ReplicationLagCount`, `ReplicationLagDuration`) |
 | **Dedicated** | Reserved cluster; multiple Premium namespaces share a cluster | Yes | Max 90 days | Up to 1,000 per namespace | Same as Premium |
@@ -147,7 +147,7 @@ receivers:
         UserErrors: [Total]
         ThrottledRequests: [Total]
         QuotaExceededErrors: [Total]
-        # Connections — Maximum aggregation only for Opened/Closed.
+        # Connections - Maximum aggregation only for Opened/Closed.
         ActiveConnections: [Average]
         ConnectionsOpened: [Maximum]
         ConnectionsClosed: [Maximum]
@@ -199,16 +199,16 @@ subscriptions. See [Scale and rate limits](#scale-and-rate-limits).
 
 Pick the `azure_auth` mode for where the collector runs:
 
-- **AKS pod** — `workload_identity` (federated credential, no secret).
-- **Container Apps / VMSS / Azure VM** — `managed_identity` (user-assigned
+- **AKS pod** - `workload_identity` (federated credential, no secret).
+- **Container Apps / VMSS / Azure VM** - `managed_identity` (user-assigned
   survives instance replacement).
-- **External or on-prem** — `service_principal`.
-- **Local dev only** — `use_default: true` (Azure SDK credential chain).
+- **External or on-prem** - `service_principal`.
+- **Local dev only** - `use_default: true` (Azure SDK credential chain).
 
 Grant `Monitoring Reader` at the resource group containing your namespaces.
 For mode-by-mode YAML, federation-credential setup, and the
 `az role assignment create` snippet, see
-[Azure Service Bus § Authentication](./service-bus.md#authentication) —
+[Azure Service Bus § Authentication](./service-bus.md#authentication) -
 the configuration is identical except for the receiver's `services:` line
 and the resource processor's `cloud.platform` value.
 
@@ -236,7 +236,7 @@ OTel-style `azure_<lowercased>_<aggregation>` (e.g.
 | `ThrottledRequests` | `azure_throttledrequests_total` | Count | TU ceiling hit. *Silent-when-quiet.* |
 | `QuotaExceededErrors` | `azure_quotaexceedederrors_total` | Count | Per-event-hub or per-message size / partition / send-quota breaches. *Silent-when-quiet.* |
 | `ActiveConnections` | `azure_activeconnections_average` | Count | AMQP / Kafka connection count to the namespace. |
-| `ConnectionsOpened` | `azure_connectionsopened_maximum` | Count | New connections established per poll. *Maximum-only aggregation* — `[Total]` silently emits nothing. |
+| `ConnectionsOpened` | `azure_connectionsopened_maximum` | Count | New connections established per poll. *Maximum-only aggregation* - `[Total]` silently emits nothing. |
 | `ConnectionsClosed` | `azure_connectionsclosed_maximum` | Count | Connections closed per poll. *Maximum-only aggregation.* |
 | `Size` | `azure_size_average` | Bytes | Bytes stored in the event hub. Pair with retention envelope. |
 | `CapturedMessages` | `azure_capturedmessages_total` | Count | Messages archived by Capture. *Standard+ feature.* |
@@ -288,7 +288,7 @@ Azure Monitor enforces two ceilings:
 At a 60-second collection interval, a single resource costs roughly 60
 calls per hour (one per metric per poll, deduplicated within the receiver).
 A 50-namespace fleet running on legacy `/metrics` consumes ~3,000 calls
-per hour — well within the 12k ceiling. Above ~150 namespaces per
+per hour - well within the 12k ceiling. Above ~150 namespaces per
 subscription, switch to `use_batch_api: true` to lift the per-subscription
 ceiling and benefit from batched fan-out.
 
@@ -320,7 +320,7 @@ once per namespace regardless of event-hub count.
 
 A worked example: 5 namespaces × 2 event hubs each ≈ 5 × (5 + 12 × 2)
 = 145 series before any `OperationResult` fan-out on the error
-counters. Partitions do not contribute extra series — partition is
+counters. Partitions do not contribute extra series - partition is
 exposed via the SDK consumer-group offsets, not at the Azure Monitor
 namespace level.
 
@@ -444,13 +444,13 @@ Hubs itself.
 
 A separate receiver, **`azureeventhubreceiver`**, ingests **the events
 themselves** as OTel logs or traces into the collector pipeline. That is
-a different workflow — typically used for Diagnostic Settings logs
+a different workflow - typically used for Diagnostic Settings logs
 forwarded from another Azure surface (Service Bus, Storage, AKS) into an
 Event Hub for centralised processing. It is covered separately, not in
 this guide.
 
-If you want both — metrics about Event Hubs and event-data ingestion via
-Event Hubs — run both receivers in the same collector. They do not
+If you want both - metrics about Event Hubs and event-data ingestion via
+Event Hubs - run both receivers in the same collector. They do not
 interact.
 
 ## Apps-side instrumentation
@@ -483,9 +483,9 @@ separately filterable in Scout.
 
 Two destinations, two purposes:
 
-- **Log Analytics workspace** (`--workspace`) — for ad-hoc query in the
+- **Log Analytics workspace** (`--workspace`) - for ad-hoc query in the
   Azure Portal or Log Analytics. Not in the Scout pipeline.
-- **Event Hubs** (`--event-hub-rule`) — for OTel ingest via the
+- **Event Hubs** (`--event-hub-rule`) - for OTel ingest via the
   `azureeventhubreceiver` into the same collector. Architecture in the
   [overview](./overview.md#choosing-pull-push-or-both).
 
@@ -527,7 +527,7 @@ role itself is correct.
 Azure Monitor's metric-definition catalogue can lag a few minutes behind
 namespace provisioning. The receiver caches a zero-count for the
 `cache_resources` interval (default 86400 / 24 h) and stops re-discovering
-within that window — symptom: receiver scrapes successfully but emits
+within that window - symptom: receiver scrapes successfully but emits
 zero metric points. **Workaround:** restart the collector once after the
 namespace reaches `provisioningState=Succeeded`. This resets the
 discovery cache. Tracked upstream as
@@ -537,7 +537,7 @@ discovery cache. Tracked upstream as
 
 There is no consumer reading from the event hub. Azure Monitor only
 emits points for these metrics when a consumer is actively pulling.
-Producer-only validation runs are expected to see them silent — this is
+Producer-only validation runs are expected to see them silent - this is
 not a bug. Add a consumer (apps-side instrumentation) to drive the
 metrics.
 
@@ -654,18 +654,18 @@ azureauthextension](https://github.com/open-telemetry/opentelemetry-collector-co
 metrics](https://learn.microsoft.com/azure/azure-monitor/reference/supported-metrics/microsoft-eventhub-namespaces-metrics).
 - **Runnable example.**
   [`examples/components/azure-event-hubs-telemetry/`](https://github.com/base-14/examples/tree/main/components/azure-event-hubs-telemetry)
-  — Bicep + provisioning wrappers + Python traffic generator.
+  - Bicep + provisioning wrappers + Python traffic generator.
 
 ## Related Guides
 
-- [Azure Service Bus](./service-bus.md) — sister guide; the queueing
-  surface. Same `azure_monitor` receiver pattern, different resource type
-  and metric set.
-- [Azure Monitoring with OpenTelemetry — Architecture](./overview.md) —
+- [Azure Service Bus](./service-bus.md) - managed message broker for
+  queues and topics. Pick Service Bus for transactional messaging and
+  work distribution; pick Event Hubs for high-throughput partitioned
+  streaming.
+- [Azure Monitoring with OpenTelemetry - Architecture](./overview.md) -
   cross-surface architecture for the Azure track.
-- [Azure Storage](./storage.md) — multi-namespace receiver pattern
-  (blob/queue/table/file).
-- [Azure Cosmos DB](./cosmos-db.md) — single-namespace receiver, NoSQL
-  request/throughput metrics.
-- [Azure SQL Database](./sql-database.md) — single-namespace receiver,
-  DTU/vCore-based capacity metrics.
+- [Azure Storage](./storage.md) - managed object/blob/queue/table/file
+  storage.
+- [Azure Cosmos DB](./cosmos-db.md) - globally-distributed multi-model
+  NoSQL database.
+- [Azure SQL Database](./sql-database.md) - managed relational database.
