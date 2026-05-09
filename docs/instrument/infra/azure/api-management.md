@@ -89,6 +89,7 @@ feature availability, which in turn gates which metrics emit data.
 
 The receiver configuration is identical across tiers. Tier-gated
 metrics that the resource does not publish simply emit no data points
+
 - there is no error and no zero-valued series. The whitelist below
 intersects what every tier publishes; expand it for Developer and
 above by adding `Capacity` + `CpuPercent_Gateway` + `MemoryPercent_Gateway`.
@@ -666,7 +667,8 @@ unified at query time.
 
 - [Azure Monitoring with OpenTelemetry - Architecture](./overview.md) -
   start here for the cross-surface story.
-- [Azure Service Bus](./service-bus.md) - managed message broker for queues and topics.
+- [Azure Service Bus](./service-bus.md) - managed message broker for
+  queues and topics.
 - [Azure Front Door](./front-door.md) - global edge in front of APIM;
   pair both for a full edge-to-origin view.
 - [Azure Application Gateway](./application-gateway.md) - regional load

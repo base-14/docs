@@ -503,6 +503,7 @@ minutes after `az network lb create` completes). The restart resets
 the discovery cache. To verify recovery, look for
 `metrics_definitions_count: <N>` with `N > 0` on the next poll cycle.
 If `N` is still `0`, Azure Monitor's catalogue has not populated yet
+
 - wait 2-3 minutes and restart again.
 
 If restarting the collector is operationally heavy, the alternatives

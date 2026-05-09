@@ -665,9 +665,11 @@ metrics](https://learn.microsoft.com/azure/azure-monitor/reference/supported-met
 
 ## Related Guides
 
-- [Azure Application Gateway](./application-gateway.md) - regional L7 load balancer with WAF v2.
+- [Azure Application Gateway](./application-gateway.md) - regional L7
+  load balancer with WAF v2.
 - [Azure Front Door](./front-door.md) - global CDN and L7 edge with WAF.
 - [Azure Load Balancer](./load-balancer.md) - L4 network load balancer.
-- [Azure Service Bus](./service-bus.md) - managed message broker for queues and topics.
+- [Azure Service Bus](./service-bus.md) - managed message broker for
+  queues and topics.
 - [Azure Storage](./storage.md) - managed object/blob/queue/table/file storage.
 - [Azure Kubernetes Service](./aks.md) - managed Kubernetes.

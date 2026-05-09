@@ -292,7 +292,7 @@ Duration (`ServiceApiLatency`).
 | **Auth failures (data plane)** | `$increase(azure_serviceapiresult_total{metadata_statuscode='401', metadata_activityname!='authentication'})` | > 0 / 5m | > 0 / 1m | Excludes the expected `authentication`/401 noise. Real 401s on `secret*` / `key*` operations indicate stale credentials or revoked role assignments. |
 | **Forbidden (RBAC denial)** | `$increase(azure_serviceapiresult_total{metadata_statuscode='403'})` | > 0 / 5m | > 5 / 1m | A caller has a token but lacks the required data-plane role. Indicates either misconfigured role assignment or attempted privilege escalation. |
 | **Throttled (429)** | `$increase(azure_serviceapiresult_total{metadata_statuscode='429'})` | > 0 / 5m | > 0 / 1m | Rate limit hit. Correlates with `SaturationShoebox` rising; if SaturationShoebox is healthy but 429s appear, suspect a single client burst rather than steady traffic. |
-| **Latency p95 (proxy via Maximum)** | `azure_serviceapilatency_maximum` | > 100 / 5m | > 500 / 5m | Milliseconds. Maximum approximates p95-p99 for the 1-min aggregation window. KV is normally <10ms; spikes above 100ms indicate Azure-side issues. |
+| **Latency p95 (proxy via Maximum)** | `azure_serviceapilatency_maximum` | > 100 / 5m | > 500 / 5m | Milliseconds. Maximum approximates p95-p99 for the 1-min aggregation window. KV is normally `<10ms`; spikes above 100ms indicate Azure-side issues. |
 | **Availability dip** | `azure_availability_average < 100` | < 99% / 5m | < 95% / 5m | Microsoft's external probe. Sustained sub-100% indicates an active vault incident. |
 | **Server errors** | `$increase(azure_serviceapiresult_total{metadata_statuscodeclass='5xx'})` | > 0 / 5m | > 5 / 1m | Azure-side failures. Page platform on-call. |
 
@@ -584,7 +584,7 @@ audit on AWS uses CloudTrail rather than CloudWatch, which is the
 direct analogue to Azure's AuditEvent path through Diagnostic
 Settings.
 
-### Should I deploy this collector inside the VNet that hosts my private-endpoint Key Vault?
+### Should the collector run inside my private-endpoint Key Vault's VNet?
 
 If your vault uses Private Endpoints and disables public network
 access, the collector needs network reachability to Azure Monitor's
