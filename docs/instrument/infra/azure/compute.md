@@ -28,7 +28,7 @@ head:
   - - script
     - type: application/ld+json
     - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I monitor Azure VMs, VMSS, and Managed Disks with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Add the azure_auth extension and a single azure_monitor receiver with three namespaces under services - Microsoft.Compute/virtualMachines, Microsoft.Compute/virtualMachineScaleSets, and Microsoft.Compute/disks - route the receiver into a metrics pipeline that exports to Scout via the oauth2client-authenticated OTLP/HTTP exporter, and grant the collector's service principal Monitoring Reader at the resource group containing your Compute resources. The receiver polls Azure Monitor every 60 seconds. The whitelist below covers what every modern Linux and Windows VM SKU emits at the resource level (CPU, network, disk, memory). Guest-OS-level metrics beyond what Azure publishes (per-process CPU, memory beyond Available Memory Bytes, custom counters) require an in-guest agent and are out of scope for this guide."}},{"@type":"Question","name":"Why does my Compute receiver discover more disks than I provisioned?","acceptedAnswer":{"@type":"Answer","text":"Every Azure VM has an implicit OS disk that Azure surfaces as a Microsoft.Compute/disks resource even though customers usually never declare it explicitly in their templates. The receiver scrapes it alongside any data disks you attached. Expect resources_count to be (data disks + 1 per VM) when scoping to Compute namespaces. Filter or scope per-RG if a multi-VM RG produces too many OS disk series; alternatively, drop Microsoft.Compute/disks from the services list entirely and rely on VM-level Disk Read Bytes / Disk Write Bytes for guest-I/O volume."}},{"@type":"Question","name":"What's the difference between resource-level and guest-OS metrics?","acceptedAnswer":{"@type":"Answer","text":"Azure's resource-level metrics (Percentage CPU, Network In Total, Disk Read Bytes, etc.) are published by the Azure platform without any in-guest agent and are what the azure_monitor receiver in this guide collects. Guest-OS metrics (per-process CPU, memory beyond Available Memory Bytes, custom Linux performance counters, Windows perf counters) require either Azure Monitor Agent (AMA) plus a Data Collection Rule or an in-guest OpenTelemetry collector running hostmetricsreceiver. AMA is Azure-native; hostmetricsreceiver is OTel-native and ships directly via OTLP. Both are out of scope for this guide; the resource-level signal here is sufficient for capacity, throttling, and SLO work on standard SKUs."}},{"@type":"Question","name":"How do I audit Compute control-plane operations?","acceptedAnswer":{"@type":"Answer","text":"Compute resources don't expose per-resource Diagnostic Settings categories like Storage or Key Vault do. The audit signal lives in the subscription-scope Activity Log instead. Configure a subscription Diagnostic Setting forwarding the Administrative category to an Event Hubs hub, then point the azure_event_hub receiver at the hub. Apply a collector-side filter processor scoped to cloud.resource_id matching Microsoft.Compute so unrelated subscription activity is dropped. Subscription-scope routing is slower than resource-scope (10-40 min for first batch versus 5-15 min for resource-scope) so audit visibility is not real-time. Use Microsoft Defender for Cloud or Azure Sentinel for real-time control-plane security monitoring; the OTel path in this guide is appropriate for retention, compliance reporting, and forensic analysis."}},{"@type":"Question","name":"Why does my filter processor drop most subscription Activity Log records?","acceptedAnswer":{"@type":"Answer","text":"The subscription Activity Log captures every resource provider in your sub - Microsoft.Compute, Microsoft.Network, Microsoft.Storage, Microsoft.KeyVault, and so on - while the filter in this guide passes only Microsoft.Compute records. On a multi-resource subscription it is normal to see drop ratios of 70-95 percent. Even on a Compute-only subscription, VMSS scaling implicitly creates and deletes Microsoft.Network NICs and Public IPs, which produce records the filter drops. To broaden the filter, add resource providers to the regex (Microsoft.Compute|Microsoft.Network); to narrow it further, scope by operationName via an additional rule. The filter must reference resource.attributes[\"cloud.resource_id\"] not log-record attributes, because the receiver places the resource ID on the resource attributes set under format: azure with apply_semantic_conventions: true."}},{"@type":"Question","name":"Should I scrape per-VMSS-instance metrics?","acceptedAnswer":{"@type":"Answer","text":"Not by default. The Microsoft.Compute/virtualMachineScaleSets/virtualMachines sub-namespace exposes per-instance metrics with the same names as the VM and VMSS namespaces, but cardinality fans out as one extra series per instance per metric. A 50-instance VMSS with the 8-metric whitelist produces 400 extra series per scrape just from per-instance views. The bundle-level VMSS aggregate (this guide's default) is sufficient for capacity work; per-instance scrape is meaningful only when you suspect heterogeneous behaviour across instances (one instance hot, others idle), in which case enable it for the affected VMSS and drop it again once the investigation closes. Add Microsoft.Compute/virtualMachineScaleSets/virtualMachines to services to enable; keep an eye on receiver scrape duration."}}]}
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I monitor Azure VMs, VMSS, and Managed Disks with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Add the azure_auth extension and a single azure_monitor receiver with three namespaces under services - Microsoft.Compute/virtualMachines, Microsoft.Compute/virtualMachineScaleSets, and Microsoft.Compute/disks - route the receiver into a metrics pipeline that exports to Scout via the oauth2client-authenticated OTLP/HTTP exporter, and grant the collector's service principal Monitoring Reader at the resource group containing your Compute resources. The receiver polls Azure Monitor every 60 seconds. The whitelist below covers what every modern Linux and Windows VM SKU emits at the resource level (CPU, network, disk, memory). Guest-OS-level metrics beyond what Azure publishes (per-process CPU, memory beyond Available Memory Bytes, custom counters) require an in-guest agent and are out of scope for this guide."}},{"@type":"Question","name":"Why does my Compute receiver discover more disks than I provisioned?","acceptedAnswer":{"@type":"Answer","text":"Every Azure VM has an implicit OS disk that Azure surfaces as a Microsoft.Compute/disks resource even though customers usually never declare it explicitly in their templates. The receiver scrapes it alongside any data disks you attached. Expect resources_count to be (data disks + 1 per VM) when scoping to Compute namespaces. Filter or scope per-RG if a multi-VM RG produces too many OS disk series; alternatively, drop Microsoft.Compute/disks from the services list entirely and rely on VM-level Disk Read Bytes / Disk Write Bytes for guest-I/O volume."}},{"@type":"Question","name":"What's the difference between resource-level and guest-OS metrics?","acceptedAnswer":{"@type":"Answer","text":"Azure's resource-level metrics (Percentage CPU, Network In Total, Disk Read Bytes, etc.) are published by the Azure platform without any in-guest agent and are what the azure_monitor receiver in this guide collects. Guest-OS metrics (per-process CPU, memory beyond Available Memory Bytes, custom Linux performance counters, Windows perf counters) require either Azure Monitor Agent (AMA) plus a Data Collection Rule or an in-guest OpenTelemetry collector running hostmetricsreceiver. AMA is Azure-native; hostmetricsreceiver is OTel-native and ships directly via OTLP. Both are out of scope for this guide; the resource-level signal here is sufficient for capacity, throttling, and SLO work on standard SKUs."}},{"@type":"Question","name":"How do I audit Compute control-plane operations?","acceptedAnswer":{"@type":"Answer","text":"Compute resources don't expose per-resource Diagnostic Settings categories like Storage or Key Vault do. The audit signal lives in the subscription-scope Activity Log instead. Configure a subscription Diagnostic Setting forwarding the Administrative category to an Event Hubs hub, then point the azure_event_hub receiver at the hub. Apply a collector-side filter processor scoped to cloud.resource_id matching Microsoft.Compute so unrelated subscription activity is dropped. Subscription-scope routing is slower than resource-scope (10-40 min for first batch versus 5-15 min for resource-scope) so audit visibility is not real-time. Use Microsoft Defender for Cloud or Azure Sentinel for real-time control-plane security monitoring; the OTel path in this guide is appropriate for retention, compliance reporting, and forensic analysis."}},{"@type":"Question","name":"Why does my filter processor drop most subscription Activity Log records?","acceptedAnswer":{"@type":"Answer","text":"The subscription Activity Log captures every resource provider in your sub - Microsoft.Compute, Microsoft.Network, Microsoft.Storage, Microsoft.KeyVault, and so on - while the filter in this guide passes only Microsoft.Compute records. On a multi-resource subscription it is normal to see drop ratios of 70-95 percent. Even on a Compute-only subscription, VMSS scaling implicitly creates and deletes Microsoft.Network NICs and Public IPs, which produce records the filter drops. To broaden the filter, add resource providers to the regex (Microsoft.Compute|Microsoft.Network); to narrow it further, scope by operationName via an additional rule. The filter must reference resource.attributes[\"cloud.resource_id\"] not log-record attributes, because the receiver places the resource ID on the resource attributes set under format: azure with apply_semantic_conventions: true."}},{"@type":"Question","name":"Should I scrape per-VMSS-instance metrics?","acceptedAnswer":{"@type":"Answer","text":"Not by default. The Microsoft.Compute/virtualMachineScaleSets/virtualMachines sub-namespace exposes per-instance metrics with the same names as the VM and VMSS namespaces, but cardinality fans out as one extra series per instance per metric. A 50-instance VMSS with the 8-metric whitelist produces 400 extra series per scrape just from per-instance views. The VMSS-resource-level aggregate (this guide's default) is sufficient for capacity work; per-instance scrape is meaningful only when you suspect heterogeneous behaviour across instances (one instance hot, others idle), in which case enable it for the affected VMSS and drop it again once the investigation closes. Add Microsoft.Compute/virtualMachineScaleSets/virtualMachines to services to enable; keep an eye on receiver scrape duration."}}]}
 ---
 
 ## Overview
@@ -74,7 +74,7 @@ receiver fed from a **subscription-scope** Diagnostic Setting. See
 
 ## Compute resources at a glance
 
-The three resource types in this guide form an operational bundle:
+The three resource types in this guide are typically monitored together:
 
 | Resource type | What it is | Why monitor it together |
 | --- | --- | --- |
@@ -228,13 +228,14 @@ control](#cardinality-control) for the math.
 > globally if your fleet is mixed.
 >
 > **No fixed `cloud.resource_id` on the resource processor.** Unlike
-> single-resource fragments (Key Vault, Storage), the bundle here scrapes
-> three different resource types (VM + VMSS + Disk). The receiver
-> auto-injects `azuremonitor.resource_id` on each datapoint with the
-> correct per-resource ID; hard-coding `cloud.resource_id` from a single
-> env var would tag every series with the same ID and break per-resource
-> splitting downstream. Leave it off the resource processor for this
-> bundle.
+> single-resource-type fragments (Key Vault, Storage), this guide
+> scrapes three different resource types (VM + VMSS + Disk) under one
+> receiver. The receiver auto-injects `azuremonitor.resource_id` on
+> each datapoint with the correct per-resource ID; hard-coding
+> `cloud.resource_id` from a single env var would tag every series
+> with the same ID and break per-resource splitting downstream. Leave
+> it off the resource processor when the receiver covers more than
+> one resource type.
 
 ## Authentication and RBAC
 
@@ -279,10 +280,10 @@ The 20-metric whitelist intersects what every Linux and Windows VM
 SKU emits at the resource level. `Percentage CPU` is dual-aggregation
 on both VM and VMSS namespaces (`Average` + `Maximum`), producing two
 series. The other metrics are single-aggregation. After OTel-side
-renaming the bundle emits **13 unique metric names** (the VM and VMSS
-namespaces share names like `azure_percentage_cpu_average`; the receiver
-keeps them separate via the per-datapoint `azuremonitor.resource_id`
-attribute).
+renaming the receiver emits **13 unique metric names** (the VM and
+VMSS namespaces share names like `azure_percentage_cpu_average`; the
+receiver keeps the data points separate via the per-datapoint
+`azuremonitor.resource_id` attribute).
 
 ### VMs (`Microsoft.Compute/virtualMachines`)
 
@@ -614,7 +615,7 @@ create`. Three flag-name differences from resource-scope:
 
 ```bash
 az monitor diagnostic-settings subscription create \
-  --name compute-bundle-activity \
+  --name compute-activity \
   --location global \
   --event-hub-name "$EVENT_HUB_NAME" \
   --event-hub-auth-rule "$DIAG_SEND_RULE_ARM_ID" \
@@ -793,7 +794,7 @@ the first batch on a 10-40 minute cadence, slower than the
 resource-scope 5-20 minutes. Fix: wait. Subsequent batches arrive in
 5-15 minutes per Azure's documented cadence. Verify the Diagnostic
 Setting is configured correctly with
-`az monitor diagnostic-settings subscription show --name compute-bundle-activity`.
+`az monitor diagnostic-settings subscription show --name compute-activity`.
 
 ### Filter processor drops all log records
 
@@ -908,7 +909,7 @@ sub-namespace exposes per-instance metrics with the same names as the
 VM and VMSS namespaces, but cardinality fans out as one extra series
 per instance per metric. A 50-instance VMSS with the 8-metric
 whitelist produces 400 extra series per scrape just from per-instance
-views. The bundle-level VMSS aggregate (this guide's default) is
+views. The VMSS-resource-level aggregate (this guide's default) is
 sufficient for capacity work; per-instance scrape is meaningful only
 when you suspect heterogeneous behaviour across instances (one
 instance hot, others idle), in which case enable it for the affected
