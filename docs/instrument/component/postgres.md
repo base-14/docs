@@ -345,6 +345,10 @@ No write permissions are needed.
 
 - [PostgreSQL Advanced](./postgres-advanced.md)
   - Deeper query and table-level monitoring
+- [Azure Database for PostgreSQL](../infra/azure/database-for-postgresql.md) —
+  Managed Flex Server delta on this guide: Azure Monitor surface metrics,
+  `azure_pg_admin` grants, `pg_stat_statements` via Server Parameters, and
+  the Diagnostic Settings → Event Hubs logs path.
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md) —
   Advanced collector configuration
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
