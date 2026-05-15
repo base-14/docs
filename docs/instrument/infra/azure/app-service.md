@@ -21,7 +21,7 @@ head:
   - - script
     - type: application/ld+json
     - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I monitor Azure App Service with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Three instrumentation paths complement each other. Layer 1 (control-plane) uses azure_monitor against Microsoft.Web/sites, Microsoft.Web/serverFarms, and microsoft.insights/components. Layer 2 (APM) is your app emitting OTel directly via the SDK, or Application Insights auto-instrumentation. Layer 3 (logs) is azure_event_hub consuming Diagnostic Settings categories AppServiceHTTPLogs and AppServicePlatformLogs. Pick the layers based on what your app is wired to and what your debug-depth appetite is."}},{"@type":"Question","name":"What's the smallest App Service Plan that supports OpenTelemetry observability through Diagnostic Settings?","acceptedAnswer":{"@type":"Answer","text":"Basic B1 is the smallest tier that supports forwarding Diagnostic Settings to Event Hubs. Free F1 and Shared D1 reject Event Hubs as a Diagnostic Settings destination. B1 still supports HTTP file-system logging and all per-site metrics."}},{"@type":"Question","name":"Why are my Application Insights metrics empty in Scout even though the AI resource exists?","acceptedAnswer":{"@type":"Answer","text":"The microsoft.insights/components metric namespace exposes APM signals derived from log records your app pushes to Application Insights via the SDK. If your app emits OTel directly to Scout instead, these metrics will be empty. That is expected. Configure the AI connection string only if you want both AI-derived metrics and your direct OTel pipeline to coexist."}},{"@type":"Question","name":"What's the first-batch ship lag for App Service Diagnostic Settings?","acceptedAnswer":{"@type":"Answer","text":"Resource-scope Diagnostic Settings on App Service ship the first batch 5 to 15 minutes after the setting is attached and the site emits its first matching event. Steady-state batches arrive every 1 to 3 minutes after that. Budget at least 15 minutes before treating an empty Event Hubs partition as a failure."}},{"@type":"Question","name":"Does HealthCheckStatus emit without a configured health path?","acceptedAnswer":{"@type":"Answer","text":"No. App Service evaluates the health-check path you configure on the site every minute. If the path returns a non-200 response or is not configured, HealthCheckStatus reads zero or no data. Set siteConfig.healthCheckPath to a route your app actually serves, and verify with a curl probe before treating the metric as broken."}},{"@type":"Question","name":"Why does FileSystemUsage show no data at a 60-second collection interval?","acceptedAnswer":{"@type":"Answer","text":"FileSystemUsage emits at a 6-hour grain on the Azure Monitor catalog. A receiver polling at 60 seconds will not see it populate. Either run a second azuremonitorreceiver instance at PT6H interval scoped to FileSystemUsage, or drop the metric from the whitelist and rely on quota alerts in the Azure portal instead."}}]}
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I monitor Azure App Service with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Three instrumentation paths complement each other. Platform metrics use azure_monitor against Microsoft.Web/sites, Microsoft.Web/serverFarms, and microsoft.insights/components. App-side telemetry is your app emitting OTel directly via the SDK, or Application Insights auto-instrumentation. Resource logs are azure_event_hub consuming Diagnostic Settings categories AppServiceHTTPLogs and AppServicePlatformLogs. Pick the paths based on what your app is wired to and what your debug-depth appetite is."}},{"@type":"Question","name":"What's the smallest App Service Plan that supports OpenTelemetry observability through Diagnostic Settings?","acceptedAnswer":{"@type":"Answer","text":"Basic B1 is the smallest tier that supports forwarding Diagnostic Settings to Event Hubs. Free F1 and Shared D1 reject Event Hubs as a Diagnostic Settings destination. B1 still supports HTTP file-system logging and all per-site metrics."}},{"@type":"Question","name":"Why are my Application Insights metrics empty in Scout even though the AI resource exists?","acceptedAnswer":{"@type":"Answer","text":"The microsoft.insights/components metric namespace exposes APM signals derived from log records your app pushes to Application Insights via the SDK. If your app emits OTel directly to Scout instead, these metrics will be empty. That is expected. Configure the AI connection string only if you want both AI-derived metrics and your direct OTel pipeline to coexist."}},{"@type":"Question","name":"What's the first-batch ship lag for App Service Diagnostic Settings?","acceptedAnswer":{"@type":"Answer","text":"Resource-scope Diagnostic Settings on App Service ship the first batch 5 to 15 minutes after the setting is attached and the site emits its first matching event. Steady-state batches arrive every 1 to 3 minutes after that. Budget at least 15 minutes before treating an empty Event Hubs partition as a failure."}},{"@type":"Question","name":"Does HealthCheckStatus emit without a configured health path?","acceptedAnswer":{"@type":"Answer","text":"No. App Service evaluates the health-check path you configure on the site every minute. If the path returns a non-200 response or is not configured, HealthCheckStatus reads zero or no data. Set siteConfig.healthCheckPath to a route your app actually serves, and verify with a curl probe before treating the metric as broken."}},{"@type":"Question","name":"Why does FileSystemUsage show no data at a 60-second collection interval?","acceptedAnswer":{"@type":"Answer","text":"FileSystemUsage emits at a 6-hour grain on the Azure Monitor catalog. A receiver polling at 60 seconds will not see it populate. Either run a second azuremonitorreceiver instance at PT6H interval scoped to FileSystemUsage, or drop the metric from the whitelist and rely on quota alerts in the Azure portal instead."}}]}
 sidebar_position: 16
 ---
 
@@ -69,18 +69,18 @@ based on the table below.
 
 | Path | What it covers | What it costs | Setup |
 | --- | --- | --- | --- |
-| **Layer 1 - Control-plane metrics** (this guide) | Request rates and HTTP status distribution at the site; CPU / memory saturation at the plan; AI resource health. Per-site and per-plan resolution; minute-level grain. Does **not** see inside the app process. | Azure Monitor query cost: one query per metric per scrape (or one per resource with `use_batch_api: true`). At a 60s interval the daily cost runs in cents per site. | One Service Principal with `Monitoring Reader` on the resource group; one receiver block; one resource processor. |
-| **Layer 2 - APM telemetry from inside the app** (cross-link) | Per-request traces, custom spans, dependency calls, exception stack traces, custom business metrics. Code-line resolution; sub-second grain. Sees inside the app process. | Telemetry ingest cost into Scout (per-record). Latency added per span: low single-digit microseconds with the SDK; ~milliseconds with an auto-instrumentation agent. | OTel SDK in the app (vendor-neutral) **or** Application Insights SDK auto-instrumentation. Both ultimately need a wire-protocol export to Scout. See the apps-side guides linked from Related Guides. |
-| **Layer 3 - Diagnostic Settings logs** (this guide, §Logs below) | Per-request access log (URL, status, response time, client IP, request size, response size); deploy / restart / config-change / scale audit. Per-request resolution; sub-second grain. | One Event Hubs Basic namespace (~$11/mo at 1 TU; 1 MB/s ingress absorbs ~150 requests/second of typical HTTP log records). Plus the Diagnostic Setting itself is free. | One Diagnostic Setting on the site with the categories you care about; one Event Hubs namespace + hub + Send/Listen SAS rules; one `azure_event_hub` receiver fragment. |
+| **Platform metrics - Azure Monitor** (this guide) | Request rates and HTTP status distribution at the site; CPU / memory saturation at the plan; AI resource health. Per-site and per-plan resolution; minute-level grain. Does **not** see inside the app process. | Azure Monitor query cost: one query per metric per scrape (or one per resource with `use_batch_api: true`). At a 60s interval the daily cost runs in cents per site. | One Service Principal with `Monitoring Reader` on the resource group; one receiver block; one resource processor. |
+| **App-side telemetry - OTel SDK / App Insights** (cross-link) | Per-request traces, custom spans, dependency calls, exception stack traces, custom business metrics. Code-line resolution; sub-second grain. Sees inside the app process. | Telemetry ingest cost into Scout (per-record). Latency added per span: low single-digit microseconds with the SDK; ~milliseconds with an auto-instrumentation agent. | OTel SDK in the app (vendor-neutral) **or** Application Insights SDK auto-instrumentation. Both ultimately need a wire-protocol export to Scout. See the apps-side guides linked from Related Guides. |
+| **Resource logs - Diagnostic Settings → Event Hubs** (this guide, §Logs below) | Per-request access log (URL, status, response time, client IP, request size, response size); deploy / restart / config-change / scale audit. Per-request resolution; sub-second grain. | One Event Hubs Basic namespace (~$11/mo at 1 TU; 1 MB/s ingress absorbs ~150 requests/second of typical HTTP log records). Plus the Diagnostic Setting itself is free. | One Diagnostic Setting on the site with the categories you care about; one Event Hubs namespace + hub + Send/Listen SAS rules; one `azure_event_hub` receiver fragment. |
 
 ### Which path to pick
 
 Four decision criteria, in order of usual weight:
 
 1. **Is your app already wired to Application Insights?** If yes, AI is
-   the apps-side telemetry source already. Layer 1 is the **complement**
-   that adds site- and plan-level signals, not a replacement for the
-   apps-side data.
+   the apps-side telemetry source already. Platform metrics are the
+   **complement** that adds site- and plan-level signals, not a
+   replacement for the apps-side data.
 2. **Are you running one site per plan, or many?** Multi-site plans need
    both plan-level metrics (plan saturation tells you when the host runs
    out of CPU or memory) and per-site metrics (which app is the noisy
@@ -96,11 +96,11 @@ Four decision criteria, in order of usual weight:
    fine up to ~4k records/sec at ~250-byte average payload; above that,
    move to Standard 2-20 TU or enable only a subset of categories.
 
-If you're starting from zero, Layer 1 is the lowest-effort win and
-catches the broadest range of saturation incidents. Add Layer 3 when
-you need per-request distribution that aggregate metrics cannot give
-you. Add Layer 2 when you need code-line attribution for errors and
-slow requests.
+If you're starting from zero, platform metrics are the lowest-effort
+win and catch the broadest range of saturation incidents. Add
+resource logs when you need per-request distribution that aggregate
+metrics cannot give you. Add app-side telemetry when you need
+code-line attribution for errors and slow requests.
 
 ## What you'll monitor
 
@@ -171,10 +171,11 @@ worker reports them on a 60s heartbeat independent of HTTP traffic.
 > linked Log Analytics workspace via the Application Insights SDK. They
 > populate when your app is instrumented with the AI SDK using the
 > connection string you wired into `APPLICATIONINSIGHTS_CONNECTION_STRING`.
-> If your app emits OTel telemetry directly to Scout instead (Layer 2
-> path above), **these metrics will be empty - that is expected and not
-> a misconfiguration.** Treat this sub-table as the AI-SDK escape hatch
-> for teams not yet ready to cut over to direct OTel.
+> If your app emits OTel telemetry directly to Scout instead (the
+> app-side telemetry path above), **these metrics will be empty - that
+> is expected and not a misconfiguration.** Treat this sub-table as the
+> AI-SDK escape hatch for teams not yet ready to cut over to direct
+> OTel.
 
 | Metric | Aggregation | What it tells you |
 | --- | --- | --- |
@@ -459,7 +460,7 @@ Event Hubs sink.
 
 ### What logs uniquely fill
 
-Layer 1 metrics aggregate. Logs disaggregate. The gaps logs uniquely
+Platform metrics aggregate. Logs disaggregate. The gaps logs uniquely
 cover for App Service:
 
 - **Per-request distribution**: URL × method × status code × client
@@ -696,13 +697,13 @@ via `az rest --method post ... /listKeys` and reload the receiver.
 
 ### How do I monitor Azure App Service with OpenTelemetry?
 
-Three instrumentation paths complement each other. Layer 1
-(control-plane) uses `azure_monitor` against `Microsoft.Web/sites`,
+Three instrumentation paths complement each other. Platform metrics
+use `azure_monitor` against `Microsoft.Web/sites`,
 `Microsoft.Web/serverFarms`, and `microsoft.insights/components`.
-Layer 2 (APM) is your app emitting OTel directly via the SDK, or
-Application Insights auto-instrumentation. Layer 3 (logs) is
+App-side telemetry is your app emitting OTel directly via the SDK, or
+Application Insights auto-instrumentation. Resource logs are
 `azure_event_hub` consuming Diagnostic Settings categories
-`AppServiceHTTPLogs` and `AppServicePlatformLogs`. Pick the layers
+`AppServiceHTTPLogs` and `AppServicePlatformLogs`. Pick the paths
 based on what your app is wired to and what your debug-depth appetite
 is.
 
@@ -758,7 +759,7 @@ and rely on quota alerts in the Azure portal instead.
   `oauth2client` extension + `otlp_http/b14` exporter block shared by
   all Azure guides.
 
-### Apps-side instrumentation (Layer 2)
+### Apps-side instrumentation
 
 - [.NET Aspire](../../apps/auto-instrumentation/dotnet-aspire.md) - the
   canonical Microsoft path for new .NET 9 apps. Emits OTel by default.

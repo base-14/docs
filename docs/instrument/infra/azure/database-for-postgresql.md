@@ -1,12 +1,12 @@
 ---
 date: 2026-05-14
 id: collecting-azure-database-for-postgresql-telemetry
-title: Azure Database for PostgreSQL Monitoring with OpenTelemetry - Surface, In-DB, and Diagnostic Logs
+title: Azure Database for PostgreSQL Monitoring with OpenTelemetry - Platform Metrics, In-Database, and Resource Logs
 sidebar_label: Database for PostgreSQL
 description:
   Azure Database for PostgreSQL Flexible Server observability with
-  OpenTelemetry — surface metrics via azure_monitor, in-DB scrape via
-  postgresqlreceiver, and Diagnostic Settings logs via azure_event_hub.
+  OpenTelemetry — platform metrics via azure_monitor, in-database
+  scrape via postgresqlreceiver, and resource logs via azure_event_hub.
 keywords:
   - azure database for postgresql monitoring
   - azure postgres flexible server opentelemetry
@@ -20,7 +20,7 @@ head:
   - - script
     - type: application/ld+json
     - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I monitor Azure Database for PostgreSQL Flexible Server with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Three instrumentation paths complement each other. Layer 1 (control-plane) uses azure_monitor against Microsoft.DBforPostgreSQL/flexibleServers for resource saturation, connection counts, and network throughput. Layer 2 (in-DB) uses the OpenTelemetry postgresqlreceiver against the server's public FQDN over TLS for per-database stats, WAL activity, replication, and table-level counters. Layer 3 (logs) uses azure_event_hub consuming Diagnostic Settings categories PostgreSQLLogs and PostgreSQLFlexSessions for per-connection and per-query audit detail. Pick layers based on how deep the debug-attribution needs to go."}},{"@type":"Question","name":"Why does my monitoring user fail to read pg_stat_replication on Azure Flex Server?","acceptedAnswer":{"@type":"Answer","text":"On Azure Database for PostgreSQL Flexible Server, the pg_monitor role alone is not sufficient. You also need to GRANT azure_pg_admin to the monitoring user. The azure_pg_admin role unlocks SELECT on pg_stat_replication and a handful of azure_* views that the OTel postgresqlreceiver queries. Without it, the receiver logs a permission-denied warning and emits a partial metric set."}},{"@type":"Question","name":"How do I enable pg_stat_statements on Azure Database for PostgreSQL Flexible Server?","acceptedAnswer":{"@type":"Answer","text":"pg_stat_statements requires two Server Parameter changes plus a CREATE EXTENSION. First, set shared_preload_libraries to include pg_stat_statements via az postgres flexible-server parameter set or Bicep, which triggers a server restart. Second, add pg_stat_statements to the azure.extensions allowlist. Third, run CREATE EXTENSION pg_stat_statements against the target database. The first two steps are non-negotiable on Azure even though self-hosted Postgres only requires the CREATE EXTENSION step."}},{"@type":"Question","name":"Is backup_storage_used safe to alert on at a 60-second collection interval?","acceptedAnswer":{"@type":"Answer","text":"No. backup_storage_used emits at a PT1H native grain on Azure Monitor. A receiver polling at 60 seconds will see the metric populate once per hour and report no recent data for the other 59 cycles. Either run a second azuremonitorreceiver instance scoped to backup_storage_used with collection_interval set to 1h, or drop the metric from the whitelist and rely on the Azure portal backup-quota view instead."}},{"@type":"Question","name":"What's the first-batch ship lag for PostgreSQL Flex Server Diagnostic Settings?","acceptedAnswer":{"@type":"Answer","text":"Resource-scope Diagnostic Settings on Flex Server typically ship the first batch within Azure's documented 5-15 minute window on first attach. Steady-state batches arrive every 10 to 30 seconds after that. Budget at least 15 minutes before treating an empty Event Hubs partition as a failure."}},{"@type":"Question","name":"Why are PostgreSQLLogs slow-query records empty under my workload?","acceptedAnswer":{"@type":"Answer","text":"PostgreSQLLogs records slow queries only when they exceed log_min_duration_statement. Workloads with sub-second mean latency will see only DDL events, connection events, errors, autovacuum, and lock waits in the stream if the threshold is left at the 1000 ms reference value used in this guide. Lower it to 100 ms to capture sub-second slow queries, or set it to -1 to capture every statement (high volume; combine with sampling)."}}]}
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I monitor Azure Database for PostgreSQL Flexible Server with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Three instrumentation paths complement each other. Platform metrics use azure_monitor against Microsoft.DBforPostgreSQL/flexibleServers for resource saturation, connection counts, and network throughput. The in-database scrape uses the OpenTelemetry postgresqlreceiver against the server's public FQDN over TLS for per-database stats, WAL activity, replication, and table-level counters. Resource logs use azure_event_hub consuming Diagnostic Settings categories PostgreSQLLogs and PostgreSQLFlexSessions for per-connection and per-query audit detail. Pick paths based on how deep the debug-attribution needs to go."}},{"@type":"Question","name":"Why does my monitoring user fail to read pg_stat_replication on Azure Flex Server?","acceptedAnswer":{"@type":"Answer","text":"On Azure Database for PostgreSQL Flexible Server, the pg_monitor role alone is not sufficient. You also need to GRANT azure_pg_admin to the monitoring user. The azure_pg_admin role unlocks SELECT on pg_stat_replication and a handful of azure_* views that the OTel postgresqlreceiver queries. Without it, the receiver logs a permission-denied warning and emits a partial metric set."}},{"@type":"Question","name":"How do I enable pg_stat_statements on Azure Database for PostgreSQL Flexible Server?","acceptedAnswer":{"@type":"Answer","text":"pg_stat_statements requires two Server Parameter changes plus a CREATE EXTENSION. First, set shared_preload_libraries to include pg_stat_statements via az postgres flexible-server parameter set or Bicep, which triggers a server restart. Second, add pg_stat_statements to the azure.extensions allowlist. Third, run CREATE EXTENSION pg_stat_statements against the target database. The first two steps are non-negotiable on Azure even though self-hosted Postgres only requires the CREATE EXTENSION step."}},{"@type":"Question","name":"Is backup_storage_used safe to alert on at a 60-second collection interval?","acceptedAnswer":{"@type":"Answer","text":"No. backup_storage_used emits at a PT1H native grain on Azure Monitor. A receiver polling at 60 seconds will see the metric populate once per hour and report no recent data for the other 59 cycles. Either run a second azuremonitorreceiver instance scoped to backup_storage_used with collection_interval set to 1h, or drop the metric from the whitelist and rely on the Azure portal backup-quota view instead."}},{"@type":"Question","name":"What's the first-batch ship lag for PostgreSQL Flex Server Diagnostic Settings?","acceptedAnswer":{"@type":"Answer","text":"Resource-scope Diagnostic Settings on Flex Server typically ship the first batch within Azure's documented 5-15 minute window on first attach. Steady-state batches arrive every 10 to 30 seconds after that. Budget at least 15 minutes before treating an empty Event Hubs partition as a failure."}},{"@type":"Question","name":"Why are PostgreSQLLogs slow-query records empty under my workload?","acceptedAnswer":{"@type":"Answer","text":"PostgreSQLLogs records slow queries only when they exceed log_min_duration_statement. Workloads with sub-second mean latency will see only DDL events, connection events, errors, autovacuum, and lock waits in the stream if the threshold is left at the 1000 ms reference value used in this guide. Lower it to 100 ms to capture sub-second slow queries, or set it to -1 to capture every statement (high volume; combine with sampling)."}}]}
 sidebar_position: 17
 ---
 
@@ -47,22 +47,23 @@ sidebar_position: 17
 Azure Database for PostgreSQL Flexible Server is a managed PaaS
 PostgreSQL with public or VNet-integrated access, a fixed admin role,
 and a curated allowlist of extensions. Observability splits cleanly
-across three layers:
+across three paths:
 
-- **Layer 1 - control-plane metrics** via the `azure_monitor` receiver
-  against the `Microsoft.DBforPostgreSQL/flexibleServers` namespace.
-- **Layer 2 - in-DB stats** via the OpenTelemetry `postgresqlreceiver`
+- **Platform metrics** via the `azure_monitor` receiver against the
+  `Microsoft.DBforPostgreSQL/flexibleServers` namespace.
+- **In-database metrics** via the OpenTelemetry `postgresqlreceiver`
   connecting to the server's public FQDN over TLS. Identical receiver
   config to self-hosted Postgres; only the auth and TLS bits differ.
   See [self-hosted PostgreSQL](../../component/postgres.md) for the full
   receiver reference and metric definitions; this guide documents only
   the Azure-specific deltas.
-- **Layer 3 - Diagnostic Settings logs** via the `azure_event_hub`
-  receiver against a Diagnostic Settings → Event Hubs pipeline.
+- **Resource logs** via the `azure_event_hub` receiver against a
+  Diagnostic Settings → Event Hubs pipeline.
 
-This guide configures the L1 and L3 receivers in full and the L2
-deltas. The L2 receiver block itself, the full 33-metric list, and the
-collector pipeline structure live in the self-hosted Postgres guide.
+This guide configures the platform-metrics and resource-logs receivers
+in full and the in-database-scrape deltas. The in-database receiver
+block itself, the full 33-metric list, and the collector pipeline
+structure live in the self-hosted Postgres guide.
 
 ## Instrumentation paths for Flexible Server
 
@@ -71,9 +72,9 @@ below.
 
 | Path | What it covers | What it costs | Setup |
 | --- | --- | --- | --- |
-| **Layer 1 - Control-plane metrics** (this guide, §What you'll monitor) | Resource saturation (CPU, memory, IOPS, storage), connection lifecycle (active / failed / succeeded), network throughput, transaction-log volume, hourly backup floor. Per-server resolution; minute grain. Does **not** see inside the database. | Azure Monitor query cost: one query per metric per scrape. At a 60s interval the daily cost runs in cents per server. | One Service Principal with `Monitoring Reader` on the resource group; one receiver block; one resource processor. |
-| **Layer 2 - In-DB scrape** (this guide, §Layer 2; details cross-linked to self-hosted Postgres) | Per-database commits / rollbacks, tuple ops, WAL activity, replication lag, bgwriter health, index scans, table size, dead-tuple counts, lock contention. Per-database and per-table resolution; 10-second grain. Sees inside the database. | One `postgresqlreceiver` block in your collector; a dedicated monitoring user with `pg_monitor` + `azure_pg_admin` grants; an open TCP/5432 path from collector → server FQDN with TLS. | Bicep sets `shared_preload_libraries = pg_stat_statements` via Server Parameters; the monitoring user holds the two-role grant; the receiver hits the public FQDN over TLS. |
-| **Layer 3 - Diagnostic Settings logs** (this guide, §Logs below) | Per-connection and per-disconnection events (from `log_connections=on`, `log_disconnections=on`); slow queries above `log_min_duration_statement`; DDL audit (from `log_statement=ddl`); errors, lock waits, autovacuum runs. Per-record resolution; sub-second grain. | One Event Hubs Basic namespace (~$11/mo at 1 TU; 1 MB/s ingress absorbs roughly 4,000 records/sec at typical record size). The Diagnostic Setting itself is free. | One Diagnostic Setting on the server with the categories you care about; one Event Hubs namespace + hub + Send/Listen SAS rules; one `azure_event_hub` receiver fragment. |
+| **Platform metrics - Azure Monitor** (this guide, §What you'll monitor) | Resource saturation (CPU, memory, IOPS, storage), connection lifecycle (active / failed / succeeded), network throughput, transaction-log volume, hourly backup floor. Per-server resolution; minute grain. Does **not** see inside the database. | Azure Monitor query cost: one query per metric per scrape. At a 60s interval the daily cost runs in cents per server. | One Service Principal with `Monitoring Reader` on the resource group; one receiver block; one resource processor. |
+| **In-database metrics - direct scrape** (this guide, §In-database metrics; details cross-linked to self-hosted Postgres) | Per-database commits / rollbacks, tuple ops, WAL activity, replication lag, bgwriter health, index scans, table size, dead-tuple counts, lock contention. Per-database and per-table resolution; 10-second grain. Sees inside the database. | One `postgresqlreceiver` block in your collector; a dedicated monitoring user with `pg_monitor` + `azure_pg_admin` grants; an open TCP/5432 path from collector → server FQDN with TLS. | Bicep sets `shared_preload_libraries = pg_stat_statements` via Server Parameters; the monitoring user holds the two-role grant; the receiver hits the public FQDN over TLS. |
+| **Resource logs - Diagnostic Settings → Event Hubs** (this guide, §Logs below) | Per-connection and per-disconnection events (from `log_connections=on`, `log_disconnections=on`); slow queries above `log_min_duration_statement`; DDL audit (from `log_statement=ddl`); errors, lock waits, autovacuum runs. Per-record resolution; sub-second grain. | One Event Hubs Basic namespace (~$11/mo at 1 TU; 1 MB/s ingress absorbs roughly 4,000 records/sec at typical record size). The Diagnostic Setting itself is free. | One Diagnostic Setting on the server with the categories you care about; one Event Hubs namespace + hub + Send/Listen SAS rules; one `azure_event_hub` receiver fragment. |
 
 ### Which path to pick
 
@@ -81,15 +82,17 @@ Four decision criteria, in order of usual weight:
 
 1. **Tier choice (Burstable / GeneralPurpose / MemoryOptimized).**
    Burstable B1ms / B2s is the cheapest shape but has a 2 GiB RAM
-   ceiling that limits `pg_stat_statements`'s working set. Layer 2
-   adds tangible value only above Burstable - on Burstable the surface
-   metrics from Layer 1 cover the relevant signals. Move to Layer 2 +
-   `pg_stat_statements` analysis on GeneralPurpose D2s_v3 and larger.
+   ceiling that limits `pg_stat_statements`'s working set. The
+   in-database scrape adds tangible value only above Burstable - on
+   Burstable the platform metrics cover the relevant signals. Move to
+   the in-database scrape + `pg_stat_statements` analysis on
+   GeneralPurpose D2s_v3 and larger.
 2. **Existing collector posture.** If you already run a Kubernetes
    collector or a shared scraper container that consumes `azure_monitor`
-   for other surfaces, fold Layer 1 into that. Layer 2 is a separate
-   per-database concern - typically a small dedicated collector beside
-   the application that owns the database.
+   for other surfaces, fold platform-metrics scraping into that. The
+   in-database scrape is a separate per-database concern - typically a
+   small dedicated collector beside the application that owns the
+   database.
 3. **Diagnostic Settings volume budget.** `PostgreSQLLogs` plus
    `PostgreSQLFlexSessions` is moderate-volume: a couple of records
    per session lifecycle plus slow-query records above the threshold.
@@ -99,19 +102,20 @@ Four decision criteria, in order of usual weight:
    `PostgreSQLFlexDatabaseXacts`) add per-query and per-table records
    at much higher volume - enable them only when tuning specific
    workloads.
-4. **Depth-of-debug appetite.** Resource saturation alerts only? Layer
-   1 alone. Per-query attribution? Layer 2 plus Layer 3 with Query
-   Store-derived categories.
+4. **Depth-of-debug appetite.** Resource saturation alerts only?
+   Platform metrics alone. Per-query attribution? The in-database
+   scrape plus resource logs with Query Store-derived categories.
 
-If you are starting from zero, Layer 1 plus Layer 3 (default
-categories) is the lowest-effort win and catches the broadest range
-of saturation and per-connection incidents. Add Layer 2 when
-investigations need per-database depth, and turn on the Query Store
-categories when you are actively tuning queries.
+If you are starting from zero, platform metrics plus resource logs
+(default categories) is the lowest-effort win and catches the
+broadest range of saturation and per-connection incidents. Add the
+in-database scrape when investigations need per-database depth, and
+turn on the Query Store categories when you are actively tuning
+queries.
 
 ## What you'll monitor
 
-The Layer 1 receiver scrapes one Azure Monitor namespace and emits
+The platform-metrics receiver scrapes one Azure Monitor namespace and emits
 metrics under `cloud.platform: azure_postgresql_flexible_server`.
 
 ### Flexible Server metrics (`Microsoft.DBforPostgreSQL/flexibleServers`)
@@ -152,9 +156,9 @@ warrants):
 - Per-database PG stats: `tps`, `xact_total`, `xact_commit`,
   `xact_rollback`, `numbackends`, `deadlocks`, `tup_inserted`,
   `tup_updated`, `tup_deleted`, `tup_returned`, `tup_fetched`,
-  `temp_files`, `temp_bytes`, `blks_read`, `blks_hit`. (Layer 2 covers
-  these at higher resolution; whitelist them in Azure Monitor only if
-  you do not run Layer 2.)
+  `temp_files`, `temp_bytes`, `blks_read`, `blks_hit`. (The
+  in-database scrape covers these at higher resolution; whitelist them
+  in Azure Monitor only if you do not run it.)
 - Session detail: `sessions_by_state`, `sessions_by_wait_event_type`.
 - Replication: `oldest_backend_time_sec`, `oldest_backend_xmin`,
   `oldest_backend_xmin_age`.
@@ -169,7 +173,7 @@ warrants):
 
 | Requirement | Detail |
 | --- | --- |
-| Server tier | Flexible Server, any SKU. Burstable B1ms is the smallest tier covered here; GeneralPurpose D2s_v3 and larger unlock the full Layer 2 value (Burstable tiers have a 2 GiB RAM ceiling that limits `pg_stat_statements`'s working set). |
+| Server tier | Flexible Server, any SKU. Burstable B1ms is the smallest tier covered here; GeneralPurpose D2s_v3 and larger unlock the full in-database-scrape value (Burstable tiers have a 2 GiB RAM ceiling that limits `pg_stat_statements`'s working set). |
 | PostgreSQL version | 13, 14, 15, 16, or 17 (when GA in your region). The receiver works on all supported versions. |
 | OTel Collector Contrib | v0.151.0+ (the `azure_monitor` and `azure_event_hub` receiver names are snake_case from v0.148.0; v0.151.0 is the current fleet). |
 | OpenTelemetry semconv | v1.41.0. |
@@ -192,7 +196,7 @@ role.
 Both metric-path assignments are idempotent - re-running them on a
 previously granted SP is a no-op.
 
-The Layer 2 in-DB receiver uses a **PostgreSQL** role, not an Azure
+The in-database receiver uses a **PostgreSQL** role, not an Azure
 role. Connect as the server admin (or any user with `CREATEROLE`),
 create a dedicated monitoring user, and grant it both `pg_monitor`
 (standard) and `azure_pg_admin` (Azure-specific):
@@ -208,7 +212,7 @@ the receiver fails to read `pg_stat_replication` and the
 `azure_*` system views, and emits a partial metric set with
 permission-denied warnings in its log.
 
-## Receiver configuration (Layer 1)
+## Receiver configuration (platform metrics)
 
 ```yaml showLineNumbers title="otel-collector.yaml (excerpt)"
 receivers:
@@ -266,7 +270,7 @@ service:
 The metric name `txlogs_storage_used` carries no underscore between
 `tx` and `logs`. Azure's catalog uses the concatenated form.
 
-## Environment variables (Layer 1)
+## Environment variables (platform metrics)
 
 ```bash title=".env"
 AZURE_SUBSCRIPTION_ID=...
@@ -283,7 +287,7 @@ Service Principal credentials (`AZURE_TENANT_ID`, `AZURE_CLIENT_ID`,
 `SCOUT_OTLP_ENDPOINT`) come from the shared base config and are not
 listed here. See [Scout exporter wiring](../../collector-setup/scout-exporter.md).
 
-## Layer 2 - in-DB scrape
+## In-database metrics - direct scrape
 
 The Azure-specific deltas vs. the self-hosted
 [`postgresqlreceiver` reference](../../component/postgres.md) are limited
@@ -319,7 +323,7 @@ laptop / on-prem collectors hit it via the per-IP rule.
 ### 2. Monitoring user grants
 
 Repeated here from §Access setup because this is the single most
-common Layer-2-on-Azure pitfall:
+common in-database-scrape-on-Azure pitfall:
 
 ```sql title="monitoring user"
 CREATE USER postgres_exporter WITH PASSWORD '<strong-password>';
@@ -483,7 +487,7 @@ that fill gaps the metric whitelist cannot.
 
 ### What logs uniquely fill
 
-Layer 1 metrics aggregate. Logs disaggregate. The gaps logs uniquely
+Platform metrics aggregate. Logs disaggregate. The gaps logs uniquely
 cover for Flex Server:
 
 - **Per-connection attribution.** `active_connections` tells you 50
@@ -565,7 +569,8 @@ Named here so you know they exist; enable per workload:
 - **`PostgreSQLFlexTableStats`** - per-table size + bloat snapshot.
   Useful for capacity planning across schemas.
 - **`PostgreSQLFlexDatabaseXacts`** - per-DB transaction counts.
-  Cross-validation against the `xact_*` metrics in the Layer 1 catalog.
+  Cross-validation against the `xact_*` metrics in the platform-metrics
+  catalog.
 
 The four Query Store-derived categories together produce
 significantly higher record volume than the defaults. Enable when you
@@ -682,7 +687,7 @@ at least one client connection:
 
 ## Troubleshooting
 
-### Layer 2 receiver logs `permission denied for view pg_stat_replication`
+### In-database receiver logs `permission denied for view pg_stat_replication`
 
 **Cause:** The monitoring user holds `pg_monitor` but not
 `azure_pg_admin`. **Fix:**
@@ -693,21 +698,22 @@ GRANT azure_pg_admin TO postgres_exporter;
 
 Reconnect the receiver; the warning clears on the next scrape.
 
-### Layer 2 receiver: pg_stat_statements permission or missing-relation error
+### In-database receiver: pg_stat_statements permission or missing-relation error
 
 **Cause:** `pg_stat_statements` is not loaded. Either
 `shared_preload_libraries` does not include it, `azure.extensions`
 does not allowlist it, or `CREATE EXTENSION` has not run. **Fix:**
-Run the three steps from §Layer 2 - in-DB scrape → 3. Note the
+Run the three steps from §In-database metrics - direct scrape → 3.
+Note the
 `shared_preload_libraries` change triggers a server restart.
 
-### Layer 1 `AuthorizationFailed` on the first scrape
+### Platform-metrics `AuthorizationFailed` on the first scrape
 
 **Cause:** The `Monitoring Reader` role assignment on the resource
 group has not yet propagated. **Fix:** Wait two polling cycles (~2
 minutes). The receiver retries automatically; the error self-clears.
 
-### `connection refused` from the Layer 2 receiver
+### `connection refused` from the in-database receiver
 
 **Cause:** The collector's egress IP is not in the Flex Server's
 firewall allowlist. **Fix:** Add the IP via `az postgres
@@ -757,17 +763,17 @@ volume).
 
 ### How do I monitor Azure Database for PostgreSQL Flexible Server with OpenTelemetry?
 
-Three instrumentation paths complement each other. Layer 1
-(control-plane) uses `azure_monitor` against
+Three instrumentation paths complement each other. Platform metrics
+use `azure_monitor` against
 `Microsoft.DBforPostgreSQL/flexibleServers` for resource saturation,
-connection counts, and network throughput. Layer 2 (in-DB) uses the
-OpenTelemetry `postgresqlreceiver` against the server's public FQDN
-over TLS for per-database stats, WAL activity, replication, and
-table-level counters. Layer 3 (logs) uses `azure_event_hub` consuming
-Diagnostic Settings categories `PostgreSQLLogs` and
-`PostgreSQLFlexSessions` for per-connection and per-query audit
-detail. Pick layers based on how deep the debug-attribution needs to
-go.
+connection counts, and network throughput. The in-database scrape
+uses the OpenTelemetry `postgresqlreceiver` against the server's
+public FQDN over TLS for per-database stats, WAL activity,
+replication, and table-level counters. Resource logs use
+`azure_event_hub` consuming Diagnostic Settings categories
+`PostgreSQLLogs` and `PostgreSQLFlexSessions` for per-connection and
+per-query audit detail. Pick paths based on how deep the
+debug-attribution needs to go.
 
 ### Why does my monitoring user fail to read pg_stat_replication?
 
@@ -820,10 +826,10 @@ capture every statement (high volume; combine with sampling).
 
 ## Related Guides
 
-### Same surface, different layers
+### Same surface, different paths
 
 - [Self-hosted PostgreSQL](../../component/postgres.md) - the
-  `postgresqlreceiver` reference for the in-DB scrape (Layer 2). This
+  `postgresqlreceiver` reference for the in-database scrape. This
   guide layers Azure-specific deltas (firewall, `azure_pg_admin`,
   `pg_stat_statements` via Server Parameters, TLS-required) on it.
 
