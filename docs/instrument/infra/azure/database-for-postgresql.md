@@ -175,8 +175,8 @@ warrants):
 | OpenTelemetry semconv | v1.41.0. |
 | Azure CLI | 2.85+ for the `az monitor diagnostic-settings` flags used here. |
 | Azure providers registered | `Microsoft.DBforPostgreSQL`, `Microsoft.EventHub`. The PostgreSQL provider in particular is often `NotRegistered` on fresh subscriptions and takes ~70 seconds to register. |
-| Collector runtime | See [Docker Compose Setup](../../collector-setup/docker-compose-example) or [Kubernetes / Helm Setup](../../collector-setup/kubernetes-helm-setup) for the runtime; this guide adds the PostgreSQL-specific receiver + processor blocks on top. |
-| Scout exporter | See [Scout exporter wiring](../../collector-setup/scout-exporter) for the `oauth2client` extension + `otlp_http/b14` exporter. This guide does not re-derive that block. |
+| Collector runtime | See [Docker Compose Setup](../../collector-setup/docker-compose-example.md) or [Kubernetes / Helm Setup](../../collector-setup/kubernetes-helm-setup.md) for the runtime; this guide adds the PostgreSQL-specific receiver + processor blocks on top. |
+| Scout exporter | See [Scout exporter wiring](../../collector-setup/scout-exporter.md) for the `oauth2client` extension + `otlp_http/b14` exporter. This guide does not re-derive that block. |
 
 ## Access setup
 
@@ -281,7 +281,7 @@ Service Principal credentials (`AZURE_TENANT_ID`, `AZURE_CLIENT_ID`,
 `AZURE_CLIENT_SECRET`) and Scout exporter credentials
 (`SCOUT_CLIENT_ID`, `SCOUT_CLIENT_SECRET`, `SCOUT_TOKEN_URL`,
 `SCOUT_OTLP_ENDPOINT`) come from the shared base config and are not
-listed here. See [Scout exporter wiring](../../collector-setup/scout-exporter).
+listed here. See [Scout exporter wiring](../../collector-setup/scout-exporter.md).
 
 ## Layer 2 - in-DB scrape
 
@@ -693,7 +693,7 @@ GRANT azure_pg_admin TO postgres_exporter;
 
 Reconnect the receiver; the warning clears on the next scrape.
 
-### Layer 2 receiver logs `permission denied for view pg_stat_statements` or `relation does not exist`
+### Layer 2 receiver: pg_stat_statements permission or missing-relation error
 
 **Cause:** `pg_stat_statements` is not loaded. Either
 `shared_preload_libraries` does not include it, `azure.extensions`
@@ -769,7 +769,7 @@ Diagnostic Settings categories `PostgreSQLLogs` and
 detail. Pick layers based on how deep the debug-attribution needs to
 go.
 
-### Why does my monitoring user fail to read `pg_stat_replication` on Azure Flex Server?
+### Why does my monitoring user fail to read pg_stat_replication?
 
 On Azure Database for PostgreSQL Flexible Server, the `pg_monitor`
 role alone is not sufficient. You also need to
@@ -779,7 +779,7 @@ role unlocks `SELECT` on `pg_stat_replication` and a handful of
 it, the receiver logs a permission-denied warning and emits a
 partial metric set.
 
-### How do I enable `pg_stat_statements` on Azure Database for PostgreSQL Flexible Server?
+### How do I enable pg_stat_statements on Flexible Server?
 
 `pg_stat_statements` requires two Server Parameter changes plus a
 `CREATE EXTENSION`. First, set `shared_preload_libraries` to include
@@ -822,24 +822,40 @@ capture every statement (high volume; combine with sampling).
 
 ### Same surface, different layers
 
-- [Self-hosted PostgreSQL](../../component/postgres.md) - the `postgresqlreceiver` reference for the in-DB scrape (Layer 2). This guide layers Azure-specific deltas (firewall, `azure_pg_admin`, `pg_stat_statements` via Server Parameters, TLS-required) on top of that base.
+- [Self-hosted PostgreSQL](../../component/postgres.md) - the
+  `postgresqlreceiver` reference for the in-DB scrape (Layer 2). This
+  guide layers Azure-specific deltas (firewall, `azure_pg_admin`,
+  `pg_stat_statements` via Server Parameters, TLS-required) on it.
 
 ### Shared collector + Scout wiring
 
-- [Docker Compose Setup](../../collector-setup/docker-compose-example) - the runtime that hosts both receivers in this guide.
-- [Kubernetes / Helm Setup](../../collector-setup/kubernetes-helm-setup) - alternative runtime for AKS-hosted collectors.
-- [Scout exporter wiring](../../collector-setup/scout-exporter) - the `oauth2client` extension + `otlp_http/b14` exporter block that all Azure guides share.
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
+  the runtime that hosts both receivers in this guide.
+- [Kubernetes / Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
+  alternative runtime for AKS-hosted collectors.
+- [Scout exporter wiring](../../collector-setup/scout-exporter.md) - the
+  `oauth2client` extension + `otlp_http/b14` exporter block shared by
+  all Azure guides.
 
 ### Apps-side instrumentation
 
-- [FastAPI + Postgres](../../apps/auto-instrumentation/fast-api) - Python web app connecting to Flex Server over `psycopg`.
-- [Express + Postgres](../../apps/auto-instrumentation/express) - Node.js web app connecting to Flex Server.
-- [Spring Boot](../../apps/auto-instrumentation/spring-boot) - JVM apps connecting to Flex Server over JDBC.
+- [FastAPI + Postgres](../../apps/auto-instrumentation/fast-api.md) -
+  Python web app connecting to Flex Server over `psycopg`.
+- [Express + Postgres](../../apps/auto-instrumentation/express.md) -
+  Node.js web app connecting to Flex Server.
+- [Spring Boot](../../apps/auto-instrumentation/spring-boot.md) - JVM
+  apps connecting to Flex Server over JDBC.
 
 ### Adjacent Azure surfaces
 
-- [Azure App Service](./app-service) - common host for web apps that connect to Flex Server.
-- [Azure Cache for Redis](./cache-for-redis) - caching layer typically sat in front of PostgreSQL.
-- [Azure Service Bus](./service-bus) - eventing fabric that often integrates with database-change events.
-- [Azure Key Vault](./key-vault) - secrets store for the monitoring user's password.
-- [Azure SQL Database](./sql-database) - managed SQL Server on Azure; the typical alternative when the workload requires T-SQL rather than PostgreSQL.
+- [Azure App Service](./app-service.md) - common host for web apps
+  that connect to Flex Server.
+- [Azure Cache for Redis](./cache-for-redis.md) - caching layer
+  typically sat in front of PostgreSQL.
+- [Azure Service Bus](./service-bus.md) - eventing fabric that often
+  integrates with database-change events.
+- [Azure Key Vault](./key-vault.md) - secrets store for the
+  monitoring user's password.
+- [Azure SQL Database](./sql-database.md) - managed SQL Server on
+  Azure; the typical alternative when the workload needs T-SQL rather
+  than PostgreSQL.

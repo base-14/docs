@@ -208,8 +208,8 @@ availability detail (`availabilityResults/count`,
 | OpenTelemetry semconv | v1.41.0 (latest cloud and HTTP attributes). |
 | Azure CLI | 2.85+ for the `az monitor diagnostic-settings` flags used here. |
 | Azure providers registered | `Microsoft.Web`, `Microsoft.OperationalInsights`, `Microsoft.Insights`, `Microsoft.EventHub`. |
-| Collector runtime | See [Docker Compose Setup](../../collector-setup/docker-compose-example) or [Kubernetes / Helm Setup](../../collector-setup/kubernetes-helm-setup) for the runtime; this guide adds the App Service-specific receiver + processor blocks on top. |
-| Scout exporter | See [Scout exporter wiring](../../collector-setup/scout-exporter) for the `oauth2client` extension + `otlp_http/b14` exporter. This guide does not re-derive that block. |
+| Collector runtime | See [Docker Compose Setup](../../collector-setup/docker-compose-example.md) or [Kubernetes / Helm Setup](../../collector-setup/kubernetes-helm-setup.md) for the runtime; this guide adds the App Service-specific receiver + processor blocks on top. |
+| Scout exporter | See [Scout exporter wiring](../../collector-setup/scout-exporter.md) for the `oauth2client` extension + `otlp_http/b14` exporter. This guide does not re-derive that block. |
 
 ## Access setup
 
@@ -235,9 +235,9 @@ will fail-fast if RBAC has not propagated yet).
 
 Add the following to your collector config alongside whatever is already
 wiring `azure_auth` and the Scout exporter. **You do not need to
-duplicate** the `oauth2client` extension or the `otlp_http/b14` exporter
-- those live in the shared base config per
-[Scout exporter wiring](../../collector-setup/scout-exporter).
+duplicate** the `oauth2client` extension or the `otlp_http/b14`
+exporter; those live in the shared base config per
+[Scout exporter wiring](../../collector-setup/scout-exporter.md).
 
 ```yaml showLineNumbers title="otel-collector.yaml (excerpt)"
 receivers:
@@ -333,7 +333,7 @@ Service Principal credentials (`AZURE_TENANT_ID`, `AZURE_CLIENT_ID`,
 (`SCOUT_CLIENT_ID`, `SCOUT_CLIENT_SECRET`, `SCOUT_TOKEN_URL`,
 `SCOUT_OTLP_ENDPOINT`) come from the shared base config and are not
 listed here. See
-[Scout exporter wiring](../../collector-setup/scout-exporter).
+[Scout exporter wiring](../../collector-setup/scout-exporter.md).
 
 ## Operations
 
@@ -523,11 +523,19 @@ requests; otherwise the probe noise drowns out the signal.
 
 Named here so you know they exist; enable per workload:
 
-- **`AppServiceConsoleLogs`** - stdout/stderr from the app process. Usually redundant with apps-side OTel logs; enable if your app does not yet emit OTel.
-- **`AppServiceAppLogs`** - app-emitted log records via App Service's logging API. Redundant with apps-side OTel; enable as a transition aid.
-- **`AppServiceAuditLogs`** - SCM / Kudu deployment authentication. Security-team scope; enable when you need audit trails for deploys.
-- **`AppServiceIPSecAuditLogs`** - hits against the site's IP restriction rules. Enable if you have IP allowlists and want forensics on blocked traffic.
-- **`AppServiceFileAuditLogs`** - file-system change audit. Premium V2/V3 and Isolated tier only; ignore on Basic / Standard.
+- **`AppServiceConsoleLogs`** - stdout/stderr from the app process.
+  Usually redundant with apps-side OTel logs; enable if your app does
+  not yet emit OTel.
+- **`AppServiceAppLogs`** - app-emitted log records via App Service's
+  logging API. Redundant with apps-side OTel; enable as a transition
+  aid.
+- **`AppServiceAuditLogs`** - SCM / Kudu deployment authentication.
+  Security-team scope; enable when you need audit trails for deploys.
+- **`AppServiceIPSecAuditLogs`** - hits against the site's IP
+  restriction rules. Enable if you have IP allowlists and want
+  forensics on blocked traffic.
+- **`AppServiceFileAuditLogs`** - file-system change audit. Premium
+  V2/V3 and Isolated tier only; ignore on Basic / Standard.
 
 ### Receiver configuration (logs)
 
@@ -698,14 +706,14 @@ Application Insights auto-instrumentation. Layer 3 (logs) is
 based on what your app is wired to and what your debug-depth appetite
 is.
 
-### What's the smallest App Service Plan that supports OpenTelemetry observability through Diagnostic Settings?
+### What's the smallest App Service Plan that supports Diagnostic Settings?
 
 Basic B1 is the smallest tier that supports forwarding Diagnostic
 Settings to Event Hubs. Free F1 and Shared D1 reject Event Hubs as a
 Diagnostic Settings destination. B1 still supports HTTP file-system
 logging and all per-site metrics.
 
-### Why are my Application Insights metrics empty in Scout even though the AI resource exists?
+### Why are my Application Insights metrics empty in Scout?
 
 The `microsoft.insights/components` metric namespace exposes APM
 signals derived from log records your app pushes to Application
@@ -742,19 +750,36 @@ and rely on quota alerts in the Azure portal instead.
 
 ### Shared collector + Scout wiring
 
-- [Docker Compose Setup](../../collector-setup/docker-compose-example) - the runtime that hosts both receivers in this guide.
-- [Kubernetes / Helm Setup](../../collector-setup/kubernetes-helm-setup) - alternative runtime for AKS-hosted collectors.
-- [Scout exporter wiring](../../collector-setup/scout-exporter) - the `oauth2client` extension + `otlp_http/b14` exporter block that all Azure guides share.
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
+  the runtime that hosts both receivers in this guide.
+- [Kubernetes / Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
+  alternative runtime for AKS-hosted collectors.
+- [Scout exporter wiring](../../collector-setup/scout-exporter.md) - the
+  `oauth2client` extension + `otlp_http/b14` exporter block shared by
+  all Azure guides.
 
 ### Apps-side instrumentation (Layer 2)
 
-- [.NET Aspire on App Service](../../apps/auto-instrumentation/dotnet-aspire) - the canonical Microsoft path for new .NET 9 apps. Emits OTel by default.
-- [OpenTelemetry .NET SDK](../../apps/auto-instrumentation/dotnet) - direct OTel for existing .NET apps not on Aspire.
-- For Python / Node / Java apps, use the OTel SDK for your language ([FastAPI](../../apps/auto-instrumentation/fast-api), [Express](../../apps/auto-instrumentation/express), [Spring Boot](../../apps/auto-instrumentation/spring-boot), etc.) and point the OTLP exporter at Scout's collector.
+- [.NET Aspire](../../apps/auto-instrumentation/dotnet-aspire.md) - the
+  canonical Microsoft path for new .NET 9 apps. Emits OTel by default.
+- [OpenTelemetry .NET SDK](../../apps/auto-instrumentation/dotnet.md) -
+  direct OTel for existing .NET apps not on Aspire.
+- For Python / Node / Java apps, use the OTel SDK for your language
+  ([FastAPI](../../apps/auto-instrumentation/fast-api.md),
+  [Express](../../apps/auto-instrumentation/express.md),
+  [Spring Boot](../../apps/auto-instrumentation/spring-boot.md)) and
+  point the OTLP exporter at Scout's collector.
 
 ### Adjacent Azure surfaces
 
-- [Azure Compute](./compute) - VMs, VM Scale Sets, and Managed Disks for the host layer beneath unmanaged or AKS workloads.
-- [Azure Front Door](./front-door) and [Azure Application Gateway](./application-gateway) - the edge layers in front of App Service.
-- [Azure SQL Database](./sql-database) and [Azure Cache for Redis](./cache-for-redis) - common data-tier dependencies.
-- [Azure Key Vault](./key-vault) - secrets store typically referenced from `APPLICATIONINSIGHTS_CONNECTION_STRING` and other app settings.
+- [Azure Compute](./compute.md) - VMs, VM Scale Sets, and Managed
+  Disks for the host layer beneath unmanaged or AKS workloads.
+- [Azure Front Door](./front-door.md) and
+  [Azure Application Gateway](./application-gateway.md) - the edge
+  layers in front of App Service.
+- [Azure SQL Database](./sql-database.md) and
+  [Azure Cache for Redis](./cache-for-redis.md) - common data-tier
+  dependencies.
+- [Azure Key Vault](./key-vault.md) - secrets store typically
+  referenced from `APPLICATIONINSIGHTS_CONNECTION_STRING` and other
+  app settings.
