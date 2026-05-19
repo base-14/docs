@@ -98,7 +98,7 @@ released tag in your `package.json`:
 ```json title="package.json"
 {
   "dependencies": {
-    "@base14/scout-react": "github:base-14/scout-react#v0.1.4"
+    "@base14/scout-react": "github:base-14/scout-react#v0.1.5"
   }
 }
 ```
@@ -114,7 +114,7 @@ so the `dist/` bundle is built locally from source — you don't need to
 download a pre-built artifact. The first install takes ~30 s because
 of the build; subsequent installs from the same tag are cached by npm.
 
-Always pin to a **tagged version** (`#v0.1.4`), never to `#main`. Tags
+Always pin to a **tagged version** (`#v0.1.5`), never to `#main`. Tags
 are the only stable, build-verified entry points; `main` may be
 mid-refactor.
 
@@ -197,7 +197,6 @@ await Scout.initialize({
   serviceName: 'my-app',
   endpoint: 'http://localhost:34318',
   serviceVersion: '1.0.0',
-  environment: 'production',
 });
 
 Scout.registerRootComponent(App);
@@ -266,7 +265,6 @@ Every option you can pass to `Scout.initialize()`:
 | `serviceName` | `string` | **required** | `service.name` resource attribute |
 | `endpoint` | `string` | **required** | OTLP-HTTP collector URL (suffixes `/v1/{traces,metrics,logs}` appended automatically) |
 | `serviceVersion` | `string` | `'1.0.0'` | `service.version` |
-| `environment` | `string?` | — | Free-form environment tag |
 | `applicationId` | `string?` | — | Maps to `application.id` |
 | `buildId` | `string?` | — | Build hash; maps to `app.build_id` |
 | `secure` | `boolean` | `true` | Prefix `https://` when scheme is missing |
@@ -495,7 +493,7 @@ What's still lost:
 
 The repo ships a runnable Expo example at
 `examples/platform-design-mobile`. Its `package.json` already pins the
-SDK by GitHub tag (`"@base14/scout-react": "github:base-14/scout-react#v0.1.4"`):
+SDK by GitHub tag (`"@base14/scout-react": "github:base-14/scout-react#v0.1.5"`):
 
 ```bash
 git clone https://github.com/base-14/scout-react.git
@@ -602,7 +600,6 @@ versions.
   to receive OTLP-HTTP on `:4318`
 - Look at [Flutter mobile instrumentation](/instrument/mobile/flutter)
   for the Dart equivalent
-- See the [Scout RUM dashboards](/observe) for visualizing the data
 
 ## References
 
