@@ -1,0 +1,9 @@
+{
+  "label": "IoT & Edge",
+  "position": 5,
+  "collapsed": true,
+  "link": {
+    "type": "doc",
+    "id": "instrument/iot/index"
+  }
+}
