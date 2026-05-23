@@ -55,7 +55,13 @@ rather than pretending they do not exist:
 - **No protocol receivers.** Contrib ships `snmpreceiver` plus the
   generic log receivers, but no MQTT, CoAP, OPC-UA, or Sparkplug B
   receiver. The bridge examples in this track are the workaround, and
-  the pattern we are proposing upstream.
+  a working model for the receiver these protocols still lack. Each
+  bridge is built so that
+  swapping in a future receiver is a deletion, not a rewrite:
+  declarative mapping, state held explicitly, and instruments created
+  the way a receiver would. The clean end state is an `mqttreceiver`
+  that subscribes and decodes, paired with protocol-specific processors
+  for the stateful work; until that lands, the bridges stand in.
 - **No constrained-device SDK.** The embedded C effort is not active in
   the OpenTelemetry org, and the C++ and Rust embedded tracks are
   unresolved. Firmware emits a compact payload that an edge Collector
@@ -65,7 +71,8 @@ rather than pretending they do not exist:
   all undefined upstream. The conventions below are Scout's working
   schema until that group exists.
 - **No canonical end-to-end example.** There is no IoT equivalent of
-  the OpenTelemetry demo. This track is building one phase by phase.
+  the OpenTelemetry demo. This track is one, built phase by phase, from
+  a microcontroller through the edge to Scout.
 
 ## Guides in this track
 
@@ -78,7 +85,14 @@ locally with Docker, no cloud account required.
 | 2 | [Edge Collector patterns](./edge-collector-patterns.md) | Disk-buffered store-and-forward, interval downsampling, priority routing, and battery-aware filtering at the edge, surviving simulated disconnects. | Available |
 | 3 | [OPC-UA to OTel bridge](./opcua.md) | A bridge that subscribes to an OPC-UA server and emits OTLP metrics with industrial asset attributes, fault logs, and session spans. | Available |
 | 4 | [Sparkplug B decoder](./sparkplug.md) | Decoding NBIRTH / DBIRTH / DDATA into OTLP metrics with device lifecycle state and sequence-gap detection. | Available |
-| 5 | ESP32 firmware to Collector | Constrained-device firmware emitting a compact payload over MQTT, converted to OTLP by an edge Collector. | Coming soon |
+| 5 | [ESP32 firmware to OTel](./esp32.md) | Constrained-device firmware (ESP-IDF, C) emitting a compact SME-v1 JSON payload over MQTT, bridged to OTLP and shipped through an edge Collector. | Available |
+
+:::tip Flagship example
+Phase 5 is the constrained-device payoff: a real ESP32 firmware emitting
+OpenTelemetry in a world with no C SDK. If you want the end-to-end
+constrained-device story - on-device trace context, a versioned wire
+envelope, and a bridge to OTLP - start there.
+:::
 
 ## Resource attributes we use
 
@@ -154,8 +168,8 @@ introduce ad-hoc grouping attributes such as `asset.group`,
 ## Next steps
 
 The MQTT trace-propagation guide is the entry point and a prerequisite
-for the Sparkplug and ESP32 phases. It lands first; the table above
-tracks what is live. For shipping the resulting telemetry, see the
+for the Sparkplug and ESP32 phases. All five phases are live; the table
+above links each. For shipping the resulting telemetry, see the
 [OpenTelemetry Collector Setup](../collector-setup/docker-compose-example.md)
 guides and
 [Scout exporter wiring](../collector-setup/scout-exporter.md).
