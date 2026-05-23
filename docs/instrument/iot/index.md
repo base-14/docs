@@ -77,7 +77,7 @@ locally with Docker, no cloud account required.
 | 1 | [MQTT trace context propagation](./mqtt-trace-propagation.md) | Trace context flowing across an MQTT 5 broker via user properties, visualized as one end-to-end trace in Scout. | Available |
 | 2 | [Edge Collector patterns](./edge-collector-patterns.md) | Disk-buffered store-and-forward, interval downsampling, priority routing, and battery-aware filtering at the edge, surviving simulated disconnects. | Available |
 | 3 | [OPC-UA to OTel bridge](./opcua.md) | A bridge that subscribes to an OPC-UA server and emits OTLP metrics with industrial asset attributes, fault logs, and session spans. | Available |
-| 4 | Sparkplug B decoder | Decoding NBIRTH / DBIRTH / DDATA into OTLP metrics with device lifecycle state. | Coming soon |
+| 4 | [Sparkplug B decoder](./sparkplug.md) | Decoding NBIRTH / DBIRTH / DDATA into OTLP metrics with device lifecycle state and sequence-gap detection. | Available |
 | 5 | ESP32 firmware to Collector | Constrained-device firmware emitting a compact payload over MQTT, converted to OTLP by an edge Collector. | Coming soon |
 
 ## Resource attributes we use
