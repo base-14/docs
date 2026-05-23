@@ -33,6 +33,10 @@ keywords:
     opentelemetry typescript nextjs,
     nextjs standalone deployment,
     nextjs docker monitoring,
+    nextjs browser tracing,
+    nextjs client side instrumentation,
+    nextjs rum opentelemetry,
+    nextjs app router navigation spans,
   ]
 ---
 
@@ -1069,6 +1073,248 @@ export async function publishArticle(articleId: string): Promise<void> {
 }
 ```
 
+## Browser / Client-Side Instrumentation
+
+The `instrumentation.ts` hook only runs on the server (Node.js or Edge runtime).
+To trace what happens in the user's browser (`fetch`/XHR calls from Client
+Components, document load timing, click interactions, and App Router
+navigation), wire in the OpenTelemetry web SDK alongside your server setup.
+
+Browser spans propagate the `traceparent` header on outbound `fetch` calls to
+your API routes, so a single trace can span "button click in the browser ->
+API route -> MongoDB query -> BullMQ job".
+
+### Install Browser Packages
+
+These are separate from the Node packages and only ship to the client bundle:
+
+```bash showLineNumbers title="Install OpenTelemetry browser SDK"
+npm install --save \
+  @opentelemetry/api \
+  @opentelemetry/sdk-trace-web \
+  @opentelemetry/sdk-trace-base \
+  @opentelemetry/instrumentation \
+  @opentelemetry/auto-instrumentations-web \
+  @opentelemetry/exporter-trace-otlp-http \
+  @opentelemetry/resources \
+  @opentelemetry/semantic-conventions \
+  @opentelemetry/context-zone
+```
+
+### Browser Telemetry Module
+
+Create a module that initialises the web tracer. The `typeof window` guard
+prevents accidental execution on the server when the file is statically
+analysed:
+
+```typescript showLineNumbers title="src/lib/telemetry.client.ts"
+'use client';
+
+import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
+import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { registerInstrumentations } from '@opentelemetry/instrumentation';
+import { getWebAutoInstrumentations } from '@opentelemetry/auto-instrumentations-web';
+import { resourceFromAttributes } from '@opentelemetry/resources';
+import {
+  ATTR_SERVICE_NAME,
+  ATTR_SERVICE_VERSION,
+} from '@opentelemetry/semantic-conventions';
+import { ZoneContextManager } from '@opentelemetry/context-zone';
+
+let initialised = false;
+
+export function setupBrowserTelemetry() {
+  if (initialised || typeof window === 'undefined') return;
+  initialised = true;
+
+  const endpoint =
+    process.env.NEXT_PUBLIC_OTEL_EXPORTER_OTLP_ENDPOINT ||
+    'http://localhost:4318';
+
+  const resource = resourceFromAttributes({
+    [ATTR_SERVICE_NAME]:
+      process.env.NEXT_PUBLIC_OTEL_SERVICE_NAME || 'nextjs-web',
+    [ATTR_SERVICE_VERSION]:
+      process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0',
+    'deployment.environment':
+      process.env.NEXT_PUBLIC_DEPLOYMENT_ENVIRONMENT || 'development',
+  });
+
+  const provider = new WebTracerProvider({
+    resource,
+    spanProcessors: [
+      new BatchSpanProcessor(
+        new OTLPTraceExporter({ url: `${endpoint}/v1/traces` })
+      ),
+    ],
+  });
+
+  provider.register({
+    contextManager: new ZoneContextManager(),
+  });
+
+  // Match your API origin (and any third-party API) so the trace header
+  // is actually attached to outgoing fetches.
+  const propagateTo = [/^\//, new RegExp(window.location.origin)];
+
+  registerInstrumentations({
+    instrumentations: [
+      getWebAutoInstrumentations({
+        '@opentelemetry/instrumentation-fetch': {
+          propagateTraceHeaderCorsUrls: propagateTo,
+          clearTimingResources: true,
+        },
+        '@opentelemetry/instrumentation-xml-http-request': {
+          propagateTraceHeaderCorsUrls: propagateTo,
+        },
+        '@opentelemetry/instrumentation-document-load': {},
+        '@opentelemetry/instrumentation-user-interaction': {
+          eventNames: ['click', 'submit'],
+        },
+      }),
+    ],
+  });
+}
+```
+
+### Mount as a Client Component
+
+Wrap initialisation in a tiny Client Component so it runs once on the client
+without blocking server rendering:
+
+```typescript showLineNumbers title="src/components/TelemetryProvider.tsx"
+'use client';
+
+import { useEffect } from 'react';
+import { setupBrowserTelemetry } from '@/lib/telemetry.client';
+
+export function TelemetryProvider() {
+  useEffect(() => {
+    setupBrowserTelemetry();
+  }, []);
+  return null;
+}
+```
+
+Render it inside your root layout. Because `TelemetryProvider` is a Client
+Component, the rest of `layout.tsx` can stay a Server Component:
+
+```typescript showLineNumbers title="src/app/layout.tsx"
+import { TelemetryProvider } from '@/components/TelemetryProvider';
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>
+        <TelemetryProvider />
+        {children}
+      </body>
+    </html>
+  );
+}
+```
+
+### Environment Variables
+
+The browser bundle can only read variables prefixed with `NEXT_PUBLIC_`. Add
+these alongside your server-side OTel config:
+
+```bash showLineNumbers title=".env"
+# Server-side (already covered above)
+OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+OTEL_SERVICE_NAME=nextjs-app
+
+# Client-side - exposed to the browser bundle
+NEXT_PUBLIC_OTEL_EXPORTER_OTLP_ENDPOINT=https://collector.example.com
+NEXT_PUBLIC_OTEL_SERVICE_NAME=nextjs-web
+NEXT_PUBLIC_APP_VERSION=1.0.0
+NEXT_PUBLIC_DEPLOYMENT_ENVIRONMENT=production
+```
+
+The browser endpoint usually differs from the server endpoint - it must be
+reachable from the user's network, not just from inside your cluster.
+
+### Tracing App Router Navigation
+
+Client-side route transitions in App Router don't fire a full document load,
+so they don't produce a span automatically. Use `usePathname` to emit one
+span per navigation:
+
+```typescript showLineNumbers title="src/components/RouteChangeTracer.tsx"
+'use client';
+
+import { useEffect, useRef } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { trace } from '@opentelemetry/api';
+
+export function RouteChangeTracer() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const previous = useRef<string | null>(null);
+
+  useEffect(() => {
+    const url = `${pathname}?${searchParams?.toString() ?? ''}`;
+    if (previous.current === null) {
+      previous.current = url;
+      return;
+    }
+
+    const tracer = trace.getTracer('nextjs-router');
+    const span = tracer.startSpan('route.change', {
+      attributes: {
+        'route.from': previous.current,
+        'route.to': url,
+      },
+    });
+    span.end();
+    previous.current = url;
+  }, [pathname, searchParams]);
+
+  return null;
+}
+```
+
+Render `RouteChangeTracer` next to `TelemetryProvider` in `layout.tsx`. Wrap
+it in `<Suspense>` if your Next.js version requires it for `useSearchParams`.
+
+### Collector CORS
+
+The browser sends traces directly to the collector, so the collector's OTLP
+HTTP receiver must allow your site's origin:
+
+```yaml showLineNumbers title="config/otel-config.yaml"
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+        cors:
+          allowed_origins:
+            - https://your-app.example.com
+          allowed_headers:
+            - '*'
+```
+
+Without this, browsers will block the OTLP request and you'll see CORS errors
+in the dev tools console with no spans appearing in Scout.
+
+### What You Get
+
+- `documentLoad` and `resourceFetch` spans for initial page load timing.
+- `HTTP GET` / `HTTP POST` spans for every `fetch` and XHR from Client
+  Components, with `traceparent` headers attached so they link to the server
+  spans created by your API routes.
+- `click` / `submit` spans for user interactions.
+- `route.change` spans for App Router navigations.
+
+For Core Web Vitals (LCP, FID, CLS) as metrics, see
+[Custom JavaScript Browser Instrumentation](../custom-instrumentation/javascript-browser.md).
+
 ## Running Your Application
 
 ```mdx-code-block
@@ -1386,6 +1632,17 @@ Inject trace context when enqueuing jobs using `propagation.inject()`, then
 extract it in workers using `propagation.extract()`. This creates parent-child
 relationships between API requests and background job execution.
 
+### How do I instrument the browser side of a Next.js app?
+
+The `instrumentation.ts` hook only covers the Node.js (and Edge) runtime. For
+client-side tracing - `fetch` from Client Components, document load, clicks,
+and App Router route changes - install the `@opentelemetry/sdk-trace-web` and
+`@opentelemetry/auto-instrumentations-web` packages and mount the setup from a
+Client Component in `app/layout.tsx`. Use `NEXT_PUBLIC_` env vars for the
+collector endpoint so they reach the browser bundle. See the
+[Browser / Client-Side Instrumentation](#browser--client-side-instrumentation)
+section above.
+
 ### Can I use it with Next.js middleware?
 
 Yes, middleware requests are traced via HTTP instrumentation. Add custom spans
@@ -1553,6 +1810,10 @@ across your application.
 - [Express.js Instrumentation](./express.md) - Express framework guide
 - [NestJS Instrumentation](./nestjs.md) - NestJS framework guide
 - [Node.js Overview](./nodejs.md) - General Node.js instrumentation
+- [React Browser Instrumentation](./react.md) - Browser SDK setup that the
+  Next.js client section is built on
+- [Custom JavaScript Browser Instrumentation](../custom-instrumentation/javascript-browser.md)
+  \- Manual browser spans, logs, and Core Web Vitals metrics
 - [Custom Node.js Instrumentation](../custom-instrumentation/javascript-node.md)
   \- Advanced patterns
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
