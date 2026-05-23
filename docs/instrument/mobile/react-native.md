@@ -4,7 +4,7 @@ sidebar_label: React Native
 sidebar_position: 26
 description:
   Auto-instrument React Native (iOS + Android) and React (browser) apps with
-  the `@base14/scout-react` SDK. Captures taps, navigation, errors, native
+  the `@base-14/scout-react` SDK. Captures taps, navigation, errors, native
   crashes, HTTP, scroll, web vitals — exports OpenTelemetry traces, metrics,
   and logs to a Scout collector.
 keywords:
@@ -26,14 +26,14 @@ keywords:
 
 # React Native + React Web
 
-`@base14/scout-react` is a single npm package that ships **zero-config
+`@base-14/scout-react` is a single npm package that ships **zero-config
 OpenTelemetry RUM** for three runtimes:
 
 | Runtime | Entry import | Native bridge required? |
 |---|---|---|
-| **React Native (iOS + Android)** | `import Scout from '@base14/scout-react/native'` | Yes — Expo module (auto-linked) |
-| **React (web)** | `import Scout from '@base14/scout-react'` | No |
-| **React-on-web hooks** | `import { ScoutErrorBoundary } from '@base14/scout-react/react'` | No |
+| **React Native (iOS + Android)** | `import Scout from '@base-14/scout-react/native'` | Yes — Expo module (auto-linked) |
+| **React (web)** | `import Scout from '@base-14/scout-react'` | No |
+| **React-on-web hooks** | `import { ScoutErrorBoundary } from '@base-14/scout-react/react'` | No |
 
 The SDK auto-captures the full Real User Monitoring (RUM) event set
 (except Session Replay and Profiling) and exports it as OTLP traces,
@@ -92,56 +92,29 @@ error, crash, scroll, and frame metric is gathered automatically.
 
 ## Installation
 
-The package is distributed from GitHub (not published to npm). Pin to a
-released tag in your `package.json`:
-
-```json title="package.json"
-{
-  "dependencies": {
-    "@base14/scout-react": "github:base-14/scout-react#v0.1.5"
-  }
-}
-```
-
-Then install:
-
 ```bash
-npm install
+npm install @base-14/scout-react
 ```
 
-The repo's `prepare` script auto-runs `tsup` + `tsc` after `npm install`,
-so the `dist/` bundle is built locally from source — you don't need to
-download a pre-built artifact. The first install takes ~30 s because
-of the build; subsequent installs from the same tag are cached by npm.
-
-Always pin to a **tagged version** (`#v0.1.5`), never to `#main`. Tags
-are the only stable, build-verified entry points; `main` may be
-mid-refactor.
-
-For React Native apps with bare workflow:
+For React Native apps with the bare workflow:
 
 ```bash
 cd ios && pod install && cd ..
 ```
 
-For Expo workflow no extra step — the Expo module auto-links on prebuild.
+For Expo workflow no extra step — the Expo module auto-links on `prebuild`.
 
 ### Upgrading
 
-Bump the version pin and re-install:
-
-```json
-"@base14/scout-react": "github:base-14/scout-react#v0.1.5"
+```bash
+npm install @base-14/scout-react@latest
 ```
+
+Or pin to a specific version:
 
 ```bash
-rm -rf node_modules/@base14/scout-react package-lock.json
-npm install
+npm install @base-14/scout-react@0.1.7
 ```
-
-The `rm -rf` for the SDK directory is needed because npm caches git
-installs aggressively; without it you can end up with stale `dist/`
-from the previous tag.
 
 ### Babel plugin (React Native only)
 
@@ -153,7 +126,7 @@ module.exports = function (api) {
   api.cache(true);
   return {
     presets: ['babel-preset-expo'],
-    plugins: ['@base14/scout-react/babel-plugin'],
+    plugins: ['@base-14/scout-react/babel-plugin'],
   };
 };
 ```
@@ -190,7 +163,7 @@ regardless of how they're imported.
 ### React Native
 
 ```ts title="index.js"
-import Scout from '@base14/scout-react/native';
+import Scout from '@base-14/scout-react/native';
 import App from './App';
 
 await Scout.initialize({
@@ -234,8 +207,8 @@ completes — safe to call from `onReady` regardless of init timing.
 ### Web
 
 ```tsx title="main.tsx"
-import Scout from '@base14/scout-react';
-import { ScoutErrorBoundary } from '@base14/scout-react/react';
+import Scout from '@base-14/scout-react';
+import { ScoutErrorBoundary } from '@base-14/scout-react/react';
 import { BrowserRouter } from 'react-router-dom';
 import { createRoot } from 'react-dom/client';
 import App from './App';
@@ -352,6 +325,115 @@ to `true`** except `captureConsole` / `capturePrintStatements`.
 | Field | Type | Description |
 |---|---|---|
 | `beforeSend` | `(event) => event \| null` | Runs on every span / metric / log before export. Return `null` to drop. Mutate the passed object to redact PII. **Sees per-span attributes only; resource attributes set on the OTel `Resource` (e.g. `service.name`, `os.name`, `device.*`) are not in the event payload.** |
+
+## Identifying the user and setting custom attributes
+
+Once `Scout.initialize(...)` has resolved you can attach identity, account,
+feature-flag, and free-form attributes that **ride on every subsequent span,
+metric, and log** until you change or clear them. Five APIs cover the common
+cases:
+
+### `Scout.setUser(id, attributes?)` — end-user identity
+
+```ts
+Scout.setUser('user-123', {
+  email: 'jane@example.com',
+  name: 'Jane Doe',
+  plan: 'pro',
+  signupDate: '2025-08-14',
+});
+```
+
+Maps to OpenTelemetry semantic-convention attributes — `enduser.id` is the
+primary key; everything else in the `attributes` map is prefixed
+`enduser.<key>` so it lands as `enduser.email`, `enduser.plan`, etc. Errors
+and crashes captured after this call carry these attributes automatically —
+your dashboard can filter "errors for users on plan=pro."
+
+### `Scout.setAccount(id, name?)` — B2B tenant
+
+```ts
+Scout.setAccount('acme-corp', 'Acme Corp');
+```
+
+For multi-tenant apps. Emits `account.id` and (optionally) `account.name`.
+Useful for grouping sessions by tenant in dashboards.
+
+### `Scout.setFeatureFlag(name, value)` — flag values at error time
+
+```ts
+Scout.setFeatureFlag('new-checkout', true);
+Scout.setFeatureFlag('checkout-variant', 'B');
+```
+
+Each flag becomes a `feature_flag.<name>` attribute. The killer use case:
+when an error span is emitted, the flag values **active at error time** are
+attached to it, so you can correlate "this crash only happens when
+`new-checkout=true`."
+
+### `Scout.setRuntimeAttribute(key, value)` — free-form session attribute
+
+This is the general-purpose hook for any custom attribute you want on every
+signal in this session — A/B experiments, app theme, route prefix, current
+locale, anything that doesn't fit the named APIs above.
+
+```ts
+Scout.setRuntimeAttribute('experiment.cohort', 'B');
+Scout.setRuntimeAttribute('app.theme', 'dark');
+Scout.setRuntimeAttribute('subscription.tier', 'pro');
+```
+
+The key is used verbatim as the attribute name — no namespacing — so you
+control the schema. Supported value types: `string`, `number`, `boolean`, or
+arrays of those.
+
+### `Scout.addBreadcrumb(type, message)` — action trail (not an attribute, related)
+
+Not strictly an attribute, but related: every breadcrumb you record lands in
+a ring buffer that gets serialized onto every subsequent `error` /
+`app_crash` / `native_crash` span. Useful for "what did the user do in the
+20 actions before this crash?"
+
+```ts
+Scout.addBreadcrumb('checkout', 'added item to cart');
+Scout.addBreadcrumb('navigation', 'screen: /payment');
+```
+
+### Removing attributes
+
+| To remove | Call |
+|---|---|
+| The user identity (and all `enduser.*` attributes) | `Scout.clearUser()` |
+| The B2B account identity | `Scout.clearAccount()` |
+| A single feature flag | `Scout.setFeatureFlag(name, null)` |
+| All feature flags at once | `Scout.clearFeatureFlags()` |
+| A single runtime attribute | `Scout.setRuntimeAttribute(key, null)` (`null` or `undefined` deletes the key) |
+| All breadcrumbs (rarely needed) | They roll out of the ring buffer naturally; no explicit clear |
+
+A typical sign-out flow:
+
+```ts
+async function signOut() {
+  await api.signOut();
+  Scout.clearUser();
+  Scout.clearAccount();
+  Scout.clearFeatureFlags();
+  Scout.setRuntimeAttribute('experiment.cohort', null);
+}
+```
+
+### Lifetime and persistence
+
+These attributes live in memory for the SDK instance — i.e., **for the
+lifetime of the session**. They are NOT persisted across app restarts. If
+you want a user identity to be reattached on every launch, call
+`Scout.setUser(...)` again in your initialization code (typically inside a
+`useEffect` that re-reads from your auth store).
+
+The OpenTelemetry session lifecycle (the `session.id` resource attribute)
+rotates after `sessionTimeoutMinutes` of inactivity (default 30 min) — but
+user / account / runtime attributes you set survive that rotation as long
+as the JS context is alive.
 
 ## Native crash setup
 
@@ -492,8 +574,8 @@ What's still lost:
 ## Running the example app
 
 The repo ships a runnable Expo example at
-`examples/platform-design-mobile`. Its `package.json` already pins the
-SDK by GitHub tag (`"@base14/scout-react": "github:base-14/scout-react#v0.1.5"`):
+`examples/platform-design-mobile`. Its `package.json` depends on the
+published SDK (`"@base-14/scout-react": "^0.1.7"`):
 
 ```bash
 git clone https://github.com/base-14/scout-react.git
@@ -522,7 +604,7 @@ collector on the host.
 | No `display.scroll.*` attrs | App was on the same screen when backgrounded (root span never ended) | The bg-flush hook ends it on background; otherwise navigate to flush |
 | iOS sim: `Failed to load script` red box | `adb reverse`-style port forwarding missing | iOS sim shares host network — no extra step needed; check Metro on port 8081 |
 | Android: `localhost` unreachable from app | Android emulator doesn't share host network like iOS sim | `adb reverse tcp:8081 tcp:8081` and `adb reverse tcp:34318 tcp:34318` |
-| `dist/` not found error after `npm install` from git tag | Build step skipped | Add `"prepare": "npm run build"` to package.json (already present in v0.1.2+) |
+| `dist/` not found inside `node_modules/@base-14/scout-react` | Corrupt install, partial download | `rm -rf node_modules package-lock.json && npm install` |
 | Web: `Scout.flush()` doesn't drain anything | Page already navigated; service worker may be intercepting | Use `pagehide` listener (already wired internally) |
 
 ## Performance considerations
