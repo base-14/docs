@@ -1369,7 +1369,10 @@ successful fallback appear as separate spans in the trace.
 
 Yes. The `LanguageModelV3Middleware` pattern works with any framework. Replace
 the Hono HTTP metrics middleware with Next.js middleware and configure the
-telemetry module as a Node.js `--require` flag instead of Bun `--preload`.
+telemetry module as a Node.js `--require` flag instead of Bun `--preload`. The
+SDK's client hooks (`useChat`, `useCompletion`) run in the browser - to trace
+those alongside the server spans, add the browser SDK from the
+[Next.js browser section](./nextjs.md#browser--client-side-instrumentation).
 
 ### How do I instrument streaming responses?
 
@@ -1500,5 +1503,9 @@ repository.
 - [LlamaIndex Instrumentation](./llamaindex.md) - Python structured output
   instrumentation
 - [Node.js Auto-Instrumentation](./nodejs.md) - Node.js-specific setup
+- [Next.js Instrumentation](./nextjs.md#browser--client-side-instrumentation) -
+  Browser-side tracing for client hooks like `useChat` and `useCompletion`
+- [React Browser Instrumentation](./react.md) - Browser SDK setup for
+  client-side AI SDK hooks
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
   Local collector deployment

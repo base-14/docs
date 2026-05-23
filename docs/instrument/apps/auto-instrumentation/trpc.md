@@ -1672,5 +1672,9 @@ curl -X DELETE http://localhost:8080/api/articles/1
   tracing
 - [Node.js Instrumentation](./nodejs.md) - General Node.js OpenTelemetry setup
 - [Fastify Instrumentation](./fastify.md) - Fastify framework instrumentation
+- [React Browser Instrumentation](./react.md) - Client-side spans for the tRPC
+  client (`fetch`/XHR) in a React or Next.js app
+- [Next.js Instrumentation](./nextjs.md#browser--client-side-instrumentation) -
+  Browser-side setup for a tRPC client running inside a Next.js app
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
   up collector for local development
