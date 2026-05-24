@@ -47,7 +47,7 @@ Scout.
 | Requirement | Minimum | Recommended |
 | --- | --- | --- |
 | SQL Server | 2017 | 2022+ |
-| OTel Collector Contrib | 0.90.0 | 0.152.1+ |
+| OTel Collector Contrib | 0.90.0 | 0.152+ |
 | base14 Scout | Any | - |
 
 Before starting:

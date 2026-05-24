@@ -43,7 +43,7 @@ makes SNMP a natural bridge into broader IoT and OT telemetry work.
 | Requirement | Minimum | Recommended |
 | --- | --- | --- |
 | SNMP version | v1 | v2c or v3 |
-| OTel Collector Contrib | 0.90.0 | 0.152.1+ |
+| OTel Collector Contrib | 0.90.0 | 0.152+ |
 | Target devices | SNMP-enabled | SNMPv2c/v3 with community or user configured |
 | base14 Scout | Any | - |
 

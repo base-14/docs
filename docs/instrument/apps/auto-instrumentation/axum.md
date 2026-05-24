@@ -117,8 +117,8 @@ Before starting, ensure you have:
 | --------------------- | --------------- | ------------------- |
 | Rust                  | 1.80.0          | 1.92.0+             |
 | Axum                  | 0.7.0           | 0.8.8+              |
-| OpenTelemetry         | 0.27.0          | 0.32.0+             |
-| tracing-opentelemetry | 0.28.0          | 0.33.0+             |
+| OpenTelemetry         | 0.27.0          | 0.32+               |
+| tracing-opentelemetry | 0.28.0          | 0.33+               |
 | SQLx                  | 0.7.0           | 0.8.6+              |
 
 ## Required Packages

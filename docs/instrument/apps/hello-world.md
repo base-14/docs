@@ -105,9 +105,9 @@ OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 node main.js
 ### Install Dependencies
 
 ```txt title="requirements.txt" showLineNumbers
-opentelemetry-api==1.40.0
-opentelemetry-sdk==1.40.0
-opentelemetry-exporter-otlp-proto-http==1.40.0
+opentelemetry-api~=1.42
+opentelemetry-sdk~=1.42
+opentelemetry-exporter-otlp-proto-http~=1.42
 ```
 
 ```bash
@@ -314,10 +314,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-opentelemetry = "0.32.0"
-opentelemetry_sdk = { version = "0.32.0", features = ["rt-tokio", "logs", "metrics"] }
-opentelemetry-otlp = { version = "0.32.0", features = ["http-proto", "trace", "logs", "metrics"] }
-opentelemetry-appender-tracing = "0.32.0"
+opentelemetry = "0.32"
+opentelemetry_sdk = { version = "0.32", features = ["rt-tokio", "logs", "metrics"] }
+opentelemetry-otlp = { version = "0.32", features = ["http-proto", "trace", "logs", "metrics"] }
+opentelemetry-appender-tracing = "0.32"
 tokio = { version = "1", features = ["full"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }

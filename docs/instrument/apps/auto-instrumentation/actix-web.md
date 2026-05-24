@@ -120,8 +120,8 @@ Before starting, ensure you have:
 | Rust                  | 1.80.0          | 1.92.0+             |
 | Actix Web             | 4.0.0           | 4.12+               |
 | tracing-actix-web     | 0.7.0           | 0.7+                |
-| OpenTelemetry         | 0.27.0          | 0.32.0+             |
-| tracing-opentelemetry | 0.28.0          | 0.33.0+             |
+| OpenTelemetry         | 0.27.0          | 0.32+               |
+| tracing-opentelemetry | 0.28.0          | 0.33+               |
 | SQLx                  | 0.7.0           | 0.8.6+              |
 
 ## Required Packages
@@ -159,15 +159,15 @@ sqlx = { version = "0.8.6", features = [
 ] }
 
 # OpenTelemetry
-opentelemetry = "0.32.0"
-opentelemetry_sdk = { version = "0.32.0", features = ["rt-tokio", "logs"] }
-opentelemetry-otlp = { version = "0.32.0", features = ["grpc-tonic", "trace", "logs"] }
-opentelemetry-appender-tracing = "0.32.0"
+opentelemetry = "0.32"
+opentelemetry_sdk = { version = "0.32", features = ["rt-tokio", "logs"] }
+opentelemetry-otlp = { version = "0.32", features = ["grpc-tonic", "trace", "logs"] }
+opentelemetry-appender-tracing = "0.32"
 
 # Tracing
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
-tracing-opentelemetry = "0.33.0"
+tracing-opentelemetry = "0.33"
 
 # Authentication
 jsonwebtoken = { version = "10.3.0", features = ["rust_crypto"] }
