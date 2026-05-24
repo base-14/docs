@@ -146,6 +146,15 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 | Jetty     | [Jetty](./collecting-jetty-telemetry)           | Threads, I/O selects, sessions, request queue        |
 | WildFly   | [WildFly](./collecting-wildfly-telemetry)       | Undertow requests, datasource pools, transactions    |
 
+### Network & IoT Devices
+
+| Component | Guide                                       | Key Metrics                                                |
+| --------- | ------------------------------------------- | --------------------------------------------------------- |
+| SNMP      | [SNMP](./collecting-snmp-telemetry)         | Interface I/O, CPU/memory, UPS battery, device status      |
+
+For MQTT, Sparkplug B, OPC-UA, and edge Collector store-and-forward
+patterns, see [IoT & Edge Instrumentation](../iot/index.md).
+
 ## How Component Monitoring Works
 
 Each component exposes metrics through one of three methods:

@@ -245,3 +245,5 @@ service:
   Auto-instrument Node.js applications
 - [Advanced Collector Configuration](./otel-collector-config.md) - Deep dive
   into collector configuration
+- [Edge Collector Patterns](../iot/edge-collector-patterns.md) - Store-and-forward
+  and tiered Collector setups for IoT and edge deployments

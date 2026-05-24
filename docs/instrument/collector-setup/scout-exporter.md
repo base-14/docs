@@ -68,3 +68,5 @@ exporters:
   Auto-instrumentation and CRD-based collector management
 - [Advanced Collector Configuration](./otel-collector-config.md) - Full
   collector configuration reference
+- [IoT & Edge Instrumentation](../iot/index.md) - Ship telemetry from edge
+  Collectors over MQTT, Sparkplug B, and OPC-UA

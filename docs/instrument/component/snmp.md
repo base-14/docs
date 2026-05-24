@@ -658,10 +658,10 @@ interval or reduce the column list.
   [components/snmp-telemetry](https://github.com/base-14/examples/tree/main/components/snmp-telemetry)
   shows how to add a fourth device.
 - **Broaden IoT coverage**: SNMP is the first hop into IoT
-  monitoring. See the
-  [IoT OTel landscape](https://github.com/base-14/examples) notes
-  for MQTT, Sparkplug B, and OPC-UA paths when you need protocols
-  SNMP cannot reach.
+  monitoring. See the [IoT & Edge instrumentation](../iot/index.md)
+  guides for [MQTT](../iot/mqtt-trace-propagation.md),
+  [Sparkplug B](../iot/sparkplug.md), and [OPC-UA](../iot/opcua.md)
+  paths when you need protocols SNMP cannot reach.
 
 ## Related Guides
 
@@ -673,3 +673,5 @@ interval or reduce the column list.
   alongside network gear
 - [HAProxy Monitoring](./haproxy.md) — Monitor the load balancer in
   front of those network devices
+- [IoT & Edge Instrumentation](../iot/index.md) — MQTT, Sparkplug B,
+  OPC-UA, and edge Collector patterns beyond SNMP
