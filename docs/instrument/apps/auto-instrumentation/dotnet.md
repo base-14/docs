@@ -123,7 +123,7 @@ Before starting, ensure you have:
 | ----------------- | --------------- | ------------------- |
 | .NET SDK          | 6.0.0           | 9.0.0+              |
 | ASP.NET Core      | 6.0.0           | 9.0.0+              |
-| OpenTelemetry     | 1.7.0           | 1.11.0+             |
+| OpenTelemetry     | 1.7.0           | 1.11+               |
 | Entity Framework  | 6.0.0           | 9.0.0+              |
 
 ## Required Packages

@@ -118,8 +118,8 @@ Before starting, ensure you have:
 | Component                     | Minimum Version | Recommended |
 | ----------------------------- | --------------- | ----------- |
 | Python                        | 3.12            | 3.14+       |
-| opentelemetry-sdk             | 1.39.0          | 1.39.1+     |
-| opentelemetry-api             | 1.39.0          | 1.39.1+     |
+| opentelemetry-sdk             | 1.39.0          | 1.39+       |
+| opentelemetry-api             | 1.39.0          | 1.39+       |
 | FastAPI                       | 0.115+          | 0.128+      |
 | llama-index-core              | 0.14.0          | 0.14.13+    |
 | llama-index-llms-openai       | 0.6.0           | 0.6.18+     |

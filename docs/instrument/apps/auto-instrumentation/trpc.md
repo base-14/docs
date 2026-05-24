@@ -133,11 +133,11 @@ Before starting, ensure you have:
 | **tRPC**                | 11.0.0          | 11.16.0+            | v11 with createCallerFactory       |
 | **Prisma**              | 6.0.0           | 7.6.0+              | @prisma/instrumentation required   |
 | **TypeScript**          | 5.5.0           | 6.0.2+              | Full type safety                   |
-| **OpenTelemetry SDK**   | 0.200.0         | 0.214.0+            | Core SDK for traces and metrics    |
+| **OpenTelemetry SDK**   | 0.200.0         | 0.214+              | Core SDK for traces and metrics    |
 | **Zod**                 | 3.22.0          | 4.3.6+              | Input validation for procedures    |
 | **Pino**                | 9.0.0           | 10.3.1+             | Structured logging with OTel mixin |
 | **PostgreSQL**          | 15.0            | 18.x                | Primary database                   |
-| **OTel Collector**      | 0.100.0         | 0.148.0+            | Receives and forwards telemetry    |
+| **OTel Collector**      | 0.100.0         | 0.148+              | Receives and forwards telemetry    |
 
 ### Instrumented Components
 

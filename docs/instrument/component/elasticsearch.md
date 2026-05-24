@@ -38,7 +38,7 @@ and ships metrics to base14 Scout.
 | Requirement            | Minimum  | Recommended |
 | ---------------------- | -------- | ----------- |
 | Elasticsearch          | 8.x     | 9.x         |
-| OTel Collector Contrib | 0.90.0  | 0.131.0+    |
+| OTel Collector Contrib | 0.90.0  | 0.131+      |
 | base14 Scout           | Any     | -           |
 
 Before starting:

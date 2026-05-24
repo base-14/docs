@@ -120,7 +120,7 @@ high-traffic fleet.
 | --- | --- |
 | Existing Front Door profile | Standard SKU (`Standard_AzureFrontDoor`) or Premium. |
 | Azure subscription | Pay-As-You-Go (Free Trial excludes `Microsoft.Cdn/profiles` entirely). |
-| OTel Collector | contrib v0.148.0+ (snake_case YAML keys). |
+| OTel Collector | contrib v0.148+   (snake_case YAML keys). |
 | `Microsoft.Cdn` provider | registered on the subscription. |
 | Service principal or managed identity | with `Monitoring Reader` on the FD profile's resource group. |
 | base14 Scout | any tenant. |

@@ -118,8 +118,8 @@ Before starting, ensure you have:
 | ----------------------------- | --------------- | ------------------- |
 | Node.js                       | 18.0.0          | 20.x LTS            |
 | NestJS                        | 9.0.0           | 10.3.0+             |
-| @opentelemetry/sdk-node       | 0.40.0          | 0.54.0+             |
-| @opentelemetry/auto-inst...   | 0.40.0          | 0.54.0+             |
+| @opentelemetry/sdk-node       | 0.40.0          | 0.54+               |
+| @opentelemetry/auto-inst...   | 0.40.0          | 0.54+               |
 | TypeORM (if used)             | 0.3.0           | 0.3.20+             |
 | BullMQ (if used)              | 4.0.0           | 5.x                 |
 | @nestjs/websockets (optional) | 10.0.0          | 10.3.0+             |

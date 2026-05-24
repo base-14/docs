@@ -123,7 +123,7 @@ Before starting, ensure you have:
 | **Node.js**               | 24.0.0          | 24.x LTS            | Krypton - Active until April 2028      |
 | **Express**               | 5.0.0           | 5.0.1+              | Latest v5 with improved security       |
 | **TypeScript** (optional) | 5.0.0           | 5.7.2+              | For type safety                        |
-| **OpenTelemetry SDK**     | 0.200.0         | 0.208.0+            | Core SDK for traces and metrics        |
+| **OpenTelemetry SDK**     | 0.200.0         | 0.208+              | Core SDK for traces and metrics        |
 | **Mongoose** (optional)   | 8.0.0           | 8.20.1+             | For MongoDB (**v9 not yet supported**) |
 | **IORedis** (optional)    | 5.0.0           | 5.4.2+              | For Redis instrumentation              |
 
@@ -1819,7 +1819,7 @@ endpoints further reduces overhead.
 
 - **Node.js**: 24.0.0+ (Krypton LTS recommended, active until April 2028)
 - **Express**: 5.0.0+ (5.0.1+ recommended for latest security improvements)
-- **OpenTelemetry SDK**: 0.200.0+ (always use latest stable version for bug
+- **OpenTelemetry SDK**: 0.200+ (always use latest stable version for bug
   fixes)
 - Full TypeScript support with type definitions included
 

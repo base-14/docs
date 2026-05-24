@@ -129,7 +129,7 @@ Before starting, ensure you have:
 | Laravel | 8.0.0 | 11.0.0+ |
 | Composer | 2.0.0 | 2.7.0+ |
 | OpenTelemetry PHP Extension | 1.0.0 | Latest stable |
-| OpenTelemetry SDK | 1.0.0 | 1.6.0+ |
+| OpenTelemetry SDK | 1.0.0 | 1.6+   |
 
 ## Installation
 

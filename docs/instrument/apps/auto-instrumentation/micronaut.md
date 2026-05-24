@@ -133,7 +133,7 @@ Before starting, ensure you have:
 | Java                   | 17              | 21+                 |
 | Micronaut              | 3.0.0           | 4.8.0+              |
 | Gradle                 | 8.0             | 8.10+               |
-| OpenTelemetry Java Agent | 1.0.0         | 2.26.0+             |
+| OpenTelemetry Java Agent | 1.0.0         | 2.26+               |
 | Hibernate ORM          | 5.6.0           | 6.6.0+              |
 | PostgreSQL Driver      | 42.5.0          | Latest stable       |
 

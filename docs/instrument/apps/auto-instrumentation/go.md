@@ -113,8 +113,8 @@ Before starting, ensure you have:
 | Component                        | Minimum Version | Recommended Version |
 | -------------------------------- | --------------- | ------------------- |
 | Go                               | 1.20            | 1.22+               |
-| go.opentelemetry.io/otel         | 1.20.0          | 1.32.0+             |
-| go.opentelemetry.io/contrib      | 1.20.0          | 1.32.0+             |
+| go.opentelemetry.io/otel         | 1.20.0          | 1.32+               |
+| go.opentelemetry.io/contrib      | 1.20.0          | 1.32+               |
 | Echo (labstack/echo)             | 4.10.0          | 4.13.0+             |
 | Fiber (gofiber/fiber)            | 2.50.0          | 2.52.0+             |
 | Chi (go-chi/chi)                 | 5.0.0           | 5.1.0+              |

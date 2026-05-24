@@ -56,7 +56,7 @@ ships metrics to base14 Scout.
 | Requirement            | Minimum | Recommended |
 | ---------------------- | ------- | ----------- |
 | ArgoCD                 | 2.5     | 2.13+       |
-| OTel Collector Contrib | 0.90.0  | 0.127.0+    |
+| OTel Collector Contrib | 0.90.0  | 0.127+      |
 | base14 Scout           | Any     | -           |
 
 Before starting:

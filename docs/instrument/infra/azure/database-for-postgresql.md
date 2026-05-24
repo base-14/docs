@@ -175,7 +175,7 @@ warrants):
 | --- | --- |
 | Server tier | Flexible Server, any SKU. Burstable B1ms is the smallest tier covered here; GeneralPurpose D2s_v3 and larger unlock the full in-database-scrape value (Burstable tiers have a 2 GiB RAM ceiling that limits `pg_stat_statements`'s working set). |
 | PostgreSQL version | 13, 14, 15, 16, or 17 (when GA in your region). The receiver works on all supported versions. |
-| OTel Collector Contrib | v0.151.0+ (the `azure_monitor` and `azure_event_hub` receiver names are snake_case from v0.148.0; v0.151.0 is the current fleet). |
+| OTel Collector Contrib | v0.151+   (the `azure_monitor` and `azure_event_hub` receiver names are snake_case from v0.148.0; v0.151.0 is the current fleet). |
 | OpenTelemetry semconv | v1.41.0. |
 | Azure CLI | 2.85+ for the `az monitor diagnostic-settings` flags used here. |
 | Azure providers registered | `Microsoft.DBforPostgreSQL`, `Microsoft.EventHub`. The PostgreSQL provider in particular is often `NotRegistered` on fresh subscriptions and takes ~70 seconds to register. |

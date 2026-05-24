@@ -84,7 +84,7 @@ metric) and `AvailableStorage` are deprecated by Microsoft (Aug 2025 / Sep
 | Requirement                       | Minimum                          |
 | --------------------------------- | -------------------------------- |
 | A Cosmos DB account (any API)     | SQL / Mongo / Cassandra / Gremlin / Table |
-| OTel Collector contrib            | v0.148.0+ (snake_case YAML keys) |
+| OTel Collector contrib            | v0.148+   (snake_case YAML keys) |
 | `Microsoft.DocumentDB` provider   | registered on the subscription   |
 | Service principal                 | `Monitoring Reader` on the Cosmos resource group |
 | base14 Scout                      | any tenant                       |

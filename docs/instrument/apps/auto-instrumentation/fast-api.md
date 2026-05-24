@@ -123,7 +123,7 @@ Before starting, ensure you have:
 | --------------------------------- | --------------- | ------------------- | ------------------------------------------------------ |
 | **Python**                        | 3.9             | 3.13+               | Python 3.13+ offers best performance and type system   |
 | **FastAPI**                       | 0.100.0         | 0.115.6+            | Full Pydantic v2 and modern dependency injection       |
-| **OpenTelemetry SDK**             | 1.20.0          | 1.29.0+             | Core SDK for traces and metrics                        |
+| **OpenTelemetry SDK**             | 1.20.0          | 1.29+               | Core SDK for traces and metrics                        |
 | **OpenTelemetry Instrumentation** | 0.41b0          | 0.50b0+             | FastAPI auto-instrumentation                           |
 | **SQLAlchemy** (optional)         | 1.4+            | 2.0.36+             | For database instrumentation                           |
 | **Pydantic**                      | 2.0+            | 2.10+               | Included with FastAPI, v2 required for modern patterns |
@@ -1696,7 +1696,7 @@ production applications.
 
 - **Python**: 3.9+ minimum (Python 3.13+ recommended for best performance)
 - **FastAPI**: 0.100.0+ (0.115.6+ recommended for Pydantic v2)
-- **OpenTelemetry**: SDK 1.20.0+ (1.29.0+ recommended, always use latest stable)
+- **OpenTelemetry**: SDK 1.20+ (1.29+ recommended, always use latest stable)
 
 ### How do I instrument SQLAlchemy database queries?
 

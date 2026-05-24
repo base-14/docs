@@ -115,8 +115,8 @@ Before starting, ensure you have:
 | --------------------------- | --------------- | ------------------- |
 | Node.js                     | 22.0.0          | 24.x LTS            |
 | Next.js                     | 15.0.0          | 16.1.0+             |
-| @opentelemetry/sdk-node     | 0.200.0         | 0.210.0+            |
-| @opentelemetry/auto-inst... | 0.60.0          | 0.68.0+             |
+| @opentelemetry/sdk-node     | 0.200.0         | 0.210+              |
+| @opentelemetry/auto-inst... | 0.60.0          | 0.68+               |
 | Mongoose (if used)          | 8.0.0           | 9.1.0+              |
 | BullMQ (if used)            | 5.0.0           | 5.66.0+             |
 | IORedis (if used)           | 5.0.0           | 5.9.0+              |
@@ -1753,14 +1753,14 @@ and comprehensive OpenTelemetry instrumentation is available at:
     "mongoose": "9.1.4",
     "bullmq": "5.66.5",
     "ioredis": "5.9.2",
-    "@opentelemetry/api": "1.9.0",
-    "@opentelemetry/sdk-node": "0.210.0",
-    "@opentelemetry/auto-instrumentations-node": "0.68.0",
-    "@opentelemetry/exporter-trace-otlp-http": "0.210.0",
-    "@opentelemetry/exporter-metrics-otlp-http": "0.210.0",
-    "@opentelemetry/resources": "2.4.0",
-    "@opentelemetry/semantic-conventions": "1.39.0",
-    "@opentelemetry/sdk-metrics": "2.4.0"
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/sdk-node": "^0.210.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.68.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.210.0",
+    "@opentelemetry/exporter-metrics-otlp-http": "^0.210.0",
+    "@opentelemetry/resources": "^2.4.0",
+    "@opentelemetry/semantic-conventions": "^1.39.0",
+    "@opentelemetry/sdk-metrics": "^2.4.0"
   }
 }
 ```

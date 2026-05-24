@@ -205,7 +205,7 @@ availability detail (`availabilityResults/count`,
 | --- | --- |
 | App Service Plan SKU | Basic B1 or higher. Free F1 and Shared D1 do not support Diagnostic Settings to Event Hubs. |
 | Application Insights | Workspace-based (modern). Classic AI was retired Feb 2024. |
-| OTel Collector Contrib | v0.151.0+ (the `azure_monitor` and `azure_event_hub` receiver names are snake_case from v0.148.0; v0.151.0 is the current fleet). |
+| OTel Collector Contrib | v0.151+   (the `azure_monitor` and `azure_event_hub` receiver names are snake_case from v0.148.0; v0.151.0 is the current fleet). |
 | OpenTelemetry semconv | v1.41.0 (latest cloud and HTTP attributes). |
 | Azure CLI | 2.85+ for the `az monitor diagnostic-settings` flags used here. |
 | Azure providers registered | `Microsoft.Web`, `Microsoft.OperationalInsights`, `Microsoft.Insights`, `Microsoft.EventHub`. |

@@ -136,7 +136,7 @@ Before starting, ensure you have:
 | Kotlin                     | 1.9.0           | 2.2.0+              |
 | Ktor                       | 2.0.0           | 3.2.0+              |
 | Gradle                     | 8.0             | 8.10+               |
-| OpenTelemetry Java Agent   | 1.0.0           | 2.26.0+             |
+| OpenTelemetry Java Agent   | 1.0.0           | 2.26+               |
 | Exposed ORM                | 0.40.0          | 0.61.0+             |
 | PostgreSQL Driver          | 42.5.0          | Latest stable        |
 

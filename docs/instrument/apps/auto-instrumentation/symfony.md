@@ -133,7 +133,7 @@ Before starting, ensure you have:
 | Symfony                      | 5.4.0           | 7.2.0+ / 8.0.0+    |
 | Composer                     | 2.0.0           | 2.7.0+              |
 | OpenTelemetry PHP Extension  | 1.0.0           | Latest stable       |
-| OpenTelemetry SDK            | 1.0.0           | 1.14.0+             |
+| OpenTelemetry SDK            | 1.0.0           | 1.14+               |
 | Doctrine ORM                 | 2.14.0          | 3.6.0+              |
 
 ### Instrumented Components

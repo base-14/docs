@@ -139,7 +139,7 @@ Before starting, ensure you have:
 | ---------------------------------------- | --------------- | ------------------- | ---------------------------------------------------------------- |
 | **Python**                               | 3.11            | 3.14                | Litestar 2.x supports 3.8+; 3.11+ recommended for asyncio perf.  |
 | **Litestar**                             | 2.0             | 2.21.1+             | Earlier 1.x is the legacy "Starlite" name, schema differs.       |
-| **OpenTelemetry SDK**                    | 1.30.0          | 1.41.0+             | Core SDK for traces, metrics, logs.                              |
+| **OpenTelemetry SDK**                    | 1.30.0          | 1.41+               | Core SDK for traces, metrics, logs.                              |
 | **OpenTelemetry contrib instrumentations** | 0.50b0          | 0.62b0+             | asyncpg, httpx, SQLAlchemy, logging packages.                    |
 | **opentelemetry-distro**                 | 0.50b0          | 0.62b0+             | Provides the `opentelemetry-instrument` CLI wrapper.             |
 | **asyncpg** (optional)                   | 0.27            | 0.31.0              | Native Postgres driver.                                          |
@@ -1246,7 +1246,7 @@ proportional to real traffic.
 ### Which Python and Litestar versions are supported?
 
 Python 3.11+ minimum (3.14 recommended), Litestar 2.0+ (2.21.1+
-recommended), OpenTelemetry SDK 1.30.0+ (1.41.0+ recommended), and contrib
+recommended), OpenTelemetry SDK 1.30+ (1.41+ recommended), and contrib
 instrumentations 0.50b0+ (0.62b0+ recommended). The example pins Python
 3.14 and Litestar 2.21.1.
 

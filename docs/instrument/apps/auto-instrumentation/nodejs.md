@@ -136,8 +136,8 @@ Before starting, ensure you have:
 | Component                   | Minimum Version | Recommended Version |
 | --------------------------- | --------------- | ------------------- |
 | Node.js                     | 18.0.0          | 20.x LTS or 22.x    |
-| @opentelemetry/sdk-node     | 0.40.0          | 0.54.0+             |
-| @opentelemetry/auto-inst... | 0.40.0          | 0.54.0+             |
+| @opentelemetry/sdk-node     | 0.40.0          | 0.54+               |
+| @opentelemetry/auto-inst... | 0.40.0          | 0.54+               |
 | TypeScript (optional)       | 4.5.0           | 5.3.0+              |
 
 ### Supported Libraries

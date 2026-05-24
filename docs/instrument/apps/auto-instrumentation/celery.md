@@ -128,7 +128,7 @@ Before starting, ensure you have:
 | Celery           | 5.3.0           | 5.4.0+              |
 | RabbitMQ         | 3.8.0           | 3.13.0+             |
 | Redis            | 6.0.0           | 7.0.0+              |
-| opentelemetry-\* | 1.20.0          | 1.27.0+             |
+| opentelemetry-\* | 1.20.0          | 1.27+               |
 
 ## Required Packages
 

@@ -122,8 +122,8 @@ Before starting, ensure you have:
 | LangGraph         | 0.2             | 1.0.6+      |
 | langgraph-core    | 0.2             | 0.3.38+     |
 | langchain-core    | 0.3             | 0.3.63+     |
-| opentelemetry-sdk | 1.39.0          | 1.39.1+     |
-| opentelemetry-api | 1.39.0          | 1.39.1+     |
+| opentelemetry-sdk | 1.39.0          | 1.39+       |
+| opentelemetry-api | 1.39.0          | 1.39+       |
 | FastAPI           | 0.115+          | 0.128+      |
 | SQLAlchemy        | 2.0             | 2.0.45+     |
 | Anthropic SDK     | 0.40+           | 0.76+       |

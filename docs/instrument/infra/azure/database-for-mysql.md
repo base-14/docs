@@ -182,7 +182,7 @@ warrants):
 | --- | --- |
 | Server tier | Flexible Server, any SKU. Burstable B1ms is the smallest tier covered here; GeneralPurpose and larger unlock the full in-database-scrape value (Burstable tiers have a 2 GiB RAM ceiling that constrains `performance_schema` and may leave some statement-event consumers off by default). |
 | MySQL version | 5.7, 8.0, or 8.4 (when GA in your region). The receiver works on all supported versions; 8.0+ is recommended. |
-| OTel Collector Contrib | v0.151.0+ (the `azure_monitor` and `azure_event_hub` receiver names are snake_case from v0.148.0; v0.151.0 is the current fleet). |
+| OTel Collector Contrib | v0.151+   (the `azure_monitor` and `azure_event_hub` receiver names are snake_case from v0.148.0; v0.151.0 is the current fleet). |
 | OpenTelemetry semconv | v1.41.0. |
 | Azure CLI | 2.85+ for the `az monitor diagnostic-settings` flags used here. |
 | Azure providers registered | `Microsoft.DBforMySQL` (metrics source), plus `Microsoft.EventHub` and `Microsoft.Insights` for the Diagnostic Settings logs path. All three must be `Registered` in the subscription, or the receiver returns no metrics and `az monitor diagnostic-settings create` fails. |

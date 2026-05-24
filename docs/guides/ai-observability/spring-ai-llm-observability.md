@@ -146,8 +146,8 @@ Before starting, ensure you have:
 | Java                     | 21              | 25+                 |
 | Spring Boot              | 3.4+            | 4.0.3+              |
 | Spring AI                | 1.0.0           | 2.0.0-M2+           |
-| OpenTelemetry Java Agent | 2.0.0           | 2.25.0+             |
-| OpenTelemetry API        | 1.40.0          | 1.52.0+             |
+| OpenTelemetry Java Agent | 2.0.0           | 2.25+               |
+| OpenTelemetry API        | 1.40.0          | 1.52+               |
 | PostgreSQL (pgvector)    | 15              | 18+                 |
 
 ## The Unified Trace

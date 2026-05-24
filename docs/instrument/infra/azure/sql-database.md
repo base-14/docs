@@ -154,7 +154,7 @@ values when you need both views.
 | Requirement                       | Minimum                          |
 | --------------------------------- | -------------------------------- |
 | An Azure SQL Database (any tier)  | DTU, vCore, Serverless, Hyperscale |
-| OTel Collector contrib            | v0.148.0+ (snake_case YAML keys) |
+| OTel Collector contrib            | v0.148+   (snake_case YAML keys) |
 | `Microsoft.Sql` provider          | registered on the subscription   |
 | Service principal                 | `Monitoring Reader` on the SQL resource group |
 | base14 Scout                      | any tenant                       |

@@ -121,8 +121,8 @@ Before starting, ensure you have:
 | **Bun**                      | 1.1.0           | 1.3.x               | Node.js compat layer required      |
 | **Elysia**                   | 1.0.0           | 1.4.x               | Latest v1 with plugin system       |
 | **TypeScript**               | 5.0.0           | 6.0.x               | Bun includes TS transpiler         |
-| **OpenTelemetry SDK**        | 0.200.0         | 0.214.0+            | Core SDK for traces/metrics        |
-| **@opentelemetry/api-logs**  | 0.200.0         | 0.214.0+            | LogRecord API for structured logs  |
+| **OpenTelemetry SDK**        | 0.200.0         | 0.214+              | Core SDK for traces/metrics        |
+| **@opentelemetry/api-logs**  | 0.200.0         | 0.214+              | LogRecord API for structured logs  |
 | **instrumentation-pg**       | 0.60.0          | 0.66.0+             | PostgreSQL auto-instrumentation    |
 | **PostgreSQL**               | 15.0            | 18.x                | For database instrumentation       |
 | **Drizzle ORM**              | 0.40.0          | 0.45.x              | Type-safe SQL via node-postgres    |

@@ -144,7 +144,7 @@ drive traffic and read the metrics within the same active window.
 | Requirement | Detail |
 | --- | --- |
 | Hosting model | Consumption (`Microsoft.Logic/workflows`). Standard is out of scope - see [Azure App Service](./app-service.md). |
-| OTel Collector Contrib | v0.151.0+ (the `azure_monitor` and `azure_event_hub` receiver names are snake_case from v0.148.0). |
+| OTel Collector Contrib | v0.151+   (the `azure_monitor` and `azure_event_hub` receiver names are snake_case from v0.148.0). |
 | OpenTelemetry semconv | v1.41.0 (latest cloud attributes). |
 | Azure CLI | 2.85+ for the `az monitor diagnostic-settings` flags used here. |
 | Azure providers registered | `Microsoft.Logic`, plus `Microsoft.EventHub` and `Microsoft.Insights` for the logs path. |

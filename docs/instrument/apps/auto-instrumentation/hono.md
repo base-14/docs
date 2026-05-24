@@ -115,7 +115,7 @@ Before starting, ensure you have:
 | **Node.js**               | 24.0.0          | 24.x LTS            | Latest LTS with ESM support   |
 | **Hono**                  | 4.0.0           | 4.11.9+             | Latest v4 with middleware     |
 | **TypeScript** (optional) | 5.0.0           | 5.9.3+              | For type safety               |
-| **OpenTelemetry SDK**     | 0.200.0         | 0.212.0+            | Core SDK for traces/metrics   |
+| **OpenTelemetry SDK**     | 0.200.0         | 0.212+              | Core SDK for traces/metrics   |
 | **PostgreSQL** (optional) | 15.0            | 18.x                | For database instrumentation  |
 | **Redis** (optional)      | 7.0             | 8.x                 | For IORedis instrumentation   |
 | **Drizzle ORM** (optional)| 0.40.0          | 0.45.1+             | Type-safe SQL builder         |

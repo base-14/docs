@@ -153,9 +153,9 @@ Before implementing OpenTelemetry instrumentation, ensure you have:
 
 | Component                         | Minimum | Recommended |
 | --------------------------------- | ------- | ----------- |
-| OpenTelemetry Java SDK            | 1.32.0  | 1.56.0+     |
+| OpenTelemetry Java SDK            | 1.32.0  | 1.56+       |
 | OpenTelemetry Spring Boot Starter | 2.1.0   | 2.21.0      |
-| OpenTelemetry Java Agent          | 1.32.0  | 2.10.0+     |
+| OpenTelemetry Java Agent          | 1.32.0  | 2.10+       |
 
 </details>
 
