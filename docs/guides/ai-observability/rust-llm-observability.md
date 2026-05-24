@@ -132,10 +132,10 @@ Before starting, ensure you have:
 | Component             | Minimum Version | Recommended |
 | --------------------- | --------------- | ----------- |
 | Rust                  | 1.85            | 1.92+       |
-| opentelemetry         | 0.28            | 0.31+       |
-| opentelemetry_sdk     | 0.28            | 0.31+       |
-| opentelemetry-otlp    | 0.28            | 0.31+       |
-| tracing-opentelemetry | 0.29            | 0.32+       |
+| opentelemetry         | 0.28            | 0.32+       |
+| opentelemetry_sdk     | 0.28            | 0.32+       |
+| opentelemetry-otlp    | 0.28            | 0.32+       |
+| tracing-opentelemetry | 0.29            | 0.33+       |
 | tracing               | 0.1             | 0.1+        |
 | tracing-subscriber    | 0.3             | 0.3+        |
 | async-openai          | 0.25+           | 0.33+       |
@@ -202,21 +202,21 @@ async-openai = { version = "0.33", features = ["chat-completion"] }
 reqwest = { version = "0.12", features = ["json"] }
 
 # OpenTelemetry
-opentelemetry = "0.31.0"
-opentelemetry_sdk = { version = "0.31.0", features = [
+opentelemetry = "0.32.0"
+opentelemetry_sdk = { version = "0.32.0", features = [
     "rt-tokio", "logs", "metrics"
 ] }
-opentelemetry-otlp = { version = "0.31.0", features = [
+opentelemetry-otlp = { version = "0.32.0", features = [
     "grpc-tonic", "trace", "logs", "metrics"
 ] }
-opentelemetry-appender-tracing = "0.31.0"
+opentelemetry-appender-tracing = "0.32.0"
 
 # Tracing
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = [
     "env-filter", "json"
 ] }
-tracing-opentelemetry = "0.32.0"
+tracing-opentelemetry = "0.33.0"
 
 # Utilities
 serde = { version = "1", features = ["derive"] }
