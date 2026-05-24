@@ -314,10 +314,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-opentelemetry = "0.31.0"
-opentelemetry_sdk = { version = "0.31.0", features = ["rt-tokio", "logs", "metrics"] }
-opentelemetry-otlp = { version = "0.31.0", features = ["http-proto", "trace", "logs", "metrics"] }
-opentelemetry-appender-tracing = "0.31.0"
+opentelemetry = "0.32.0"
+opentelemetry_sdk = { version = "0.32.0", features = ["rt-tokio", "logs", "metrics"] }
+opentelemetry-otlp = { version = "0.32.0", features = ["http-proto", "trace", "logs", "metrics"] }
+opentelemetry-appender-tracing = "0.32.0"
 tokio = { version = "1", features = ["full"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
