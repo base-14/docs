@@ -117,8 +117,8 @@ Before starting, ensure you have:
 | --------------------- | --------------- | ------------------- |
 | Rust                  | 1.80.0          | 1.92.0+             |
 | Axum                  | 0.7.0           | 0.8.8+              |
-| OpenTelemetry         | 0.27.0          | 0.31.0+             |
-| tracing-opentelemetry | 0.28.0          | 0.32.0+             |
+| OpenTelemetry         | 0.27.0          | 0.32.0+             |
+| tracing-opentelemetry | 0.28.0          | 0.33.0+             |
 | SQLx                  | 0.7.0           | 0.8.6+              |
 
 ## Required Packages
@@ -139,15 +139,15 @@ tokio = { version = "1.49", features = ["full", "tracing"] }
 sqlx = { version = "0.8.6", features = ["runtime-tokio", "postgres", "macros"] }
 
 # OpenTelemetry
-opentelemetry = "0.31"
-opentelemetry_sdk = { version = "0.31", features = ["rt-tokio", "logs"] }
-opentelemetry-otlp = { version = "0.31", features = ["grpc-tonic", "trace", "logs"] }
-opentelemetry-appender-tracing = "0.31"
+opentelemetry = "0.32"
+opentelemetry_sdk = { version = "0.32", features = ["rt-tokio", "logs"] }
+opentelemetry-otlp = { version = "0.32", features = ["grpc-tonic", "trace", "logs"] }
+opentelemetry-appender-tracing = "0.32"
 
 # Tracing
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
-tracing-opentelemetry = "0.32"
+tracing-opentelemetry = "0.33"
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
@@ -1508,14 +1508,14 @@ tower-http = { version = "0.6.8", features = ["trace", "cors", "timeout"] }
 tokio = { version = "1.49", features = ["full", "tracing"] }
 sqlx = { version = "0.8.6", features = ["runtime-tokio", "postgres"] }
 
-opentelemetry = "0.31"
-opentelemetry_sdk = { version = "0.31", features = ["rt-tokio", "logs"] }
-opentelemetry-otlp = { version = "0.31", features = ["grpc-tonic", "trace", "logs"] }
-opentelemetry-appender-tracing = "0.31"
+opentelemetry = "0.32"
+opentelemetry_sdk = { version = "0.32", features = ["rt-tokio", "logs"] }
+opentelemetry-otlp = { version = "0.32", features = ["grpc-tonic", "trace", "logs"] }
+opentelemetry-appender-tracing = "0.32"
 
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
-tracing-opentelemetry = "0.32"
+tracing-opentelemetry = "0.33"
 
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
