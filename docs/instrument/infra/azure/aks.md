@@ -130,7 +130,7 @@ Prefer raw Helm releases? See the
 
 ## Collector image version
 
-This guide pins `otel/opentelemetry-collector-contrib:0.151.0` on every
+This guide pins `otel/opentelemetry-collector-contrib:0.152.1` on every
 `OpenTelemetryCollector` CR. Contrib versions that change config behavior
 for the components used here:
 
@@ -161,7 +161,7 @@ kubectl wait --for=condition=Available deployment/cert-manager-cainjector -n cer
 
 Chart `0.111.0` ships operator `v0.149.0`. The `manager.collectorImage` flags
 pin the default contrib image so every CR you create without an explicit
-`spec.image` starts at `0.151.0`.
+`spec.image` starts at `0.152.1`.
 
 ```bash
 helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
@@ -172,7 +172,7 @@ helm upgrade --install opentelemetry-operator open-telemetry/opentelemetry-opera
   --namespace opentelemetry-operator-system \
   --create-namespace \
   --set "manager.collectorImage.repository=otel/opentelemetry-collector-contrib" \
-  --set "manager.collectorImage.tag=0.151.0" \
+  --set "manager.collectorImage.tag=0.152.1" \
   --wait --timeout 5m
 
 kubectl wait --for=condition=Available \
@@ -237,7 +237,7 @@ metadata:
   namespace: otel
 spec:
   mode: daemonset
-  image: otel/opentelemetry-collector-contrib:0.151.0
+  image: otel/opentelemetry-collector-contrib:0.152.1
   resources:
     requests:
       cpu: 100m
@@ -437,7 +437,7 @@ metadata:
 spec:
   mode: deployment
   replicas: 1
-  image: otel/opentelemetry-collector-contrib:0.151.0
+  image: otel/opentelemetry-collector-contrib:0.152.1
   resources:
     requests:
       cpu: 50m
@@ -572,7 +572,7 @@ metadata:
 spec:
   mode: deployment
   replicas: 1
-  image: otel/opentelemetry-collector-contrib:0.151.0
+  image: otel/opentelemetry-collector-contrib:0.152.1
   resources:
     requests:
       cpu: 50m
