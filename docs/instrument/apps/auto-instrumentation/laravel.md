@@ -1417,9 +1417,9 @@ these resources to maximize your observability:
 
 Here's a complete working example of a Laravel application with OpenTelemetry instrumentation.
 
-### Example Project 1: Laravel 11 + PHP 8.2 + PostgreSQL
+### Example Project 1: Laravel 13 + PHP 8.5 + PostgreSQL
 
-Based on our [GitHub example repository](https://github.com/base-14/examples/tree/main/php/php85-laravel12-postgres).
+Based on our [GitHub example repository](https://github.com/base-14/examples/tree/main/php/php85-laravel13-postgres).
 
 #### composer.json
 
