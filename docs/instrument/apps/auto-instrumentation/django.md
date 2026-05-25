@@ -2262,8 +2262,8 @@ from a single pane.
 
 ### Related Guides
 
-- **Flask Instrumentation** \- Lightweight Python framework instrumentation
-  (guide coming soon)
+- **[Flask Instrumentation](/instrument/apps/auto-instrumentation/flask)** \-
+  Lightweight Python framework instrumentation
 - **[FastAPI Instrumentation](/instrument/apps/auto-instrumentation/fast-api)**
   \- Async Python API framework
 - **[Python Custom Instrumentation](/instrument/apps/custom-instrumentation/python)**

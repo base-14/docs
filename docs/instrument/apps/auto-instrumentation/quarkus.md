@@ -1821,8 +1821,8 @@ observability patterns:
   \- Compare Quarkus extension approach with Node.js SDK patterns
 - **[Go Instrumentation](/instrument/apps/auto-instrumentation/go)** \-
   Explore another compiled language with low overhead tracing
-- **Python Django** \- ORM instrumentation patterns similar to Hibernate (guide
-  coming soon)
+- **[Django Instrumentation](./django.md)** \- ORM instrumentation patterns
+  similar to Hibernate
 
 ## Complete Example
 
