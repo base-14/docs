@@ -19,12 +19,17 @@ keywords:
   - sql server kubernetes monitoring
   - sql server telemetry collection
 sidebar_position: 44
-head:
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does SQL Server OpenTelemetry monitoring work in Kubernetes?","acceptedAnswer":{"@type":"Answer","text":"Yes. Set the endpoint to the SQL Server service DNS (e.g., sqlserver.default.svc.cluster.local:1433) and inject credentials via a Kubernetes secret. The OpenTelemetry Collector can run as a sidecar or DaemonSet."}},{"@type":"Question","name":"How do I monitor multiple SQL Server instances with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Add multiple sqlserver receiver blocks with distinct names (e.g., sqlserver/primary and sqlserver/replica) in the OpenTelemetry Collector config, then include both in the metrics pipeline."}},{"@type":"Question","name":"What permissions does the SQL Server monitoring user need?","acceptedAnswer":{"@type":"Answer","text":"For SQL Server 2022 and later: VIEW SERVER PERFORMANCE STATE plus VIEW ANY DATABASE. For SQL Server 2017-2019: VIEW SERVER STATE plus VIEW ANY DATABASE. No write permissions are needed."}},{"@type":"Question","name":"What SQL Server metrics does the OpenTelemetry Collector capture on Linux containers?","acceptedAnswer":{"@type":"Answer","text":"The sqlserverreceiver collects 37 metrics on Linux containers, including batch request rate, buffer cache hit ratio, page life expectancy, deadlock rate, lock waits, per-database I/O and latency, and connection counts. Windows hosts add 13 more metrics that come from Windows performance counters."}},{"@type":"Question","name":"Does this work with Azure SQL Database or Azure SQL Managed Instance?","acceptedAnswer":{"@type":"Answer","text":"This guide targets self-hosted SQL Server. Azure SQL Database and Azure SQL Managed Instance expose metrics via Azure Monitor, which is collected with the azuremonitorreceiver instead. See the Azure SQL Database guide for those platforms."}}]}
 ---
+
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does SQL Server OpenTelemetry monitoring work in Kubernetes?","acceptedAnswer":{"@type":"Answer","text":"Yes. Set the endpoint to the SQL Server service DNS (e.g., sqlserver.default.svc.cluster.local:1433) and inject credentials via a Kubernetes secret. The OpenTelemetry Collector can run as a sidecar or DaemonSet."}},{"@type":"Question","name":"How do I monitor multiple SQL Server instances with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Add multiple sqlserver receiver blocks with distinct names (e.g., sqlserver/primary and sqlserver/replica) in the OpenTelemetry Collector config, then include both in the metrics pipeline."}},{"@type":"Question","name":"What permissions does the SQL Server monitoring user need?","acceptedAnswer":{"@type":"Answer","text":"For SQL Server 2022 and later: VIEW SERVER PERFORMANCE STATE plus VIEW ANY DATABASE. For SQL Server 2017-2019: VIEW SERVER STATE plus VIEW ANY DATABASE. No write permissions are needed."}},{"@type":"Question","name":"What SQL Server metrics does the OpenTelemetry Collector capture on Linux containers?","acceptedAnswer":{"@type":"Answer","text":"The sqlserverreceiver collects 37 metrics on Linux containers, including batch request rate, buffer cache hit ratio, page life expectancy, deadlock rate, lock waits, per-database I/O and latency, and connection counts. Windows hosts add 13 more metrics that come from Windows performance counters."}},{"@type":"Question","name":"Does this work with Azure SQL Database or Azure SQL Managed Instance?","acceptedAnswer":{"@type":"Answer","text":"This guide targets self-hosted SQL Server. Azure SQL Database and Azure SQL Managed Instance expose metrics via Azure Monitor, which is collected with the azuremonitorreceiver instead. See the Azure SQL Database guide for those platforms."}}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
 
 # SQL Server
 

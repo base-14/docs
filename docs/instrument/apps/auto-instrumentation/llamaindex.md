@@ -32,6 +32,16 @@ keywords:
   ]
 ---
 
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why use custom instrumentation instead of OpenInference?","acceptedAnswer":{"@type":"Answer","text":"OpenInference produces non-standard attributes (llm.*, input.*, output.*) that are specific to LlamaIndex and don't follow the OpenTelemetry GenAI semantic conventions. Custom instrumentation gives you standard attributes (gen_ai.*) that work with any OTel-compatible backend."}},{"@type":"Question","name":"Does OpenTelemetry add latency to LLM calls?","acceptedAnswer":{"@type":"Answer","text":"No. Span creation takes microseconds. LLM API calls take seconds. The overhead is unmeasurable. BatchSpanProcessor exports in a background thread."}},{"@type":"Question","name":"How do I track cost across multiple LLM providers?","acceptedAnswer":{"@type":"Answer","text":"Use the gen_ai.client.cost counter metric with gen_ai.provider.name and gen_ai.request.model attributes. Define pricing per model and calculate from token counts."}},{"@type":"Question","name":"How does structured output retry work in LlamaIndex with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"When the LLM returns invalid JSON, the system appends the validation error to the conversation and asks the LLM to retry. This happens up to MAX_PARSE_RETRIES times (default 2) before raising an error."}},{"@type":"Question","name":"Can I see prompts and completions in traces?","acceptedAnswer":{"@type":"Answer","text":"Yes, if OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true. Content is PII-scrubbed and truncated to 500 characters. Disable in production for compliance."}},{"@type":"Question","name":"How do I add a custom LLM provider to a LlamaIndex application?","acceptedAnswer":{"@type":"Answer","text":"Add the provider to create_llm(), add its server address to PROVIDER_SERVERS, and add its model pricing to the PRICING dictionary."}},{"@type":"Question","name":"How do I version and manage prompts in a LlamaIndex project?","acceptedAnswer":{"@type":"Answer","text":"Prompts are stored as YAML files in the prompts/ directory with version suffixes (e.g., review_v1.yaml, review_v2.yaml). The active version is configured via REVIEW_PROMPT_VERSION environment variable."}},{"@type":"Question","name":"How do I evaluate LLM prompts with Promptfoo and LlamaIndex?","acceptedAnswer":{"@type":"Answer","text":"Install Promptfoo (npm install -g promptfoo), then run npx promptfoo eval from the project root. Results can be viewed with npx promptfoo view."}}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
+
 # LlamaIndex
 
 Implement OpenTelemetry instrumentation for LlamaIndex applications to enable

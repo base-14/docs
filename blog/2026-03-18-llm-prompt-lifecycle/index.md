@@ -6,11 +6,6 @@ description: "Most teams monitor their LLMs or manage their prompts. Almost none
 authors: [nitin]
 tags: [llm, observability, prompt-management, genai, opentelemetry, prompt-engineering, scout, scope]
 unlisted: false
-head:
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is prompt drift and why is it hard to detect?","acceptedAnswer":{"@type":"Answer","text":"Prompt drift is a slow, invisible degradation in LLM output quality that standard monitoring does not catch. It happens through model drift, data distribution shift, and context drift. Every infrastructure metric looks healthy while outputs get worse."}},{"@type":"Question","name":"How do you monitor LLM output quality in production?","acceptedAnswer":{"@type":"Answer","text":"Instrument LLM calls using OpenTelemetry GenAI semantic conventions to capture model identity, token usage, latency, full prompt content, and completion text on every span. In base14 Scout, filter by prompt name and version to spot quality regressions, then use base14 Scope to version, test, and promote prompt fixes without a code deployment."}},{"@type":"Question","name":"What is the difference between hardcoded and managed prompts?","acceptedAnswer":{"@type":"Answer","text":"Hardcoded prompts are embedded in application code and require a full deployment cycle for every change. Managed prompts are stored in a prompt management system with immutable version history, atomic promotion and rollback without code deployment, and regression testing against real inputs."}},{"@type":"Question","name":"How do you regression test LLM prompts before deploying changes?","acceptedAnswer":{"@type":"Answer","text":"Build a Golden Set: a regression test dataset from real production failures. Select traces of actual incorrect LLM outputs, capture the inputs and expected correct outputs, and run new prompt versions against these exact failure cases before promotion. This catches regressions that synthetic test data misses."}},{"@type":"Question","name":"How do you fix a prompt that is producing worse results over time?","acceptedAnswer":{"@type":"Answer","text":"First, instrument your LLM calls with OpenTelemetry to capture full prompt content and completions on every call. Filter by prompt name and version to isolate when quality degraded. Then update the prompt using real production failure examples, test the new version against a regression dataset built from those failures, and promote atomically without a code deployment."}}]}
 ---
 
 Rachel, a Staff Engineer at a mid-size SaaS company, woke up to a Slack message
@@ -32,6 +27,16 @@ surfaced the problem until the support lead noticed a pattern in Slack
 complaints.
 
 <!--truncate-->
+
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is prompt drift and why is it hard to detect?","acceptedAnswer":{"@type":"Answer","text":"Prompt drift is a slow, invisible degradation in LLM output quality that standard monitoring does not catch. It happens through model drift, data distribution shift, and context drift. Every infrastructure metric looks healthy while outputs get worse."}},{"@type":"Question","name":"How do you monitor LLM output quality in production?","acceptedAnswer":{"@type":"Answer","text":"Instrument LLM calls using OpenTelemetry GenAI semantic conventions to capture model identity, token usage, latency, full prompt content, and completion text on every span. In base14 Scout, filter by prompt name and version to spot quality regressions, then use base14 Scope to version, test, and promote prompt fixes without a code deployment."}},{"@type":"Question","name":"What is the difference between hardcoded and managed prompts?","acceptedAnswer":{"@type":"Answer","text":"Hardcoded prompts are embedded in application code and require a full deployment cycle for every change. Managed prompts are stored in a prompt management system with immutable version history, atomic promotion and rollback without code deployment, and regression testing against real inputs."}},{"@type":"Question","name":"How do you regression test LLM prompts before deploying changes?","acceptedAnswer":{"@type":"Answer","text":"Build a Golden Set: a regression test dataset from real production failures. Select traces of actual incorrect LLM outputs, capture the inputs and expected correct outputs, and run new prompt versions against these exact failure cases before promotion. This catches regressions that synthetic test data misses."}},{"@type":"Question","name":"How do you fix a prompt that is producing worse results over time?","acceptedAnswer":{"@type":"Answer","text":"First, instrument your LLM calls with OpenTelemetry to capture full prompt content and completions on every call. Filter by prompt name and version to isolate when quality degraded. Then update the prompt using real production failure examples, test the new version against a regression dataset built from those failures, and promote atomically without a code deployment."}}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
 
 ## The Problem Nobody Has a Dashboard For
 
