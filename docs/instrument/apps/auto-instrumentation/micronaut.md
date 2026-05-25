@@ -5,9 +5,8 @@ title:
 sidebar_label: Micronaut
 sidebar_position: 19
 description:
-  Instrument Micronaut applications with the OpenTelemetry Java Agent for
-  zero-code tracing of HTTP requests, Hibernate JPA queries, and Netty server
-  operations. Export traces, metrics, and correlated logs to base14 Scout.
+  Micronaut OpenTelemetry instrumentation with the Java agent for zero-code
+  tracing of HTTP, Hibernate JPA, and Netty, sent to base14 Scout.
 keywords:
   [
     micronaut opentelemetry,

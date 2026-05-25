@@ -9,6 +9,7 @@ const NOINDEX_PATTERNS = [
   /^\/blog\/authors(\/|$)/,
   /^\/category\//,
   /^\/tags(\/|$)/,
+  /^\/search(\/|$)/,
 ];
 
 function shouldNoIndex(urlPath: string): boolean {

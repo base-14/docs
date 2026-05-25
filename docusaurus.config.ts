@@ -126,6 +126,22 @@ const config: Config = {
               anonymizeIP: true,
             }
           : undefined,
+        sitemap: {
+          ignorePatterns: [
+            "/search",
+            "/search/**",
+            "/category/**",
+            "/tags",
+            "/tags/**",
+            "/blog/tags",
+            "/blog/tags/**",
+            "/blog/page/**",
+            "/blog/archive",
+            "/blog/archive/**",
+            "/blog/authors",
+            "/blog/authors/**",
+          ],
+        },
       } satisfies Preset.Options,
     ],
   ],

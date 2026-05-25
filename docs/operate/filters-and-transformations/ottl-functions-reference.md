@@ -3,9 +3,8 @@ title: "OTTL Functions Reference — Editors, Converters & Examples"
 sidebar_label: OTTL Functions Reference
 sidebar_position: 0
 description:
-  Every OTTL function in one page — editors (set, delete_key, flatten),
-  converters (ParseJSON, SHA256, IsMatch), contexts, where clauses, and
-  copy-paste Collector YAML examples.
+  Every OTTL function in one page - editors, converters, contexts, where
+  clauses, and copy-paste OpenTelemetry Collector YAML examples.
 keywords:
   - ottl functions
   - ottl

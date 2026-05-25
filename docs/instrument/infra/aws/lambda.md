@@ -2,9 +2,8 @@
 title: AWS Lambda OpenTelemetry Instrumentation - Traces, Metrics & Logs
 sidebar_label: AWS Lambda
 description:
-  Instrument AWS Lambda functions with OpenTelemetry to collect traces,
-  metrics, and logs. Complete guide for auto-instrumentation using Lambda
-  layers with Scout Collector integration.
+  AWS Lambda OpenTelemetry instrumentation for traces, metrics, and logs.
+  Auto-instrument with Lambda layers and the Scout Collector.
 keywords:
   [
     aws lambda monitoring,

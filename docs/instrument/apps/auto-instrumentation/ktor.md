@@ -5,9 +5,8 @@ title:
 sidebar_label: Ktor
 sidebar_position: 22
 description:
-  Instrument Kotlin Ktor applications with the OpenTelemetry Java Agent for
-  zero-code tracing of HTTP requests, Exposed ORM queries, and Netty server
-  operations. Export traces, metrics, and correlated logs to base14 Scout.
+  Ktor OpenTelemetry instrumentation with the Java agent for zero-code
+  tracing of HTTP, Exposed ORM, and Netty, exported to base14 Scout.
 keywords:
   [
     ktor opentelemetry,

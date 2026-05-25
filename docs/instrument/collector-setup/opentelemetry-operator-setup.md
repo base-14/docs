@@ -2,9 +2,8 @@
 title: OpenTelemetry Operator for Kubernetes - Auto-Instrumentation & Collector Setup
 sidebar_label: OpenTelemetry Operator
 description:
-  Deploy and manage OpenTelemetry Collectors using the OpenTelemetry Operator on
-  Kubernetes. Enable automatic instrumentation for Java, Python, Node.js, .NET,
-  and Go applications with base14 Scout integration.
+  Deploy OpenTelemetry Collectors with the OpenTelemetry Operator on
+  Kubernetes and auto-instrument Java, Python, Node.js, .NET, and Go apps.
 keywords:
   [
     opentelemetry operator,
