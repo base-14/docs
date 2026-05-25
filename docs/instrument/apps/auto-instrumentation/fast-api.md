@@ -3,9 +3,8 @@ title: FastAPI OpenTelemetry Instrumentation - Traces, Metrics & Logs Setup
 sidebar_label: FastAPI
 sidebar_position: 4
 description:
-  pip install opentelemetry-instrumentation-fastapi and get traces
-  in 5 minutes. Auto-instrument HTTP requests, SQLAlchemy queries,
-  and async operations with working config included.
+  FastAPI OpenTelemetry instrumentation for HTTP, SQLAlchemy, and async calls.
+  pip install opentelemetry-instrumentation-fastapi with a working config.
 keywords:
   [
     fastapi opentelemetry instrumentation,

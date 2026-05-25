@@ -3,10 +3,8 @@ title: Flutter Instrumentation - Mobile + Web RUM with scout_flutter
 sidebar_label: Flutter
 sidebar_position: 25
 description:
-  Auto-instrument Flutter apps (iOS, Android, web) with the scout_flutter
-  SDK. Captures taps, navigation, errors, native crashes, HTTP, scroll,
-  lifecycle, frame metrics — exports OpenTelemetry traces, metrics, and
-  logs to a Scout collector.
+  Flutter OpenTelemetry RUM for iOS, Android, and web with the scout_flutter
+  SDK. Captures taps, navigation, crashes, HTTP, and frame metrics as traces.
 keywords:
   [
     flutter opentelemetry,

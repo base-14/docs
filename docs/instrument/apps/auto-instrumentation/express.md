@@ -3,9 +3,8 @@ title: Express.js OpenTelemetry Instrumentation - Traces & Metrics Setup
 sidebar_label: Express.js
 sidebar_position: 8
 description:
-  npm install @opentelemetry/instrumentation-express for automatic
-  tracing. Capture HTTP requests, MongoDB, Redis, and background
-  jobs. 5-minute setup with working config.
+  Express.js OpenTelemetry instrumentation for HTTP, MongoDB, Redis, and jobs.
+  npm install @opentelemetry/instrumentation-express, 5-minute config.
 keywords:
   [
     express opentelemetry instrumentation,

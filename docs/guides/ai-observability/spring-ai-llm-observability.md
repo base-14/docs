@@ -4,9 +4,8 @@ title:
 sidebar_label: Java AI Observability
 sidebar_position: 10
 description:
-  Trace LLM calls, track token costs, and monitor AI pipelines in Spring AI
-  apps. Three-layer OpenTelemetry setup with Java Agent, Spring AI Micrometer,
-  and GenAI semantic conventions.
+  Spring AI OpenTelemetry instrumentation to trace LLM calls, track token cost,
+  and monitor AI pipelines with the Java agent and GenAI semantic conventions.
 keywords:
   [
     java ai observability,

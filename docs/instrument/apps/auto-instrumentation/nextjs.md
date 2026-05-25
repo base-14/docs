@@ -1,11 +1,10 @@
 ---
-title: Next.js OpenTelemetry Instrumentation - Complete APM Setup Guide
+title: Next.js OpenTelemetry Instrumentation - App Router Traces & Metrics
 sidebar_label: Next.js
 sidebar_position: 12
 description:
-  Trace server components, API routes, and database queries in Next.js apps with
-  OpenTelemetry auto-instrumentation. Export traces, metrics, and logs to base14
-  Scout with App Router support.
+  Next.js OpenTelemetry instrumentation for server components and API routes
+  with App Router support. Export traces, metrics, and logs to base14 Scout.
 keywords:
   [
     nextjs opentelemetry instrumentation,

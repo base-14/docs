@@ -4,8 +4,8 @@ sidebar_label: PHP
 sidebar_position: 5
 description:
   PHP OpenTelemetry manual instrumentation with TracerProvider,
-  BatchSpanProcessor, SpanExporter, and context propagation.
-  Composer setup, custom spans, metrics, and OTLP export.
+  BatchSpanProcessor, and context propagation. Composer setup for custom spans
+  and OTLP.
 keywords:
   [
     php instrumentation,

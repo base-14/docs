@@ -1,11 +1,10 @@
 ---
-title: Hono OpenTelemetry Instrumentation - Complete APM Setup Guide
+title: Hono OpenTelemetry Instrumentation - HTTP, Database & Redis Tracing
 sidebar_label: Hono
 sidebar_position: 10
 description:
-  Trace HTTP requests, PostgreSQL queries, Redis calls, and background jobs in
-  Hono apps with OpenTelemetry auto-instrumentation. Export traces and metrics
-  to base14 Scout.
+  Hono OpenTelemetry instrumentation for HTTP, databases, Redis, and BullMQ jobs
+  on Node.js. Auto-instrument with @hono/otel; export to base14 Scout.
 keywords:
   [
     hono opentelemetry instrumentation,
