@@ -1237,6 +1237,9 @@ requires HTTP/2 support. Both are fully supported by Scout Collector.
 - [Express.js Instrumentation](./express.md) - Similar Node.js patterns
 - [Fastify Instrumentation](./fastify.md) - Alternative Node.js framework
 - [NestJS Instrumentation](./nestjs.md) - TypeScript-first framework
+- [tRPC Instrumentation](./trpc.md) - type-safe procedures, Prisma, PostgreSQL
+- [Elysia Instrumentation](./elysia.md) - Bun runtime, middleware, structured
+  logging
 
 ### Scout Platform Features
 

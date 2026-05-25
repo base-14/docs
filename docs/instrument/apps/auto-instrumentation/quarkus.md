@@ -1811,6 +1811,12 @@ observability patterns:
 
 ### Related Frameworks
 
+- **[Spring Boot Instrumentation](./spring-boot.md)** \- REST controllers, JPA,
+  JDBC, messaging
+- **[Micronaut Instrumentation](./micronaut.md)** \- HTTP endpoints, Hibernate
+  JPA, log correlation
+- **[Ktor Instrumentation](./ktor.md)** \- Kotlin, HTTP routing, Exposed ORM,
+  log correlation
 - **[Node.js Instrumentation](/instrument/apps/auto-instrumentation/nodejs)**
   \- Compare Quarkus extension approach with Node.js SDK patterns
 - **[Go Instrumentation](/instrument/apps/auto-instrumentation/go)** \-

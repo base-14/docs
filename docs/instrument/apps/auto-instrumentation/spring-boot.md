@@ -1756,6 +1756,15 @@ single dashboard.
 - **[Scout Collector Configuration](../../collector-setup/otel-collector-config.md)**
   \- Configure the OpenTelemetry Collector for production use
 
+### Related Frameworks
+
+- **[Quarkus Instrumentation](./quarkus.md)** \- REST endpoints, Hibernate,
+  Kafka
+- **[Micronaut Instrumentation](./micronaut.md)** \- HTTP endpoints, Hibernate
+  JPA, log correlation
+- **[Ktor Instrumentation](./ktor.md)** \- Kotlin, HTTP routing, Exposed ORM,
+  log correlation
+
 ## Complete Example
 
 For a fully working Spring Boot application with OpenTelemetry instrumentation,

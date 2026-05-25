@@ -1692,6 +1692,9 @@ const meterProvider = new MeterProvider({
 - **[Express.js Instrumentation](./express.md)** - Express framework patterns
 - **[NestJS Instrumentation](./nestjs.md)** - NestJS with dependency injection
 - **[Node.js Overview](./nodejs.md)** - General Node.js instrumentation guide
+- **[tRPC Instrumentation](./trpc.md)** - type-safe procedures, Prisma,
+  PostgreSQL
+- **[Hono Instrumentation](./hono.md)** - edge/middleware, PostgreSQL, BullMQ
 
 ### Advanced Topics
 

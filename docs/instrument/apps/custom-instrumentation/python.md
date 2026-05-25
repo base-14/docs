@@ -395,3 +395,11 @@ def traced_function():
   Production deployment
 - [Fast API Auto-Instrumentation](../auto-instrumentation/fast-api.md) -
   Auto-instrumentation for Python FastAPI applications
+- [Django Auto-Instrumentation](../auto-instrumentation/django.md) -
+  Auto-instrumentation for Django applications
+- [Flask Auto-Instrumentation](../auto-instrumentation/flask.md) -
+  Auto-instrumentation for Flask applications
+- [Litestar Auto-Instrumentation](../auto-instrumentation/litestar.md) -
+  Auto-instrumentation for async Litestar applications
+- [Celery Auto-Instrumentation](../auto-instrumentation/celery.md) -
+  Auto-instrumentation for Celery task queues

@@ -1009,6 +1009,12 @@ public class TraceContextExtractor {
 
 - [Spring Boot Auto-Instrumentation](../auto-instrumentation/spring-boot.md) -
   Automatic tracing for Java Spring Boot applications
+- [Quarkus Auto-Instrumentation](../auto-instrumentation/quarkus.md) -
+  Automatic tracing for Quarkus applications
+- [Micronaut Auto-Instrumentation](../auto-instrumentation/micronaut.md) -
+  Automatic tracing for Micronaut applications
+- [Ktor Auto-Instrumentation](../auto-instrumentation/ktor.md) - Automatic
+  tracing for Kotlin Ktor applications
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
   up Scout Collector for local development
 - [Creating Alerts](../../../guides/creating-alerts-with-logx.md) - Set up

@@ -1912,6 +1912,15 @@ Then filter and query by tenant attributes in base14 Scout dashboard.
 
 ## What's Next?
 
+### Related Frameworks
+
+- [NestJS Instrumentation](./nestjs.md) \- controllers, guards, interceptors
+- [Fastify Instrumentation](./fastify.md) \- hooks, plugins, PostgreSQL, BullMQ
+- [Hono Instrumentation](./hono.md) \- edge/middleware, PostgreSQL, BullMQ
+- [tRPC Instrumentation](./trpc.md) \- type-safe procedures, Prisma, PostgreSQL
+- [Elysia Instrumentation](./elysia.md) \- Bun runtime, middleware, structured
+  logging
+
 ### Advanced Topics
 
 - [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)

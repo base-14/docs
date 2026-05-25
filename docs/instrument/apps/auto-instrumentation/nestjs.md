@@ -1225,6 +1225,11 @@ using `Reflector` and add attributes to active spans.
 
 - **[Express.js Instrumentation](./express.md)** - Express framework patterns
 - **[Node.js Overview](./nodejs.md)** - General Node.js instrumentation guide
+- **[Hono Instrumentation](./hono.md)** - edge/middleware, PostgreSQL, BullMQ
+- **[tRPC Instrumentation](./trpc.md)** - type-safe procedures, Prisma,
+  PostgreSQL
+- **[Elysia Instrumentation](./elysia.md)** - Bun runtime, middleware,
+  structured logging
 - **[FastAPI Instrumentation](./fast-api.md)** - Python async framework
 
 ### Advanced Topics

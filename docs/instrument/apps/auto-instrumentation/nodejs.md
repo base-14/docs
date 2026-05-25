@@ -107,7 +107,8 @@ frameworks. For framework-specific details, see:
   WebSocket gateway
 - **[Next.js](./nextjs.md)** - React framework with App Router, MongoDB, BullMQ
   workers
-- **Fastify** - High-performance framework instrumentation (coming soon)
+- **[Fastify](./fastify.md)** - High-performance framework with hooks,
+  plugins, PostgreSQL, BullMQ
 - **Koa** - Middleware-based framework patterns (coming soon)
 
 ### What You'll Learn
@@ -786,14 +787,22 @@ Configure header filtering for sensitive authentication tokens:
 
 ## What's Next?
 
+### Related Frameworks
+
+- **[Hono Instrumentation](./hono.md)** - edge/middleware, PostgreSQL, BullMQ
+- **[tRPC Instrumentation](./trpc.md)** - type-safe procedures, Prisma,
+  PostgreSQL
+- **[Elysia Instrumentation](./elysia.md)** - Bun runtime, middleware,
+  structured logging
+
 ### Framework-Specific Guides
 
 - **[Express.js Instrumentation](./express.md)** - Detailed Express 4.x/5.x
   setup with MongoDB, Redis, and WebSockets
-- **NestJS Instrumentation** - Enterprise DI framework with TypeORM and BullMQ
-  (coming soon)
-- **Fastify Instrumentation** - High-performance framework patterns (coming
-  soon)
+- **[NestJS Instrumentation](./nestjs.md)** - Enterprise DI framework with
+  TypeORM and BullMQ
+- **[Fastify Instrumentation](./fastify.md)** - High-performance framework
+  patterns
 
 ### Advanced Topics
 

@@ -1283,6 +1283,8 @@ metrics.
 - [Express.js Instrumentation](./express.md) - Similar Node.js patterns
 - [NestJS Instrumentation](./nestjs.md) - Framework-specific setup
 - [Node.js Instrumentation](./nodejs.md) - Core Node.js patterns
+- [Hono Instrumentation](./hono.md) - edge/middleware, PostgreSQL, BullMQ
+- [tRPC Instrumentation](./trpc.md) - type-safe procedures, Prisma, PostgreSQL
 
 ### Scout Platform Features
 

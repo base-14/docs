@@ -712,6 +712,10 @@ logs and metrics.
 
 - [Laravel Auto-Instrumentation](../auto-instrumentation/laravel.md) - Automatic
   tracing for Laravel applications
+- [Symfony Auto-Instrumentation](../auto-instrumentation/symfony.md) - Automatic
+  tracing for Symfony applications with Doctrine ORM
+- [Slim Auto-Instrumentation](../auto-instrumentation/slim.md) - Automatic
+  tracing for Slim micro-framework applications
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
   up Scout Collector for local development
 - [Creating Alerts](../../../guides/creating-alerts-with-logx.md) - Set up

@@ -1549,6 +1549,14 @@ requestDuration.record(performance.now() - start, {
 
 ## What's Next?
 
+### Related Frameworks
+
+- [Express.js Instrumentation](./express.md) \- middleware, routing
+- [NestJS Instrumentation](./nestjs.md) \- controllers, guards, interceptors
+- [Fastify Instrumentation](./fastify.md) \- hooks, plugins, PostgreSQL, BullMQ
+- [Hono Instrumentation](./hono.md) \- edge/middleware, PostgreSQL, BullMQ
+- [Next.js Instrumentation](./nextjs.md) \- SSR, API routes, React components
+
 ### Advanced Topics
 
 - [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)

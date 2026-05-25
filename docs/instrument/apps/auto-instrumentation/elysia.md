@@ -1491,6 +1491,9 @@ services.
 - [Hono Instrumentation](./hono.md) - Another lightweight framework with
   OpenTelemetry
 - [Fastify Instrumentation](./fastify.md) - Plugin-based Node.js framework
+- [tRPC Instrumentation](./trpc.md) - type-safe procedures, Prisma, PostgreSQL
+- [Node.js Instrumentation](./nodejs.md) - generic HTTP, filesystem, child
+  processes
 
 ### Scout Platform Features
 

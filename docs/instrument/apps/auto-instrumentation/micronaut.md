@@ -1287,6 +1287,7 @@ explore these resources:
 
 - [Spring Boot Instrumentation](./spring-boot.md) - Java Spring Boot
 - [Quarkus Instrumentation](./quarkus.md) - Java Quarkus
+- [Ktor Instrumentation](./ktor.md) - Kotlin, HTTP routing, Exposed ORM
 - [Django Instrumentation](./django.md) - Python Django
 - [Rails Instrumentation](./rails.md) - Ruby on Rails
 - [Express.js Instrumentation](./express.md) - Node.js Express
