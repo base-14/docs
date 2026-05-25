@@ -55,6 +55,10 @@ auto-instrument your Symfony application to collect traces, metrics, and logs
 from HTTP requests, database queries, service-to-service calls, and custom
 business logic using the OpenTelemetry PHP SDK.
 
+Symfony is a full-featured PHP framework. [Laravel](./laravel.md) builds on
+Symfony components, and [Slim](./slim.md) is a lighter micro-framework
+alternative.
+
 Symfony applications benefit from automatic instrumentation of the framework's
 core components including the HTTP kernel, Doctrine ORM (via PDO), the HTTP
 client (PSR-18), and Monolog logging. With OpenTelemetry, you can monitor
@@ -1476,13 +1480,12 @@ these resources to deepen your observability:
 - **Docker Compose Setup** - Set up Scout Collector for local development
   and testing
 
-### Related Frameworks
+### Related Guides
 
-- [Laravel Instrumentation](./laravel.md) - PHP Laravel framework
-- [Slim Instrumentation](./slim.md) - PHP Slim micro-framework
-- [Rails Instrumentation](./rails.md) - Ruby on Rails
-- [Django Instrumentation](./django.md) - Python Django
-- [Spring Boot Instrumentation](./spring-boot.md) - Java Spring Boot
+- [PHP Custom Instrumentation](../custom-instrumentation/php.md) - Manual spans
+  and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 
 ## Complete Example
 
@@ -1585,12 +1588,3 @@ from a unified dashboard.
 - [Symfony Documentation](https://symfony.com/doc/current/index.html)
 - [Doctrine ORM Documentation](https://www.doctrine-project.org/projects/orm.html)
 - [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/)
-
-## Related Guides
-
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
-  Set up collector for local development
-- [Laravel Instrumentation](./laravel.md) - PHP Laravel framework
-- [Slim Instrumentation](./slim.md) - PHP Slim micro-framework
-- [Spring Boot Instrumentation](./spring-boot.md) - Java Spring Boot
-- [Express.js Instrumentation](./express.md) - Node.js Express framework

@@ -62,6 +62,10 @@ Quarkus provides **built-in OpenTelemetry support** through its extension
 ecosystem, making instrumentation significantly simpler than manual
 configuration.
 
+Quarkus is a Kubernetes-native JVM framework that competes with
+[Spring Boot](./spring-boot.md). [Micronaut](./micronaut.md) and
+[Ktor](./ktor.md) are other JVM options.
+
 This guide demonstrates how to instrument Quarkus applications with
 OpenTelemetry for comprehensive distributed tracing, metrics collection, and
 application performance monitoring. We'll cover both JVM mode and native image
@@ -1787,11 +1791,10 @@ observability patterns:
 
 - **[Custom Instrumentation for Java](/instrument/apps/custom-instrumentation/java)**
   \- Deep dive into manual span creation, context propagation, and baggage
-- **[Spring Boot Instrumentation](/instrument/apps/auto-instrumentation/spring-boot)**
-  \- Compare Quarkus extension-based approach with Spring Boot programmatic
-  setup
 - **Distributed Tracing Best Practices** \- Sampling strategies, cardinality
   limits, and performance optimization
+- **[All framework guides](/instrument/apps/auto-instrumentation/)** \-
+  Auto-instrumentation overview for every language
 
 ### Scout Platform Features
 
@@ -1808,21 +1811,6 @@ observability patterns:
 - **Docker Instrumentation** - Trace containerized Quarkus applications
 - **AWS ECS/Fargate Deployment** - Deploy instrumented native images to
   serverless containers
-
-### Related Frameworks
-
-- **[Spring Boot Instrumentation](./spring-boot.md)** \- REST controllers, JPA,
-  JDBC, messaging
-- **[Micronaut Instrumentation](./micronaut.md)** \- HTTP endpoints, Hibernate
-  JPA, log correlation
-- **[Ktor Instrumentation](./ktor.md)** \- Kotlin, HTTP routing, Exposed ORM,
-  log correlation
-- **[Node.js Instrumentation](/instrument/apps/auto-instrumentation/nodejs)**
-  \- Compare Quarkus extension approach with Node.js SDK patterns
-- **[Go Instrumentation](/instrument/apps/auto-instrumentation/go)** \-
-  Explore another compiled language with low overhead tracing
-- **[Django Instrumentation](./django.md)** \- ORM instrumentation patterns
-  similar to Hibernate
 
 ## Complete Example
 

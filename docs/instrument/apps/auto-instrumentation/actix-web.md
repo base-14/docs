@@ -48,6 +48,9 @@ Web application to collect traces, metrics, and logs from HTTP requests,
 database queries, background jobs, and custom business logic using the
 OpenTelemetry Rust SDK.
 
+Actix Web is a mature, high-performance Rust web framework, alongside the
+Tokio-based [Axum](./axum.md).
+
 Rust applications built with Actix Web benefit from the powerful `tracing`
 ecosystem combined with OpenTelemetry exporters. With the
 `tracing-actix-web` crate, you can automatically capture spans from every
@@ -1740,7 +1743,7 @@ This complete example is available in our
 
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
   up collector for local development
-- [Axum Instrumentation](./axum.md) - Alternative Rust web framework
-- [Go Instrumentation](./go.md) - Another systems programming language
-  alternative
-- [Spring Boot Instrumentation](./spring-boot.md) - Java framework alternative
+- [Rust Custom Instrumentation](../custom-instrumentation/rust.md) - Manual
+  spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language

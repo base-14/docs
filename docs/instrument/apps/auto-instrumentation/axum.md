@@ -47,6 +47,9 @@ observability. This guide shows you how to instrument your Axum application to
 collect traces, metrics, and logs from HTTP requests, database queries,
 background jobs, and custom business logic using the OpenTelemetry Rust SDK.
 
+Axum is a Tokio-based async Rust web framework. [Actix Web](./actix-web.md) is
+the other widely used Rust option.
+
 Rust applications built with Axum benefit from the powerful `tracing` ecosystem
 combined with OpenTelemetry exporters. With the `tracing-opentelemetry` crate,
 you can automatically capture spans from your application, monitor SQLx database
@@ -1667,8 +1670,7 @@ This complete example is available in our
 
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
   up collector for local development
-- [Go Instrumentation](./go.md) - Another systems programming language
-  alternative
-- [Actix Web Instrumentation](./actix-web.md) - Higher-level Rust web framework
-  alternative
-- [Spring Boot Instrumentation](./spring-boot.md) - Java framework alternative
+- [Rust Custom Instrumentation](../custom-instrumentation/rust.md) - Manual
+  spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language

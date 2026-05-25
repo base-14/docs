@@ -56,6 +56,10 @@ This guide shows you how to auto-instrument Litestar with the
 outbound calls, and SQLAlchemy operations land in your collector with no SDK
 boilerplate in your application code.
 
+Litestar is a modern ASGI Python framework, a close alternative to
+[FastAPI](./fast-api.md) with a more batteries-included feel than
+[Flask](./flask.md).
+
 Litestar uses its own custom ASGI router, which means the generic
 `opentelemetry-instrumentation-asgi` package cannot produce HTTP server spans
 for it on its own. The Litestar team ships a first-class plugin precisely for
@@ -1458,14 +1462,11 @@ app = Litestar(
 
 ## Related Guides
 
-- [FastAPI OpenTelemetry Instrumentation](./fast-api.md) - async Python with
-  Pydantic and Starlette routing.
-- [Flask OpenTelemetry Instrumentation](./flask.md) - sync Python with WSGI
-  for comparison.
-- [Django OpenTelemetry Instrumentation](./django.md) - Django ORM,
-  middleware, and Celery patterns.
-- [Auto-Instrumentation Overview](./index.md) - full list of supported
-  frameworks across Python, Node.js, JVM, Go, Ruby, PHP, .NET, and Elixir.
+- [Django Instrumentation](./django.md) - Batteries-included Python framework
+- [Python Custom Instrumentation](../custom-instrumentation/python.md) - Manual
+  spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 - [Docker Compose Collector Setup](../../collector-setup/docker-compose-example.md)
   - local OTel collector for development.
 - [Kubernetes Helm Collector Setup](../../collector-setup/kubernetes-helm-setup.md)

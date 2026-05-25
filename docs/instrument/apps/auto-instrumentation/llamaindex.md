@@ -51,6 +51,10 @@ quality agent with custom GenAI semantic convention spans, multi-provider LLM
 support, structured output with self-correction, token and cost metrics, PII
 scrubbing, and eval-driven development with Promptfoo.
 
+LlamaIndex is a Python framework for LLM data and RAG applications, alongside
+[LangGraph](./langgraph.md) for agents and the TypeScript
+[Vercel AI SDK](./vercel-ai-sdk.md).
+
 This guide intentionally uses **custom OpenTelemetry GenAI semantic
 conventions** rather than OpenInference or LlamaIndex auto-instrumentation.
 OpenInference produces non-standard attributes (`llm.*`, `input.*`, `output.*`)
@@ -1278,17 +1282,13 @@ attributes like `retrieval.document_count` and `retrieval.strategy`.
 
 ## What's Next?
 
-### Advanced Topics
+### Related Guides
 
-- [LLM Observability](../../../guides/ai-observability/llm-observability.md) -
-  Comprehensive GenAI observability patterns
-- [LangGraph Instrumentation](./langgraph.md) - Python agent pipeline
-  instrumentation
-- [Vercel AI SDK Instrumentation](./vercel-ai-sdk.md) - TypeScript/Bun AI
-  pipeline instrumentation
-- [FastAPI Auto-Instrumentation](./fast-api.md) - FastAPI-specific setup
+- [FastAPI Instrumentation](./fast-api.md) - Common API host for RAG services
 - [Python Custom Instrumentation](../custom-instrumentation/python.md) - Manual
-  tracing fundamentals
+  spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 
 ### Scout Platform Features
 
@@ -1361,15 +1361,3 @@ repository.
 - [OpenTelemetry Python SDK](https://opentelemetry.io/docs/languages/python/)
 - [LlamaIndex Documentation](https://docs.llamaindex.ai/)
 - [Promptfoo Documentation](https://promptfoo.dev/docs/)
-
-## Related Guides
-
-- [LLM Observability](../../../guides/ai-observability/llm-observability.md) -
-  Comprehensive GenAI observability guide
-- [LangGraph Instrumentation](./langgraph.md) - Python agent pipeline
-  instrumentation
-- [Vercel AI SDK Instrumentation](./vercel-ai-sdk.md) - TypeScript/Bun AI
-  pipeline instrumentation
-- [FastAPI Auto-Instrumentation](./fast-api.md) - FastAPI-specific setup
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
-  Local collector deployment

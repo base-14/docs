@@ -48,6 +48,9 @@ observability. This guide shows you how to auto-instrument your Rails applicatio
 to collect traces and metrics from HTTP requests, database queries, background
 jobs, and custom business logic using the OpenTelemetry Ruby SDK.
 
+This guide covers modern Ruby on Rails. For older Rails versions, see the
+[legacy Rails guide](./rails-legacy.md).
+
 Rails applications benefit from automatic instrumentation of popular frameworks
 and libraries including ActiveRecord, ActionPack, ActionView, Redis, Sidekiq,
 and dozens of commonly used gems. With OpenTelemetry, you can monitor production
@@ -1619,6 +1622,7 @@ This complete example is available in our [GitHub examples repository](https://g
 
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
   up collector for local development
-- [Custom Ruby Instrumentation](../custom-instrumentation/ruby.md) - Manual
-  instrumentation for advanced use cases
-- [Spring Boot Instrumentation](./spring-boot.md) - Java framework alternative
+- [Ruby Custom Instrumentation](../custom-instrumentation/ruby.md) - Manual
+  spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language

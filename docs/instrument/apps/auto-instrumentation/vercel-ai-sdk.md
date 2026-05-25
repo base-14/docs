@@ -51,6 +51,9 @@ pipeline with custom GenAI semantic convention spans via
 token and cost metrics, concurrent pipeline stage execution, and production
 deployment with Docker Compose.
 
+The Vercel AI SDK is a TypeScript toolkit for LLM applications. For Python
+alternatives, see [LangGraph](./langgraph.md) and [LlamaIndex](./llamaindex.md).
+
 Vercel AI SDK applications present unique observability challenges. A
 multi-stage pipeline involves sequential and concurrent stages - ingestion,
 routing, extraction, embedding, scoring, summarization - each making LLM or
@@ -1406,17 +1409,13 @@ stage and its child LLM calls are correctly nested.
 
 ## What's Next?
 
-### Advanced Topics
+### Related Guides
 
-- [LLM Observability](../../../guides/ai-observability/llm-observability.md) -
-  Comprehensive GenAI observability patterns
-- [LangGraph Instrumentation](./langgraph.md) - Python agent pipeline
-  instrumentation
-- [LlamaIndex Instrumentation](./llamaindex.md) - Python structured output
-  instrumentation
-- [Node.js Auto-Instrumentation](./nodejs.md) - Node.js-specific setup
-- [Node.js Manual Spans](../custom-instrumentation/javascript-node.md) - Custom
-  tracing fundamentals
+- [Next.js Instrumentation](./nextjs.md) - Common host for AI SDK applications
+- [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)
+  \- Manual spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 
 ### Scout Platform Features
 
@@ -1503,19 +1502,3 @@ repository.
 - [Vercel AI SDK Documentation](https://ai-sdk.dev/docs)
 - [Hono Documentation](https://hono.dev/docs/)
 - [OpenTelemetry Collector Configuration](https://opentelemetry.io/docs/collector/configuration/)
-
-## Related Guides
-
-- [LLM Observability](../../../guides/ai-observability/llm-observability.md) -
-  Comprehensive GenAI observability guide
-- [LangGraph Instrumentation](./langgraph.md) - Python agent pipeline
-  instrumentation
-- [LlamaIndex Instrumentation](./llamaindex.md) - Python structured output
-  instrumentation
-- [Node.js Auto-Instrumentation](./nodejs.md) - Node.js-specific setup
-- [Next.js Instrumentation](./nextjs.md#browser--client-side-instrumentation) -
-  Browser-side tracing for client hooks like `useChat` and `useCompletion`
-- [React Browser Instrumentation](./react.md) - Browser SDK setup for
-  client-side AI SDK hooks
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
-  Local collector deployment

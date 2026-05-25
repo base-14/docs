@@ -57,6 +57,10 @@ the JVM at startup and automatically instruments HTTP requests, JDBC queries,
 Netty server operations, and outgoing HTTP client calls without any code
 changes.
 
+Micronaut is a compile-time dependency-injection JVM framework. For the dominant
+ecosystem alternative see [Spring Boot](./spring-boot.md), and for a Kotlin-first
+option see [Ktor](./ktor.md).
+
 Micronaut applications benefit from the Java Agent's comprehensive coverage
 of the JVM ecosystem including Hibernate, HikariCP connection pools, Java
 HTTP clients, and Netty. With OpenTelemetry, you can monitor production
@@ -1283,14 +1287,13 @@ explore these resources:
 - **Docker Compose Setup** - Set up Scout Collector for local development
   and testing
 
-### Related Frameworks
+### Related Guides
 
-- [Spring Boot Instrumentation](./spring-boot.md) - Java Spring Boot
-- [Quarkus Instrumentation](./quarkus.md) - Java Quarkus
-- [Ktor Instrumentation](./ktor.md) - Kotlin, HTTP routing, Exposed ORM
-- [Django Instrumentation](./django.md) - Python Django
-- [Rails Instrumentation](./rails.md) - Ruby on Rails
-- [Express.js Instrumentation](./express.md) - Node.js Express
+- [Quarkus Instrumentation](./quarkus.md) - Kubernetes-native JVM framework
+- [Java Custom Instrumentation](../custom-instrumentation/java.md) - Manual
+  spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 
 ## Complete Example
 
@@ -1403,12 +1406,3 @@ from a unified dashboard.
 - [Supported Libraries (Java Agent)](https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/main/docs/supported-libraries.md)
 - [Micronaut Documentation](https://docs.micronaut.io/latest/guide/)
 - [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/)
-
-## Related Guides
-
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
-  Set up collector for local development
-- [Spring Boot Instrumentation](./spring-boot.md) - Java Spring Boot
-- [Quarkus Instrumentation](./quarkus.md) - Java Quarkus
-- [Laravel Instrumentation](./laravel.md) - PHP Laravel framework
-- [Express.js Instrumentation](./express.md) - Node.js Express framework

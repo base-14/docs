@@ -62,6 +62,9 @@ how to auto-instrument NestJS controllers, services, guards, interceptors,
 TypeORM queries, BullMQ background jobs, and WebSocket gateways using the
 OpenTelemetry Node.js SDK.
 
+NestJS is an opinionated, structured framework that runs on top of
+[Express](./express.md) or [Fastify](./fastify.md).
+
 NestJS applications benefit from automatic instrumentation of the dependency
 injection container, decorators, HTTP endpoints, TypeORM database queries,
 Redis operations, BullMQ job processing, WebSocket connections, GraphQL
@@ -1221,22 +1224,13 @@ using `Reflector` and add attributes to active spans.
 
 ## What's Next?
 
-### Framework-Specific Guides
+### Related Guides
 
-- **[Express.js Instrumentation](./express.md)** - Express framework patterns
-- **[Node.js Overview](./nodejs.md)** - General Node.js instrumentation guide
-- **[Hono Instrumentation](./hono.md)** - edge/middleware, PostgreSQL, BullMQ
-- **[tRPC Instrumentation](./trpc.md)** - type-safe procedures, Prisma,
-  PostgreSQL
-- **[Elysia Instrumentation](./elysia.md)** - Bun runtime, middleware,
-  structured logging
-- **[FastAPI Instrumentation](./fast-api.md)** - Python async framework
-
-### Advanced Topics
-
-- [Custom Node.js Instrumentation](../custom-instrumentation/javascript-node.md)
-  \- Manual spans, context propagation, and advanced patterns
-- [Celery Background Jobs](./celery.md) - Distributed task queue tracing
+- [Hono Instrumentation](./hono.md) - Lightweight Node.js web framework
+- [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)
+  \- Manual spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 
 ### Scout Platform Features
 
@@ -1317,14 +1311,3 @@ Complete working example:
 - [NestJS Documentation](https://docs.nestjs.com/)
 - [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/)
 - [TypeORM Documentation](https://typeorm.io/)
-
-## Related Guides
-
-- [Express.js Instrumentation](./express.md) - Express framework guide
-- [Node.js Overview](./nodejs.md) - General Node.js instrumentation
-- [Custom Node.js Instrumentation](../custom-instrumentation/javascript-node.md)
-  \- Advanced patterns
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
-  Local development setup
-- [Kubernetes Deployment](../../collector-setup/kubernetes-helm-setup.md) -
-  Production deployment

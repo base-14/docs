@@ -57,6 +57,9 @@ Aspire's ServiceDefaults convention, point the OTLP exporter at a local OTel
 Collector, and forward telemetry to base14 Scout - all without using Azure
 Monitor as the destination.
 
+.NET Aspire is an opinionated stack for cloud-native .NET apps. For general .NET
+instrumentation, see the [.NET guide](./dotnet.md).
+
 .NET Aspire is Microsoft's first-party orchestration framework for .NET
 microservices. It ships with OpenTelemetry support out of the box, opinionated
 service-discovery and resilience defaults, and a local dashboard for resource
@@ -712,6 +715,13 @@ same application code; only env-var sources differ.
   [Application Insights migration playbook](https://docs.base14.io/migrate/application-insights)
   (publishing soon) for KQL-to-Scout query mappings and a stepwise dual-export
   cutover plan.
+
+### Related Guides
+
+- [.NET Custom Instrumentation](../custom-instrumentation/csharp.md) - Manual
+  spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 
 ## References
 

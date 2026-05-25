@@ -50,6 +50,10 @@ application to collect traces and metrics from HTTP requests, database queries,
 and external API calls using the OpenTelemetry Python SDK with minimal code
 changes.
 
+FastAPI is a modern, async-first Python framework in the same ASGI space as
+[Litestar](./litestar.md). [Flask](./flask.md) and [Django](./django.md) are the
+established synchronous options.
+
 FastAPI applications benefit from automatic instrumentation of the framework
 itself, as well as popular libraries including SQLAlchemy, Redis, PostgreSQL,
 and dozens of commonly used Python components. With OpenTelemetry, you can
@@ -1992,13 +1996,9 @@ all your endpoints.
 
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
   up collector for local development
-- [Custom Python Instrumentation](../custom-instrumentation/python.md) - Manual
-  instrumentation for advanced use cases
-- [Flask Instrumentation](./flask.md) - Sync Python web framework with
-  SQLAlchemy and Jinja2
-- [Django Instrumentation](./django.md) - Batteries-included Python framework
-  with ORM and middleware
-- [Litestar Instrumentation](./litestar.md) - Async Python framework with
-  asyncpg and msgspec
+- [Python Custom Instrumentation](../custom-instrumentation/python.md) - Manual
+  spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 - [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
   Production deployment guide

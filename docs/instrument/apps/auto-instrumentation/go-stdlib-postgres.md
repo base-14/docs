@@ -60,6 +60,9 @@ main reason most teams pulled in a third-party router. The result is a
 production service with full server, client, and database tracing and zero
 framework dependency.
 
+This guide builds on the [Go instrumentation guide](./go.md) with a complete
+standard-library and PostgreSQL example.
+
 Three OpenTelemetry contrib packages do most of the work. `otelhttp` wraps
 the mux to emit server spans on every inbound request and instruments
 outbound `http.Client` calls so W3C `traceparent` headers propagate
@@ -1306,10 +1309,9 @@ Passed: 15 / 15
 
 ## Related Guides
 
-- [Go (Echo, Fiber, Chi, GORM)](./go.md) - the framework-oriented Go guide.
-- [Custom Go Instrumentation](../custom-instrumentation/go.md) - manual
-  spans, metrics, and log enrichment.
+- [Go Custom Instrumentation](../custom-instrumentation/go.md) - Manual spans
+  and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 - [Hello World](/instrument/apps/hello-world) - verify your collector
   before adding any app code.
-- [Auto-instrumentation overview](./index.md) - browse other supported
-  frameworks.

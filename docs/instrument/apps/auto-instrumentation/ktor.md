@@ -57,6 +57,9 @@ the JVM at startup and automatically instruments HTTP requests, JDBC queries,
 Netty server operations, and outgoing HTTP client calls without any code
 changes.
 
+Ktor is JetBrains' Kotlin-first framework. On the JVM it sits alongside
+[Spring Boot](./spring-boot.md) and the compile-time [Micronaut](./micronaut.md).
+
 Ktor applications benefit from the Java Agent's comprehensive coverage of
 the JVM ecosystem including JDBC (via Exposed ORM), HikariCP connection
 pools, Java HTTP clients, and Netty. With OpenTelemetry, you can monitor
@@ -1185,12 +1188,13 @@ these resources:
 
 - **Docker Compose Setup** - Set up Scout Collector for local development
 
-### Related Frameworks
+### Related Guides
 
-- [Micronaut Instrumentation](./micronaut.md) - Java Micronaut
-- [Spring Boot Instrumentation](./spring-boot.md) - Java Spring Boot
-- [Quarkus Instrumentation](./quarkus.md) - Java Quarkus
-- [Express.js Instrumentation](./express.md) - Node.js Express
+- [Quarkus Instrumentation](./quarkus.md) - Kubernetes-native JVM framework
+- [Java Custom Instrumentation](../custom-instrumentation/java.md) - Manual
+  spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 
 ## Complete Example
 
@@ -1297,12 +1301,3 @@ from a unified dashboard.
 - [Ktor Documentation](https://ktor.io/docs/welcome.html)
 - [Exposed ORM Documentation](https://jetbrains.github.io/Exposed/)
 - [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/)
-
-## Related Guides
-
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
-  Set up collector for local development
-- [Micronaut Instrumentation](./micronaut.md) - Java Micronaut
-- [Spring Boot Instrumentation](./spring-boot.md) - Java Spring Boot
-- [Quarkus Instrumentation](./quarkus.md) - Java Quarkus
-- [Laravel Instrumentation](./laravel.md) - PHP Laravel framework

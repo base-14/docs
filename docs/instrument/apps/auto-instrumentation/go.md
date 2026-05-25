@@ -73,6 +73,10 @@ issues in production, or building high-throughput microservices, this guide
 provides production-ready configurations and best practices for Go OpenTelemetry
 instrumentation with Base14 Scout.
 
+This guide covers OpenTelemetry for Go services. For a complete worked example
+with the standard library and PostgreSQL, see the
+[Go stdlib and PostgreSQL guide](./go-stdlib-postgres.md).
+
 :::tip TL;DR
 
 Initialize a `TracerProvider` once in `main`, set it as the global provider,
@@ -1412,8 +1416,10 @@ operations with full distributed context.
 
 ## Related Guides
 
-- [Custom Go Instrumentation](../custom-instrumentation/go.md) - Advanced manual
-  instrumentation
+- [Go Custom Instrumentation](../custom-instrumentation/go.md) - Manual spans
+  and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
   Local development
 - [Kubernetes Deployment](../../collector-setup/kubernetes-helm-setup.md) -

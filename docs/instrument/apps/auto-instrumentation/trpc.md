@@ -61,6 +61,10 @@ OpenTelemetry Node.js SDK with `PrismaInstrumentation` for automatic database
 query spans, `getNodeAutoInstrumentations()` for HTTP server and client
 tracing, and Pino for structured logs correlated to traces.
 
+tRPC is a type-safe API layer rather than a standalone server. It runs as an
+adapter on top of frameworks like [Express](./express.md),
+[Fastify](./fastify.md), and [Next.js](./nextjs.md).
+
 tRPC applications benefit from automatic instrumentation of the HTTP layer,
 Prisma ORM queries, and outbound `fetch()` calls. With OpenTelemetry, you can
 trace requests from the REST API surface through tRPC procedure calls into
@@ -1549,18 +1553,16 @@ requestDuration.record(performance.now() - start, {
 
 ## What's Next?
 
-### Related Frameworks
+### Related Guides
 
-- [Express.js Instrumentation](./express.md) \- middleware, routing
-- [NestJS Instrumentation](./nestjs.md) \- controllers, guards, interceptors
-- [Fastify Instrumentation](./fastify.md) \- hooks, plugins, PostgreSQL, BullMQ
-- [Hono Instrumentation](./hono.md) \- edge/middleware, PostgreSQL, BullMQ
-- [Next.js Instrumentation](./nextjs.md) \- SSR, API routes, React components
+- [NestJS Instrumentation](./nestjs.md) - Structured framework with tRPC support
+- [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)
+  \- Manual spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 
 ### Advanced Topics
 
-- [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)
-  \- Manual spans, metrics, logs, and advanced instrumentation patterns
 - [OpenTelemetry Collector Configuration](../../collector-setup/otel-collector-config.md)
   \- Advanced collector features, processors, and exporters
 
@@ -1675,18 +1677,3 @@ curl -X DELETE http://localhost:8080/api/articles/1
 - [Prisma Instrumentation Guide](https://www.prisma.io/docs/orm/prisma-client/observability-and-logging/opentelemetry-tracing)
 - [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/)
 - [Pino Logger](https://getpino.io/)
-
-## Related Guides
-
-- [Express.js Instrumentation](./express.md) - Express.js with MongoDB and
-  Redis auto-instrumentation
-- [NestJS Instrumentation](./nestjs.md) - NestJS with TypeORM and BullMQ
-  tracing
-- [Node.js Instrumentation](./nodejs.md) - General Node.js OpenTelemetry setup
-- [Fastify Instrumentation](./fastify.md) - Fastify framework instrumentation
-- [React Browser Instrumentation](./react.md) - Client-side spans for the tRPC
-  client (`fetch`/XHR) in a React or Next.js app
-- [Next.js Instrumentation](./nextjs.md#browser--client-side-instrumentation) -
-  Browser-side setup for a tRPC client running inside a Next.js app
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
-  up collector for local development

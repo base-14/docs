@@ -48,6 +48,10 @@ observability. This guide shows you how to auto-instrument your Celery workers
 and task producers to collect traces and metrics from task execution, message
 queues, and result backends using the OpenTelemetry Python SDK.
 
+Celery is a distributed task queue rather than a web framework. It commonly runs
+alongside web apps built with [FastAPI](./fast-api.md), [Flask](./flask.md), and
+[Django](./django.md).
+
 Celery applications benefit from automatic instrumentation that captures task
 lifecycle events including task publishing, worker processing, retries, and
 failures. With OpenTelemetry, you can trace distributed transactions from HTTP
@@ -1491,9 +1495,7 @@ propagation.
 
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
   up collector for local development
-- [Custom Python Instrumentation](../custom-instrumentation/python.md) - Manual
-  instrumentation for advanced use cases
-- [FastAPI Instrumentation](./fast-api.md) - Python web framework integration
-- [Flask Instrumentation](./flask.md) - Python web framework with SQLAlchemy
-- [Django Instrumentation](./django.md) - Python framework with Celery task
-  integration
+- [Python Custom Instrumentation](../custom-instrumentation/python.md) - Manual
+  spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language

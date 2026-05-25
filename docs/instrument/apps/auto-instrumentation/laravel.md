@@ -49,6 +49,10 @@ observability. This guide shows you how to auto-instrument your Laravel applicat
 to collect traces and metrics from HTTP requests, database queries, background
 jobs, cache operations, and custom business logic using the OpenTelemetry PHP SDK.
 
+Laravel is a full-featured PHP framework built on Symfony components.
+[Symfony](./symfony.md) is the underlying toolkit, and [Slim](./slim.md) is a
+lighter micro-framework alternative.
+
 Laravel applications benefit from automatic instrumentation of popular frameworks
 and libraries including Eloquent ORM, HTTP client requests (Guzzle), Redis, queue
 workers, and dozens of commonly used packages. With OpenTelemetry, you can monitor
@@ -1547,6 +1551,7 @@ unified dashboard.
 
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
   up collector for local development
-- [Spring Boot Instrumentation](./spring-boot.md) - Java framework alternative
-- [Rails Instrumentation](./rails.md) - Ruby framework alternative
-- [Express.js Instrumentation](./express.md) - Node.js framework alternative
+- [PHP Custom Instrumentation](../custom-instrumentation/php.md) - Manual spans
+  and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language

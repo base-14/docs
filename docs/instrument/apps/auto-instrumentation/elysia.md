@@ -52,6 +52,9 @@ Bun's `--preload` flag, create manual spans for Elysia route handlers,
 auto-instrument PostgreSQL queries through Drizzle ORM, and propagate trace
 context across services -- all without relying on `getNodeAutoInstrumentations()`.
 
+Elysia is a Bun-first framework that shares its lightweight, middleware-driven
+design with [Hono](./hono.md).
+
 Elysia on Bun requires a different instrumentation approach than traditional
 Node.js frameworks. Because Bun does not use Node's `http` module internally,
 HTTP auto-instrumentation cannot intercept Elysia requests. Instead, you create
@@ -1484,16 +1487,14 @@ services.
 
 ## What's Next
 
-### Advanced Topics
+### Related Guides
 
-- [Express.js Instrumentation](./express.md) - Node.js auto-instrumentation
-  patterns for comparison
-- [Hono Instrumentation](./hono.md) - Another lightweight framework with
-  OpenTelemetry
-- [Fastify Instrumentation](./fastify.md) - Plugin-based Node.js framework
-- [tRPC Instrumentation](./trpc.md) - type-safe procedures, Prisma, PostgreSQL
-- [Node.js Instrumentation](./nodejs.md) - generic HTTP, filesystem, child
-  processes
+- [Express Instrumentation](./express.md) - Most widely used Node.js framework
+- [Fastify Instrumentation](./fastify.md) - Performance-focused alternative
+- [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)
+  \- Manual spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 
 ### Scout Platform Features
 
@@ -1627,12 +1628,3 @@ repository.
 - [Drizzle ORM Documentation](https://orm.drizzle.team/)
 - [@opentelemetry/instrumentation-pg](https://www.npmjs.com/package/@opentelemetry/instrumentation-pg)
 - [OpenTelemetry Logs API](https://opentelemetry.io/docs/specs/otel/logs/)
-
-## Related Guides
-
-- [Express.js Instrumentation](./express.md) - Classic Node.js framework
-- [Hono Instrumentation](./hono.md) - Lightweight Node.js/Bun framework
-- [Node.js Instrumentation](./nodejs.md) - Generic Node.js setup
-- [Fastify Instrumentation](./fastify.md) - Plugin-based Node.js framework
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
-  Local collector configuration

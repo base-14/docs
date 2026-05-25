@@ -58,6 +58,11 @@ architecture work seamlessly with OpenTelemetry's context propagation,
 ensuring accurate parent-child span relationships across async operations
 including BullMQ background jobs.
 
+As a lightweight, middleware-first framework, Hono is a leaner alternative to
+[Express](./express.md) and shares its modern design with
+[Elysia](./elysia.md) on the Bun runtime. The instrumentation approach in this
+guide carries over to both.
+
 Whether you're implementing observability for the first time, migrating from
 commercial APM solutions like DataDog or New Relic, or troubleshooting
 performance issues in production, this guide provides production-ready
@@ -1232,14 +1237,13 @@ requires HTTP/2 support. Both are fully supported by Scout Collector.
 
 ## What's Next?
 
-### Advanced Topics
+### Related Guides
 
-- [Express.js Instrumentation](./express.md) - Similar Node.js patterns
-- [Fastify Instrumentation](./fastify.md) - Alternative Node.js framework
-- [NestJS Instrumentation](./nestjs.md) - TypeScript-first framework
-- [tRPC Instrumentation](./trpc.md) - type-safe procedures, Prisma, PostgreSQL
-- [Elysia Instrumentation](./elysia.md) - Bun runtime, middleware, structured
-  logging
+- [Fastify Instrumentation](./fastify.md) - High-performance Node.js framework
+- [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)
+  \- Manual spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 
 ### Scout Platform Features
 

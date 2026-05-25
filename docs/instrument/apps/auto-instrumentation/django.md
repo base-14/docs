@@ -60,6 +60,10 @@ building data-driven applications, Django applications often handle complex
 business logic, database interactions, and background tasks—making observability
 critical for maintaining performance and reliability at scale.
 
+Django is a batteries-included Python framework. For lighter or async-first
+options see [Flask](./flask.md), [FastAPI](./fast-api.md), and
+[Litestar](./litestar.md).
+
 This guide demonstrates how to instrument Django applications with OpenTelemetry
 for comprehensive distributed tracing, metrics collection, and application
 performance monitoring. We'll cover automatic instrumentation of Django's ORM,
@@ -2044,10 +2048,8 @@ observability patterns:
 
 - **[Custom Instrumentation for Python](/instrument/apps/custom-instrumentation/python)**
   \- Deep dive into manual span creation and context propagation
-- **[Flask Instrumentation](/instrument/apps/auto-instrumentation/flask)** \-
-  Compare Django's approach with Flask's minimalist framework
-- **[FastAPI Instrumentation](/instrument/apps/auto-instrumentation/fast-api)**
-  \- Explore async Python framework tracing patterns
+- **[All framework guides](/instrument/apps/auto-instrumentation/)** \-
+  Auto-instrumentation overview for every language
 
 ### Scout Platform Features
 
@@ -2063,15 +2065,6 @@ observability patterns:
 - **Docker Instrumentation** - Deploy instrumented Django apps in containers
 - **Kubernetes Deployment** - Run Django with sidecar collectors and service mesh
 - **AWS Deployment** - Deploy to ECS, Elastic Beanstalk, or Lambda with tracing
-
-### Related Frameworks
-
-- **[Node.js Instrumentation](/instrument/apps/auto-instrumentation/nodejs)** \-
-  Compare Django ORM patterns with Node.js database tracing
-- **[Spring Boot Instrumentation](/instrument/apps/auto-instrumentation/spring-boot)**
-  \- Java enterprise framework with similar ORM auto-instrumentation
-- **[Go Instrumentation](/instrument/apps/auto-instrumentation/go)** \- Contrast
-  Django's auto-instrumentation with Go's manual approach
 
 ## Complete Example
 

@@ -49,6 +49,9 @@ Slim 4 (with fully automatic HTTP span instrumentation via
 shutdown handlers, metrics, MongoDB auto-instrumentation, Docker deployment - is
 shared throughout.
 
+Slim is a PHP micro-framework, a lighter alternative to the full-featured
+[Laravel](./laravel.md) and [Symfony](./symfony.md).
+
 Slim applications benefit from the OpenTelemetry PHP ecosystem: automatic
 MongoDB query tracing, Monolog log-trace correlation, and business metric
 counters - all with minimal application code. Whether you are building a new API
@@ -1096,6 +1099,13 @@ recycling may be lost.
   alerts for error rates, latency thresholds, and custom metrics
 - **[Dashboard Creation](../../../guides/create-your-first-dashboard.md)** —
   build custom dashboards combining traces, metrics, and business KPIs
+
+### Related Guides
+
+- [PHP Custom Instrumentation](../custom-instrumentation/php.md) - Manual spans
+  and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 
 ## Complete Example
 

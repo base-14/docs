@@ -48,6 +48,9 @@ ASP.NET Core application to collect traces, metrics, and logs from HTTP
 requests, database queries, background jobs, and custom business logic using the
 OpenTelemetry .NET SDK.
 
+This guide covers OpenTelemetry for .NET applications. For cloud-native apps
+using .NET Aspire, see the [.NET Aspire guide](./dotnet-aspire.md).
+
 .NET applications benefit from first-class OpenTelemetry support with automatic
 instrumentation for ASP.NET Core, Entity Framework Core, HttpClient, SQL Server,
 and dozens of commonly used libraries. With OpenTelemetry, you can monitor
@@ -1621,7 +1624,9 @@ This complete example is available in our
 
 ## Related Guides
 
+- [.NET Custom Instrumentation](../custom-instrumentation/csharp.md) - Manual
+  spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
   up collector for local development
-- [Spring Boot Instrumentation](./spring-boot.md) - Java framework alternative
-- [Node.js Instrumentation](./nodejs.md) - JavaScript runtime alternative

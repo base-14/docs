@@ -50,6 +50,9 @@ how to auto-instrument Next.js API routes, server components, middleware,
 MongoDB queries, Redis operations, and BullMQ background jobs using the
 OpenTelemetry Node.js SDK with the built-in Next.js instrumentation hook.
 
+Next.js is a full-stack React framework. For browser-side instrumentation, see
+the [React](./react.md) guide.
+
 Next.js applications benefit from automatic instrumentation of the framework
 itself, HTTP requests, database queries, and background job processing. The
 Next.js instrumentation file (`instrumentation.ts`) provides a clean integration
@@ -1687,19 +1690,13 @@ const meterProvider = new MeterProvider({
 
 ## What's Next?
 
-### Framework-Specific Guides
+### Related Guides
 
-- **[Express.js Instrumentation](./express.md)** - Express framework patterns
-- **[NestJS Instrumentation](./nestjs.md)** - NestJS with dependency injection
-- **[Node.js Overview](./nodejs.md)** - General Node.js instrumentation guide
-- **[tRPC Instrumentation](./trpc.md)** - type-safe procedures, Prisma,
-  PostgreSQL
-- **[Hono Instrumentation](./hono.md)** - edge/middleware, PostgreSQL, BullMQ
-
-### Advanced Topics
-
-- [Custom Node.js Instrumentation](../custom-instrumentation/javascript-node.md)
-  \- Manual spans, context propagation, and advanced patterns
+- [Node.js Instrumentation](./nodejs.md) - General Node.js OTel setup
+- [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)
+  \- Manual spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 
 ### Scout Platform Features
 
@@ -1806,19 +1803,3 @@ across your application.
 - [Next.js Instrumentation Documentation](https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation)
 - [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/)
 - [BullMQ Documentation](https://docs.bullmq.io/)
-
-## Related Guides
-
-- [Express.js Instrumentation](./express.md) - Express framework guide
-- [NestJS Instrumentation](./nestjs.md) - NestJS framework guide
-- [Node.js Overview](./nodejs.md) - General Node.js instrumentation
-- [React Browser Instrumentation](./react.md) - Browser SDK setup that the
-  Next.js client section is built on
-- [Custom JavaScript Browser Instrumentation](../custom-instrumentation/javascript-browser.md)
-  \- Manual browser spans, logs, and Core Web Vitals metrics
-- [Custom Node.js Instrumentation](../custom-instrumentation/javascript-node.md)
-  \- Advanced patterns
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
-  Local development setup
-- [Kubernetes Deployment](../../collector-setup/kubernetes-helm-setup.md) -
-  Production deployment

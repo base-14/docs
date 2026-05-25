@@ -60,6 +60,10 @@ As a micro-framework, Flask provides the essentials for building web
 applications without imposing rigid structure, making it ideal for APIs,
 microservices, and rapid prototyping.
 
+Flask is a lightweight WSGI microframework. [Django](./django.md) is the
+batteries-included alternative, while [FastAPI](./fast-api.md) and
+[Litestar](./litestar.md) are modern async-first options.
+
 This guide demonstrates how to instrument Flask applications with OpenTelemetry
 for comprehensive distributed tracing, metrics collection, and application
 performance monitoring. We'll cover automatic instrumentation of Flask routes,
@@ -1801,12 +1805,8 @@ observability patterns:
 
 - **[Custom Instrumentation for Python](/instrument/apps/custom-instrumentation/python)**
   \- Deep dive into manual span creation and context propagation
-- **[Django Instrumentation](/instrument/apps/auto-instrumentation/django)** \-
-  Compare Flask's manual approach with Django's automatic middleware
-- **[FastAPI Instrumentation](/instrument/apps/auto-instrumentation/fast-api)**
-  \- Explore async Python framework tracing patterns
-- **[Litestar Instrumentation](/instrument/apps/auto-instrumentation/litestar)**
-  \- Async Python framework with asyncpg and msgspec validation
+- **[All framework guides](/instrument/apps/auto-instrumentation/)** \-
+  Auto-instrumentation overview for every language
 
 ### Scout Platform Features
 
@@ -1821,15 +1821,6 @@ observability patterns:
 - **Docker Instrumentation** - Deploy instrumented Flask apps in containers
 - **Kubernetes Deployment** - Run Flask with sidecar collectors
 - **AWS Lambda** - Deploy Flask with AWS Lambda + API Gateway tracing
-
-### Related Frameworks
-
-- **[Node.js Instrumentation](/instrument/apps/auto-instrumentation/nodejs)** \-
-  Compare Flask's patterns with Express.js
-- **[Go Instrumentation](/instrument/apps/auto-instrumentation/go)** \-
-  Lightweight framework comparison with Go Fiber
-- **[Spring Boot Instrumentation](/instrument/apps/auto-instrumentation/spring-boot)**
-  \- Enterprise framework with similar blueprint/module patterns
 
 ## Complete Example
 

@@ -58,6 +58,10 @@ message queues, and external API interactions. With base14 Scout's OpenTelemetry
 integration, you gain complete visibility into your Spring Boot application's
 performance with minimal code changes and production-ready configuration.
 
+Spring Boot is the dominant JVM framework. [Quarkus](./quarkus.md) and
+[Micronaut](./micronaut.md) are compile-time-optimized alternatives, and
+[Ktor](./ktor.md) is the Kotlin-first option.
+
 This comprehensive guide demonstrates how to instrument Spring Boot applications
 using OpenTelemetry, covering everything from basic setup to advanced production
 scenarios. You'll learn how to automatically capture traces from Spring MVC
@@ -1756,14 +1760,12 @@ single dashboard.
 - **[Scout Collector Configuration](../../collector-setup/otel-collector-config.md)**
   \- Configure the OpenTelemetry Collector for production use
 
-### Related Frameworks
+### Related Guides
 
-- **[Quarkus Instrumentation](./quarkus.md)** \- REST endpoints, Hibernate,
-  Kafka
-- **[Micronaut Instrumentation](./micronaut.md)** \- HTTP endpoints, Hibernate
-  JPA, log correlation
-- **[Ktor Instrumentation](./ktor.md)** \- Kotlin, HTTP routing, Exposed ORM,
-  log correlation
+- [Spring Boot vs Alternatives](./spring-boot-alternatives.md) - JVM framework
+  comparison guide
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 
 ## Complete Example
 
@@ -1820,13 +1822,6 @@ The example demonstrates:
 
 ## Related Guides
 
-- [Spring Boot Alternative Approaches](./spring-boot-alternatives.md) - Java
-  Agent and Spring Boot 4.0 Native Starter approaches
-- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
-  Deploy collector on Kubernetes
-- [Custom Java Instrumentation](../custom-instrumentation/java.md) - Manual
-  instrumentation for advanced use cases
-- [Rails Instrumentation](./rails.md) - Ruby framework alternative
 - [Spring AI LLM Observability][spring-ai] - Spring AI with
   three-layer OTel instrumentation
 

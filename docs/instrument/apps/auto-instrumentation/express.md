@@ -47,6 +47,10 @@ application to collect traces and metrics from HTTP requests, database queries,
 Redis operations, background jobs, and WebSocket connections using the
 OpenTelemetry Node.js SDK with minimal code changes.
 
+Express is the most widely used Node.js web framework.
+[Fastify](./fastify.md) is a performance-focused alternative, and
+[NestJS](./nestjs.md) adds a structured, opinionated layer on top of it.
+
 Express.js applications benefit from automatic instrumentation of the framework
 itself, as well as popular libraries including MongoDB (Mongoose), Redis
 (IORedis), BullMQ, Socket.IO, and dozens of commonly used Node.js components.
@@ -1912,19 +1916,16 @@ Then filter and query by tenant attributes in base14 Scout dashboard.
 
 ## What's Next?
 
-### Related Frameworks
+### Related Guides
 
-- [NestJS Instrumentation](./nestjs.md) \- controllers, guards, interceptors
-- [Fastify Instrumentation](./fastify.md) \- hooks, plugins, PostgreSQL, BullMQ
-- [Hono Instrumentation](./hono.md) \- edge/middleware, PostgreSQL, BullMQ
-- [tRPC Instrumentation](./trpc.md) \- type-safe procedures, Prisma, PostgreSQL
-- [Elysia Instrumentation](./elysia.md) \- Bun runtime, middleware, structured
-  logging
+- [Hono Instrumentation](./hono.md) - Lightweight, edge-first Node.js framework
+- [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)
+  \- Manual spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 
 ### Advanced Topics
 
-- [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)
-  \- Manual spans, metrics, logs, and advanced instrumentation patterns
 - [OpenTelemetry Collector Configuration](../../collector-setup/otel-collector-config.md)
   \- Advanced collector features, processors, and exporters
 
@@ -2045,12 +2046,3 @@ calls in real time.
 - [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/)
 - [Official Metrics Documentation](https://opentelemetry.io/docs/concepts/signals/metrics/)
 - [Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
-
-## Related Guides
-
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
-  up collector for local development
-- [Custom Node.js Instrumentation](../custom-instrumentation/javascript-node.md)
-  \- Manual instrumentation for advanced use cases
-- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
-  Production deployment guide

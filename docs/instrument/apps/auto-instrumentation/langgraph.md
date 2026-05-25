@@ -51,6 +51,10 @@ routing observability, tool-calling node traces, multi-provider LLM support,
 token and cost metrics, PII scrubbing, and production deployment with Docker
 Compose.
 
+LangGraph is a Python framework for stateful LLM agents, in the same space as
+[LlamaIndex](./llamaindex.md) and the TypeScript
+[Vercel AI SDK](./vercel-ai-sdk.md).
+
 LangGraph applications present unique observability challenges beyond standard
 LLM calls. An agent pipeline involves multiple nodes executing sequentially or
 conditionally, each potentially making LLM calls, database queries, or tool
@@ -1543,16 +1547,13 @@ framework level.
 
 ## What's Next?
 
-### Advanced Topics
+### Related Guides
 
-- [LLM Observability](../../../guides/ai-observability/llm-observability.md) -
-  Comprehensive GenAI observability patterns
-- [LlamaIndex Instrumentation](./llamaindex.md) - LlamaIndex-specific setup
-- [Vercel AI SDK Instrumentation](./vercel-ai-sdk.md) - TypeScript/Bun AI
-  pipeline instrumentation
-- [FastAPI Auto-Instrumentation](./fast-api.md) - FastAPI-specific setup
+- [FastAPI Instrumentation](./fast-api.md) - Common API host for agents
 - [Python Custom Instrumentation](../custom-instrumentation/python.md) - Manual
-  tracing fundamentals
+  spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 
 ### Scout Platform Features
 
@@ -1620,14 +1621,3 @@ repository.
 - [OpenTelemetry Python SDK](https://opentelemetry.io/docs/languages/python/)
 - [LangGraph Documentation](https://langchain-ai.github.io/langgraph/)
 - [OpenTelemetry Collector Configuration](https://opentelemetry.io/docs/collector/configuration/)
-
-## Related Guides
-
-- [LLM Observability](../../../guides/ai-observability/llm-observability.md) -
-  Comprehensive GenAI observability guide
-- [LlamaIndex Instrumentation](./llamaindex.md) - LlamaIndex-specific setup
-- [Vercel AI SDK Instrumentation](./vercel-ai-sdk.md) - TypeScript/Bun AI
-  pipeline instrumentation
-- [FastAPI Auto-Instrumentation](./fast-api.md) - FastAPI-specific setup
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
-  Local collector deployment

@@ -50,6 +50,9 @@ application to collect traces and metrics from HTTP requests, database queries,
 Redis operations, background jobs, and custom business logic using the
 OpenTelemetry Node.js SDK with minimal code changes.
 
+Fastify is a performance-focused alternative to [Express](./express.md), with a
+minimal core similar to the edge-first [Hono](./hono.md).
+
 Fastify applications benefit from automatic instrumentation of the framework
 itself, as well as popular libraries including PostgreSQL (pg), Redis (IORedis),
 BullMQ, Drizzle ORM, and dozens of commonly used Node.js components. With
@@ -1278,13 +1281,13 @@ metrics.
 
 ## What's Next?
 
-### Advanced Topics
+### Related Guides
 
-- [Express.js Instrumentation](./express.md) - Similar Node.js patterns
-- [NestJS Instrumentation](./nestjs.md) - Framework-specific setup
-- [Node.js Instrumentation](./nodejs.md) - Core Node.js patterns
-- [Hono Instrumentation](./hono.md) - edge/middleware, PostgreSQL, BullMQ
-- [tRPC Instrumentation](./trpc.md) - type-safe procedures, Prisma, PostgreSQL
+- [NestJS Instrumentation](./nestjs.md) - Structured framework built on Fastify
+- [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)
+  \- Manual spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 
 ### Scout Platform Features
 
@@ -1386,11 +1389,3 @@ repository.
 - [OpenTelemetry Fastify Instrumentation](https://www.npmjs.com/package/@opentelemetry/instrumentation-fastify)
 - [BullMQ Documentation](https://docs.bullmq.io/)
 - [Drizzle ORM Documentation](https://orm.drizzle.team/)
-
-## Related Guides
-
-- [Express.js Instrumentation](./express.md) - Similar Node.js web framework
-- [NestJS Instrumentation](./nestjs.md) - TypeScript-first framework
-- [Node.js Instrumentation](./nodejs.md) - Core Node.js patterns
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
-  Local collector configuration
