@@ -41,12 +41,17 @@ keywords:
     quarkus otel extension,
     quarkus native tracing performance,
   ]
-head:
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does Quarkus require manual OpenTelemetry SDK initialization?","acceptedAnswer":{"@type":"Answer","text":"No. Quarkus handles OpenTelemetry initialization automatically through the quarkus-opentelemetry extension. You only need to add the dependency and configure application.properties."}},{"@type":"Question","name":"Can I use Quarkus native images with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Yes, Quarkus fully supports OpenTelemetry in GraalVM native images. The extension handles all reflection configuration and build-time initialization automatically."}},{"@type":"Question","name":"How does Quarkus OpenTelemetry setup differ from Spring Boot?","acceptedAnswer":{"@type":"Answer","text":"Quarkus is simpler. It uses extension-based configuration with zero Java code, while Spring Boot requires programmatic SDK initialization in a @Configuration class."}},{"@type":"Question","name":"How do I add custom spans in Quarkus?","acceptedAnswer":{"@type":"Answer","text":"Use the @WithSpan annotation from OpenTelemetry instrumentation annotations on any method. You can also inject Tracer to create spans manually. View spans in base14 Scout."}},{"@type":"Question","name":"Does Quarkus automatically instrument reactive Mutiny code?","acceptedAnswer":{"@type":"Answer","text":"Yes, Quarkus's reactive Mutiny programming model is automatically instrumented. Context propagation across Uni and Multi chains works out of the box."}}]}
 ---
+
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does Quarkus require manual OpenTelemetry SDK initialization?","acceptedAnswer":{"@type":"Answer","text":"No. Quarkus handles OpenTelemetry initialization automatically through the quarkus-opentelemetry extension. You only need to add the dependency and configure application.properties."}},{"@type":"Question","name":"Can I use Quarkus native images with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Yes, Quarkus fully supports OpenTelemetry in GraalVM native images. The extension handles all reflection configuration and build-time initialization automatically."}},{"@type":"Question","name":"How does Quarkus OpenTelemetry setup differ from Spring Boot?","acceptedAnswer":{"@type":"Answer","text":"Quarkus is simpler. It uses extension-based configuration with zero Java code, while Spring Boot requires programmatic SDK initialization in a @Configuration class."}},{"@type":"Question","name":"How do I add custom spans in Quarkus?","acceptedAnswer":{"@type":"Answer","text":"Use the @WithSpan annotation from OpenTelemetry instrumentation annotations on any method. You can also inject Tracer to create spans manually. View spans in base14 Scout."}},{"@type":"Question","name":"Does Quarkus automatically instrument reactive Mutiny code?","acceptedAnswer":{"@type":"Answer","text":"Yes, Quarkus's reactive Mutiny programming model is automatically instrumented. Context propagation across Uni and Multi chains works out of the box."}}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
 
 ## Introduction
 
@@ -56,6 +61,10 @@ and incredibly low memory footprint. Unlike traditional Java frameworks,
 Quarkus provides **built-in OpenTelemetry support** through its extension
 ecosystem, making instrumentation significantly simpler than manual
 configuration.
+
+Quarkus is a Kubernetes-native JVM framework that competes with
+[Spring Boot](./spring-boot.md). [Micronaut](./micronaut.md) and
+[Ktor](./ktor.md) are other JVM options.
 
 This guide demonstrates how to instrument Quarkus applications with
 OpenTelemetry for comprehensive distributed tracing, metrics collection, and
@@ -1782,11 +1791,10 @@ observability patterns:
 
 - **[Custom Instrumentation for Java](/instrument/apps/custom-instrumentation/java)**
   \- Deep dive into manual span creation, context propagation, and baggage
-- **[Spring Boot Instrumentation](/instrument/apps/auto-instrumentation/spring-boot)**
-  \- Compare Quarkus extension-based approach with Spring Boot programmatic
-  setup
 - **Distributed Tracing Best Practices** \- Sampling strategies, cardinality
   limits, and performance optimization
+- **[All framework guides](/instrument/apps/auto-instrumentation/)** \-
+  Auto-instrumentation overview for every language
 
 ### Scout Platform Features
 
@@ -1803,15 +1811,6 @@ observability patterns:
 - **Docker Instrumentation** - Trace containerized Quarkus applications
 - **AWS ECS/Fargate Deployment** - Deploy instrumented native images to
   serverless containers
-
-### Related Frameworks
-
-- **[Node.js Instrumentation](/instrument/apps/auto-instrumentation/nodejs)**
-  \- Compare Quarkus extension approach with Node.js SDK patterns
-- **[Go Instrumentation](/instrument/apps/auto-instrumentation/go)** \-
-  Explore another compiled language with low overhead tracing
-- **Python Django** \- ORM instrumentation patterns similar to Hibernate (guide
-  coming soon)
 
 ## Complete Example
 

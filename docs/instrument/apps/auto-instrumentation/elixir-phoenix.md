@@ -157,6 +157,8 @@ That's it! Head over to Scout Grafana to visualize the traces.
 
 ## Related Guides
 
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
   up collector for local development
 - [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -

@@ -27,12 +27,17 @@ keywords:
     axum instrumentation guide,
     rust observability stack,
   ]
-head:
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does OpenTelemetry impact Rust application performance?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry adds approximately less than 1ms of latency per request in typical Axum applications. Rust's zero-cost abstractions and the efficient tracing crate minimize overhead. With proper configuration (batch processor), the performance impact is negligible for most production workloads."}},{"@type":"Question","name":"Which Rust versions are supported?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry Rust supports Rust 1.80+ with edition 2021 or 2024. Rust 1.92+ is recommended for optimal compatibility and performance. See the Prerequisites section for detailed version compatibility."}},{"@type":"Question","name":"Can I use OpenTelemetry with async Rust and Tokio?","acceptedAnswer":{"@type":"Answer","text":"Yes. OpenTelemetry Rust is designed for async applications. The tracing crate handles async context propagation automatically, and tracing-opentelemetry bridges tracing spans to OpenTelemetry. Use opentelemetry_sdk with the rt-tokio feature for Tokio runtime support."}},{"@type":"Question","name":"How do I trace async tasks spawned with tokio::spawn?","acceptedAnswer":{"@type":"Answer","text":"Use tracing::Instrument to propagate context to spawned tasks. Wrap the async block with .instrument(span) to ensure the spawned task is traced under the parent span."}},{"@type":"Question","name":"Can I use OpenTelemetry alongside other observability tools?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry can run alongside tools like Prometheus or Jaeger during migration periods. The tracing ecosystem allows multiple subscribers. However, running multiple exporters simultaneously will increase overhead."}},{"@type":"Question","name":"How do I handle multi-tenant applications?","acceptedAnswer":{"@type":"Answer","text":"Add tenant context to spans using tracing fields. Use tracing::info_span! with tenant.id and tenant.name fields, then wrap request handling in the span scope."}},{"@type":"Question","name":"What's the difference between tracing and OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"tracing is Rust's native instrumentation library for structured logging and spans. tracing-opentelemetry bridges tracing spans to OpenTelemetry format for export to APM backends. Use tracing for instrumentation and OpenTelemetry for export."}},{"@type":"Question","name":"How do I monitor SQLx connection pool health?","acceptedAnswer":{"@type":"Answer","text":"SQLx emits tracing spans for connection pool operations. Monitor these spans for connection acquisition times and pool exhaustion."}},{"@type":"Question","name":"Can I customize which operations are instrumented?","acceptedAnswer":{"@type":"Answer","text":"Yes. Use the #[instrument] macro selectively and configure the EnvFilter to control which modules emit spans. You can also use Span::none() to skip tracing entirely for specific operations."}}]}
 ---
+
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does OpenTelemetry impact Rust application performance?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry adds approximately less than 1ms of latency per request in typical Axum applications. Rust's zero-cost abstractions and the efficient tracing crate minimize overhead. With proper configuration (batch processor), the performance impact is negligible for most production workloads."}},{"@type":"Question","name":"Which Rust versions are supported?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry Rust supports Rust 1.80+ with edition 2021 or 2024. Rust 1.92+ is recommended for optimal compatibility and performance. See the Prerequisites section for detailed version compatibility."}},{"@type":"Question","name":"Can I use OpenTelemetry with async Rust and Tokio?","acceptedAnswer":{"@type":"Answer","text":"Yes. OpenTelemetry Rust is designed for async applications. The tracing crate handles async context propagation automatically, and tracing-opentelemetry bridges tracing spans to OpenTelemetry. Use opentelemetry_sdk with the rt-tokio feature for Tokio runtime support."}},{"@type":"Question","name":"How do I trace async tasks spawned with tokio::spawn?","acceptedAnswer":{"@type":"Answer","text":"Use tracing::Instrument to propagate context to spawned tasks. Wrap the async block with .instrument(span) to ensure the spawned task is traced under the parent span."}},{"@type":"Question","name":"Can I use OpenTelemetry alongside other observability tools?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry can run alongside tools like Prometheus or Jaeger during migration periods. The tracing ecosystem allows multiple subscribers. However, running multiple exporters simultaneously will increase overhead."}},{"@type":"Question","name":"How do I handle multi-tenant applications?","acceptedAnswer":{"@type":"Answer","text":"Add tenant context to spans using tracing fields. Use tracing::info_span! with tenant.id and tenant.name fields, then wrap request handling in the span scope."}},{"@type":"Question","name":"What's the difference between tracing and OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"tracing is Rust's native instrumentation library for structured logging and spans. tracing-opentelemetry bridges tracing spans to OpenTelemetry format for export to APM backends. Use tracing for instrumentation and OpenTelemetry for export."}},{"@type":"Question","name":"How do I monitor SQLx connection pool health?","acceptedAnswer":{"@type":"Answer","text":"SQLx emits tracing spans for connection pool operations. Monitor these spans for connection acquisition times and pool exhaustion."}},{"@type":"Question","name":"Can I customize which operations are instrumented?","acceptedAnswer":{"@type":"Answer","text":"Yes. Use the #[instrument] macro selectively and configure the EnvFilter to control which modules emit spans. You can also use Span::none() to skip tracing entirely for specific operations."}}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
 
 # Axum
 
@@ -41,6 +46,9 @@ comprehensive application performance monitoring (APM), distributed tracing, and
 observability. This guide shows you how to instrument your Axum application to
 collect traces, metrics, and logs from HTTP requests, database queries,
 background jobs, and custom business logic using the OpenTelemetry Rust SDK.
+
+Axum is a Tokio-based async Rust web framework. [Actix Web](./actix-web.md) is
+the other widely used Rust option.
 
 Rust applications built with Axum benefit from the powerful `tracing` ecosystem
 combined with OpenTelemetry exporters. With the `tracing-opentelemetry` crate,
@@ -1662,6 +1670,7 @@ This complete example is available in our
 
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
   up collector for local development
-- [Go Instrumentation](./go.md) - Another systems programming language
-  alternative
-- [Spring Boot Instrumentation](./spring-boot.md) - Java framework alternative
+- [Rust Custom Instrumentation](../custom-instrumentation/rust.md) - Manual
+  spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language

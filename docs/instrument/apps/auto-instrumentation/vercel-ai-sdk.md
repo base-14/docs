@@ -31,6 +31,16 @@ keywords:
   ]
 ---
 
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does OpenTelemetry add latency to LLM calls?","acceptedAnswer":{"@type":"Answer","text":"No. Span creation takes microseconds. LLM API calls take seconds. The overhead is unmeasurable. BatchSpanProcessor exports spans in a background thread."}},{"@type":"Question","name":"How do I add OpenTelemetry to Vercel AI SDK without Traceloop?","acceptedAnswer":{"@type":"Answer","text":"Traceloop's @traceloop/node-server-sdk provides auto- instrumentation but produces attributes that may not align with the OpenTelemetry GenAI semantic conventions. The middleware approach gives you full control over what gets recorded and ensures standard gen_ai.* attributes that work with any OTel-compatible backend."}},{"@type":"Question","name":"Which Vercel AI SDK versions are supported?","acceptedAnswer":{"@type":"Answer","text":"This guide requires AI SDK v6+ (ai@6.0.0). The LanguageModelV3Middleware interface and wrapLanguageModel API were introduced in v6. Earlier versions used a different middleware signature."}},{"@type":"Question","name":"How do I initialize OpenTelemetry before my Bun application starts?","acceptedAnswer":{"@type":"Answer","text":"Bun's --preload flag runs the specified file before the application entry point. This ensures NodeSDK.start() and PgInstrumentation initialize before any pg or http imports, which is required for monkey-patching to work correctly."}},{"@type":"Question","name":"How do I track cost across multiple providers?","acceptedAnswer":{"@type":"Answer","text":"Use the gen_ai.client.cost counter metric with gen_ai.provider.name and gen_ai.request.model attributes. Define pricing per model in MODEL_PRICING and calculate from token counts. This enables sum(gen_ai.client.cost) by (gen_ai.provider.name) in dashboards."}},{"@type":"Question","name":"Can I see prompts and completions in traces?","acceptedAnswer":{"@type":"Answer","text":"Yes. The middleware records gen_ai.user.message and gen_ai.assistant.message span events with truncated content. Remove these span.addEvent calls in production for compliance."}},{"@type":"Question","name":"How do I add OpenAI, Anthropic, or other providers to Vercel AI SDK?","acceptedAnswer":{"@type":"Answer","text":"Add the provider SDK package (e.g., @ai-sdk/mistral), add its entry to PROVIDER_META with the semconv name and server address, add model pricing to MODEL_PRICING, and create a case in buildRawModel. The semconv middleware wraps it automatically."}},{"@type":"Question","name":"How does LLM provider fallback appear in OpenTelemetry traces?","acceptedAnswer":{"@type":"Answer","text":"When all retries are exhausted for the primary model, the fallback middleware catches the error and calls the secondary model's doGenerate directly. The secondary model has its own semconv wrapper, so both the failed primary and successful fallback appear as separate spans in the trace."}}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
+
 # Vercel AI SDK
 
 Implement OpenTelemetry instrumentation for Vercel AI SDK v6 applications to
@@ -40,6 +50,9 @@ pipeline with custom GenAI semantic convention spans via
 `LanguageModelV3Middleware`, multi-provider LLM support with automatic fallback,
 token and cost metrics, concurrent pipeline stage execution, and production
 deployment with Docker Compose.
+
+The Vercel AI SDK is a TypeScript toolkit for LLM applications. For Python
+alternatives, see [LangGraph](./langgraph.md) and [LlamaIndex](./llamaindex.md).
 
 Vercel AI SDK applications present unique observability challenges. A
 multi-stage pipeline involves sequential and concurrent stages - ingestion,
@@ -1396,17 +1409,13 @@ stage and its child LLM calls are correctly nested.
 
 ## What's Next?
 
-### Advanced Topics
+### Related Guides
 
-- [LLM Observability](../../../guides/ai-observability/llm-observability.md) -
-  Comprehensive GenAI observability patterns
-- [LangGraph Instrumentation](./langgraph.md) - Python agent pipeline
-  instrumentation
-- [LlamaIndex Instrumentation](./llamaindex.md) - Python structured output
-  instrumentation
-- [Node.js Auto-Instrumentation](./nodejs.md) - Node.js-specific setup
-- [Node.js Manual Spans](../custom-instrumentation/javascript-node.md) - Custom
-  tracing fundamentals
+- [Next.js Instrumentation](./nextjs.md) - Common host for AI SDK applications
+- [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)
+  \- Manual spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 
 ### Scout Platform Features
 
@@ -1493,19 +1502,3 @@ repository.
 - [Vercel AI SDK Documentation](https://ai-sdk.dev/docs)
 - [Hono Documentation](https://hono.dev/docs/)
 - [OpenTelemetry Collector Configuration](https://opentelemetry.io/docs/collector/configuration/)
-
-## Related Guides
-
-- [LLM Observability](../../../guides/ai-observability/llm-observability.md) -
-  Comprehensive GenAI observability guide
-- [LangGraph Instrumentation](./langgraph.md) - Python agent pipeline
-  instrumentation
-- [LlamaIndex Instrumentation](./llamaindex.md) - Python structured output
-  instrumentation
-- [Node.js Auto-Instrumentation](./nodejs.md) - Node.js-specific setup
-- [Next.js Instrumentation](./nextjs.md#browser--client-side-instrumentation) -
-  Browser-side tracing for client hooks like `useChat` and `useCompletion`
-- [React Browser Instrumentation](./react.md) - Browser SDK setup for
-  client-side AI SDK hooks
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
-  Local collector deployment

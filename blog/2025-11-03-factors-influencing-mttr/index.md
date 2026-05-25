@@ -5,11 +5,6 @@ title: Understanding What Increases and Reduces MTTR
 description: "Tool fragmentation, alert noise, and tribal knowledge slow recovery. Learn what disciplined, observable teams do differently to reduce Mean Time to Recovery."
 authors: [base14team]
 tags: [observability, mttr, reliability, engineering, best-practices, collaboration, incident-management]
-head:
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is MTTR and why does it matter?","acceptedAnswer":{"@type":"Answer","text":"MTTR (Mean Time to Recovery) measures how quickly an organization detects, communicates, and recovers from production incidents. It is one of the clearest indicators of how mature a system and a team really are."}},{"@type":"Question","name":"What are the biggest factors that increase MTTR?","acceptedAnswer":{"@type":"Answer","text":"The biggest factors are tool fragmentation (engineers switching between 5-6 systems to correlate data), ambiguous ownership during incidents, tribal knowledge that lives in people's heads instead of runbooks, noisy or delayed alerts, and unstructured communication across scattered channels."}},{"@type":"Question","name":"How does a single observability platform reduce incident response time?","acceptedAnswer":{"@type":"Answer","text":"When metrics, logs, and traces live in one correlated view, engineers can trace a symptom to root cause without switching between separate tools. This eliminates context-switching overhead - the single biggest time sink when MTTR is high."}},{"@type":"Question","name":"Do postmortems actually reduce MTTR?","acceptedAnswer":{"@type":"Answer","text":"Yes, but only if they are structured. A postmortem with a clear timeline, documented decisions, and assigned action items transforms an incident into organizational learning. Without that structure, the same root causes recur because lessons are never captured or acted on."}},{"@type":"Question","name":"How do you systematically reduce MTTR over time?","acceptedAnswer":{"@type":"Answer","text":"Focus on three areas: unified observability so engineers can correlate signals without switching tools, clear ownership so there is no ambiguity during incidents, and structured postmortems that turn each incident into organizational learning. If an incident does not produce learning, it is bound to repeat."}}]}
 ---
 
 # Understanding What Increases and Reduces MTTR
@@ -30,6 +25,16 @@ builds up in those connections - between tools, roles, or data. It falls when
 context flows freely and decisions move faster than confusion.
 
 <!--truncate-->
+
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is MTTR and why does it matter?","acceptedAnswer":{"@type":"Answer","text":"MTTR (Mean Time to Recovery) measures how quickly an organization detects, communicates, and recovers from production incidents. It is one of the clearest indicators of how mature a system and a team really are."}},{"@type":"Question","name":"What are the biggest factors that increase MTTR?","acceptedAnswer":{"@type":"Answer","text":"The biggest factors are tool fragmentation (engineers switching between 5-6 systems to correlate data), ambiguous ownership during incidents, tribal knowledge that lives in people's heads instead of runbooks, noisy or delayed alerts, and unstructured communication across scattered channels."}},{"@type":"Question","name":"How does a single observability platform reduce incident response time?","acceptedAnswer":{"@type":"Answer","text":"When metrics, logs, and traces live in one correlated view, engineers can trace a symptom to root cause without switching between separate tools. This eliminates context-switching overhead - the single biggest time sink when MTTR is high."}},{"@type":"Question","name":"Do postmortems actually reduce MTTR?","acceptedAnswer":{"@type":"Answer","text":"Yes, but only if they are structured. A postmortem with a clear timeline, documented decisions, and assigned action items transforms an incident into organizational learning. Without that structure, the same root causes recur because lessons are never captured or acted on."}},{"@type":"Question","name":"How do you systematically reduce MTTR over time?","acceptedAnswer":{"@type":"Answer","text":"Focus on three areas: unified observability so engineers can correlate signals without switching tools, clear ownership so there is no ambiguity during incidents, and structured postmortems that turn each incident into organizational learning. If an incident does not produce learning, it is bound to repeat."}}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
 
 The table below outlines what typically increases MTTR, and what helps reduce
 it.

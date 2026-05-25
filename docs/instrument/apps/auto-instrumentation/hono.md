@@ -1,11 +1,10 @@
 ---
-title: Hono OpenTelemetry Instrumentation - Complete APM Setup Guide
+title: Hono OpenTelemetry Instrumentation - HTTP, Database & Redis Tracing
 sidebar_label: Hono
 sidebar_position: 10
 description:
-  Trace HTTP requests, PostgreSQL queries, Redis calls, and background jobs in
-  Hono apps with OpenTelemetry auto-instrumentation. Export traces and metrics
-  to base14 Scout.
+  Hono OpenTelemetry instrumentation for HTTP, databases, Redis, and BullMQ jobs
+  on Node.js. Auto-instrument with @hono/otel; export to base14 Scout.
 keywords:
   [
     hono opentelemetry instrumentation,
@@ -31,6 +30,16 @@ keywords:
   ]
 ---
 
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is the performance impact of OpenTelemetry on Hono?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry typically adds 1-3ms latency per request with 2-5% CPU overhead. The BatchSpanProcessor minimizes impact by buffering spans for batch export."}},{"@type":"Question","name":"Which versions of Hono are supported?","acceptedAnswer":{"@type":"Answer","text":"This guide focuses on Hono 4.x with @hono/otel middleware. The same auto-instrumentation approach works with any Hono version since HTTP-level instrumentation is framework-agnostic."}},{"@type":"Question","name":"How does Hono OpenTelemetry middleware compare to Fastify?","acceptedAnswer":{"@type":"Answer","text":"@hono/otel is a Hono middleware that creates spans with route-parameterized names. Fastify uses hooks and plugins. Both achieve the same result — automatic HTTP span generation with method, route, and status code."}},{"@type":"Question","name":"How do I instrument Hono with PostgreSQL and Drizzle ORM?","acceptedAnswer":{"@type":"Answer","text":"PostgreSQL queries are automatically instrumented through the pg driver. Drizzle ORM uses pg under the hood, so all queries appear as database spans without additional configuration."}},{"@type":"Question","name":"How do I trace background jobs with BullMQ?","acceptedAnswer":{"@type":"Answer","text":"Inject trace context when enqueuing with propagation.inject() and extract it in the worker with propagation.extract(). Wrap the worker processor in context.with(parentContext, ...) to link consumer spans to the producer."}},{"@type":"Question","name":"How do I correlate Pino logs with traces?","acceptedAnswer":{"@type":"Answer","text":"The custom createLogger function adds traceId and spanId to every log entry automatically. Warn, error, and fatal logs are also emitted to the OTel log provider for export alongside traces."}},{"@type":"Question","name":"Can I use Prometheus metrics alongside OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Yes. The example uses prom-client for Prometheus-compatible metrics exposed at /metrics, alongside OpenTelemetry metrics exported via OTLP. Both can coexist."}},{"@type":"Question","name":"How do I reduce trace volume in production?","acceptedAnswer":{"@type":"Answer","text":"Use ignoreIncomingRequestHook to skip health checks and static assets, and disable unnecessary instrumentations like filesystem and DNS."}}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
+
 # Hono
 
 Implement OpenTelemetry instrumentation for Hono applications to enable
@@ -48,6 +57,11 @@ identify database query bottlenecks. Hono's lightweight design and middleware
 architecture work seamlessly with OpenTelemetry's context propagation,
 ensuring accurate parent-child span relationships across async operations
 including BullMQ background jobs.
+
+As a lightweight, middleware-first framework, Hono is a leaner alternative to
+[Express](./express.md) and shares its modern design with
+[Elysia](./elysia.md) on the Bun runtime. The instrumentation approach in this
+guide carries over to both.
 
 Whether you're implementing observability for the first time, migrating from
 commercial APM solutions like DataDog or New Relic, or troubleshooting
@@ -1223,11 +1237,13 @@ requires HTTP/2 support. Both are fully supported by Scout Collector.
 
 ## What's Next?
 
-### Advanced Topics
+### Related Guides
 
-- [Express.js Instrumentation](./express.md) - Similar Node.js patterns
-- [Fastify Instrumentation](./fastify.md) - Alternative Node.js framework
-- [NestJS Instrumentation](./nestjs.md) - TypeScript-first framework
+- [Fastify Instrumentation](./fastify.md) - High-performance Node.js framework
+- [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)
+  \- Manual spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 
 ### Scout Platform Features
 

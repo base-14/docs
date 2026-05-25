@@ -4,9 +4,8 @@ title:
 sidebar_label: LLM Observability
 sidebar_position: 8
 description:
-  Trace LLM calls, track token usage and costs, and monitor AI agent pipelines
-  end-to-end with OpenTelemetry GenAI semantic conventions in Python and base14
-  Scout.
+  LLM observability with OpenTelemetry to trace LLM calls, track token usage
+  and cost, and monitor AI pipelines with GenAI semantic conventions in Python.
 keywords:
   [
     llm observability,

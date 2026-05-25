@@ -27,12 +27,17 @@ keywords:
     slim 3 manual instrumentation,
     php fpm opentelemetry,
   ]
-head:
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why are no traces appearing from my Slim OpenTelemetry setup?","acceptedAnswer":{"@type":"Answer","text":"Check collector logs with docker compose logs otel-collector. Verify Scout credentials are set correctly. Ensure OTEL_PHP_AUTOLOAD_ENABLED=true is set. Check the extension is loaded with php -m | grep opentelemetry."}},{"@type":"Question","name":"Why is the OpenTelemetry PHP extension not loaded?","acceptedAnswer":{"@type":"Answer","text":"Verify extension installation with pecl list | grep opentelemetry. Check php.ini includes the extension directive. Restart PHP-FPM if using FastCGI."}},{"@type":"Question","name":"Why are no MongoDB spans appearing in my Slim application?","acceptedAnswer":{"@type":"Answer","text":"Verify opentelemetry-auto-mongodb is installed with composer show | grep auto-mongodb. Confirm OTEL_PHP_AUTOLOAD_ENABLED=true is set. Check that the mongodb PHP extension is loaded with php -m | grep mongodb."}},{"@type":"Question","name":"Why do Slim 3 span names show raw paths instead of route patterns?","acceptedAnswer":{"@type":"Answer","text":"Ensure determineRouteBeforeAppMiddleware is set to true in your Slim 3 settings. Without it, the TelemetryMiddleware cannot read the matched route pattern and span names will contain high-cardinality paths like GET /api/articles/abc123 instead of GET /api/articles/{id}."}},{"@type":"Question","name":"Why is telemetry lost on PHP-FPM process exit?","acceptedAnswer":{"@type":"Answer","text":"PHP-FPM workers can exit before the SDK flushes its buffer. Ensure the shutdown handler is registered and loaded early via src/telemetry.php. Without it, spans from the final request before worker recycling may be lost."}}]}
 ---
+
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why are no traces appearing from my Slim OpenTelemetry setup?","acceptedAnswer":{"@type":"Answer","text":"Check collector logs with docker compose logs otel-collector. Verify Scout credentials are set correctly. Ensure OTEL_PHP_AUTOLOAD_ENABLED=true is set. Check the extension is loaded with php -m | grep opentelemetry."}},{"@type":"Question","name":"Why is the OpenTelemetry PHP extension not loaded?","acceptedAnswer":{"@type":"Answer","text":"Verify extension installation with pecl list | grep opentelemetry. Check php.ini includes the extension directive. Restart PHP-FPM if using FastCGI."}},{"@type":"Question","name":"Why are no MongoDB spans appearing in my Slim application?","acceptedAnswer":{"@type":"Answer","text":"Verify opentelemetry-auto-mongodb is installed with composer show | grep auto-mongodb. Confirm OTEL_PHP_AUTOLOAD_ENABLED=true is set. Check that the mongodb PHP extension is loaded with php -m | grep mongodb."}},{"@type":"Question","name":"Why do Slim 3 span names show raw paths instead of route patterns?","acceptedAnswer":{"@type":"Answer","text":"Ensure determineRouteBeforeAppMiddleware is set to true in your Slim 3 settings. Without it, the TelemetryMiddleware cannot read the matched route pattern and span names will contain high-cardinality paths like GET /api/articles/abc123 instead of GET /api/articles/{id}."}},{"@type":"Question","name":"Why is telemetry lost on PHP-FPM process exit?","acceptedAnswer":{"@type":"Answer","text":"PHP-FPM workers can exit before the SDK flushes its buffer. Ensure the shutdown handler is registered and loaded early via src/telemetry.php. Without it, spans from the final request before worker recycling may be lost."}}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
 
 # Slim Framework
 
@@ -43,6 +48,9 @@ Slim 4 (with fully automatic HTTP span instrumentation via
 ~70% of setup that is identical between versions - environment variables,
 shutdown handlers, metrics, MongoDB auto-instrumentation, Docker deployment - is
 shared throughout.
+
+Slim is a PHP micro-framework, a lighter alternative to the full-featured
+[Laravel](./laravel.md) and [Symfony](./symfony.md).
 
 Slim applications benefit from the OpenTelemetry PHP ecosystem: automatic
 MongoDB query tracing, Monolog log-trace correlation, and business metric
@@ -1091,6 +1099,13 @@ recycling may be lost.
   alerts for error rates, latency thresholds, and custom metrics
 - **[Dashboard Creation](../../../guides/create-your-first-dashboard.md)** —
   build custom dashboards combining traces, metrics, and business KPIs
+
+### Related Guides
+
+- [PHP Custom Instrumentation](../custom-instrumentation/php.md) - Manual spans
+  and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 
 ## Complete Example
 

@@ -31,6 +31,16 @@ keywords:
   ]
 ---
 
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is the performance impact of OpenTelemetry on Fastify?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry typically adds 1-3ms latency per request with 2-5% CPU overhead. For high-traffic applications, use sampling to reduce this impact. The BatchSpanProcessor helps minimize overhead by buffering spans and exporting them in batches."}},{"@type":"Question","name":"Which versions of Fastify are supported?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry instrumentation supports Fastify 3.x and later. This guide focuses on Fastify 5.x which provides improved hooks and TypeScript support. For older versions, the same instrumentation approach works with minor adjustments."}},{"@type":"Question","name":"How do I instrument Fastify with PostgreSQL and Drizzle ORM?","acceptedAnswer":{"@type":"Answer","text":"PostgreSQL queries are automatically instrumented through the pg driver. Drizzle ORM uses pg under the hood, so all queries are captured as database spans. No additional configuration is needed beyond the standard auto-instrumentation setup."}},{"@type":"Question","name":"How do I reduce trace volume in production?","acceptedAnswer":{"@type":"Answer","text":"Use sampling to capture a percentage of traces: You can also exclude health checks and static assets from tracing using ignoreIncomingRequestHook."}},{"@type":"Question","name":"How do I handle multi-tenancy in traces?","acceptedAnswer":{"@type":"Answer","text":"Add tenant context as span attributes: This allows filtering traces by tenant in Scout Dashboard."}},{"@type":"Question","name":"What's the difference between traces and metrics?","acceptedAnswer":{"@type":"Answer","text":"Traces capture the journey of individual requests through your system, showing timing and relationships between operations. Use traces for debugging specific requests and understanding request flow. Metrics are aggregated measurements over time (counters, gauges, histograms). Use metrics for dashboards, alerting, and capacity planning."}},{"@type":"Question","name":"How do I debug slow database queries with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Database spans include query timing and (optionally) the SQL statement. In Scout Dashboard, filter spans by db.system = postgresql and sort by duration to find slow queries. The span attributes include table names and operation types."}},{"@type":"Question","name":"How do I trace background jobs with BullMQ?","acceptedAnswer":{"@type":"Answer","text":"Inject trace context when enqueuing jobs and extract it in the worker:"}}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
+
 # Fastify
 
 Implement OpenTelemetry instrumentation for Fastify applications to enable
@@ -39,6 +49,9 @@ observability. This guide shows you how to auto-instrument your Fastify
 application to collect traces and metrics from HTTP requests, database queries,
 Redis operations, background jobs, and custom business logic using the
 OpenTelemetry Node.js SDK with minimal code changes.
+
+Fastify is a performance-focused alternative to [Express](./express.md), with a
+minimal core similar to the edge-first [Hono](./hono.md).
 
 Fastify applications benefit from automatic instrumentation of the framework
 itself, as well as popular libraries including PostgreSQL (pg), Redis (IORedis),
@@ -1268,11 +1281,13 @@ metrics.
 
 ## What's Next?
 
-### Advanced Topics
+### Related Guides
 
-- [Express.js Instrumentation](./express.md) - Similar Node.js patterns
-- [NestJS Instrumentation](./nestjs.md) - Framework-specific setup
-- [Node.js Instrumentation](./nodejs.md) - Core Node.js patterns
+- [NestJS Instrumentation](./nestjs.md) - Structured framework built on Fastify
+- [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)
+  \- Manual spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 
 ### Scout Platform Features
 
@@ -1374,11 +1389,3 @@ repository.
 - [OpenTelemetry Fastify Instrumentation](https://www.npmjs.com/package/@opentelemetry/instrumentation-fastify)
 - [BullMQ Documentation](https://docs.bullmq.io/)
 - [Drizzle ORM Documentation](https://orm.drizzle.team/)
-
-## Related Guides
-
-- [Express.js Instrumentation](./express.md) - Similar Node.js web framework
-- [NestJS Instrumentation](./nestjs.md) - TypeScript-first framework
-- [Node.js Instrumentation](./nodejs.md) - Core Node.js patterns
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
-  Local collector configuration

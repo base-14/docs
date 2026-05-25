@@ -40,12 +40,17 @@ keywords:
     flask production monitoring,
     flask microservices tracing,
   ]
-head:
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Do I need to manually instrument Flask routes with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"No. Flask auto-instrumentation automatically traces all routes when you call FlaskInstrumentor().instrument_app(app). No decorators or manual span creation required."}},{"@type":"Question","name":"How do I trace SQLAlchemy queries in a Flask app with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Install opentelemetry-instrumentation-sqlalchemy and instrument the engine after db.init_app(app) using SQLAlchemyInstrumentor().instrument(engine=db.engine). All queries are automatically traced."}},{"@type":"Question","name":"Does OpenTelemetry tracing work with Flask application factory pattern?","acceptedAnswer":{"@type":"Answer","text":"Yes. Initialize tracing inside your create_app() function after creating the app instance but before returning it. base14 Scout will receive traces from all factory-created app instances."}},{"@type":"Question","name":"Can I exclude specific Flask routes from OpenTelemetry tracing?","acceptedAnswer":{"@type":"Answer","text":"Yes. Use the excluded_urls parameter: FlaskInstrumentor().instrument_app(app, excluded_urls='health,metrics') to skip health checks and other high-frequency endpoints."}},{"@type":"Question","name":"What is the performance overhead of OpenTelemetry tracing in Flask?","acceptedAnswer":{"@type":"Answer","text":"With 10% sampling, overhead is typically less than 1% for latency and about 8% for memory. Without sampling at 100% tracing, expect roughly 12% latency increase."}}]}
 ---
+
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Do I need to manually instrument Flask routes with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"No. Flask auto-instrumentation automatically traces all routes when you call FlaskInstrumentor().instrument_app(app). No decorators or manual span creation required."}},{"@type":"Question","name":"How do I trace SQLAlchemy queries in a Flask app with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Install opentelemetry-instrumentation-sqlalchemy and instrument the engine after db.init_app(app) using SQLAlchemyInstrumentor().instrument(engine=db.engine). All queries are automatically traced."}},{"@type":"Question","name":"Does OpenTelemetry tracing work with Flask application factory pattern?","acceptedAnswer":{"@type":"Answer","text":"Yes. Initialize tracing inside your create_app() function after creating the app instance but before returning it. base14 Scout will receive traces from all factory-created app instances."}},{"@type":"Question","name":"Can I exclude specific Flask routes from OpenTelemetry tracing?","acceptedAnswer":{"@type":"Answer","text":"Yes. Use the excluded_urls parameter: FlaskInstrumentor().instrument_app(app, excluded_urls='health,metrics') to skip health checks and other high-frequency endpoints."}},{"@type":"Question","name":"What is the performance overhead of OpenTelemetry tracing in Flask?","acceptedAnswer":{"@type":"Answer","text":"With 10% sampling, overhead is typically less than 1% for latency and about 8% for memory. Without sampling at 100% tracing, expect roughly 12% latency increase."}}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
 
 ## Introduction
 
@@ -54,6 +59,10 @@ started quick and easy, with the ability to scale up to complex applications.
 As a micro-framework, Flask provides the essentials for building web
 applications without imposing rigid structure, making it ideal for APIs,
 microservices, and rapid prototyping.
+
+Flask is a lightweight WSGI microframework. [Django](./django.md) is the
+batteries-included alternative, while [FastAPI](./fast-api.md) and
+[Litestar](./litestar.md) are modern async-first options.
 
 This guide demonstrates how to instrument Flask applications with OpenTelemetry
 for comprehensive distributed tracing, metrics collection, and application
@@ -1796,10 +1805,8 @@ observability patterns:
 
 - **[Custom Instrumentation for Python](/instrument/apps/custom-instrumentation/python)**
   \- Deep dive into manual span creation and context propagation
-- **[Django Instrumentation](/instrument/apps/auto-instrumentation/django)** \-
-  Compare Flask's manual approach with Django's automatic middleware
-- **FastAPI Instrumentation** \- Explore async Python framework tracing
-  patterns
+- **[All framework guides](/instrument/apps/auto-instrumentation/)** \-
+  Auto-instrumentation overview for every language
 
 ### Scout Platform Features
 
@@ -1814,15 +1821,6 @@ observability patterns:
 - **Docker Instrumentation** - Deploy instrumented Flask apps in containers
 - **Kubernetes Deployment** - Run Flask with sidecar collectors
 - **AWS Lambda** - Deploy Flask with AWS Lambda + API Gateway tracing
-
-### Related Frameworks
-
-- **[Node.js Instrumentation](/instrument/apps/auto-instrumentation/nodejs)** \-
-  Compare Flask's patterns with Express.js
-- **[Go Instrumentation](/instrument/apps/auto-instrumentation/go)** \-
-  Lightweight framework comparison with Go Fiber
-- **[Spring Boot Instrumentation](/instrument/apps/auto-instrumentation/spring-boot)**
-  \- Enterprise framework with similar blueprint/module patterns
 
 ## Complete Example
 

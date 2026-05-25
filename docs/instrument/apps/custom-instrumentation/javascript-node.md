@@ -14,12 +14,17 @@ keywords:
     node custom instrumentation,
     nodejs observability,
   ]
-head:
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I add custom OpenTelemetry spans in Node.js?","acceptedAnswer":{"@type":"Answer","text":"Use the OpenTelemetry API to create a tracer with trace.getTracer(), then call tracer.startSpan() to create custom spans in your Express routes or business logic. Export spans to base14 Scout via the OTLP HTTP exporter."}},{"@type":"Question","name":"What npm packages are required for Node.js OpenTelemetry instrumentation?","acceptedAnswer":{"@type":"Answer","text":"Install @opentelemetry/sdk-node, @opentelemetry/api, @opentelemetry/exporter-trace-otlp-http, @opentelemetry/sdk-trace-node, and @opentelemetry/sdk-trace-base. For metrics and logs, add the corresponding exporter and SDK packages."}},{"@type":"Question","name":"How do I create custom metrics in Node.js with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Initialize a MeterProvider with PeriodicExportingMetricReader and OTLPMetricExporter, then use metrics.getMeter() to create counters, histograms, and other metric types. base14 Scout visualizes these metrics automatically."}},{"@type":"Question","name":"How do I export OpenTelemetry logs from a Node.js application?","acceptedAnswer":{"@type":"Answer","text":"Configure a BatchLogRecordProcessor with OTLPLogExporter pointing to your Scout Collector endpoint at port 4318/v1/logs, then use the @opentelemetry/api-logs package to emit structured log records with trace context."}}]}
 ---
+
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I add custom OpenTelemetry spans in Node.js?","acceptedAnswer":{"@type":"Answer","text":"Use the OpenTelemetry API to create a tracer with trace.getTracer(), then call tracer.startSpan() to create custom spans in your Express routes or business logic. Export spans to base14 Scout via the OTLP HTTP exporter."}},{"@type":"Question","name":"What npm packages are required for Node.js OpenTelemetry instrumentation?","acceptedAnswer":{"@type":"Answer","text":"Install @opentelemetry/sdk-node, @opentelemetry/api, @opentelemetry/exporter-trace-otlp-http, @opentelemetry/sdk-trace-node, and @opentelemetry/sdk-trace-base. For metrics and logs, add the corresponding exporter and SDK packages."}},{"@type":"Question","name":"How do I create custom metrics in Node.js with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Initialize a MeterProvider with PeriodicExportingMetricReader and OTLPMetricExporter, then use metrics.getMeter() to create counters, histograms, and other metric types. base14 Scout visualizes these metrics automatically."}},{"@type":"Question","name":"How do I export OpenTelemetry logs from a Node.js application?","acceptedAnswer":{"@type":"Answer","text":"Configure a BatchLogRecordProcessor with OTLPLogExporter pointing to your Scout Collector endpoint at port 4318/v1/logs, then use the @opentelemetry/api-logs package to emit structured log records with trace context."}}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
 
 # Javascript Node
 
@@ -380,3 +385,15 @@ router.get('/ping', async (req, res) => {
   Production deployment
 - [Express.js Auto-Instrumentation](../auto-instrumentation/express.md) -
   Auto-instrumentation for Express.js applications
+- [Fastify Auto-Instrumentation](../auto-instrumentation/fastify.md) -
+  Auto-instrumentation for Fastify applications
+- [Hono Auto-Instrumentation](../auto-instrumentation/hono.md) -
+  Auto-instrumentation for Hono applications
+- [NestJS Auto-Instrumentation](../auto-instrumentation/nestjs.md) -
+  Auto-instrumentation for NestJS applications
+- [Next.js Auto-Instrumentation](../auto-instrumentation/nextjs.md) -
+  Auto-instrumentation for Next.js applications
+- [Elysia Auto-Instrumentation](../auto-instrumentation/elysia.md) -
+  Auto-instrumentation for Elysia (Bun) applications
+- [tRPC Auto-Instrumentation](../auto-instrumentation/trpc.md) -
+  Auto-instrumentation for tRPC APIs

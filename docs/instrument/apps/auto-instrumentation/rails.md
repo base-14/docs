@@ -28,12 +28,17 @@ keywords:
     opentelemetry ruby,
     rails telemetry,
   ]
-head:
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I add OpenTelemetry to a Ruby on Rails application?","acceptedAnswer":{"@type":"Answer","text":"Install the opentelemetry-instrumentation-all gem, configure the SDK in an initializer, and set the OTLP exporter endpoint to your base14 Scout Collector. Auto-instrumentation traces HTTP requests, ActiveRecord queries, and Sidekiq jobs."}},{"@type":"Question","name":"Can OpenTelemetry detect N+1 queries in Rails?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry traces each ActiveRecord query as a separate span. N+1 queries appear as many sequential database spans under a single parent span in base14 Scout, making the pattern easy to identify."}},{"@type":"Question","name":"Does OpenTelemetry work with Sidekiq background jobs?","acceptedAnswer":{"@type":"Answer","text":"Yes, the OpenTelemetry Sidekiq instrumentation automatically traces job enqueue and processing. Context propagation links background jobs to the original request trace."}},{"@type":"Question","name":"What is the performance impact of OpenTelemetry on Rails apps?","acceptedAnswer":{"@type":"Answer","text":"With BatchSpanProcessor, the overhead is minimal - typically 1-3ms per request, slight CPU increase, and 10-30MB additional memory. Sampling can further reduce the impact in high-traffic apps."}}]}
 ---
+
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I add OpenTelemetry to a Ruby on Rails application?","acceptedAnswer":{"@type":"Answer","text":"Install the opentelemetry-instrumentation-all gem, configure the SDK in an initializer, and set the OTLP exporter endpoint to your base14 Scout Collector. Auto-instrumentation traces HTTP requests, ActiveRecord queries, and Sidekiq jobs."}},{"@type":"Question","name":"Can OpenTelemetry detect N+1 queries in Rails?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry traces each ActiveRecord query as a separate span. N+1 queries appear as many sequential database spans under a single parent span in base14 Scout, making the pattern easy to identify."}},{"@type":"Question","name":"Does OpenTelemetry work with Sidekiq background jobs?","acceptedAnswer":{"@type":"Answer","text":"Yes, the OpenTelemetry Sidekiq instrumentation automatically traces job enqueue and processing. Context propagation links background jobs to the original request trace."}},{"@type":"Question","name":"What is the performance impact of OpenTelemetry on Rails apps?","acceptedAnswer":{"@type":"Answer","text":"With BatchSpanProcessor, the overhead is minimal - typically 1-3ms per request, slight CPU increase, and 10-30MB additional memory. Sampling can further reduce the impact in high-traffic apps."}}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
 
 # Ruby on Rails
 
@@ -42,6 +47,9 @@ comprehensive application performance monitoring (APM), distributed tracing, and
 observability. This guide shows you how to auto-instrument your Rails application
 to collect traces and metrics from HTTP requests, database queries, background
 jobs, and custom business logic using the OpenTelemetry Ruby SDK.
+
+This guide covers modern Ruby on Rails. For older Rails versions, see the
+[legacy Rails guide](./rails-legacy.md).
 
 Rails applications benefit from automatic instrumentation of popular frameworks
 and libraries including ActiveRecord, ActionPack, ActionView, Redis, Sidekiq,
@@ -1614,6 +1622,7 @@ This complete example is available in our [GitHub examples repository](https://g
 
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
   up collector for local development
-- [Custom Ruby Instrumentation](../custom-instrumentation/ruby.md) - Manual
-  instrumentation for advanced use cases
-- [Spring Boot Instrumentation](./spring-boot.md) - Java framework alternative
+- [Ruby Custom Instrumentation](../custom-instrumentation/ruby.md) - Manual
+  spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language

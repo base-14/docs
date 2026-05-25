@@ -5,9 +5,8 @@ title:
 sidebar_label: Micronaut
 sidebar_position: 19
 description:
-  Instrument Micronaut applications with the OpenTelemetry Java Agent for
-  zero-code tracing of HTTP requests, Hibernate JPA queries, and Netty server
-  operations. Export traces, metrics, and correlated logs to base14 Scout.
+  Micronaut OpenTelemetry instrumentation with the Java agent for zero-code
+  tracing of HTTP, Hibernate JPA, and Netty, sent to base14 Scout.
 keywords:
   [
     micronaut opentelemetry,
@@ -31,16 +30,20 @@ keywords:
     micronaut auto instrumentation,
     java micronaut apm,
   ]
-head:
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does the OpenTelemetry Java Agent impact Micronaut performance?","acceptedAnswer":{"@type":"Answer","text":"The OpenTelemetry Java Agent adds approximately 3-5ms of latency per request in typical Micronaut applications. With batch processing and GZIP compression, the overhead is minimal for production workloads."}},{"@type":"Question","name":"Which Micronaut versions are supported?","acceptedAnswer":{"@type":"Answer","text":"The OpenTelemetry Java Agent supports Micronaut 3.x and 4.x with Java 17+. Micronaut 4.x with Java 21+ is recommended for optimal compatibility."}},{"@type":"Question","name":"Are Hibernate JPA queries traced automatically?","acceptedAnswer":{"@type":"Answer","text":"Yes, the OpenTelemetry Java Agent automatically instruments JDBC calls including all Hibernate JPA queries. Spans include the SQL statement, database name, and operation type with no code changes."}},{"@type":"Question","name":"Does the Java Agent propagate trace context across services?","acceptedAnswer":{"@type":"Answer","text":"Yes, the agent automatically injects W3C traceparent headers into outgoing HTTP requests and extracts them from incoming requests, enabling distributed tracing across services."}},{"@type":"Question","name":"How do I correlate logs with traces in Micronaut?","acceptedAnswer":{"@type":"Answer","text":"The Java Agent automatically injects trace_id and span_id into the SLF4J MDC. Use Logback with logstash-encoder to output JSON logs that include these fields for trace-log correlation."}},{"@type":"Question","name":"Can I use the Java Agent with GraalVM native images?","acceptedAnswer":{"@type":"Answer","text":"No, the Java Agent relies on bytecode manipulation which is not available in GraalVM native images. For native images, use the OpenTelemetry SDK with manual instrumentation instead."}},{"@type":"Question","name":"Can I use the Java Agent alongside other APM tools?","acceptedAnswer":{"@type":"Answer","text":"Yes, the OpenTelemetry Java Agent can coexist with tools like New Relic or Datadog during migration periods. However, running multiple agents simultaneously increases overhead."}},{"@type":"Question","name":"What is the difference between the Java Agent and the OpenTelemetry SDK?","acceptedAnswer":{"@type":"Answer","text":"The Java Agent provides zero-code instrumentation by attaching to the JVM at startup. The SDK requires adding instrumentation code manually. The agent is recommended for most applications as it covers HTTP, JDBC, Netty, and more automatically."}}]}
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"HowTo","name":"How to instrument Micronaut with OpenTelemetry","step":[{"@type":"HowToStep","name":"Download the OpenTelemetry Java Agent","text":"Download the opentelemetry-javaagent.jar from the official GitHub releases page."},{"@type":"HowToStep","name":"Attach the agent to the JVM","text":"Set JAVA_TOOL_OPTIONS=-javaagent:/path/to/opentelemetry-javaagent.jar to attach the agent automatically on JVM startup."},{"@type":"HowToStep","name":"Configure OpenTelemetry environment","text":"Set OTEL_SERVICE_NAME, OTEL_EXPORTER_OTLP_ENDPOINT, and other environment variables to configure trace export."},{"@type":"HowToStep","name":"Run and verify instrumentation","text":"Start the Micronaut application, make test requests, and verify traces for HTTP requests, database queries, and service calls appear in base14 Scout."}]}
 ---
+
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does the OpenTelemetry Java Agent impact Micronaut performance?","acceptedAnswer":{"@type":"Answer","text":"The OpenTelemetry Java Agent adds approximately 3-5ms of latency per request in typical Micronaut applications. With batch processing and GZIP compression, the overhead is minimal for production workloads."}},{"@type":"Question","name":"Which Micronaut versions are supported?","acceptedAnswer":{"@type":"Answer","text":"The OpenTelemetry Java Agent supports Micronaut 3.x and 4.x with Java 17+. Micronaut 4.x with Java 21+ is recommended for optimal compatibility."}},{"@type":"Question","name":"Are Hibernate JPA queries traced automatically?","acceptedAnswer":{"@type":"Answer","text":"Yes, the OpenTelemetry Java Agent automatically instruments JDBC calls including all Hibernate JPA queries. Spans include the SQL statement, database name, and operation type with no code changes."}},{"@type":"Question","name":"Does the Java Agent propagate trace context across services?","acceptedAnswer":{"@type":"Answer","text":"Yes, the agent automatically injects W3C traceparent headers into outgoing HTTP requests and extracts them from incoming requests, enabling distributed tracing across services."}},{"@type":"Question","name":"How do I correlate logs with traces in Micronaut?","acceptedAnswer":{"@type":"Answer","text":"The Java Agent automatically injects trace_id and span_id into the SLF4J MDC. Use Logback with logstash-encoder to output JSON logs that include these fields for trace-log correlation."}},{"@type":"Question","name":"Can I use the Java Agent with GraalVM native images?","acceptedAnswer":{"@type":"Answer","text":"No, the Java Agent relies on bytecode manipulation which is not available in GraalVM native images. For native images, use the OpenTelemetry SDK with manual instrumentation instead."}},{"@type":"Question","name":"Can I use the Java Agent alongside other APM tools?","acceptedAnswer":{"@type":"Answer","text":"Yes, the OpenTelemetry Java Agent can coexist with tools like New Relic or Datadog during migration periods. However, running multiple agents simultaneously increases overhead."}},{"@type":"Question","name":"What is the difference between the Java Agent and the OpenTelemetry SDK?","acceptedAnswer":{"@type":"Answer","text":"The Java Agent provides zero-code instrumentation by attaching to the JVM at startup. The SDK requires adding instrumentation code manually. The agent is recommended for most applications as it covers HTTP, JDBC, Netty, and more automatically."}}]})}
+  </script>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"HowTo","name":"How to instrument Micronaut with OpenTelemetry","step":[{"@type":"HowToStep","name":"Download the OpenTelemetry Java Agent","text":"Download the opentelemetry-javaagent.jar from the official GitHub releases page."},{"@type":"HowToStep","name":"Attach the agent to the JVM","text":"Set JAVA_TOOL_OPTIONS=-javaagent:/path/to/opentelemetry-javaagent.jar to attach the agent automatically on JVM startup."},{"@type":"HowToStep","name":"Configure OpenTelemetry environment","text":"Set OTEL_SERVICE_NAME, OTEL_EXPORTER_OTLP_ENDPOINT, and other environment variables to configure trace export."},{"@type":"HowToStep","name":"Run and verify instrumentation","text":"Start the Micronaut application, make test requests, and verify traces for HTTP requests, database queries, and service calls appear in base14 Scout."}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
 
 ```mdx-code-block
 import Tabs from '@theme/Tabs';
@@ -53,6 +56,10 @@ query monitoring, and structured log correlation. The Java Agent attaches to
 the JVM at startup and automatically instruments HTTP requests, JDBC queries,
 Netty server operations, and outgoing HTTP client calls without any code
 changes.
+
+Micronaut is a compile-time dependency-injection JVM framework. For the dominant
+ecosystem alternative see [Spring Boot](./spring-boot.md), and for a Kotlin-first
+option see [Ktor](./ktor.md).
 
 Micronaut applications benefit from the Java Agent's comprehensive coverage
 of the JVM ecosystem including Hibernate, HikariCP connection pools, Java
@@ -1280,13 +1287,13 @@ explore these resources:
 - **Docker Compose Setup** - Set up Scout Collector for local development
   and testing
 
-### Related Frameworks
+### Related Guides
 
-- [Spring Boot Instrumentation](./spring-boot.md) - Java Spring Boot
-- [Quarkus Instrumentation](./quarkus.md) - Java Quarkus
-- [Django Instrumentation](./django.md) - Python Django
-- [Rails Instrumentation](./rails.md) - Ruby on Rails
-- [Express.js Instrumentation](./express.md) - Node.js Express
+- [Quarkus Instrumentation](./quarkus.md) - Kubernetes-native JVM framework
+- [Java Custom Instrumentation](../custom-instrumentation/java.md) - Manual
+  spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 
 ## Complete Example
 
@@ -1399,12 +1406,3 @@ from a unified dashboard.
 - [Supported Libraries (Java Agent)](https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/main/docs/supported-libraries.md)
 - [Micronaut Documentation](https://docs.micronaut.io/latest/guide/)
 - [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/)
-
-## Related Guides
-
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
-  Set up collector for local development
-- [Spring Boot Instrumentation](./spring-boot.md) - Java Spring Boot
-- [Quarkus Instrumentation](./quarkus.md) - Java Quarkus
-- [Laravel Instrumentation](./laravel.md) - PHP Laravel framework
-- [Express.js Instrumentation](./express.md) - Node.js Express framework

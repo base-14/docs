@@ -3,11 +3,8 @@ title: Flutter RUM with Flutterific OpenTelemetry
 sidebar_label: Flutter RUM with Flutterific
 sidebar_position: 2
 description:
-  Add Real User Monitoring to Flutter apps with flutterrific_opentelemetry.
-  Automatic session tracking, jank detection, ANR monitoring, screen
-  load/dwell times, navigation spans, breadcrumb trails, W3C trace
-  propagation, battery-aware sampling, and error boundary widgets - all
-  exported via OTLP using OTel semantic conventions.
+  Flutter Real User Monitoring with flutterrific_opentelemetry. Auto-track
+  sessions, jank, ANR, screen load times, and errors via OTLP.
 keywords:
   [
     flutter rum,

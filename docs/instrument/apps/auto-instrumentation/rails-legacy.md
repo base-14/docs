@@ -20,12 +20,17 @@ keywords:
     rails 6.1 instrumentation,
     pinned otel gems ruby,
   ]
-head:
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Can I use the all-in-one instrumentation gem with Ruby 3.0?","acceptedAnswer":{"@type":"Answer","text":"No. The -all meta-gem pulls latest versions that require Ruby 3.1+. Use individual instrumentation gems with pinned versions instead."}},{"@type":"Question","name":"Can I use the all-in-one instrumentation gem with Ruby 2.7?","acceptedAnswer":{"@type":"Answer","text":"Not recommended. Use individual instrumentation gems to avoid compatibility issues with gems that require Ruby 3.0+."}},{"@type":"Question","name":"Will my legacy app slow down with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Yes, expect 5-10ms overhead on Ruby 2.7 vs 1-3ms on Ruby 3.x."}},{"@type":"Question","name":"Is Rails 5.2 instrumentation production-ready?","acceptedAnswer":{"@type":"Answer","text":"No. Rails 5.2 support is limited and untested. Upgrade to Rails 6.1+ for production observability."}},{"@type":"Question","name":"Can I run Ruby 2.7 with Rails 7.1?","acceptedAnswer":{"@type":"Answer","text":"No. Rails 7.1 requires Ruby 3.0 or later."}}]}
 ---
+
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Can I use the all-in-one instrumentation gem with Ruby 3.0?","acceptedAnswer":{"@type":"Answer","text":"No. The -all meta-gem pulls latest versions that require Ruby 3.1+. Use individual instrumentation gems with pinned versions instead."}},{"@type":"Question","name":"Can I use the all-in-one instrumentation gem with Ruby 2.7?","acceptedAnswer":{"@type":"Answer","text":"Not recommended. Use individual instrumentation gems to avoid compatibility issues with gems that require Ruby 3.0+."}},{"@type":"Question","name":"Will my legacy app slow down with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Yes, expect 5-10ms overhead on Ruby 2.7 vs 1-3ms on Ruby 3.x."}},{"@type":"Question","name":"Is Rails 5.2 instrumentation production-ready?","acceptedAnswer":{"@type":"Answer","text":"No. Rails 5.2 support is limited and untested. Upgrade to Rails 6.1+ for production observability."}},{"@type":"Question","name":"Can I run Ruby 2.7 with Rails 7.1?","acceptedAnswer":{"@type":"Answer","text":"No. Rails 7.1 requires Ruby 3.0 or later."}}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
 
 # Ruby on Rails (Legacy)
 
@@ -37,6 +42,9 @@ running on end-of-life Ruby or Rails versions. The latest OTel Ruby gems now
 require Ruby >= 3.1, so users on older versions need pinned gem versions. While
 instrumentation works, these versions are no longer officially maintained or
 tested.
+
+This guide covers older Ruby on Rails versions. For current Rails, see the
+[main Rails guide](./rails.md).
 
 > ⚠️ **Production Warning**: Legacy versions have known limitations, security
 > vulnerabilities, and reduced performance. We strongly recommend upgrading to
@@ -823,9 +831,9 @@ A: No. Rails 7.1 requires Ruby 3.0 or later.
 
 ## Related Guides
 
-- [Rails OpenTelemetry Instrumentation](./rails.md) - Main guide for supported
-  versions
-- [Custom Ruby Instrumentation](../custom-instrumentation/ruby.md) - Manual
-  instrumentation patterns
+- [Ruby Custom Instrumentation](../custom-instrumentation/ruby.md) - Manual
+  spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
   Local development setup

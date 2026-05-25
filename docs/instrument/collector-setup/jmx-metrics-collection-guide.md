@@ -5,10 +5,9 @@ title: >
 sidebar_label: JMX Metrics Collection
 id: jmx-metrics-collection-guide
 sidebar_position: 9
-description: >
-  Compare the OpenTelemetry JMX Scraper and Prometheus JMX Exporter for
-  collecting Java application metrics. Architecture, configuration, and
-  deployment trade-offs for choosing the right approach.
+description:
+  Compare the OpenTelemetry JMX Scraper and Prometheus JMX Exporter for Java
+  metrics - architecture, config, and deployment trade-offs.
 keywords:
   - jmx monitoring opentelemetry
   - jmx scraper vs jmx exporter

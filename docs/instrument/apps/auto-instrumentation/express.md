@@ -3,9 +3,8 @@ title: Express.js OpenTelemetry Instrumentation - Traces & Metrics Setup
 sidebar_label: Express.js
 sidebar_position: 8
 description:
-  npm install @opentelemetry/instrumentation-express for automatic
-  tracing. Capture HTTP requests, MongoDB, Redis, and background
-  jobs. 5-minute setup with working config.
+  Express.js OpenTelemetry instrumentation for HTTP, MongoDB, Redis, and jobs.
+  npm install @opentelemetry/instrumentation-express, 5-minute config.
 keywords:
   [
     express opentelemetry instrumentation,
@@ -29,12 +28,17 @@ keywords:
     express 5 monitoring,
     nodejs apm express,
   ]
-head:
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does Express.js OpenTelemetry instrumentation work with async/await?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry fully supports Express.js async/await patterns. The NodeSDK automatically preserves context across async operations, ensuring parent-child span relationships are maintained correctly."}},{"@type":"Question","name":"What is the performance impact of OpenTelemetry on Express.js?","acceptedAnswer":{"@type":"Answer","text":"Typical overhead is 0.5-2ms added latency per request, 2-5% CPU increase, and 10-50MB additional memory usage. Using BatchSpanProcessor and excluding high-volume endpoints further reduces overhead."}},{"@type":"Question","name":"How do I instrument MongoDB and Mongoose queries in Express.js?","acceptedAnswer":{"@type":"Answer","text":"Install @opentelemetry/instrumentation-mongoose and register it in your NodeSDK instrumentations array before connecting to MongoDB. All Mongoose queries are automatically traced with operation name, collection, and execution time."}},{"@type":"Question","name":"How does distributed tracing work across Express.js microservices?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry uses W3C Trace Context headers to propagate trace context between services. Express HTTP instrumentation automatically extracts headers from incoming requests and injects them into outgoing calls."}},{"@type":"Question","name":"Which Node.js and Express versions does OpenTelemetry support?","acceptedAnswer":{"@type":"Answer","text":"Node.js 24.0.0+ with Krypton LTS recommended, Express 5.0.0+ with 5.0.1+ recommended, and OpenTelemetry SDK 0.200.0+ with full TypeScript support included."}}]}
 ---
+
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does Express.js OpenTelemetry instrumentation work with async/await?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry fully supports Express.js async/await patterns. The NodeSDK automatically preserves context across async operations, ensuring parent-child span relationships are maintained correctly."}},{"@type":"Question","name":"What is the performance impact of OpenTelemetry on Express.js?","acceptedAnswer":{"@type":"Answer","text":"Typical overhead is 0.5-2ms added latency per request, 2-5% CPU increase, and 10-50MB additional memory usage. Using BatchSpanProcessor and excluding high-volume endpoints further reduces overhead."}},{"@type":"Question","name":"How do I instrument MongoDB and Mongoose queries in Express.js?","acceptedAnswer":{"@type":"Answer","text":"Install @opentelemetry/instrumentation-mongoose and register it in your NodeSDK instrumentations array before connecting to MongoDB. All Mongoose queries are automatically traced with operation name, collection, and execution time."}},{"@type":"Question","name":"How does distributed tracing work across Express.js microservices?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry uses W3C Trace Context headers to propagate trace context between services. Express HTTP instrumentation automatically extracts headers from incoming requests and injects them into outgoing calls."}},{"@type":"Question","name":"Which Node.js and Express versions does OpenTelemetry support?","acceptedAnswer":{"@type":"Answer","text":"Node.js 24.0.0+ with Krypton LTS recommended, Express 5.0.0+ with 5.0.1+ recommended, and OpenTelemetry SDK 0.200.0+ with full TypeScript support included."}}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
 
 Implement OpenTelemetry instrumentation for Express.js applications to enable
 comprehensive application performance monitoring (APM), distributed tracing, and
@@ -42,6 +46,10 @@ observability. This guide shows you how to auto-instrument your Express.js
 application to collect traces and metrics from HTTP requests, database queries,
 Redis operations, background jobs, and WebSocket connections using the
 OpenTelemetry Node.js SDK with minimal code changes.
+
+Express is the most widely used Node.js web framework.
+[Fastify](./fastify.md) is a performance-focused alternative, and
+[NestJS](./nestjs.md) adds a structured, opinionated layer on top of it.
 
 Express.js applications benefit from automatic instrumentation of the framework
 itself, as well as popular libraries including MongoDB (Mongoose), Redis
@@ -1908,10 +1916,16 @@ Then filter and query by tenant attributes in base14 Scout dashboard.
 
 ## What's Next?
 
+### Related Guides
+
+- [Hono Instrumentation](./hono.md) - Lightweight, edge-first Node.js framework
+- [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)
+  \- Manual spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
+
 ### Advanced Topics
 
-- [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)
-  \- Manual spans, metrics, logs, and advanced instrumentation patterns
 - [OpenTelemetry Collector Configuration](../../collector-setup/otel-collector-config.md)
   \- Advanced collector features, processors, and exporters
 
@@ -2032,12 +2046,3 @@ calls in real time.
 - [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/)
 - [Official Metrics Documentation](https://opentelemetry.io/docs/concepts/signals/metrics/)
 - [Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
-
-## Related Guides
-
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
-  up collector for local development
-- [Custom Node.js Instrumentation](../custom-instrumentation/javascript-node.md)
-  \- Manual instrumentation for advanced use cases
-- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
-  Production deployment guide

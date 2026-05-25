@@ -28,16 +28,20 @@ keywords:
     symfony doctrine monitoring,
     symfony auto instrumentation,
   ]
-head:
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does OpenTelemetry impact Symfony performance?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry adds approximately 2-4ms of latency per request in typical Symfony applications. With batch processing and GZIP compression enabled, the performance impact is minimal for production workloads."}},{"@type":"Question","name":"Which Symfony versions are supported?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry supports Symfony 5.4+ with PHP 8.1+. Symfony 7.x or 8.x with PHP 8.3+ is recommended for optimal compatibility and performance."}},{"@type":"Question","name":"Are Doctrine ORM queries traced automatically?","acceptedAnswer":{"@type":"Answer","text":"Yes, installing opentelemetry-auto-pdo automatically captures all Doctrine queries as spans with database name, SQL statement, and operation type. No per-query code changes needed."}},{"@type":"Question","name":"Does the Symfony HTTP client propagate trace context?","acceptedAnswer":{"@type":"Answer","text":"Yes, the opentelemetry-auto-psr18 package automatically injects W3C traceparent headers into outgoing HTTP client requests, enabling distributed tracing across services."}},{"@type":"Question","name":"How do I correlate logs with traces?","acceptedAnswer":{"@type":"Answer","text":"Register a custom Monolog processor that reads the current span context and injects trace_id and span_id into every log record. Combined with JSON log formatting, this enables trace-log correlation in Scout Dashboard."}},{"@type":"Question","name":"Can I use OpenTelemetry with Symfony Messenger?","acceptedAnswer":{"@type":"Answer","text":"Yes, Symfony Messenger consumers can be instrumented with OpenTelemetry. The auto-symfony package traces HTTP-triggered dispatches, and you can add manual spans for async consumers."}},{"@type":"Question","name":"Can I use OpenTelemetry alongside other APM tools?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry can run alongside tools like New Relic or Datadog during migration periods. However, running multiple APM agents simultaneously will multiply the performance overhead."}},{"@type":"Question","name":"How do I instrument multi-service Symfony architectures?","acceptedAnswer":{"@type":"Answer","text":"Each service gets its own OTEL_SERVICE_NAME. The Symfony HTTP client with opentelemetry-auto-psr18 automatically propagates W3C traceparent headers between services, creating linked traces visible in Scout Dashboard."}}]}
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"HowTo","name":"How to instrument Symfony with OpenTelemetry","step":[{"@type":"HowToStep","name":"Install the OpenTelemetry PHP extension","text":"Install build dependencies (gcc, make, autoconf), then install the OpenTelemetry PHP extension via PECL and enable it in php.ini."},{"@type":"HowToStep","name":"Install required Composer packages","text":"Install open-telemetry/sdk, open-telemetry/exporter-otlp, open-telemetry/opentelemetry-auto-symfony, and open-telemetry/opentelemetry-auto-pdo via Composer."},{"@type":"HowToStep","name":"Configure OpenTelemetry environment","text":"Set OTEL_PHP_AUTOLOAD_ENABLED=true, OTEL_SERVICE_NAME, and OTEL_EXPORTER_OTLP_ENDPOINT in your Symfony .env file. Register OTel factories in services.yaml."},{"@type":"HowToStep","name":"Run and verify instrumentation","text":"Start the Symfony application, make test requests, and verify traces for HTTP requests, Doctrine queries, and HTTP client calls appear in base14 Scout."}]}
 ---
+
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does OpenTelemetry impact Symfony performance?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry adds approximately 2-4ms of latency per request in typical Symfony applications. With batch processing and GZIP compression enabled, the performance impact is minimal for production workloads."}},{"@type":"Question","name":"Which Symfony versions are supported?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry supports Symfony 5.4+ with PHP 8.1+. Symfony 7.x or 8.x with PHP 8.3+ is recommended for optimal compatibility and performance."}},{"@type":"Question","name":"Are Doctrine ORM queries traced automatically?","acceptedAnswer":{"@type":"Answer","text":"Yes, installing opentelemetry-auto-pdo automatically captures all Doctrine queries as spans with database name, SQL statement, and operation type. No per-query code changes needed."}},{"@type":"Question","name":"Does the Symfony HTTP client propagate trace context?","acceptedAnswer":{"@type":"Answer","text":"Yes, the opentelemetry-auto-psr18 package automatically injects W3C traceparent headers into outgoing HTTP client requests, enabling distributed tracing across services."}},{"@type":"Question","name":"How do I correlate logs with traces?","acceptedAnswer":{"@type":"Answer","text":"Register a custom Monolog processor that reads the current span context and injects trace_id and span_id into every log record. Combined with JSON log formatting, this enables trace-log correlation in Scout Dashboard."}},{"@type":"Question","name":"Can I use OpenTelemetry with Symfony Messenger?","acceptedAnswer":{"@type":"Answer","text":"Yes, Symfony Messenger consumers can be instrumented with OpenTelemetry. The auto-symfony package traces HTTP-triggered dispatches, and you can add manual spans for async consumers."}},{"@type":"Question","name":"Can I use OpenTelemetry alongside other APM tools?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry can run alongside tools like New Relic or Datadog during migration periods. However, running multiple APM agents simultaneously will multiply the performance overhead."}},{"@type":"Question","name":"How do I instrument multi-service Symfony architectures?","acceptedAnswer":{"@type":"Answer","text":"Each service gets its own OTEL_SERVICE_NAME. The Symfony HTTP client with opentelemetry-auto-psr18 automatically propagates W3C traceparent headers between services, creating linked traces visible in Scout Dashboard."}}]})}
+  </script>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"HowTo","name":"How to instrument Symfony with OpenTelemetry","step":[{"@type":"HowToStep","name":"Install the OpenTelemetry PHP extension","text":"Install build dependencies (gcc, make, autoconf), then install the OpenTelemetry PHP extension via PECL and enable it in php.ini."},{"@type":"HowToStep","name":"Install required Composer packages","text":"Install open-telemetry/sdk, open-telemetry/exporter-otlp, open-telemetry/opentelemetry-auto-symfony, and open-telemetry/opentelemetry-auto-pdo via Composer."},{"@type":"HowToStep","name":"Configure OpenTelemetry environment","text":"Set OTEL_PHP_AUTOLOAD_ENABLED=true, OTEL_SERVICE_NAME, and OTEL_EXPORTER_OTLP_ENDPOINT in your Symfony .env file. Register OTel factories in services.yaml."},{"@type":"HowToStep","name":"Run and verify instrumentation","text":"Start the Symfony application, make test requests, and verify traces for HTTP requests, Doctrine queries, and HTTP client calls appear in base14 Scout."}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
 
 ```mdx-code-block
 import Tabs from '@theme/Tabs';
@@ -50,6 +54,10 @@ tracing, and structured log correlation. This guide shows you how to
 auto-instrument your Symfony application to collect traces, metrics, and logs
 from HTTP requests, database queries, service-to-service calls, and custom
 business logic using the OpenTelemetry PHP SDK.
+
+Symfony is a full-featured PHP framework. [Laravel](./laravel.md) builds on
+Symfony components, and [Slim](./slim.md) is a lighter micro-framework
+alternative.
 
 Symfony applications benefit from automatic instrumentation of the framework's
 core components including the HTTP kernel, Doctrine ORM (via PDO), the HTTP
@@ -1472,13 +1480,12 @@ these resources to deepen your observability:
 - **Docker Compose Setup** - Set up Scout Collector for local development
   and testing
 
-### Related Frameworks
+### Related Guides
 
-- [Laravel Instrumentation](./laravel.md) - PHP Laravel framework
-- [Slim Instrumentation](./slim.md) - PHP Slim micro-framework
-- [Rails Instrumentation](./rails.md) - Ruby on Rails
-- [Django Instrumentation](./django.md) - Python Django
-- [Spring Boot Instrumentation](./spring-boot.md) - Java Spring Boot
+- [PHP Custom Instrumentation](../custom-instrumentation/php.md) - Manual spans
+  and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 
 ## Complete Example
 
@@ -1581,12 +1588,3 @@ from a unified dashboard.
 - [Symfony Documentation](https://symfony.com/doc/current/index.html)
 - [Doctrine ORM Documentation](https://www.doctrine-project.org/projects/orm.html)
 - [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/)
-
-## Related Guides
-
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
-  Set up collector for local development
-- [Laravel Instrumentation](./laravel.md) - PHP Laravel framework
-- [Slim Instrumentation](./slim.md) - PHP Slim micro-framework
-- [Spring Boot Instrumentation](./spring-boot.md) - Java Spring Boot
-- [Express.js Instrumentation](./express.md) - Node.js Express framework

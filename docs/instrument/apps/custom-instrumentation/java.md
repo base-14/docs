@@ -17,12 +17,17 @@ keywords:
     java manual instrumentation,
     opentelemetry java sdk,
   ]
-head:
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"When should I use custom instrumentation instead of auto-instrumentation in Java?","acceptedAnswer":{"@type":"Answer","text":"Use custom instrumentation to trace business logic, custom frameworks, or operations not covered by auto-instrumentation - such as internal service methods, batch processing, or domain-specific workflows."}},{"@type":"Question","name":"How do I create custom spans in Java with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Get a Tracer from GlobalOpenTelemetry, call tracer.spanBuilder(\"name\").startSpan(), add attributes and events, then call span.end() in a finally block. View spans in base14 Scout."}},{"@type":"Question","name":"What Java versions does OpenTelemetry support?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry supports Java 8 or later, with Java 11+ recommended. It works with Spring, Micronaut, Quarkus, servlets, and custom frameworks."}},{"@type":"Question","name":"How do I propagate trace context across Java microservices?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry uses W3C Trace Context headers to propagate context. Inject headers on outbound HTTP calls and extract them on incoming requests to maintain end-to-end trace continuity in base14 Scout."}}]}
 ---
+
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"When should I use custom instrumentation instead of auto-instrumentation in Java?","acceptedAnswer":{"@type":"Answer","text":"Use custom instrumentation to trace business logic, custom frameworks, or operations not covered by auto-instrumentation - such as internal service methods, batch processing, or domain-specific workflows."}},{"@type":"Question","name":"How do I create custom spans in Java with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Get a Tracer from GlobalOpenTelemetry, call tracer.spanBuilder(\"name\").startSpan(), add attributes and events, then call span.end() in a finally block. View spans in base14 Scout."}},{"@type":"Question","name":"What Java versions does OpenTelemetry support?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry supports Java 8 or later, with Java 11+ recommended. It works with Spring, Micronaut, Quarkus, servlets, and custom frameworks."}},{"@type":"Question","name":"How do I propagate trace context across Java microservices?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry uses W3C Trace Context headers to propagate context. Inject headers on outbound HTTP calls and extract them on incoming requests to maintain end-to-end trace continuity in base14 Scout."}}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
 
 Implement OpenTelemetry custom instrumentation for Java applications to collect
 traces, metrics, and logs using the Java OpenTelemetry SDK. This guide covers
@@ -1004,6 +1009,12 @@ public class TraceContextExtractor {
 
 - [Spring Boot Auto-Instrumentation](../auto-instrumentation/spring-boot.md) -
   Automatic tracing for Java Spring Boot applications
+- [Quarkus Auto-Instrumentation](../auto-instrumentation/quarkus.md) -
+  Automatic tracing for Quarkus applications
+- [Micronaut Auto-Instrumentation](../auto-instrumentation/micronaut.md) -
+  Automatic tracing for Micronaut applications
+- [Ktor Auto-Instrumentation](../auto-instrumentation/ktor.md) - Automatic
+  tracing for Kotlin Ktor applications
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
   up Scout Collector for local development
 - [Creating Alerts](../../../guides/creating-alerts-with-logx.md) - Set up

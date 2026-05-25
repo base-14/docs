@@ -31,6 +31,16 @@ keywords:
   ]
 ---
 
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does OpenTelemetry add latency to LLM calls?","acceptedAnswer":{"@type":"Answer","text":"No. Span creation takes microseconds. LLM API calls take seconds. The overhead is unmeasurable. BatchSpanProcessor exports spans in a background thread."}},{"@type":"Question","name":"How does this differ from LangSmith tracing?","acceptedAnswer":{"@type":"Answer","text":"LangSmith provides deep LangGraph-specific tracing but operates in isolation from your HTTP and database telemetry. OpenTelemetry gives you a single trace that spans all layers - you can see that a slow HTTP response was caused by a specific agent node making an LLM call, and that the same request also ran database queries. LangSmith cannot show that correlation."}},{"@type":"Question","name":"Which LangGraph versions are supported?","acceptedAnswer":{"@type":"Answer","text":"This guide supports LangGraph 0.2+ and recommends 1.0.6+. The StateGraph API and add_conditional_edges have been stable since 0.2. The wrap_agent pattern works with any version that supports async node functions."}},{"@type":"Question","name":"How do I trace conditional routing in LangGraph with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Use trace.get_current_span() inside your routing function to record attributes like routing.decision and routing.qualified_count. See Conditional Edge Routing for the full pattern."}},{"@type":"Question","name":"How do I track cost across multiple providers?","acceptedAnswer":{"@type":"Answer","text":"Use the gen_ai.client.cost counter metric with gen_ai.provider.name and gen_ai.request.model attributes. Define pricing per model and calculate from token counts. This enables sum(gen_ai.client.cost) by (gen_ai.agent.name) in your dashboards."}},{"@type":"Question","name":"Can I see prompts and completions in traces?","acceptedAnswer":{"@type":"Answer","text":"Yes, if you set OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true. Content is PII-scrubbed and truncated to 500 characters. Disable in production for compliance."}},{"@type":"Question","name":"How do I add and trace a new agent node in LangGraph?","acceptedAnswer":{"@type":"Answer","text":"Create the agent function, wrap it with wrap_agent(\"name\", fn), add the node to the StateGraph with graph.add_node(), and connect it with add_edge or add_conditional_edges. The wrap_agent wrapper automatically handles span creation."}},{"@type":"Question","name":"How does OpenTelemetry trace propagation work in LangGraph subgraphs?","acceptedAnswer":{"@type":"Answer","text":"LangGraph subgraphs execute within the same Python async context. OpenTelemetry automatically propagates the trace context across await boundaries, so subgraph node spans appear as children of the parent graph's span without additional configuration."}}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
+
 # LangGraph
 
 Implement OpenTelemetry instrumentation for LangGraph applications to enable
@@ -40,6 +50,10 @@ agent pipeline with custom GenAI semantic convention spans, conditional edge
 routing observability, tool-calling node traces, multi-provider LLM support,
 token and cost metrics, PII scrubbing, and production deployment with Docker
 Compose.
+
+LangGraph is a Python framework for stateful LLM agents, in the same space as
+[LlamaIndex](./llamaindex.md) and the TypeScript
+[Vercel AI SDK](./vercel-ai-sdk.md).
 
 LangGraph applications present unique observability challenges beyond standard
 LLM calls. An agent pipeline involves multiple nodes executing sequentially or
@@ -1533,16 +1547,13 @@ framework level.
 
 ## What's Next?
 
-### Advanced Topics
+### Related Guides
 
-- [LLM Observability](../../../guides/ai-observability/llm-observability.md) -
-  Comprehensive GenAI observability patterns
-- [LlamaIndex Instrumentation](./llamaindex.md) - LlamaIndex-specific setup
-- [Vercel AI SDK Instrumentation](./vercel-ai-sdk.md) - TypeScript/Bun AI
-  pipeline instrumentation
-- [FastAPI Auto-Instrumentation](./fast-api.md) - FastAPI-specific setup
+- [FastAPI Instrumentation](./fast-api.md) - Common API host for agents
 - [Python Custom Instrumentation](../custom-instrumentation/python.md) - Manual
-  tracing fundamentals
+  spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 
 ### Scout Platform Features
 
@@ -1610,14 +1621,3 @@ repository.
 - [OpenTelemetry Python SDK](https://opentelemetry.io/docs/languages/python/)
 - [LangGraph Documentation](https://langchain-ai.github.io/langgraph/)
 - [OpenTelemetry Collector Configuration](https://opentelemetry.io/docs/collector/configuration/)
-
-## Related Guides
-
-- [LLM Observability](../../../guides/ai-observability/llm-observability.md) -
-  Comprehensive GenAI observability guide
-- [LlamaIndex Instrumentation](./llamaindex.md) - LlamaIndex-specific setup
-- [Vercel AI SDK Instrumentation](./vercel-ai-sdk.md) - TypeScript/Bun AI
-  pipeline instrumentation
-- [FastAPI Auto-Instrumentation](./fast-api.md) - FastAPI-specific setup
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
-  Local collector deployment

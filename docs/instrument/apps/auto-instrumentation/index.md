@@ -56,13 +56,16 @@ your collector is working first, try the
 
 | Framework         | Guide                | What's Instrumented                               |
 | ----------------- | -------------------- | ------------------------------------------------- |
-| Express           | [Express](./express) | HTTP requests, middleware, routing                |
-| Fastify           | [Fastify](./fastify) | HTTP requests, hooks, plugins, PostgreSQL, BullMQ |
-| Hono              | [Hono](./hono)       | HTTP requests, middleware, PostgreSQL, BullMQ     |
-| NestJS            | [NestJS](./nestjs)   | Controllers, services, guards, interceptors       |
-| Next.js           | [Next.js](./nextjs)  | SSR, API routes, middleware, React components     |
-| Node.js (generic) | [Node.js](./nodejs)  | HTTP, filesystem, child processes                 |
-| React             | [React](./react)     | Client-side rendering, user interactions          |
+| Express           | [Express](./express)             | HTTP requests, middleware, routing                |
+| Fastify           | [Fastify](./fastify)             | HTTP requests, hooks, plugins, PostgreSQL, BullMQ |
+| Hono              | [Hono](./hono)                   | HTTP requests, middleware, PostgreSQL, BullMQ     |
+| Elysia (Bun)      | [Elysia](./elysia)               | HTTP requests, middleware, structured logging     |
+| tRPC              | [tRPC](./trpc)                   | Procedures, Prisma queries, PostgreSQL            |
+| NestJS            | [NestJS](./nestjs)               | Controllers, services, guards, interceptors       |
+| Next.js           | [Next.js](./nextjs)              | SSR, API routes, middleware, React components     |
+| Node.js (generic) | [Node.js](./nodejs)              | HTTP, filesystem, child processes                 |
+| React             | [React](./react)                 | Client-side rendering, user interactions          |
+| Vercel AI SDK     | [Vercel AI SDK](./vercel-ai-sdk) | LLM calls, AI pipelines, token/cost tracking      |
 
 ### Java / JVM
 
@@ -71,6 +74,8 @@ your collector is working first, try the
 | Spring Boot       | [Spring Boot](./spring-boot)               | REST controllers, JPA, JDBC, messaging |
 | Spring Boot (alt) | [Alternatives](./spring-boot-alternatives) | Micrometer, manual agent setup         |
 | Quarkus           | [Quarkus](./quarkus)                       | REST endpoints, Hibernate, Kafka       |
+| Micronaut         | [Micronaut](./micronaut)                   | HTTP endpoints, Hibernate JPA, logs    |
+| Ktor (Kotlin)     | [Ktor](./ktor)                             | HTTP routing, Exposed ORM, logs        |
 
 ### Ruby
 
@@ -99,12 +104,14 @@ your collector is working first, try the
 | --------------- | -------------------- | ------------------------------------------------ |
 | Laravel         | [Laravel](./laravel) | HTTP requests, Eloquent, queues, caching         |
 | Slim 4 / Slim 3 | [Slim](./slim)       | HTTP requests, MongoDB, metrics, log correlation |
+| Symfony         | [Symfony](./symfony) | HTTP requests, Doctrine ORM, HTTP client, logs   |
 
 ### .NET
 
-| Framework    | Guide            | What's Instrumented                |
-| ------------ | ---------------- | ---------------------------------- |
-| ASP.NET Core | [.NET](./dotnet) | HTTP requests, EF Core, HttpClient |
+| Framework    | Guide                          | What's Instrumented                       |
+| ------------ | ------------------------------ | ----------------------------------------- |
+| ASP.NET Core | [.NET](./dotnet)               | HTTP requests, EF Core, HttpClient        |
+| .NET Aspire  | [.NET Aspire](./dotnet-aspire) | Multi-service tracing, HTTP, EF Core       |
 
 ### Elixir
 

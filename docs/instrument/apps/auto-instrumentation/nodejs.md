@@ -3,9 +3,8 @@ title: Node.js OpenTelemetry Instrumentation - HTTP, DB & Queue Tracing
 sidebar_label: Node.js
 sidebar_position: 13
 description:
-  npm install @opentelemetry/auto-instrumentations-node for
-  zero-code tracing. Covers Express, NestJS, Fastify, databases,
-  and queues. Configure via otel_node_enabled_instrumentations.
+  Node.js OpenTelemetry instrumentation for Express, NestJS, databases, and
+  queues. npm install @opentelemetry/auto-instrumentations-node, zero-code.
 keywords:
   [
     nodejs opentelemetry instrumentation,
@@ -40,12 +39,17 @@ keywords:
     fastify instrumentation,
     koa instrumentation,
   ]
-head:
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does OpenTelemetry work with TypeScript?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry fully supports TypeScript with official type definitions. Install @types/node and use .ts instrumentation files to get full type safety."}},{"@type":"Question","name":"What is the performance impact of OpenTelemetry on Node.js?","acceptedAnswer":{"@type":"Answer","text":"With BatchSpanProcessor, expect +0.5-2ms latency per request, +2-5% CPU, and +10-30MB memory. The impact is minimal for most production workloads."}},{"@type":"Question","name":"Can I use OpenTelemetry with Express, NestJS, and Fastify?","acceptedAnswer":{"@type":"Answer","text":"Yes, auto-instrumentation supports all major Node.js frameworks including Express, NestJS, Fastify, Koa, and Hapi automatically with no code changes required."}},{"@type":"Question","name":"How do I trace async operations in Node.js with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry automatically propagates context through async/await. For callbacks, manually propagate context using context.with(). View async traces in base14 Scout."}},{"@type":"Question","name":"Does OpenTelemetry auto-instrumentation support Mongoose, TypeORM, and Prisma?","acceptedAnswer":{"@type":"Answer","text":"Yes, auto-instrumentation includes MongoDB (Mongoose), PostgreSQL (pg, Sequelize, TypeORM), MySQL, and Prisma ORM with no additional configuration needed."}}]}
 ---
+
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does OpenTelemetry work with TypeScript?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry fully supports TypeScript with official type definitions. Install @types/node and use .ts instrumentation files to get full type safety."}},{"@type":"Question","name":"What is the performance impact of OpenTelemetry on Node.js?","acceptedAnswer":{"@type":"Answer","text":"With BatchSpanProcessor, expect +0.5-2ms latency per request, +2-5% CPU, and +10-30MB memory. The impact is minimal for most production workloads."}},{"@type":"Question","name":"Can I use OpenTelemetry with Express, NestJS, and Fastify?","acceptedAnswer":{"@type":"Answer","text":"Yes, auto-instrumentation supports all major Node.js frameworks including Express, NestJS, Fastify, Koa, and Hapi automatically with no code changes required."}},{"@type":"Question","name":"How do I trace async operations in Node.js with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry automatically propagates context through async/await. For callbacks, manually propagate context using context.with(). View async traces in base14 Scout."}},{"@type":"Question","name":"Does OpenTelemetry auto-instrumentation support Mongoose, TypeORM, and Prisma?","acceptedAnswer":{"@type":"Answer","text":"Yes, auto-instrumentation includes MongoDB (Mongoose), PostgreSQL (pg, Sequelize, TypeORM), MySQL, and Prisma ORM with no additional configuration needed."}}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
 
 ## Introduction
 
@@ -103,7 +107,8 @@ frameworks. For framework-specific details, see:
   WebSocket gateway
 - **[Next.js](./nextjs.md)** - React framework with App Router, MongoDB, BullMQ
   workers
-- **Fastify** - High-performance framework instrumentation (coming soon)
+- **[Fastify](./fastify.md)** - High-performance framework with hooks,
+  plugins, PostgreSQL, BullMQ
 - **Koa** - Middleware-based framework patterns (coming soon)
 
 ### What You'll Learn
@@ -782,14 +787,22 @@ Configure header filtering for sensitive authentication tokens:
 
 ## What's Next?
 
+### Related Frameworks
+
+- **[Hono Instrumentation](./hono.md)** - edge/middleware, PostgreSQL, BullMQ
+- **[tRPC Instrumentation](./trpc.md)** - type-safe procedures, Prisma,
+  PostgreSQL
+- **[Elysia Instrumentation](./elysia.md)** - Bun runtime, middleware,
+  structured logging
+
 ### Framework-Specific Guides
 
 - **[Express.js Instrumentation](./express.md)** - Detailed Express 4.x/5.x
   setup with MongoDB, Redis, and WebSockets
-- **NestJS Instrumentation** - Enterprise DI framework with TypeORM and BullMQ
-  (coming soon)
-- **Fastify Instrumentation** - High-performance framework patterns (coming
-  soon)
+- **[NestJS Instrumentation](./nestjs.md)** - Enterprise DI framework with
+  TypeORM and BullMQ
+- **[Fastify Instrumentation](./fastify.md)** - High-performance framework
+  patterns
 
 ### Advanced Topics
 

@@ -7,11 +7,6 @@ description: "Avoid cloud lock-in with a portable foundation layer. Use composab
 authors: [irfan-shah]
 tags: [cloud-native, portability, vendor-neutral, architecture, multi-cloud, kubernetes]
 image: ./cover.png
-head:
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do you avoid cloud vendor lock-in?","acceptedAnswer":{"@type":"Answer","text":"Build on portable abstractions: containers instead of proprietary compute, Terraform instead of cloud-specific IaC, standard protocols like gRPC and SQL instead of vendor SDKs, and OpenTelemetry for observability. The goal is not to avoid a single cloud, but to keep the option to move without rewriting business logic."}},{"@type":"Question","name":"How does cloud vendor lock-in happen?","acceptedAnswer":{"@type":"Answer","text":"Lock-in rarely comes from a deliberate vendor choice. It accumulates through SDK calls in business logic, proprietary database dependencies, CI pipelines tied to one cloud, non-reproducible IAM models, and networking patterns with no equivalent outside the original provider."}},{"@type":"Question","name":"Does cloud lock-in increase costs?","acceptedAnswer":{"@type":"Answer","text":"Yes. When all workloads sit on one cloud, you lose the ability to shift workloads to cheaper regions, compare GPU pricing across providers, or negotiate pricing. Portability preserves the option to move, which is the foundation of cost leverage."}},{"@type":"Question","name":"What are the benefits of a vendor-neutral cloud architecture?","acceptedAnswer":{"@type":"Answer","text":"A vendor-neutral architecture provides portability across clouds, better uptime through multi-provider resilience, lower cost volatility, easier regulatory compliance, and freedom to adopt new technology as it becomes available on different providers."}},{"@type":"Question","name":"How does OpenTelemetry help avoid cloud lock-in?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry provides a vendor-neutral instrumentation standard for observability. By instrumenting with OpenTelemetry, your telemetry data can be sent to any compatible backend without code changes, eliminating dependency on a single monitoring vendor."}}]}
 ---
 
 <!-- markdownlint-disable MD033 -->
@@ -34,6 +29,16 @@ latency, hardware availability, and outages.
 If you expect change, you need an architecture that can handle it.
 
 <!--truncate-->
+
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do you avoid cloud vendor lock-in?","acceptedAnswer":{"@type":"Answer","text":"Build on portable abstractions: containers instead of proprietary compute, Terraform instead of cloud-specific IaC, standard protocols like gRPC and SQL instead of vendor SDKs, and OpenTelemetry for observability. The goal is not to avoid a single cloud, but to keep the option to move without rewriting business logic."}},{"@type":"Question","name":"How does cloud vendor lock-in happen?","acceptedAnswer":{"@type":"Answer","text":"Lock-in rarely comes from a deliberate vendor choice. It accumulates through SDK calls in business logic, proprietary database dependencies, CI pipelines tied to one cloud, non-reproducible IAM models, and networking patterns with no equivalent outside the original provider."}},{"@type":"Question","name":"Does cloud lock-in increase costs?","acceptedAnswer":{"@type":"Answer","text":"Yes. When all workloads sit on one cloud, you lose the ability to shift workloads to cheaper regions, compare GPU pricing across providers, or negotiate pricing. Portability preserves the option to move, which is the foundation of cost leverage."}},{"@type":"Question","name":"What are the benefits of a vendor-neutral cloud architecture?","acceptedAnswer":{"@type":"Answer","text":"A vendor-neutral architecture provides portability across clouds, better uptime through multi-provider resilience, lower cost volatility, easier regulatory compliance, and freedom to adopt new technology as it becomes available on different providers."}},{"@type":"Question","name":"How does OpenTelemetry help avoid cloud lock-in?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry provides a vendor-neutral instrumentation standard for observability. By instrumenting with OpenTelemetry, your telemetry data can be sent to any compatible backend without code changes, eliminating dependency on a single monitoring vendor."}}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
 
 ## Deploying on One Cloud Isn't Lock-In. Designing for One Cloud Is
 

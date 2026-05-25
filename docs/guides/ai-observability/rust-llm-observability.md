@@ -4,9 +4,8 @@ title:
 sidebar_label: Rust LLM Observability
 sidebar_position: 9
 description:
-  Instrument Rust AI and LLM applications with OpenTelemetry. Trace LLM calls,
-  track token usage and costs, monitor multi-stage pipelines with retries and
-  fallbacks in base14 Scout.
+  Rust LLM observability with OpenTelemetry to trace LLM calls, track token usage
+  and cost, and monitor multi-stage AI pipelines with retries and fallbacks.
 keywords:
   [
     rust llm observability,

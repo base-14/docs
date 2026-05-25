@@ -39,12 +39,17 @@ keywords:
     nestjs background jobs tracing,
     nestjs queue monitoring,
   ]
-head:
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does OpenTelemetry work with NestJS dependency injection?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry fully supports NestJS DI. TracingModule can be imported and services are automatically traced when called from instrumented controllers."}},{"@type":"Question","name":"What is the performance impact of OpenTelemetry on NestJS applications?","acceptedAnswer":{"@type":"Answer","text":"With BatchSpanProcessor, expect 0.5-2ms added latency per request, 2-5% CPU increase, and 15-35MB additional memory. Minimal impact for most production workloads."}},{"@type":"Question","name":"Can I trace TypeORM and Prisma queries in NestJS with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Yes, auto-instrumentation includes TypeORM, Prisma, Sequelize, and other ORMs. Database queries are automatically traced with parameters visible in base14 Scout."}},{"@type":"Question","name":"How do I trace BullMQ background jobs in NestJS?","acceptedAnswer":{"@type":"Answer","text":"BullMQ jobs are automatically traced. Add custom spans in processors using trace.getTracer() for detailed business logic tracing visible in base14 Scout."}},{"@type":"Question","name":"Does OpenTelemetry work with NestJS microservices?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry traces distributed NestJS microservices automatically. Context propagates across HTTP, gRPC, and message queue boundaries for end-to-end visibility."}}]}
 ---
+
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does OpenTelemetry work with NestJS dependency injection?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry fully supports NestJS DI. TracingModule can be imported and services are automatically traced when called from instrumented controllers."}},{"@type":"Question","name":"What is the performance impact of OpenTelemetry on NestJS applications?","acceptedAnswer":{"@type":"Answer","text":"With BatchSpanProcessor, expect 0.5-2ms added latency per request, 2-5% CPU increase, and 15-35MB additional memory. Minimal impact for most production workloads."}},{"@type":"Question","name":"Can I trace TypeORM and Prisma queries in NestJS with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Yes, auto-instrumentation includes TypeORM, Prisma, Sequelize, and other ORMs. Database queries are automatically traced with parameters visible in base14 Scout."}},{"@type":"Question","name":"How do I trace BullMQ background jobs in NestJS?","acceptedAnswer":{"@type":"Answer","text":"BullMQ jobs are automatically traced. Add custom spans in processors using trace.getTracer() for detailed business logic tracing visible in base14 Scout."}},{"@type":"Question","name":"Does OpenTelemetry work with NestJS microservices?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry traces distributed NestJS microservices automatically. Context propagates across HTTP, gRPC, and message queue boundaries for end-to-end visibility."}}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
 
 # NestJS
 
@@ -56,6 +61,9 @@ observability across your enterprise Node.js applications. This guide shows you
 how to auto-instrument NestJS controllers, services, guards, interceptors,
 TypeORM queries, BullMQ background jobs, and WebSocket gateways using the
 OpenTelemetry Node.js SDK.
+
+NestJS is an opinionated, structured framework that runs on top of
+[Express](./express.md) or [Fastify](./fastify.md).
 
 NestJS applications benefit from automatic instrumentation of the dependency
 injection container, decorators, HTTP endpoints, TypeORM database queries,
@@ -1216,17 +1224,13 @@ using `Reflector` and add attributes to active spans.
 
 ## What's Next?
 
-### Framework-Specific Guides
+### Related Guides
 
-- **[Express.js Instrumentation](./express.md)** - Express framework patterns
-- **[Node.js Overview](./nodejs.md)** - General Node.js instrumentation guide
-- **[FastAPI Instrumentation](./fast-api.md)** - Python async framework
-
-### Advanced Topics
-
-- [Custom Node.js Instrumentation](../custom-instrumentation/javascript-node.md)
-  \- Manual spans, context propagation, and advanced patterns
-- [Celery Background Jobs](./celery.md) - Distributed task queue tracing
+- [Hono Instrumentation](./hono.md) - Lightweight Node.js web framework
+- [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)
+  \- Manual spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 
 ### Scout Platform Features
 
@@ -1307,14 +1311,3 @@ Complete working example:
 - [NestJS Documentation](https://docs.nestjs.com/)
 - [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/)
 - [TypeORM Documentation](https://typeorm.io/)
-
-## Related Guides
-
-- [Express.js Instrumentation](./express.md) - Express framework guide
-- [Node.js Overview](./nodejs.md) - General Node.js instrumentation
-- [Custom Node.js Instrumentation](../custom-instrumentation/javascript-node.md)
-  \- Advanced patterns
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
-  Local development setup
-- [Kubernetes Deployment](../../collector-setup/kubernetes-helm-setup.md) -
-  Production deployment

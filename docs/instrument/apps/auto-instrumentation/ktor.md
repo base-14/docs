@@ -5,9 +5,8 @@ title:
 sidebar_label: Ktor
 sidebar_position: 22
 description:
-  Instrument Kotlin Ktor applications with the OpenTelemetry Java Agent for
-  zero-code tracing of HTTP requests, Exposed ORM queries, and Netty server
-  operations. Export traces, metrics, and correlated logs to base14 Scout.
+  Ktor OpenTelemetry instrumentation with the Java agent for zero-code
+  tracing of HTTP, Exposed ORM, and Netty, exported to base14 Scout.
 keywords:
   [
     ktor opentelemetry,
@@ -31,16 +30,20 @@ keywords:
     ktor auto instrumentation,
     kotlin ktor apm,
   ]
-head:
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does the OpenTelemetry Java Agent impact Ktor performance?","acceptedAnswer":{"@type":"Answer","text":"The OpenTelemetry Java Agent adds approximately 3-5ms of latency per request in typical Ktor applications. With batch processing and GZIP compression, the overhead is minimal for production workloads."}},{"@type":"Question","name":"Which Ktor versions are supported?","acceptedAnswer":{"@type":"Answer","text":"The OpenTelemetry Java Agent supports Ktor 2.x and 3.x running on Netty. Ktor 3.x with Kotlin 2.x is recommended for optimal compatibility."}},{"@type":"Question","name":"Are Exposed ORM queries traced automatically?","acceptedAnswer":{"@type":"Answer","text":"Yes, the OpenTelemetry Java Agent instruments JDBC calls automatically, which includes all Exposed ORM queries. Spans include the SQL statement, database name, and operation type with no code changes."}},{"@type":"Question","name":"Does the Java Agent work with Kotlin coroutines?","acceptedAnswer":{"@type":"Answer","text":"Yes, the agent propagates trace context across coroutine boundaries automatically. Suspend functions, withContext switches, and Dispatchers.IO all maintain proper trace context."}},{"@type":"Question","name":"How do I correlate logs with traces in Ktor?","acceptedAnswer":{"@type":"Answer","text":"The Java Agent automatically injects trace_id and span_id into the SLF4J MDC. Use Logback with logstash-encoder to output JSON logs that include these fields for trace-log correlation."}},{"@type":"Question","name":"Can I use the Java Agent with GraalVM native images?","acceptedAnswer":{"@type":"Answer","text":"No, the Java Agent relies on JVM bytecode manipulation which is not available in GraalVM native images. For native images, use the OpenTelemetry SDK with manual instrumentation."}},{"@type":"Question","name":"Can I use the Java Agent alongside other APM tools?","acceptedAnswer":{"@type":"Answer","text":"Yes, the agent can coexist with tools like New Relic or Datadog during migration periods. However, running multiple agents simultaneously increases overhead."}},{"@type":"Question","name":"What is the difference between the Java Agent and Ktor's built-in tracing?","acceptedAnswer":{"@type":"Answer","text":"The Java Agent provides comprehensive zero-code instrumentation for HTTP, JDBC, Netty, and 100+ libraries. Ktor's built-in CallLogging plugin only covers HTTP request logging. The agent is recommended for full observability."}}]}
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"HowTo","name":"How to instrument Ktor with OpenTelemetry","step":[{"@type":"HowToStep","name":"Download the OpenTelemetry Java Agent","text":"Download the opentelemetry-javaagent.jar from the official GitHub releases page."},{"@type":"HowToStep","name":"Attach the agent to the JVM","text":"Set JAVA_TOOL_OPTIONS=-javaagent:/path/to/opentelemetry-javaagent.jar to attach the agent automatically on JVM startup."},{"@type":"HowToStep","name":"Configure OpenTelemetry environment","text":"Set OTEL_SERVICE_NAME, OTEL_EXPORTER_OTLP_ENDPOINT, and other environment variables to configure trace export."},{"@type":"HowToStep","name":"Run and verify instrumentation","text":"Start the Ktor application, make test requests, and verify traces for HTTP requests, database queries, and service calls appear in base14 Scout."}]}
 ---
+
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does the OpenTelemetry Java Agent impact Ktor performance?","acceptedAnswer":{"@type":"Answer","text":"The OpenTelemetry Java Agent adds approximately 3-5ms of latency per request in typical Ktor applications. With batch processing and GZIP compression, the overhead is minimal for production workloads."}},{"@type":"Question","name":"Which Ktor versions are supported?","acceptedAnswer":{"@type":"Answer","text":"The OpenTelemetry Java Agent supports Ktor 2.x and 3.x running on Netty. Ktor 3.x with Kotlin 2.x is recommended for optimal compatibility."}},{"@type":"Question","name":"Are Exposed ORM queries traced automatically?","acceptedAnswer":{"@type":"Answer","text":"Yes, the OpenTelemetry Java Agent instruments JDBC calls automatically, which includes all Exposed ORM queries. Spans include the SQL statement, database name, and operation type with no code changes."}},{"@type":"Question","name":"Does the Java Agent work with Kotlin coroutines?","acceptedAnswer":{"@type":"Answer","text":"Yes, the agent propagates trace context across coroutine boundaries automatically. Suspend functions, withContext switches, and Dispatchers.IO all maintain proper trace context."}},{"@type":"Question","name":"How do I correlate logs with traces in Ktor?","acceptedAnswer":{"@type":"Answer","text":"The Java Agent automatically injects trace_id and span_id into the SLF4J MDC. Use Logback with logstash-encoder to output JSON logs that include these fields for trace-log correlation."}},{"@type":"Question","name":"Can I use the Java Agent with GraalVM native images?","acceptedAnswer":{"@type":"Answer","text":"No, the Java Agent relies on JVM bytecode manipulation which is not available in GraalVM native images. For native images, use the OpenTelemetry SDK with manual instrumentation."}},{"@type":"Question","name":"Can I use the Java Agent alongside other APM tools?","acceptedAnswer":{"@type":"Answer","text":"Yes, the agent can coexist with tools like New Relic or Datadog during migration periods. However, running multiple agents simultaneously increases overhead."}},{"@type":"Question","name":"What is the difference between the Java Agent and Ktor's built-in tracing?","acceptedAnswer":{"@type":"Answer","text":"The Java Agent provides comprehensive zero-code instrumentation for HTTP, JDBC, Netty, and 100+ libraries. Ktor's built-in CallLogging plugin only covers HTTP request logging. The agent is recommended for full observability."}}]})}
+  </script>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"HowTo","name":"How to instrument Ktor with OpenTelemetry","step":[{"@type":"HowToStep","name":"Download the OpenTelemetry Java Agent","text":"Download the opentelemetry-javaagent.jar from the official GitHub releases page."},{"@type":"HowToStep","name":"Attach the agent to the JVM","text":"Set JAVA_TOOL_OPTIONS=-javaagent:/path/to/opentelemetry-javaagent.jar to attach the agent automatically on JVM startup."},{"@type":"HowToStep","name":"Configure OpenTelemetry environment","text":"Set OTEL_SERVICE_NAME, OTEL_EXPORTER_OTLP_ENDPOINT, and other environment variables to configure trace export."},{"@type":"HowToStep","name":"Run and verify instrumentation","text":"Start the Ktor application, make test requests, and verify traces for HTTP requests, database queries, and service calls appear in base14 Scout."}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
 
 ```mdx-code-block
 import Tabs from '@theme/Tabs';
@@ -53,6 +56,9 @@ query monitoring, and structured log correlation. The Java Agent attaches to
 the JVM at startup and automatically instruments HTTP requests, JDBC queries,
 Netty server operations, and outgoing HTTP client calls without any code
 changes.
+
+Ktor is JetBrains' Kotlin-first framework. On the JVM it sits alongside
+[Spring Boot](./spring-boot.md) and the compile-time [Micronaut](./micronaut.md).
 
 Ktor applications benefit from the Java Agent's comprehensive coverage of
 the JVM ecosystem including JDBC (via Exposed ORM), HikariCP connection
@@ -1182,12 +1188,13 @@ these resources:
 
 - **Docker Compose Setup** - Set up Scout Collector for local development
 
-### Related Frameworks
+### Related Guides
 
-- [Micronaut Instrumentation](./micronaut.md) - Java Micronaut
-- [Spring Boot Instrumentation](./spring-boot.md) - Java Spring Boot
-- [Quarkus Instrumentation](./quarkus.md) - Java Quarkus
-- [Express.js Instrumentation](./express.md) - Node.js Express
+- [Quarkus Instrumentation](./quarkus.md) - Kubernetes-native JVM framework
+- [Java Custom Instrumentation](../custom-instrumentation/java.md) - Manual
+  spans and advanced patterns
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 
 ## Complete Example
 
@@ -1294,12 +1301,3 @@ from a unified dashboard.
 - [Ktor Documentation](https://ktor.io/docs/welcome.html)
 - [Exposed ORM Documentation](https://jetbrains.github.io/Exposed/)
 - [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/)
-
-## Related Guides
-
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
-  Set up collector for local development
-- [Micronaut Instrumentation](./micronaut.md) - Java Micronaut
-- [Spring Boot Instrumentation](./spring-boot.md) - Java Spring Boot
-- [Quarkus Instrumentation](./quarkus.md) - Java Quarkus
-- [Laravel Instrumentation](./laravel.md) - PHP Laravel framework

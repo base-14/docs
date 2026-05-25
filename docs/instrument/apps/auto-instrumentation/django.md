@@ -40,12 +40,17 @@ keywords:
     django session monitoring,
     django production monitoring,
   ]
-head:
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Do I need to manually instrument Django views with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"No. Django auto-instrumentation automatically traces all views, both function-based and class-based, when you call DjangoInstrumentor().instrument(). No decorators or manual span creation required for basic request/response tracing."}},{"@type":"Question","name":"Can I use OpenTelemetry with Django REST Framework?","acceptedAnswer":{"@type":"Answer","text":"Yes. Django REST Framework views and viewsets are automatically instrumented through Django's middleware. Each API endpoint creates a span with the HTTP method and path."}},{"@type":"Question","name":"How do I detect N+1 queries in Django with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Check span attributes for db.query_count. High counts of more than 10 queries per request often indicate N+1 issues. base14 Scout visualizes these patterns in the span hierarchy."}},{"@type":"Question","name":"Does OpenTelemetry tracing work with Celery background tasks in Django?","acceptedAnswer":{"@type":"Answer","text":"Yes. Install opentelemetry-instrumentation-celery and instrument in your Celery worker initialization. Trace context automatically propagates from Django views to Celery tasks, creating distributed traces."}},{"@type":"Question","name":"What is the performance overhead of OpenTelemetry tracing in Django?","acceptedAnswer":{"@type":"Answer","text":"With 10% sampling, overhead is typically less than 1% for latency and about 8% for memory. Without sampling, expect roughly 6% latency increase and 30% memory increase."}}]}
 ---
+
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Do I need to manually instrument Django views with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"No. Django auto-instrumentation automatically traces all views, both function-based and class-based, when you call DjangoInstrumentor().instrument(). No decorators or manual span creation required for basic request/response tracing."}},{"@type":"Question","name":"Can I use OpenTelemetry with Django REST Framework?","acceptedAnswer":{"@type":"Answer","text":"Yes. Django REST Framework views and viewsets are automatically instrumented through Django's middleware. Each API endpoint creates a span with the HTTP method and path."}},{"@type":"Question","name":"How do I detect N+1 queries in Django with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Check span attributes for db.query_count. High counts of more than 10 queries per request often indicate N+1 issues. base14 Scout visualizes these patterns in the span hierarchy."}},{"@type":"Question","name":"Does OpenTelemetry tracing work with Celery background tasks in Django?","acceptedAnswer":{"@type":"Answer","text":"Yes. Install opentelemetry-instrumentation-celery and instrument in your Celery worker initialization. Trace context automatically propagates from Django views to Celery tasks, creating distributed traces."}},{"@type":"Question","name":"What is the performance overhead of OpenTelemetry tracing in Django?","acceptedAnswer":{"@type":"Answer","text":"With 10% sampling, overhead is typically less than 1% for latency and about 8% for memory. Without sampling, expect roughly 6% latency increase and 30% memory increase."}}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
 
 ## Introduction
 
@@ -54,6 +59,10 @@ and clean, pragmatic design. As one of the most popular web frameworks for
 building data-driven applications, Django applications often handle complex
 business logic, database interactions, and background tasks—making observability
 critical for maintaining performance and reliability at scale.
+
+Django is a batteries-included Python framework. For lighter or async-first
+options see [Flask](./flask.md), [FastAPI](./fast-api.md), and
+[Litestar](./litestar.md).
 
 This guide demonstrates how to instrument Django applications with OpenTelemetry
 for comprehensive distributed tracing, metrics collection, and application
@@ -2039,9 +2048,8 @@ observability patterns:
 
 - **[Custom Instrumentation for Python](/instrument/apps/custom-instrumentation/python)**
   \- Deep dive into manual span creation and context propagation
-- **Flask Instrumentation** \- Compare Django's approach with Flask's
-  minimalist framework (guide coming soon)
-- **FastAPI Instrumentation** \- Explore async Python framework tracing patterns
+- **[All framework guides](/instrument/apps/auto-instrumentation/)** \-
+  Auto-instrumentation overview for every language
 
 ### Scout Platform Features
 
@@ -2057,15 +2065,6 @@ observability patterns:
 - **Docker Instrumentation** - Deploy instrumented Django apps in containers
 - **Kubernetes Deployment** - Run Django with sidecar collectors and service mesh
 - **AWS Deployment** - Deploy to ECS, Elastic Beanstalk, or Lambda with tracing
-
-### Related Frameworks
-
-- **[Node.js Instrumentation](/instrument/apps/auto-instrumentation/nodejs)** \-
-  Compare Django ORM patterns with Node.js database tracing
-- **[Spring Boot Instrumentation](/instrument/apps/auto-instrumentation/spring-boot)**
-  \- Java enterprise framework with similar ORM auto-instrumentation
-- **[Go Instrumentation](/instrument/apps/auto-instrumentation/go)** \- Contrast
-  Django's auto-instrumentation with Go's manual approach
 
 ## Complete Example
 
@@ -2256,8 +2255,8 @@ from a single pane.
 
 ### Related Guides
 
-- **Flask Instrumentation** \- Lightweight Python framework instrumentation
-  (guide coming soon)
+- **[Flask Instrumentation](/instrument/apps/auto-instrumentation/flask)** \-
+  Lightweight Python framework instrumentation
 - **[FastAPI Instrumentation](/instrument/apps/auto-instrumentation/fast-api)**
   \- Async Python API framework
 - **[Python Custom Instrumentation](/instrument/apps/custom-instrumentation/python)**
