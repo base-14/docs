@@ -2044,9 +2044,10 @@ observability patterns:
 
 - **[Custom Instrumentation for Python](/instrument/apps/custom-instrumentation/python)**
   \- Deep dive into manual span creation and context propagation
-- **Flask Instrumentation** \- Compare Django's approach with Flask's
-  minimalist framework (guide coming soon)
-- **FastAPI Instrumentation** \- Explore async Python framework tracing patterns
+- **[Flask Instrumentation](/instrument/apps/auto-instrumentation/flask)** \-
+  Compare Django's approach with Flask's minimalist framework
+- **[FastAPI Instrumentation](/instrument/apps/auto-instrumentation/fast-api)**
+  \- Explore async Python framework tracing patterns
 
 ### Scout Platform Features
 

@@ -1669,4 +1669,6 @@ This complete example is available in our
   up collector for local development
 - [Go Instrumentation](./go.md) - Another systems programming language
   alternative
+- [Actix Web Instrumentation](./actix-web.md) - Higher-level Rust web framework
+  alternative
 - [Spring Boot Instrumentation](./spring-boot.md) - Java framework alternative

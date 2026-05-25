@@ -1994,5 +1994,11 @@ all your endpoints.
   up collector for local development
 - [Custom Python Instrumentation](../custom-instrumentation/python.md) - Manual
   instrumentation for advanced use cases
+- [Flask Instrumentation](./flask.md) - Sync Python web framework with
+  SQLAlchemy and Jinja2
+- [Django Instrumentation](./django.md) - Batteries-included Python framework
+  with ORM and middleware
+- [Litestar Instrumentation](./litestar.md) - Async Python framework with
+  asyncpg and msgspec
 - [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
   Production deployment guide

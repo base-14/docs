@@ -1494,3 +1494,6 @@ propagation.
 - [Custom Python Instrumentation](../custom-instrumentation/python.md) - Manual
   instrumentation for advanced use cases
 - [FastAPI Instrumentation](./fast-api.md) - Python web framework integration
+- [Flask Instrumentation](./flask.md) - Python web framework with SQLAlchemy
+- [Django Instrumentation](./django.md) - Python framework with Celery task
+  integration
