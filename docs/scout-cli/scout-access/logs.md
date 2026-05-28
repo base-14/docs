@@ -50,6 +50,7 @@ scout logs <SERVICE> [flags]
 | `--body-only` | bool | `false` | Output only log bodies, one per line. Conflicts with `--raw` |
 | `--discover` | bool | `false` | Show available log metadata instead of querying |
 | `--wide` | bool | `false` | Show full log bodies without truncation |
+| `--environment <ENV>` | string | — | Restrict results to records tagged with this OTel `deployment.environment` (e.g. `production`, `staging`). Records without that resource attribute are filtered out. |
 
 ## Examples
 
@@ -81,6 +82,12 @@ Correlate with a trace:
 
 ```bash
 scout logs payment-service --trace-id abc123def456
+```
+
+Restrict to a specific deployment environment:
+
+```bash
+scout logs payment-service --environment production
 ```
 
 Output only log bodies:

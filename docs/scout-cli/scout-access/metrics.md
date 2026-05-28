@@ -43,6 +43,7 @@ scout metrics <SERVICE> [flags]
 | `--search` | string | — | Filter metrics by name substring (case-insensitive) |
 | `--wide` | bool | `false` | Show full descriptions without truncation |
 | `--raw` | bool | `false` | Output JSON |
+| `--environment <ENV>` | string | — | Restrict to metrics emitted by services tagged with this `deployment.environment` (e.g. `production`, `staging`). Services without the tag return no metrics. |
 
 ## Examples
 
@@ -74,6 +75,12 @@ Show full descriptions:
 
 ```bash
 scout metrics payment-service --wide
+```
+
+Restrict to a specific deployment environment:
+
+```bash
+scout metrics payment-service --environment production
 ```
 
 Output as JSON:

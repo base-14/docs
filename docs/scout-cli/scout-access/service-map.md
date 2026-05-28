@@ -37,6 +37,7 @@ scout service-map [flags]
 | `--end` | RFC 3339 | — | End time. Requires `--start` |
 | `--raw` | bool | `false` | Output JSON |
 | `--interactive` | bool | `false` | Launch interactive TUI view |
+| `--environment <ENV>` | string | — | Restrict SERVICES and DEPENDENCIES to services tagged for this deployment environment (e.g. `production`, `staging`). Edges are filtered by caller-side environment tag. |
 
 ## Examples
 
@@ -68,6 +69,12 @@ Export as JSON for further analysis:
 
 ```bash
 scout service-map --raw
+```
+
+Restrict to production services only:
+
+```bash
+scout service-map --environment production
 ```
 
 :::tip
