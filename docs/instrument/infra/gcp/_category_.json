@@ -1,0 +1,10 @@
+{
+  "label": "GCP",
+  "position": 5,
+  "collapsed": false,
+  "link": {
+    "type": "generated-index",
+    "title": "GCP Monitoring Guide",
+    "description": "Stream Google Cloud Logging and other GCP telemetry into base14 Scout using OpenTelemetry."
+  }
+}
