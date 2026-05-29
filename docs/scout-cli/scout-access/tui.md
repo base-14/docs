@@ -27,6 +27,18 @@ logs — all from your terminal.
 scout
 ```
 
+To scope every view to a specific deployment environment, pass
+`--environment <ENV>` at the top level (no subcommand):
+
+```bash
+scout --environment production
+```
+
+When set, the services picker, topology refresh, and logs stream are all
+restricted to records carrying that OTel `deployment.environment`. The active
+environment is shown in the status bar alongside the account name
+(e.g. `⬡ snabbit · production`).
+
 :::note
 TUI mode requires an active authentication session. Run
 [`scout login`](./login.md) first.

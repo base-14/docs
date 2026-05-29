@@ -48,6 +48,7 @@ scout traces <SERVICE> [flags]
 | `--raw` | bool | `false` | Output JSON |
 | `--discover` | bool | `false` | Show available span metadata instead of querying |
 | `--id` | string | — | Drill into a specific trace by ID. Extends the time window to 60 minutes |
+| `--environment <ENV>` | string | — | Restrict results to records tagged with this OTel `deployment.environment` (e.g. `production`, `staging`). Records without that resource attribute are filtered out. |
 
 ## Examples
 
@@ -85,6 +86,12 @@ Discover available span names and attributes:
 
 ```bash
 scout traces payment-service --discover
+```
+
+Restrict to a specific deployment environment:
+
+```bash
+scout traces payment-service --environment production
 ```
 
 ## Filtering Logic
