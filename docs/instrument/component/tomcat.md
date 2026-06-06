@@ -6,9 +6,9 @@ sidebar_label: Tomcat
 id: collecting-tomcat-telemetry
 sidebar_position: 33
 description: >
-  Collect Apache Tomcat metrics with the OpenTelemetry JMX Scraper.
-  Monitor request throughput, thread pool utilization, and session
-  counts using JMX and export to base14 Scout.
+  Collect Apache Tomcat metrics with the OpenTelemetry JMX Scraper. Monitor
+  request throughput, thread-pool saturation, and JVM heap, then ship to
+  base14 Scout.
 keywords:
   - tomcat opentelemetry
   - tomcat otel collector
@@ -22,19 +22,21 @@ keywords:
 
 # Tomcat
 
-The OpenTelemetry JMX Scraper collects 8 Tomcat-specific metrics
-and 18 JVM metrics from Apache Tomcat 8.5+, including request
-throughput, error counts, thread pool utilization, network I/O,
-and session activity. The scraper connects to Tomcat via JMX,
-converts MBeans into OpenTelemetry metrics, and exports them over
-OTLP to the Collector. This guide enables JMX on Tomcat,
-configures the scraper, and ships metrics to base14 Scout.
+The OpenTelemetry JMX Scraper connects to Apache Tomcat 8.5+ over JMX
+RMI and collects 28 metrics - request throughput, error counts,
+request latency, connector thread-pool saturation, network I/O, and
+JVM heap / CPU / thread health - then pushes them over OTLP to the
+Collector. Tomcat exposes its Catalina MBeans (`GlobalRequestProcessor`,
+`ThreadPool`) and JVM MBeans over JMX with no Prometheus or OpenTelemetry
+endpoint of its own, so the scraper translates the MBeans into OTel
+metrics. This guide enables JMX on Tomcat, configures the scraper and
+Collector, and ships metrics to base14 Scout.
 
 ## Prerequisites
 
 | Requirement    | Minimum | Recommended |
 | -------------- | ------- | ----------- |
-| Apache Tomcat  | 8.5     | 10.1+       |
+| Apache Tomcat  | 8.5     | 11.0+       |
 | JMX Scraper    | 1.46.0  | 1.54.0+     |
 | Java (scraper) | 11      | 17+         |
 | OTel Collector | 0.90.0  | latest      |
@@ -42,33 +44,83 @@ configures the scraper, and ships metrics to base14 Scout.
 
 Before starting:
 
-- Tomcat must be accessible from the host running the JMX Scraper
-  (JMX port, default 9010)
-- The JMX Scraper runs as a standalone Java process - it requires
-  its own JRE
+- Tomcat must be reachable over JMX from the host running the scraper
+  (JMX port, default 9010).
+- The JMX Scraper runs as a standalone Java process and needs its own
+  JRE.
+- A Scout account and OTLP endpoint.
 - OTel Collector installed - see
-  [Docker Compose Setup](../collector-setup/docker-compose-example.md)
+  [Docker Compose Setup](../collector-setup/docker-compose-example.md).
 
 ## What You'll Monitor
 
-- **Requests**: total count, error count, max processing time,
-  cumulative processing time
-- **Network**: bytes received and transmitted per connector
-- **Threads**: current count, busy count, max pool size per
-  connector
-- **Sessions**: active count, max allowed (per deployed context)
-- **JVM** (with `jvm` target): heap and non-heap memory, GC
-  count and duration, thread states, CPU utilization, class
-  loading, buffer pools
+Metrics are grouped into three tiers by how you use them. Scrape Core
+always, alert on Operational, and reach for Diagnostic during an
+incident or capacity review. The `tomcat.*` connector metrics carry a
+`tomcat.request.processor.name` attribute (for example `http-nio-8080`);
+the `jvm.memory.*` metrics carry `jvm.memory.type` (heap / non_heap) and
+the pool name.
+
+### Core - is it up and serving
+
+| Metric | What it tells you |
+|---|---|
+| `tomcat.request.count` | Requests handled by the connector - the throughput KPI. |
+| `jvm.memory.used` | JVM memory in use. JMX exposes no `up` metric, so heap-in-use doubles as the process-alive and heap-health anchor. |
+
+### Operational - what to alert on
+
+| Metric | What it tells you |
+|---|---|
+| `tomcat.error.count` | Request errors at the connector - the error-rate signal. |
+| `tomcat.request.duration.sum` | Cumulative request-processing time; divide by request count for mean latency. |
+| `tomcat.request.duration.max` | Longest request-processing time - tail latency. |
+| `tomcat.thread.busy.count` | Connector threads actively handling requests. |
+| `tomcat.thread.count` | Connector threads currently in the pool. |
+| `tomcat.thread.limit` | Connector thread-pool ceiling - the saturation denominator. |
+| `tomcat.network.io` | Connector bytes sent and received. |
+| `jvm.memory.limit` | JVM memory ceiling - the saturation denominator against `jvm.memory.used`. |
+| `jvm.cpu.recent_utilization` | Recent process CPU utilization. |
+| `jvm.thread.count` | Total live JVM threads - a leak signal. |
+
+### Diagnostic - for investigation and tuning
+
+Higher cardinality; reach for these during an incident or a capacity
+review. In production you can drop this tier with a `filter` processor
+and keep Core + Operational.
+
+| Group | Metrics | When you reach for it |
+|---|---|---|
+| JVM memory detail | `jvm.memory.committed`, `jvm.memory.init`, `jvm.memory.used_after_last_gc` | Heap sizing and post-GC live-set; GC churn analysis. |
+| Class loading | `jvm.class.count`, `jvm.class.loaded`, `jvm.class.unloaded` | Classloader leaks and redeploy churn. |
+| CPU / system | `jvm.cpu.count`, `jvm.cpu.time`, `jvm.system.cpu.load_1m`, `jvm.system.cpu.utilization` | Host-level CPU pressure vs process CPU. |
+| Buffers / descriptors | `jvm.buffer.count`, `jvm.buffer.memory.limit`, `jvm.buffer.memory.used`, `jvm.file_descriptor.count` | Direct-buffer growth and fd exhaustion. |
+
+Session metrics (`tomcat.session.*`) only appear when a session-bearing
+web application is deployed; an empty Tomcat with no contexts emits no
+session metrics. See [Troubleshooting](#session-metrics-missing).
 
 Full metric reference:
-[OTel Tomcat JMX Metrics](https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/main/instrumentation/jmx-metrics/library/tomcat.md)
+[OTel JMX Tomcat metrics](https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/main/instrumentation/jmx-metrics/library/tomcat.md).
+
+## Key Alerts to Configure
+
+Threshold guidance for the most useful Core and Operational series.
+These are starting points; tune them to your workload.
+
+| Metric | Warning | Critical | Why it matters |
+|---|---|---|---|
+| `rate(tomcat.error.count)` vs `rate(tomcat.request.count)` | Error fraction climbing | Sustained rise | Application or upstream errors; inspect logs and the failing endpoints. |
+| `tomcat.thread.busy.count` / `tomcat.thread.limit` | > 0.80 | Approaching 1.0 | Connector running out of worker threads; raise `maxThreads` or shed load. |
+| `tomcat.request.duration.sum` / request count (mean), or `tomcat.request.duration.max` | Rising vs baseline | Sustained spike | Slow request handling; check downstream calls and GC. |
+| `jvm.memory.used` / `jvm.memory.limit` | > 0.80 | > 0.90 | GC churn and OOM risk; raise heap or reduce allocation. |
+| `jvm.cpu.recent_utilization` | Sustained high | Pinned near 1.0 | Process is CPU-bound; scale out or profile the hot paths. |
 
 ## Access Setup
 
-Tomcat exposes metrics via JMX (Java Management Extensions).
-Enable remote JMX access by adding the following to `setenv.sh`
-(or `CATALINA_OPTS` in your deployment):
+Tomcat exposes metrics over JMX (Java Management Extensions). Enable
+remote JMX access by adding the flags below to `setenv.sh` (or
+`CATALINA_OPTS` in your deployment).
 
 ### Enable JMX on Tomcat
 
@@ -82,16 +134,15 @@ export CATALINA_OPTS="$CATALINA_OPTS \
   -Djava.rmi.server.hostname=<tomcat-host>"   # Your Tomcat host IP or hostname
 ```
 
-Setting `rmi.port` to the same value as `port` prevents RMI
-from using a random second port, which simplifies firewall and
-Docker networking.
+Setting `rmi.port` equal to `port` keeps RMI from opening a random
+second port, which simplifies firewall and Docker networking.
 
-For Docker deployments, pass `CATALINA_OPTS` as an environment
-variable and set `hostname` on the container:
+For Docker, pass `CATALINA_OPTS` as an environment variable and set the
+container `hostname` so RMI hands back a reachable address:
 
 ```yaml showLineNumbers title="docker-compose.yaml (Tomcat service)"
 tomcat:
-  image: tomcat:10.1.42-jdk17-temurin
+  image: tomcat:11.0.22-jdk17-temurin
   hostname: tomcat
   environment:
     CATALINA_OPTS: >-
@@ -103,9 +154,11 @@ tomcat:
       -Djava.rmi.server.hostname=tomcat
 ```
 
-### With Authentication (Production)
+The flags above run JMX with no auth and no TLS, which is fine inside a
+trusted network or pod. Production exposed over an untrusted network
+should enable both.
 
-For production environments, enable JMX authentication:
+### With Authentication (Production)
 
 ```bash showLineNumbers title="bin/setenv.sh (authenticated)"
 export CATALINA_OPTS="$CATALINA_OPTS \
@@ -119,18 +172,17 @@ export CATALINA_OPTS="$CATALINA_OPTS \
   -Djava.rmi.server.hostname=<tomcat-host>"
 ```
 
-The JMX Scraper supports authenticated connections via
-`OTEL_JMX_USERNAME` and `OTEL_JMX_PASSWORD` environment
-variables.
+The JMX Scraper connects with credentials via the `OTEL_JMX_USERNAME`
+and `OTEL_JMX_PASSWORD` environment variables.
 
 ## Configuration
 
-Tomcat monitoring uses two components: the JMX Scraper (connects
-to Tomcat, exports OTLP) and the OTel Collector (receives OTLP,
-ships to Scout).
+Tomcat monitoring uses two components: the JMX Scraper (connects to
+Tomcat over JMX RMI, targets the `jvm,tomcat` systems, exports OTLP) and
+the OTel Collector (receives OTLP, ships to Scout).
 
 ```text
-Tomcat (JMX:9010) ← JMX/RMI → JMX Scraper → OTLP → OTel Collector → Scout
+Tomcat (JMX:9010) ← JMX/RMI → JMX Scraper → OTLP/gRPC → OTel Collector → Scout
 ```
 
 ### JMX Scraper
@@ -149,12 +201,12 @@ java -jar opentelemetry-jmx-scraper-1.54.0-alpha.jar
 
 Move the JAR to a permanent location:
 
-```bash showLineNumbers
+```bash showLineNumbers title="Install the scraper JAR"
 sudo mkdir -p /opt/otel
 sudo mv opentelemetry-jmx-scraper-1.54.0-alpha.jar /opt/otel/
 ```
 
-Create a systemd service to run the scraper as a managed service:
+Run the scraper as a managed systemd service:
 
 ```bash showLineNumbers title="/etc/systemd/system/otel-jmx-scraper.service"
 sudo tee /etc/systemd/system/otel-jmx-scraper.service > /dev/null <<'EOF'
@@ -177,14 +229,12 @@ WantedBy=multi-user.target
 EOF
 ```
 
-Start the scraper:
-
-```bash showLineNumbers
+```bash showLineNumbers title="Enable the scraper service"
 sudo systemctl daemon-reload
 sudo systemctl enable --now otel-jmx-scraper
 ```
 
-For Docker, build a simple image with the scraper JAR:
+For Docker, build a small image with the scraper JAR:
 
 ```dockerfile showLineNumbers title="jmx-scraper/Dockerfile"
 FROM eclipse-temurin:17-jre
@@ -198,7 +248,7 @@ ENTRYPOINT ["java", "-jar", "/opt/scraper.jar"]
 
 ### OTel Collector
 
-The Collector receives metrics from the JMX Scraper over OTLP:
+The Collector receives metrics from the scraper over OTLP/gRPC:
 
 ```yaml showLineNumbers title="config/otel-collector.yaml"
 receivers:
@@ -210,7 +260,7 @@ receivers:
 processors:
   resource:
     attributes:
-      - key: environment
+      - key: deployment.environment.name
         value: ${env:ENVIRONMENT}
         action: upsert
       - key: service.name
@@ -221,7 +271,6 @@ processors:
     timeout: 10s
     send_batch_size: 1024
 
-# Export to base14 Scout
 exporters:
   otlphttp/b14:
     endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT}
@@ -235,6 +284,15 @@ service:
       processors: [resource, batch]
       exporters: [otlphttp/b14]
 ```
+
+To control metric volume in production, drop the Diagnostic tier with a
+`filter` processor on the metrics pipeline while keeping the Core and
+Operational series.
+
+> **Semconv version note**: `deployment.environment.name` is the current
+> OTel attribute (semantic conventions v1.27+, stable in v1.40.0). The
+> legacy `deployment.environment` is still accepted by Scout for
+> backward compatibility, but new configs should emit the dotted form.
 
 ### Environment Variables
 
@@ -259,8 +317,9 @@ Full working example with all three components:
 ```yaml showLineNumbers title="docker-compose.yaml"
 services:
   tomcat:
-    image: tomcat:10.1.42-jdk17-temurin
+    image: tomcat:11.0.22-jdk17-temurin
     hostname: tomcat
+    container_name: tomcat
     ports:
       - "8080:8080"
       - "9010:9010"
@@ -281,6 +340,7 @@ services:
 
   jmx-scraper:
     build: ./jmx-scraper
+    container_name: jmx-scraper
     environment:
       OTEL_JMX_SERVICE_URL: ${OTEL_JMX_SERVICE_URL}
       OTEL_JMX_TARGET_SYSTEM: ${OTEL_JMX_TARGET_SYSTEM}
@@ -291,7 +351,7 @@ services:
         condition: service_healthy
 
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.120.0
+    image: otel/opentelemetry-collector-contrib:latest
     container_name: otel-collector
     volumes:
       - ./config/otel-collector.yaml:/etc/otelcol-contrib/config.yaml:ro
@@ -304,16 +364,17 @@ services:
 Start the Collector and check for metrics within 60 seconds:
 
 ```bash showLineNumbers title="Verify metrics collection"
-# Check JMX Scraper logs for successful connection
-docker logs tomcat-telemetry-jmx-scraper-1 2>&1 | head -10
+# Check the JMX Scraper logs for a successful JMX connection
+docker logs jmx-scraper 2>&1 | head -10
 
-# Verify Tomcat is running with JMX enabled
-docker logs tomcat-telemetry-tomcat-1 2>&1 \
-  | grep "jmxremote"
+# Confirm Tomcat started with JMX enabled
+docker logs tomcat 2>&1 | grep "jmxremote"
 
 # Check Collector logs for Tomcat metrics
-docker logs otel-collector 2>&1 \
-  | grep "tomcat"
+docker logs otel-collector 2>&1 | grep -i "tomcat"
+
+# Drive traffic so the request / error / duration counters advance
+curl -s http://localhost:8080/ > /dev/null
 ```
 
 ## Troubleshooting
@@ -324,40 +385,72 @@ docker logs otel-collector 2>&1 \
 
 **Fix**:
 
-1. Verify Tomcat is running:
-   `docker ps | grep tomcat`
-2. Confirm JMX is enabled - check for
-   `-Dcom.sun.management.jmxremote` in Tomcat's startup args:
-   `ps aux | grep jmxremote`
-3. Verify the JMX port matches between Tomcat config and
-   scraper's `OTEL_JMX_SERVICE_URL`
-4. In Docker, ensure `hostname` is set on the Tomcat container
-   and matches `-Djava.rmi.server.hostname`
+1. Verify Tomcat is running: `docker ps | grep tomcat`.
+2. Confirm JMX is enabled - look for `-Dcom.sun.management.jmxremote` in
+   Tomcat's startup args: `ps aux | grep jmxremote`.
+3. Verify the JMX port matches between Tomcat's config and the scraper's
+   `OTEL_JMX_SERVICE_URL`.
+4. In Docker, ensure `hostname` is set on the Tomcat container and
+   matches `-Djava.rmi.server.hostname`.
 
 ### Only JVM metrics, no Tomcat metrics
 
-**Cause**: The `OTEL_JMX_TARGET_SYSTEM` does not include
-`tomcat`.
+**Cause**: `OTEL_JMX_TARGET_SYSTEM` does not include `tomcat`.
 
 **Fix**:
 
-1. Set `OTEL_JMX_TARGET_SYSTEM=jvm,tomcat` (both targets
-   comma-separated)
-2. Verify Tomcat has started fully - MBeans are only available
-   after Catalina initializes
+1. Set `OTEL_JMX_TARGET_SYSTEM=jvm,tomcat` (both targets,
+   comma-separated).
+2. Verify Tomcat has fully started - the Catalina MBeans
+   (`GlobalRequestProcessor`, `ThreadPool`) are only registered after
+   Catalina initializes.
 
 ### Session metrics missing
 
-**Cause**: Session metrics (`tomcat.session.active.count`,
-`tomcat.session.active.limit`) only appear when at least one
-web application is deployed.
+**Cause**: Session metrics only appear when at least one session-bearing
+web application is deployed. The session MBeans are per-context
+(`Catalina:type=Manager,host=localhost,context=/myapp`), so an empty
+Tomcat with no contexts emits none.
 
 **Fix**:
 
-1. Deploy a web application to Tomcat - empty Tomcat instances
-   with no contexts do not emit session metrics
-2. Session MBeans are per-context
-   (`Catalina:type=Manager,host=localhost,context=/myapp`)
+1. Deploy a web application to Tomcat - empty instances with no contexts
+   do not emit session metrics.
+2. Confirm requests are actually creating sessions in your app.
+
+### Requests are slow or threads are piling up
+
+**Cause**: The connector thread pool is saturated, or the JVM is under
+memory or CPU pressure.
+
+**Look at**: `tomcat.thread.busy.count` against `tomcat.thread.limit`
+(pool saturation) and `tomcat.request.duration.max` (tail latency). On
+the JVM side, the Diagnostic `jvm.memory.used_after_last_gc` (live set
+after GC) and `jvm.system.cpu.utilization` / `jvm.system.cpu.load_1m`
+(host CPU pressure) show whether GC churn or a CPU-bound host is the
+cause.
+
+**Fix**:
+
+1. Raise `maxThreads` on the connector or shed load if the busy count is
+   pinned at the limit.
+2. Raise heap or reduce allocation if `used_after_last_gc` keeps climbing
+   between collections.
+
+### Suspected memory or descriptor leak
+
+**Cause**: Long-running growth in live threads, loaded classes, direct
+buffers, or open file descriptors.
+
+**Look at**: `jvm.thread.count` (Operational), and the Diagnostic
+`jvm.class.loaded` / `jvm.class.unloaded` (classloader leaks on
+redeploy), `jvm.buffer.memory.used` (direct-buffer growth), and
+`jvm.file_descriptor.count` (fd exhaustion).
+
+**Fix**:
+
+1. Correlate the rising series with deploy events or traffic shape.
+2. Capture a heap or thread dump for the offending component.
 
 ### No metrics appearing in Scout
 
@@ -365,40 +458,38 @@ web application is deployed.
 
 **Fix**:
 
-1. Check Collector logs for export errors:
-   `docker logs otel-collector`
-2. Verify `OTEL_EXPORTER_OTLP_ENDPOINT` is set correctly
-3. Confirm the pipeline includes both the receiver and exporter
+1. Check Collector logs for export errors: `docker logs otel-collector`.
+2. Verify `OTEL_EXPORTER_OTLP_ENDPOINT` is set correctly.
+3. Confirm the pipeline includes both the receiver and the exporter.
 
 ## FAQ
 
 **Does this work with Tomcat running in Kubernetes?**
 
-Yes. Run the JMX Scraper as a sidecar container in the same pod.
-Set `OTEL_JMX_SERVICE_URL` to `service:jmx:rmi:///jndi/rmi://
-localhost:9010/jmxrmi` since both containers share the pod
-network. No firewall rules needed for intra-pod communication.
+Yes. Run the JMX Scraper as a sidecar in the same pod and set
+`OTEL_JMX_SERVICE_URL` to
+`service:jmx:rmi:///jndi/rmi://localhost:9010/jmxrmi`, since both
+containers share the pod network. No firewall rules are needed for
+intra-pod communication. The Collector receives OTLP from the scraper.
 
 **Can I use this with embedded Tomcat (Spring Boot)?**
 
-Yes. Spring Boot's embedded Tomcat registers MBeans under the
-`Tomcat:` domain instead of `Catalina:`. The JMX Scraper's
-`tomcat` target system handles both domains automatically. Enable
-JMX remote access on the Spring Boot app using the same
-`-Dcom.sun.management.jmxremote.*` JVM flags.
+Yes. Spring Boot's embedded Tomcat registers MBeans under the `Tomcat:`
+domain instead of `Catalina:`. The scraper's `tomcat` target system
+handles both. Enable JMX remote access on the app with the same
+`-Dcom.sun.management.jmxremote.*` flags.
 
 **What happened to the OTel Collector JMX receiver?**
 
-The `jmxreceiver` in the Collector was deprecated in January
-2026. It required a JRE inside the Collector container and ran
-a Java subprocess internally. The standalone JMX Scraper replaces
-it - same metric definitions, cleaner operational model.
+The Collector's `jmxreceiver` was deprecated in January 2026. It needed
+a JRE inside the Collector container and ran a Java subprocess
+internally. The standalone JMX Scraper replaces it - the same metric
+definitions, a cleaner operational model.
 
 **How do I monitor multiple Tomcat instances?**
 
-Run one JMX Scraper per Tomcat instance, each configured with
-a different `OTEL_JMX_SERVICE_URL`. All scrapers export to the
-same Collector:
+Run one JMX Scraper per Tomcat instance, each with a different
+`OTEL_JMX_SERVICE_URL`. All scrapers export to the same Collector:
 
 ```yaml showLineNumbers title="docker-compose.yaml (multiple instances)"
 jmx-scraper-primary:
@@ -414,29 +505,33 @@ jmx-scraper-replica:
     OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
 ```
 
-## What's Next?
+**Why is there no `up` metric?**
 
-- **Create Dashboards**: Explore pre-built dashboards or build
-  your own. See
-  [Create Your First Dashboard](../../guides/create-your-first-dashboard.md)
-- **Monitor More Components**: Add monitoring for
-  [Nginx](./nginx.md),
-  [PostgreSQL](./postgres.md),
-  and other components
-- **Fine-tune Collection**: Adjust `OTEL_METRIC_EXPORT_INTERVAL`
-  to control scrape frequency
+JMX exposes no liveness gauge. Use `jvm.memory.used` as the
+process-alive anchor - if it stops reporting, the scraper has lost its
+JMX connection to Tomcat.
 
 ## Related Guides
 
-- [JMX Metrics Collection Guide](../collector-setup/jmx-metrics-collection-guide.md)
-  - Compare JMX Scraper vs JMX Exporter
-- [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
-  - Advanced collector configuration
-- [Docker Compose Setup](../collector-setup/docker-compose-example.md)
-  - Run the Collector locally
-- [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
-  - Production deployment
-- [Cassandra Monitoring](./cassandra.md)
-  - Another JMX-based monitoring setup
-- [Creating Alerts](../../guides/creating-alerts-with-logx.md)
-  - Alert on Tomcat metrics
+- [JMX Metrics Guide](../collector-setup/jmx-metrics-collection-guide.md) -
+  Compare the JMX Scraper and the JMX Exporter.
+- [OTel Collector Configuration](../collector-setup/otel-collector-config.md) -
+  Advanced collector configuration.
+- [Docker Compose Setup](../collector-setup/docker-compose-example.md) -
+  Run the Collector locally.
+- [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md) -
+  Production deployment.
+- [Cassandra Monitoring](./cassandra.md) - Another JMX-based monitoring setup.
+- [Creating Alerts](../../guides/creating-alerts-with-logx.md) -
+  Alert on Tomcat metrics.
+
+## What's Next?
+
+- **Create Dashboards**: Explore pre-built dashboards or build your own.
+  See
+  [Create Your First Dashboard](../../guides/create-your-first-dashboard.md).
+- **Monitor More Components**: Add monitoring for
+  [Nginx](./nginx.md), [PostgreSQL](./postgres.md), and other components.
+- **Fine-tune Collection**: Drop the Diagnostic tier in production with a
+  `filter` processor to control volume; keep it available for incident
+  investigation.
