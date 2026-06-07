@@ -24,7 +24,7 @@ keywords:
 
 # WildFly
 
-The OpenTelemetry JMX Scraper collects 14 WildFly-specific metrics and 18
+The OpenTelemetry JMX Scraper collects 14 WildFly-specific metrics and 19
 JVM metrics from WildFly 26+ - Undertow request throughput, 5xx error
 counts, request duration, datasource connection pools, transaction
 activity, and HTTP session load. WildFly does not expose standard JMX/RMI;
@@ -39,7 +39,7 @@ URL, and ships metrics to base14 Scout.
 | Requirement    | Minimum | Recommended    |
 | -------------- | ------- | -------------- |
 | WildFly        | 26      | 40.0.0.Final   |
-| JMX Scraper    | 1.46.0  | 1.54.0-alpha   |
+| JMX Scraper    | 1.46.0  | 1.57.0-alpha   |
 | Java (scraper) | 11      | 17             |
 | OTel Collector | 0.90.0  | latest         |
 | base14 Scout   | Any     | -              |
@@ -101,7 +101,7 @@ not as paging signals.
 | JVM memory detail | `jvm.memory.committed`, `jvm.memory.init`, `jvm.memory.used_after_last_gc` | GC effectiveness and committed-vs-used gap. |
 | JVM class loading | `jvm.class.count`, `jvm.class.loaded`, `jvm.class.unloaded` | Classloader leaks after repeated redeploys. |
 | JVM CPU / system | `jvm.cpu.count`, `jvm.cpu.time`, `jvm.system.cpu.load_1m`, `jvm.system.cpu.utilization` | Host vs process CPU attribution. |
-| JVM buffers / descriptors | `jvm.buffer.count`, `jvm.buffer.memory.limit`, `jvm.buffer.memory.used`, `jvm.file_descriptor.count` | Direct-buffer pressure and fd exhaustion. |
+| JVM buffers / descriptors | `jvm.buffer.count`, `jvm.buffer.memory.limit`, `jvm.buffer.memory.used`, `jvm.file_descriptor.count`, `jvm.file_descriptor.limit` | Direct-buffer pressure and fd usage against the ceiling. |
 
 Full metric reference:
 [OTel WildFly JMX Metrics](https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/main/instrumentation/jmx-metrics/library/wildfly.md).
@@ -176,8 +176,8 @@ server's major version - a version-skewed client risks a fragile
 sudo mkdir -p /opt/otel
 
 # Download the JMX Scraper from Maven Central
-curl -sL -o /opt/otel/opentelemetry-jmx-scraper-1.54.0-alpha.jar \
-  https://repo1.maven.org/maven2/io/opentelemetry/contrib/opentelemetry-jmx-scraper/1.54.0-alpha/opentelemetry-jmx-scraper-1.54.0-alpha.jar
+curl -sL -o /opt/otel/opentelemetry-jmx-scraper-1.57.0-alpha.jar \
+  https://repo1.maven.org/maven2/io/opentelemetry/contrib/opentelemetry-jmx-scraper/1.57.0-alpha/opentelemetry-jmx-scraper-1.57.0-alpha.jar
 
 # Copy jboss-client.jar from a WildFly install matching the server's version
 sudo cp $JBOSS_HOME/bin/client/jboss-client.jar /opt/otel/
@@ -205,7 +205,7 @@ OTEL_JMX_USERNAME=${OTEL_JMX_USERNAME} \
 OTEL_JMX_PASSWORD=${OTEL_JMX_PASSWORD} \
 OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317 \
 OTEL_METRIC_EXPORT_INTERVAL=10000 \
-java -cp /opt/otel/opentelemetry-jmx-scraper-1.54.0-alpha.jar:/opt/otel/jboss-client.jar \
+java -cp /opt/otel/opentelemetry-jmx-scraper-1.57.0-alpha.jar:/opt/otel/jboss-client.jar \
   io.opentelemetry.contrib.jmxscraper.JmxScraper
 ```
 
@@ -225,7 +225,7 @@ Environment=OTEL_JMX_USERNAME=monitor
 Environment=OTEL_JMX_PASSWORD=<password>
 Environment=OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 Environment=OTEL_METRIC_EXPORT_INTERVAL=10000
-ExecStart=/usr/bin/java -cp /opt/otel/opentelemetry-jmx-scraper-1.54.0-alpha.jar:/opt/otel/jboss-client.jar io.opentelemetry.contrib.jmxscraper.JmxScraper
+ExecStart=/usr/bin/java -cp /opt/otel/opentelemetry-jmx-scraper-1.57.0-alpha.jar:/opt/otel/jboss-client.jar io.opentelemetry.contrib.jmxscraper.JmxScraper
 Restart=always
 RestartSec=5
 
@@ -245,7 +245,7 @@ FROM quay.io/wildfly/wildfly:40.0.0.Final-jdk17 AS wildfly
 
 FROM eclipse-temurin:17-jre
 
-ARG SCRAPER_VERSION=1.54.0-alpha
+ARG SCRAPER_VERSION=1.57.0-alpha
 
 ADD https://repo1.maven.org/maven2/io/opentelemetry/contrib/opentelemetry-jmx-scraper/${SCRAPER_VERSION}/opentelemetry-jmx-scraper-${SCRAPER_VERSION}.jar /opt/scraper.jar
 

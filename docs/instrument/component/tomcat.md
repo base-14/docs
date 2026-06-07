@@ -23,10 +23,10 @@ keywords:
 # Tomcat
 
 The OpenTelemetry JMX Scraper connects to Apache Tomcat 8.5+ over JMX
-RMI and collects 28 metrics - request throughput, error counts,
-request latency, connector thread-pool saturation, network I/O, and
-JVM heap / CPU / thread health - then pushes them over OTLP to the
-Collector. Tomcat exposes its Catalina MBeans (`GlobalRequestProcessor`,
+RMI and collects 8 Tomcat-specific metrics and 19 JVM metrics - request
+throughput, error counts, request latency, connector thread-pool
+saturation, network I/O, and JVM heap / CPU / thread health - then pushes
+them over OTLP to the Collector. Tomcat exposes its Catalina MBeans (`GlobalRequestProcessor`,
 `ThreadPool`) and JVM MBeans over JMX with no Prometheus or OpenTelemetry
 endpoint of its own, so the scraper translates the MBeans into OTel
 metrics. This guide enables JMX on Tomcat, configures the scraper and
@@ -94,7 +94,7 @@ and keep Core + Operational.
 | JVM memory detail | `jvm.memory.committed`, `jvm.memory.init`, `jvm.memory.used_after_last_gc` | Heap sizing and post-GC live-set; GC churn analysis. |
 | Class loading | `jvm.class.count`, `jvm.class.loaded`, `jvm.class.unloaded` | Classloader leaks and redeploy churn. |
 | CPU / system | `jvm.cpu.count`, `jvm.cpu.time`, `jvm.system.cpu.load_1m`, `jvm.system.cpu.utilization` | Host-level CPU pressure vs process CPU. |
-| Buffers / descriptors | `jvm.buffer.count`, `jvm.buffer.memory.limit`, `jvm.buffer.memory.used`, `jvm.file_descriptor.count` | Direct-buffer growth and fd exhaustion. |
+| Buffers / descriptors | `jvm.buffer.count`, `jvm.buffer.memory.limit`, `jvm.buffer.memory.used`, `jvm.file_descriptor.count`, `jvm.file_descriptor.limit` | Direct-buffer growth and fd usage against the ceiling. |
 
 Session metrics (`tomcat.session.*`) only appear when a session-bearing
 web application is deployed; an empty Tomcat with no contexts emits no
@@ -196,14 +196,14 @@ OTEL_JMX_SERVICE_URL=service:jmx:rmi:///jndi/rmi://localhost:9010/jmxrmi \
 OTEL_JMX_TARGET_SYSTEM=jvm,tomcat \
 OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317 \
 OTEL_METRIC_EXPORT_INTERVAL=10000 \
-java -jar opentelemetry-jmx-scraper-1.54.0-alpha.jar
+java -jar opentelemetry-jmx-scraper-1.57.0-alpha.jar
 ```
 
 Move the JAR to a permanent location:
 
 ```bash showLineNumbers title="Install the scraper JAR"
 sudo mkdir -p /opt/otel
-sudo mv opentelemetry-jmx-scraper-1.54.0-alpha.jar /opt/otel/
+sudo mv opentelemetry-jmx-scraper-1.57.0-alpha.jar /opt/otel/
 ```
 
 Run the scraper as a managed systemd service:
@@ -220,7 +220,7 @@ Environment=OTEL_JMX_SERVICE_URL=service:jmx:rmi:///jndi/rmi://localhost:9010/jm
 Environment=OTEL_JMX_TARGET_SYSTEM=jvm,tomcat
 Environment=OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 Environment=OTEL_METRIC_EXPORT_INTERVAL=10000
-ExecStart=/usr/bin/java -jar /opt/otel/opentelemetry-jmx-scraper-1.54.0-alpha.jar
+ExecStart=/usr/bin/java -jar /opt/otel/opentelemetry-jmx-scraper-1.57.0-alpha.jar
 Restart=always
 RestartSec=5
 
@@ -239,7 +239,7 @@ For Docker, build a small image with the scraper JAR:
 ```dockerfile showLineNumbers title="jmx-scraper/Dockerfile"
 FROM eclipse-temurin:17-jre
 
-ARG SCRAPER_VERSION=1.54.0-alpha   # Update to match your target version
+ARG SCRAPER_VERSION=1.57.0-alpha   # Update to match your target version
 
 ADD https://repo1.maven.org/maven2/io/opentelemetry/contrib/opentelemetry-jmx-scraper/${SCRAPER_VERSION}/opentelemetry-jmx-scraper-${SCRAPER_VERSION}.jar /opt/scraper.jar
 

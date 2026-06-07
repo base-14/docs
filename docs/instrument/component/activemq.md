@@ -150,14 +150,14 @@ OTEL_JMX_SERVICE_URL=service:jmx:rmi:///jndi/rmi://localhost:1099/jmxrmi \
 OTEL_JMX_TARGET_SYSTEM=jvm,activemq \
 OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317 \
 OTEL_METRIC_EXPORT_INTERVAL=10000 \
-java -jar opentelemetry-jmx-scraper-1.54.0-alpha.jar
+java -jar opentelemetry-jmx-scraper-1.57.0-alpha.jar
 ```
 
 Move the JAR to a permanent location:
 
 ```bash showLineNumbers title="Install the scraper"
 sudo mkdir -p /opt/otel
-sudo mv opentelemetry-jmx-scraper-1.54.0-alpha.jar /opt/otel/
+sudo mv opentelemetry-jmx-scraper-1.57.0-alpha.jar /opt/otel/
 ```
 
 Create a systemd service to run the scraper as a managed service:
@@ -174,7 +174,7 @@ Environment=OTEL_JMX_SERVICE_URL=service:jmx:rmi:///jndi/rmi://localhost:1099/jm
 Environment=OTEL_JMX_TARGET_SYSTEM=jvm,activemq
 Environment=OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 Environment=OTEL_METRIC_EXPORT_INTERVAL=10000
-ExecStart=/usr/bin/java -jar /opt/otel/opentelemetry-jmx-scraper-1.54.0-alpha.jar
+ExecStart=/usr/bin/java -jar /opt/otel/opentelemetry-jmx-scraper-1.57.0-alpha.jar
 Restart=always
 RestartSec=5
 
@@ -195,7 +195,7 @@ For Docker, build a simple image with the scraper JAR:
 ```dockerfile showLineNumbers title="jmx-scraper/Dockerfile"
 FROM eclipse-temurin:17-jre
 
-ARG SCRAPER_VERSION=1.54.0-alpha   # Update to match your target version
+ARG SCRAPER_VERSION=1.57.0-alpha   # Update to match your target version
 
 ADD https://repo1.maven.org/maven2/io/opentelemetry/contrib/opentelemetry-jmx-scraper/${SCRAPER_VERSION}/opentelemetry-jmx-scraper-${SCRAPER_VERSION}.jar /opt/scraper.jar
 
