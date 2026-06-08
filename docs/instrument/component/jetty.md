@@ -1,14 +1,14 @@
 ---
 title: >
-  Jetty OpenTelemetry Monitoring - Thread Pools, Sessions,
+  Jetty OpenTelemetry Monitoring - Thread Pools, JVM Health,
   and Collector Setup
 sidebar_label: Jetty
 id: collecting-jetty-telemetry
 sidebar_position: 36
 description: >
   Collect Eclipse Jetty metrics with the OpenTelemetry JMX Scraper.
-  Monitor thread pools, I/O selects, and session activity using
-  JMX and export to base14 Scout.
+  Monitor thread-pool saturation, JVM heap, and CPU using JMX and
+  export to base14 Scout.
 keywords:
   - jetty opentelemetry
   - jetty otel collector
@@ -16,7 +16,6 @@ keywords:
   - jetty performance monitoring
   - opentelemetry jmx scraper jetty
   - jetty observability
-  - jetty server monitoring
   - eclipse jetty opentelemetry
   - jetty jmx monitoring
   - jetty telemetry collection
@@ -24,61 +23,118 @@ keywords:
 
 # Jetty
 
-The OpenTelemetry JMX Scraper collects 9 Jetty-specific metrics
-and 18 JVM metrics from Eclipse Jetty 9.x through 12.x, including
-thread pool utilization, I/O select counts, and session activity.
-Jetty requires explicit JMX enablement - unlike Tomcat, JMX MBean
-registration is not configured by default. The scraper connects
-to Jetty via JMX, converts MBeans into OpenTelemetry metrics, and
-exports them over OTLP to the Collector. This guide enables JMX
-on Jetty, configures the scraper, and ships metrics to base14 Scout.
+The OpenTelemetry JMX Scraper collects 6 Jetty-specific metrics and 19
+JVM metrics from Eclipse Jetty 9.4+ - thread-pool busy/idle/queue counts,
+NIO selector activity, heap and non-heap memory, CPU utilization, class
+loading, and buffer pools. Jetty keeps these in JMX MBeans with no native
+metrics endpoint, and unlike Tomcat it does not register them by default,
+so the `jmx` module must be enabled. The scraper connects over JMX/RMI,
+converts the MBeans into OpenTelemetry metrics, and pushes them over OTLP
+to the Collector. This guide enables JMX on Jetty, configures the scraper,
+and ships metrics to base14 Scout.
 
 ## Prerequisites
 
-| Requirement    | Minimum | Recommended |
-| -------------- | ------- | ----------- |
-| Eclipse Jetty  | 9.4     | 12.0+       |
-| JMX Scraper    | 1.46.0  | 1.54.0+     |
-| Java (scraper) | 11      | 17+         |
-| OTel Collector | 0.90.0  | latest      |
-| base14 Scout   | Any     | -           |
+| Requirement    | Minimum     | Recommended |
+| -------------- | ----------- | ----------- |
+| Eclipse Jetty  | 9.4         | 12.0        |
+| JMX Scraper    | 1.48.0-alpha | 1.57.0-alpha |
+| Java (scraper) | 11          | 17          |
+| OTel Collector Contrib | 0.90.0 | 0.153.0  |
+| base14 Scout   | Any         | -           |
 
 Before starting:
 
-- Jetty must be accessible from the host running the JMX Scraper
-  (JMX port, default 1099)
-- The JMX Scraper runs as a standalone Java process - it requires
-  its own JRE
-- Jetty's `jmx` module must be enabled for MBean registration
+- Jetty must be reachable from the host running the JMX Scraper (JMX
+  port, default 1099).
+- Jetty's `jmx` module must be enabled so the server registers its
+  MBeans; without it you get only JVM metrics.
+- The JMX Scraper runs as a standalone Java process and needs its own JRE.
+- A Scout account and OTLP endpoint.
 - OTel Collector installed - see
-  [Docker Compose Setup](../collector-setup/docker-compose-example.md)
+  [Docker Compose Setup](../collector-setup/docker-compose-example.md).
+
+The `jetty` rules are bundled in JMX Scraper `1.48.0-alpha` and later; on
+earlier builds only the JVM metrics surface. The metric names come from
+the scraper's `jetty` rules, not from Jetty itself, so a Jetty version
+change cannot rename or drop them - it can only leave a source MBean
+absent.
 
 ## What You'll Monitor
 
-- **Threads**: count, limit, busy count, idle count, queue size
-- **I/O**: select count
-- **Sessions**: active count (Jetty 12+), created count (9-11),
-  duration sum (9-11)
-- **JVM** (with `jvm` target): heap and non-heap memory, GC
-  count and duration, thread states, CPU utilization, class
-  loading, buffer pools
+Metrics are grouped into three tiers by how you use them. Scrape Core
+always, alert on Operational, and reach for Diagnostic during an incident
+or capacity review.
 
-Session metrics only appear when web applications with active
-sessions are deployed.
+The `jetty` target exposes no request counter, so there is no built-in
+throughput or per-request latency metric. Use `jetty.thread.busy.count`
+as the work proxy; per-request timing lives in your access logs or trace
+path, not in these metrics.
+
+### Core - is it up and serving
+
+| Metric | What it tells you |
+|---|---|
+| `jetty.thread.busy.count` | Threads actively handling requests - the closest proxy for whether Jetty is doing work. |
+| `jvm.memory.used` | JVM memory in use. JMX exposes no `up` metric, so heap-in-use doubles as the process-alive and heap-health anchor. |
+
+### Operational - what to alert on
+
+| Metric | What it tells you |
+|---|---|
+| `jetty.thread.queue.size` | Jobs queued waiting for a free thread - backpressure / saturation. |
+| `jetty.thread.limit` | Max threads in the pool; the saturation denominator for `busy.count`. |
+| `jvm.memory.limit` | JVM memory ceiling; the saturation denominator for `jvm.memory.used`. |
+| `jvm.cpu.recent_utilization` | Recent process CPU utilization. |
+| `jvm.thread.count` | Total live JVM threads - a leak signal when it climbs. |
+
+### Diagnostic - for investigation and tuning
+
+Higher cardinality; reach for these during an incident or capacity
+review. In production you can drop this tier with a `filter` processor
+and keep Core + Operational.
+
+| Group | Metrics | When you reach for it |
+|---|---|---|
+| Thread-pool detail | `jetty.thread.count`, `jetty.thread.idle.count` | Pool composition - how the busy/idle split moves under load. |
+| Connector I/O | `jetty.select.count` | NIO selector select calls; connector-level I/O pressure. |
+| JVM memory detail | `jvm.memory.committed`, `jvm.memory.init`, `jvm.memory.used_after_last_gc` | Heap sizing and post-GC live-set growth. |
+| JVM class loading | `jvm.class.count`, `jvm.class.loaded`, `jvm.class.unloaded` | Class-loader churn / leaks during redeploys. |
+| JVM CPU / system | `jvm.cpu.count`, `jvm.cpu.time`, `jvm.system.cpu.load_1m`, `jvm.system.cpu.utilization` | Host-level CPU context behind `recent_utilization`. |
+| JVM buffers / descriptors | `jvm.buffer.count`, `jvm.buffer.memory.limit`, `jvm.buffer.memory.used`, `jvm.file_descriptor.count`, `jvm.file_descriptor.limit` | Direct-buffer and file-descriptor exhaustion. |
+
+Session metrics (`jetty.session.count`, `jetty.session.created.count`,
+`jetty.session.duration.sum`) are defined by the scraper's `jetty` target
+but stay silent on a bare server - their MBeans only register once a web
+application with an active session cache is deployed. They surface
+automatically as soon as a session-bearing context runs; nothing in the
+config withholds them.
 
 Full metric reference:
-[OTel Jetty JMX Metrics](https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/main/instrumentation/jmx-metrics/library/jetty.md)
+[OTel JMX Scraper Jetty rules](https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/main/instrumentation/jmx-metrics/library/jetty.md).
+
+## Key Alerts to Configure
+
+Threshold guidance for the most useful Core and Operational series. These
+are starting points; tune them to your workload.
+
+| Metric | Warning | Critical | Why it matters |
+|---|---|---|---|
+| `jetty.thread.busy.count` / `jetty.thread.limit` | Approaching the limit | Approaching 1.0 | All worker threads in use; new requests queue. Raise `maxThreads` or scale out. |
+| `jetty.thread.queue.size` | > 0 sustained | Growing | Requests waiting for a free thread - the pool is saturated. Investigate slow handlers or scale. |
+| `jvm.memory.used` / `jvm.memory.limit` | Approaching the limit | Approaching 1.0 | GC churn / OOM risk. Raise heap or reduce allocation. |
+| `jvm.cpu.recent_utilization` | Sustained high | Pinned | Process is CPU-bound. Scale out or profile hot paths. |
+| `jvm.thread.count` | Climbing vs baseline | Unbounded growth | Threads not being released; inspect thread dumps. |
 
 ## Access Setup
 
-Jetty JMX is disabled by default. Two steps are required: enable
-the `jmx` module (registers Jetty MBeans) and configure remote
-JMX access (opens a port for the scraper).
+Jetty JMX is disabled by default. Two steps are required: enable the
+`jmx` module (registers Jetty MBeans) and configure remote JMX access
+(opens a port for the scraper).
 
 ### Enable JMX on Jetty
 
-For standalone Jetty, enable the JMX module and add remote access
-flags:
+For standalone Jetty, enable the JMX module and add remote-access flags:
 
 ```bash showLineNumbers title="Enable Jetty JMX module and remote access"
 # Enable Jetty JMX MBean registration
@@ -95,13 +151,12 @@ cat >> $JETTY_BASE/start.d/jmx-remote.ini << 'EOF'
 EOF
 ```
 
-Setting `rmi.port` to the same value as `port` prevents RMI
-from using a random second port, which simplifies firewall and
-Docker networking.
+Setting `rmi.port` to the same value as `port` keeps RMI from picking a
+random second port, which simplifies firewall and Docker networking.
 
-For Docker deployments, the Jetty image requires a custom
-Dockerfile to enable the `jmx` module during build. JMX remote
-access flags are passed via `JAVA_OPTIONS`:
+For Docker, the Jetty image needs a custom Dockerfile to enable the `jmx`
+module at build time; the remote-access flags are passed via
+`JAVA_OPTIONS`:
 
 ```dockerfile showLineNumbers title="jetty/Dockerfile"
 FROM jetty:12.0-jdk17
@@ -124,9 +179,10 @@ jetty:
       -Djava.rmi.server.hostname=jetty
 ```
 
-### With Authentication (Production)
+### With authentication (production)
 
-For production environments, enable JMX authentication:
+Unauthenticated JMX is fine on a trusted private network or inside a pod;
+expose it across hosts only with SSL and authentication enabled:
 
 ```bash showLineNumbers title="start.d/jmx-remote.ini (authenticated)"
 --exec
@@ -139,15 +195,14 @@ For production environments, enable JMX authentication:
 -Djava.rmi.server.hostname=<jetty-host>
 ```
 
-The JMX Scraper supports authenticated connections via
-`OTEL_JMX_USERNAME` and `OTEL_JMX_PASSWORD` environment
-variables.
+The JMX Scraper connects to an authenticated server via the
+`OTEL_JMX_USERNAME` and `OTEL_JMX_PASSWORD` environment variables. The
+account needs read-only MBean access; no write operations are used.
 
 ## Configuration
 
-Jetty monitoring uses two components: the JMX Scraper (connects
-to Jetty, exports OTLP) and the OTel Collector (receives OTLP,
-ships to Scout).
+Jetty monitoring uses two components: the JMX Scraper (connects to Jetty,
+exports OTLP) and the OTel Collector (receives OTLP, ships to Scout).
 
 ```text
 Jetty (JMX:1099) ← JMX/RMI → JMX Scraper → OTLP → OTel Collector → Scout
@@ -157,7 +212,7 @@ Jetty (JMX:1099) ← JMX/RMI → JMX Scraper → OTLP → OTel Collector → Sco
 
 Download the scraper JAR from
 [Maven Central](https://repo1.maven.org/maven2/io/opentelemetry/contrib/opentelemetry-jmx-scraper/)
-and run it:
+and run it against the `jvm,jetty` target systems:
 
 ```bash showLineNumbers title="Run the JMX Scraper"
 OTEL_JMX_SERVICE_URL=service:jmx:rmi:///jndi/rmi://localhost:1099/jmxrmi \
@@ -167,14 +222,8 @@ OTEL_METRIC_EXPORT_INTERVAL=10000 \
 java -jar opentelemetry-jmx-scraper-1.57.0-alpha.jar
 ```
 
-Move the JAR to a permanent location:
-
-```bash showLineNumbers title="Install the scraper"
-sudo mkdir -p /opt/otel
-sudo mv opentelemetry-jmx-scraper-1.57.0-alpha.jar /opt/otel/
-```
-
-Create a systemd service to run the scraper as a managed service:
+For a managed install, move the JAR to a permanent location and run it
+under systemd:
 
 ```bash showLineNumbers title="/etc/systemd/system/otel-jmx-scraper.service"
 sudo tee /etc/systemd/system/otel-jmx-scraper.service > /dev/null <<'EOF'
@@ -195,16 +244,12 @@ RestartSec=5
 [Install]
 WantedBy=multi-user.target
 EOF
-```
 
-Start the scraper:
-
-```bash showLineNumbers title="Enable and start the scraper"
 sudo systemctl daemon-reload
 sudo systemctl enable --now otel-jmx-scraper
 ```
 
-For Docker, build a simple image with the scraper JAR:
+For Docker, build a small image with the scraper JAR:
 
 ```dockerfile showLineNumbers title="jmx-scraper/Dockerfile"
 FROM eclipse-temurin:17-jre
@@ -218,7 +263,7 @@ ENTRYPOINT ["java", "-jar", "/opt/scraper.jar"]
 
 ### OTel Collector
 
-The Collector receives metrics from the JMX Scraper over OTLP:
+The Collector receives metrics from the JMX Scraper over OTLP/gRPC:
 
 ```yaml showLineNumbers title="config/otel-collector.yaml"
 receivers:
@@ -230,7 +275,7 @@ receivers:
 processors:
   resource:
     attributes:
-      - key: environment
+      - key: deployment.environment.name
         value: ${env:ENVIRONMENT}
         action: upsert
       - key: service.name
@@ -241,7 +286,6 @@ processors:
     timeout: 10s
     send_batch_size: 1024
 
-# Export to base14 Scout
 exporters:
   otlphttp/b14:
     endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT}
@@ -255,6 +299,15 @@ service:
       processors: [resource, batch]
       exporters: [otlphttp/b14]
 ```
+
+To control metric volume in production, drop the Diagnostic tier with a
+`filter` processor on the metrics pipeline while keeping the Core and
+Operational series.
+
+> **Semconv version note**: `deployment.environment.name` is the current
+> OTel attribute (semantic conventions v1.27+, stable in v1.40.0). The
+> legacy `deployment.environment` is still accepted by Scout for
+> backward compatibility, but new configs should emit the dotted form.
 
 ### Environment Variables
 
@@ -310,7 +363,7 @@ services:
         condition: service_healthy
 
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.120.0
+    image: otel/opentelemetry-collector-contrib:0.153.0
     container_name: otel-collector
     volumes:
       - ./config/otel-collector.yaml:/etc/otelcol-contrib/config.yaml:ro
@@ -323,17 +376,21 @@ services:
 Start the Collector and check for metrics within 60 seconds:
 
 ```bash showLineNumbers title="Verify metrics collection"
-# Check JMX Scraper logs for successful connection
+# Check JMX Scraper logs for a successful connection
 docker logs jetty-telemetry-jmx-scraper-1 2>&1 | head -10
 
-# Verify Jetty started with JMX enabled
-docker logs jetty 2>&1 \
-  | grep "jmx"
+# Confirm Jetty started with the jmx module enabled
+docker logs jetty 2>&1 | grep "jmx"
 
 # Check Collector logs for Jetty metrics
-docker logs otel-collector 2>&1 \
-  | grep "jetty"
+docker logs otel-collector 2>&1 | grep "jetty"
+
+# Generate traffic so the thread-pool counters move
+curl -s http://localhost:8080/ > /dev/null
 ```
+
+You should see the `jvm.*` and `jetty.*` metrics in the Collector debug
+output and, shortly after, in Scout.
 
 ## Troubleshooting
 
@@ -343,38 +400,67 @@ docker logs otel-collector 2>&1 \
 
 **Fix**:
 
-1. Verify Jetty is running:
-   `docker ps | grep jetty`
-2. Confirm JMX remote access is enabled - check that
-   `-Dcom.sun.management.jmxremote.port=1099` is in `JAVA_OPTIONS`
-   or `start.d/jmx-remote.ini`
-3. Verify the JMX port matches between Jetty config and
-   scraper's `OTEL_JMX_SERVICE_URL`
-4. In Docker, ensure `hostname` is set on the Jetty container
-   and matches `-Djava.rmi.server.hostname`
+1. Verify Jetty is running: `docker ps | grep jetty`.
+2. Confirm remote JMX is enabled - check that
+   `-Dcom.sun.management.jmxremote.port=1099` is in `JAVA_OPTIONS` or
+   `start.d/jmx-remote.ini`.
+3. Verify the port matches between Jetty and the scraper's
+   `OTEL_JMX_SERVICE_URL`.
+4. In Docker, ensure `hostname` is set on the Jetty container and matches
+   `-Djava.rmi.server.hostname`.
 
 ### Only JVM metrics, no Jetty metrics
 
-**Cause**: Jetty's `jmx` module is not enabled, so Jetty
-components are not registered as MBeans.
+**Cause**: Jetty's `jmx` module is not enabled, so its components are not
+registered as MBeans.
 
 **Fix**:
 
-1. Enable the JMX module: `java -jar start.jar --add-module=jmx`
-2. In Docker, use the custom Dockerfile that runs
-   `--add-module=jmx` during build
-3. Verify `OTEL_JMX_TARGET_SYSTEM` includes `jetty`
+1. Enable the JMX module: `java -jar start.jar --add-module=jmx`.
+2. In Docker, use the custom Dockerfile that runs `--add-module=jmx` at
+   build time.
+3. Verify `OTEL_JMX_TARGET_SYSTEM` includes `jetty`.
+
+### Requests are slow or piling up
+
+**Cause**: The thread pool is saturated, or handlers are slow.
+
+**Look at**: `jetty.thread.queue.size` (requests waiting for a thread)
+against `jetty.thread.busy.count` / `jetty.thread.limit`. A queue above
+zero with busy near the limit means the pool is full. The Diagnostic
+`jetty.thread.idle.count` confirms there are no spare threads, and
+`jetty.select.count` surfaces connector-level I/O pressure.
+
+**Fix**:
+
+1. Raise `maxThreads` or add Jetty capacity if the queue is sustained.
+2. Profile slow handlers if busy threads stay high without queue relief.
+
+### Heap pressure or rising CPU
+
+**Cause**: Allocation churn, a memory leak, or CPU-bound work.
+
+**Look at**: `jvm.memory.used` against `jvm.memory.limit`, plus the
+Diagnostic `jvm.memory.used_after_last_gc` - a climbing post-GC live set
+points to a leak rather than transient churn. `jvm.system.cpu.utilization`
+and `jvm.cpu.time` give the host-level CPU context behind
+`jvm.cpu.recent_utilization`.
+
+**Fix**:
+
+1. Raise heap or reduce allocation if used approaches the limit.
+2. Inspect thread dumps if `jvm.thread.count` climbs without bound.
 
 ### Session metrics missing
 
-**Cause**: Session metrics (`jetty.session.active.count`,
-`jetty.session.created.count`, `jetty.session.duration.sum`)
-only appear when web applications with active sessions are deployed.
+**Cause**: `jetty.session.count`, `jetty.session.created.count`, and
+`jetty.session.duration.sum` come from session-cache MBeans that only
+register once a web application with active sessions is deployed.
 
 **Fix**:
 
-1. Deploy a WAR file with session usage to Jetty
-2. Session MBeans are created per web application context
+1. Deploy a web application that uses sessions. The MBeans register per
+   context and the metrics surface automatically.
 
 ### No metrics appearing in Scout
 
@@ -382,32 +468,38 @@ only appear when web applications with active sessions are deployed.
 
 **Fix**:
 
-1. Check Collector logs for export errors:
-   `docker logs otel-collector`
-2. Verify `OTEL_EXPORTER_OTLP_ENDPOINT` is set correctly
-3. Confirm the pipeline includes both the receiver and exporter
+1. Check Collector logs for export errors: `docker logs otel-collector`.
+2. Verify `OTEL_EXPORTER_OTLP_ENDPOINT` is set correctly.
+3. Confirm the pipeline includes both the OTLP receiver and the exporter.
 
 ## FAQ
 
-**Does this work with embedded Jetty (Spring Boot/Dropwizard)?**
+**Why do I need the JMX Scraper instead of a Jetty receiver?**
 
-Yes. Spring Boot and Dropwizard embed Jetty and register MBeans
-automatically when `spring.jmx.enabled=true` (Spring Boot) or
-JMX is enabled in the Dropwizard config. Enable remote JMX access
-with the same `-Dcom.sun.management.jmxremote.*` JVM flags on
-the application.
+Jetty has no native metrics endpoint and the Collector has no Jetty
+receiver. Jetty publishes its statistics as JMX MBeans, and the
+OpenTelemetry JMX Scraper reads them over JMX/RMI, maps them to OTel
+metrics with the `jvm,jetty` target rules, and pushes OTLP to the
+Collector.
 
-**Which Jetty version should I use?**
+**Does this work with embedded Jetty (Spring Boot / Dropwizard)?**
 
-Jetty 12 is recommended. Session metrics improved in Jetty 12+
-(`jetty.session.active.count` replaces `jetty.session.count`).
-Thread and I/O metrics are consistent across all supported
-versions (9.4+).
+Yes. Spring Boot and Dropwizard embed Jetty and register its MBeans when
+JMX is enabled (`spring.jmx.enabled=true` on Spring Boot). Add the same
+`-Dcom.sun.management.jmxremote.*` flags to the application JVM and point
+the scraper at it.
+
+**Why is there no request-rate or latency metric?**
+
+The scraper's `jetty` target exposes no request counter, so throughput
+and per-request timing are not in this metric surface. Use
+`jetty.thread.busy.count` as a work proxy; per-request timing lives in
+your access logs or trace path.
 
 **How do I monitor multiple Jetty instances?**
 
-Run one JMX Scraper per instance, each configured with a different
-`OTEL_JMX_SERVICE_URL`. All scrapers export to the same Collector:
+Run one JMX Scraper per instance, each with a different
+`OTEL_JMX_SERVICE_URL`, all exporting to the same Collector:
 
 ```yaml showLineNumbers title="docker-compose.yaml (multiple instances)"
 jmx-scraper-primary:
@@ -425,34 +517,33 @@ jmx-scraper-replica:
 
 **Does this work with Jetty in Kubernetes?**
 
-Yes. Run the JMX Scraper as a sidecar container in the same pod.
-Set `OTEL_JMX_SERVICE_URL` to `service:jmx:rmi:///jndi/rmi://
-localhost:1099/jmxrmi` since both containers share the pod
-network. No firewall rules needed for intra-pod communication.
-
-## What's Next?
-
-- **Create Dashboards**: Explore pre-built dashboards or build
-  your own. See
-  [Create Your First Dashboard](../../guides/create-your-first-dashboard.md)
-- **Monitor More Components**: Add monitoring for
-  [Tomcat](./tomcat.md),
-  [Nginx](./nginx.md),
-  and other web servers
-- **Fine-tune Collection**: Adjust `OTEL_METRIC_EXPORT_INTERVAL`
-  to control scrape frequency
+Yes. Run the JMX Scraper as a sidecar in the same pod and set
+`OTEL_JMX_SERVICE_URL` to
+`service:jmx:rmi:///jndi/rmi://localhost:1099/jmxrmi` - both containers
+share the pod network, so no firewall rules are needed for intra-pod
+communication.
 
 ## Related Guides
 
-- [JMX Metrics Collection Guide](../collector-setup/jmx-metrics-collection-guide.md)
-  - Compare JMX Scraper vs JMX Exporter
-- [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
-  - Advanced collector configuration
-- [Docker Compose Setup](../collector-setup/docker-compose-example.md)
-  - Run the Collector locally
-- [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
-  - Production deployment
-- [Tomcat Monitoring](./tomcat.md)
-  - Another Java application server setup
-- [Creating Alerts](../../guides/creating-alerts-with-logx.md)
-  - Alert on Jetty metrics
+- [JMX Metrics Guide](../collector-setup/jmx-metrics-collection-guide.md) -
+  Compare the JMX Scraper and the JMX Exporter.
+- [OTel Collector Configuration](../collector-setup/otel-collector-config.md) -
+  Advanced collector configuration.
+- [Docker Compose Setup](../collector-setup/docker-compose-example.md) -
+  Run the Collector locally.
+- [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md) -
+  Production deployment.
+- [Tomcat Monitoring](./tomcat.md) - Another Java application server.
+- [Creating Alerts](../../guides/creating-alerts-with-logx.md) -
+  Alert on Jetty metrics.
+
+## What's Next?
+
+- **Create Dashboards**: Explore pre-built dashboards or build your own.
+  See
+  [Create Your First Dashboard](../../guides/create-your-first-dashboard.md).
+- **Monitor More Components**: Add monitoring for
+  [Tomcat](./tomcat.md), [Nginx](./nginx.md), and other web servers.
+- **Fine-tune Collection**: Drop the Diagnostic tier in production with a
+  `filter` processor to control volume; keep it available for incident
+  investigation.
