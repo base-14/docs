@@ -461,7 +461,7 @@ Choose the approach that best fits your deployment model.
 ```bash title=".env" showLineNumbers
 # Service identification
 OTEL_SERVICE_NAME=your-service-name
-OTEL_RESOURCE_ATTRIBUTES=service.namespace=your-namespace,deployment.environment=production
+OTEL_RESOURCE_ATTRIBUTES=service.namespace=your-namespace,deployment.environment.name=production
 
 # OTLP Exporter configuration
 OTEL_EXPORTER_OTLP_ENDPOINT=http://scout-collector:4318
@@ -473,7 +473,19 @@ OTEL_LOGS_EXPORTER=otlp
 # Instrumentation control
 OTEL_INSTRUMENTATION_SPRING_WEBMVC_ENABLED=true
 OTEL_INSTRUMENTATION_JDBC_ENABLED=true
+
+# Semantic convention stability
+OTEL_SEMCONV_STABILITY_OPT_IN=http,database
 ```
+
+On the OpenTelemetry Java instrumentation 2.x line, HTTP server spans already
+use the stable conventions by default (`http.request.method`,
+`http.response.status_code`, `url.path`, `http.route`), so the `http` token is
+effectively a no-op. The `database` token is what does the work: with it set,
+JDBC spans emit the stable database conventions (`db.query.text`,
+`db.system.name`, `db.namespace`, `db.query.summary`) instead of the legacy
+`db.statement` / `db.system`. Both tokens are kept here so HTTP and database
+telemetry stay on the stable names together.
 
 ```mdx-code-block
 </TabItem>
@@ -490,7 +502,7 @@ server.address=0.0.0.0
 # OpenTelemetry
 otel.service.name=your-service-name
 otel.resource.attributes=service.namespace=your-namespace,\
-    deployment.environment=dev
+    deployment.environment.name=dev
 
 # OTLP Exporter
 otel.traces.exporter=otlp
@@ -498,6 +510,9 @@ otel.metrics.exporter=otlp
 otel.logs.exporter=otlp
 otel.exporter.otlp.endpoint=http://localhost:4318
 otel.exporter.otlp.protocol=http/protobuf
+
+# HTTP semconv is stable by default on 2.x; database opt-in emits db.query.text
+otel.semconv-stability.opt-in=http,database
 
 # Actuator
 management.endpoints.web.exposure.include=health,info,metrics
@@ -520,7 +535,9 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
-import io.opentelemetry.semconv.ResourceAttributes;
+import io.opentelemetry.semconv.ServiceAttributes;
+import io.opentelemetry.semconv.incubating.DeploymentIncubatingAttributes;
+import io.opentelemetry.semconv.incubating.ServiceIncubatingAttributes;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -538,9 +555,9 @@ public class OpenTelemetryConfig {
     public OpenTelemetry openTelemetry() {
         Resource resource = Resource.create(
             Attributes.of(
-                ResourceAttributes.SERVICE_NAME, serviceName,
-                ResourceAttributes.SERVICE_NAMESPACE, "production",
-                ResourceAttributes.DEPLOYMENT_ENVIRONMENT, "prod"
+                ServiceAttributes.SERVICE_NAME, serviceName,
+                ServiceIncubatingAttributes.SERVICE_NAMESPACE, "production",
+                DeploymentIncubatingAttributes.DEPLOYMENT_ENVIRONMENT_NAME, "prod"
             )
         );
 
@@ -574,7 +591,7 @@ otel:
   service:
     name: my-service-dev
   resource:
-    attributes: deployment.environment=dev,service.namespace=development
+    attributes: deployment.environment.name=dev,service.namespace=development
   exporter:
     otlp:
       endpoint: http://localhost:4318
@@ -587,7 +604,7 @@ otel:
   service:
     name: my-service-prod
   resource:
-    attributes: deployment.environment=prod,service.namespace=production
+    attributes: deployment.environment.name=prod,service.namespace=production
   exporter:
     otlp:
       endpoint: https://scout-collector.example.com:4318
@@ -600,6 +617,117 @@ otel:
 
 > All configuration approaches export logs, traces, and metrics to the base14
 > Scout observability backend.
+
+## Traces
+
+Traces follow a request through your Spring Boot application, from the Spring MVC
+controller that receives it, through service beans, JDBC queries, RestTemplate /
+WebClient calls, and Kafka or RabbitMQ messages, and back out as the response.
+
+### Automatic Trace Collection
+
+With the OpenTelemetry Java agent or the Spring Boot starter attached, every
+request is traced with no per-controller code:
+
+**Captured Information:**
+
+- HTTP method, route template, and status code for each Spring MVC endpoint
+- Request duration and a span-by-span timing breakdown
+- JDBC queries (Hibernate, Spring Data JPA, JdbcTemplate), including the SQL
+- Outbound `RestTemplate`, `WebClient`, and Feign calls
+- Kafka, RabbitMQ, and JMS producer/consumer spans
+- Exceptions recorded on the failing span with stack traces
+- Distributed context propagation across services (W3C Trace Context)
+
+**Trace Hierarchy:**
+
+```text
+HTTP Request Span (root: GET /api/users/{id})
+├── UserController.getUser Span
+│   ├── UserService.findById Span
+│   │   └── JDBC Query Span (SELECT ... FROM users)
+│   └── RestTemplate Span (GET inventory-service)
+└── Kafka Producer Span (user.viewed event)
+```
+
+### Key Tracing Features
+
+- **Automatic HTTP tracking**: every controller route is traced with no code
+  changes
+- **JDBC and ORM visibility**: Hibernate and Spring Data queries appear as child
+  spans with the executed SQL
+- **Error capturing**: thrown exceptions and `@ExceptionHandler` paths are
+  recorded with full stack traces
+- **Context propagation**: distributed traces follow requests across HTTP and
+  messaging boundaries
+- **Async support**: `@Async` methods, `CompletableFuture`, and reactive
+  WebFlux pipelines stay correctly parented
+
+> View traces in your base14 Scout dashboard to follow request flows and find
+> the slow span in a chain.
+
+#### Reference
+
+[Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
+
+## Metrics
+
+Metrics aggregate runtime measurements over time, such as request rate, latency
+distributions, JVM health, and connection-pool saturation. Where traces explain
+a single request, metrics power dashboards and alerts across all of them.
+
+### Automatic Metrics
+
+The OpenTelemetry Java agent or Spring Boot starter captures a broad set of
+metrics without code, exported via the OTLP metrics exporter you configured
+above (`otel.metrics.exporter=otlp`):
+
+- **JVM runtime**: heap and non-heap usage, GC pause time, thread counts, class
+  loading
+- **HTTP server**: request count and `http.server.request.duration` per route
+  and status
+- **JDBC / HikariCP**: connection-pool size, active and idle connections, wait
+  time
+- **System**: process CPU and memory
+
+### Custom Metrics with Micrometer
+
+Spring Boot apps already ship with Micrometer; the OpenTelemetry Spring Boot
+starter bridges Micrometer's `MeterRegistry` to OpenTelemetry, so the idiomatic
+way to add business metrics is to inject `MeterRegistry`. Keep Spring Boot
+Actuator on the classpath (Micrometer rides on it) and enable metrics with
+`management.metrics.enable.all=true`:
+
+```java title="src/main/java/com/example/metrics/OrderMetrics.java" showLineNumbers
+package com.example.metrics;
+
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import org.springframework.stereotype.Service;
+
+@Service
+public class OrderMetrics {
+
+    private final Counter ordersPlaced;
+
+    public OrderMetrics(MeterRegistry registry) {
+        this.ordersPlaced = Counter.builder("orders.placed")
+            .description("Total number of orders placed")
+            .register(registry);
+    }
+
+    public void recordOrder() {
+        ordersPlaced.increment();
+    }
+}
+```
+
+> View metrics in your base14 Scout dashboard to chart request rate, latency
+> percentiles, JVM health, and custom business counters.
+
+#### Reference
+
+[Official Metrics Documentation](https://opentelemetry.io/docs/concepts/signals/metrics/)
 
 ## Production Configuration
 
@@ -643,7 +771,7 @@ otel.resource.attributes=\
     service.namespace=production,\
     service.version=1.2.3,\
     service.instance.id=${HOSTNAME},\
-    deployment.environment=prod,\
+    deployment.environment.name=prod,\
     deployment.region=us-east-1,\
     cloud.provider=aws,\
     cloud.platform=aws_eks,\
@@ -686,7 +814,7 @@ services:
     environment:
       OTEL_SERVICE_NAME: payment-service
       OTEL_EXPORTER_OTLP_ENDPOINT: http://scout-collector:4318
-      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=production
+      OTEL_RESOURCE_ATTRIBUTES: deployment.environment.name=production
     depends_on:
       - scout-collector
 
@@ -725,7 +853,7 @@ spec:
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: "http://scout-collector.observability.svc.cluster.local:4318"
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: "deployment.environment=prod,k8s.cluster.name=prod-cluster"
+              value: "deployment.environment.name=prod,k8s.cluster.name=prod-cluster"
             - name: POD_NAME
               valueFrom:
                 fieldRef:
@@ -806,8 +934,9 @@ public class UserController {
 }
 ```
 
-Each HTTP request creates a parent span with attributes like `http.method`,
-`http.route`, `http.status_code`, and `http.url`.
+Each HTTP request creates a parent span with attributes like
+`http.request.method`, `http.route`, `http.response.status_code`, and
+`url.full`.
 
 ### Spring Data JPA Repositories
 
@@ -1202,7 +1331,7 @@ docker run -d \
   -p 8080:8080 \
   -e OTEL_SERVICE_NAME=my-service \
   -e OTEL_EXPORTER_OTLP_ENDPOINT=http://scout-collector:4318 \
-  -e OTEL_RESOURCE_ATTRIBUTES=deployment.environment=prod \
+  -e OTEL_RESOURCE_ATTRIBUTES=deployment.environment.name=prod \
   my-service:1.0.0
 ```
 
@@ -1822,7 +1951,19 @@ The example demonstrates:
 
 ## Related Guides
 
-- [Spring AI LLM Observability][spring-ai] - Spring AI with
-  three-layer OTel instrumentation
+- [Quarkus Instrumentation](./quarkus.md) - Supersonic JVM framework with native
+  OpenTelemetry support
+- [Micronaut Instrumentation](./micronaut.md) - Compile-time DI JVM framework
+- [Ktor Instrumentation](./ktor.md) - Kotlin-native async web framework
+- [Java Custom Instrumentation](../custom-instrumentation/java.md) - Manual spans
+  and advanced patterns
+- [Spring AI LLM Observability][spring-ai] - Spring AI with three-layer OTel
+  instrumentation
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
+  up the collector for local development
+- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
+  Production collector deployment
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language
 
 [spring-ai]: ../../../guides/ai-observability/spring-ai-llm-observability.md

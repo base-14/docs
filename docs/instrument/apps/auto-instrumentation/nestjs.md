@@ -45,7 +45,7 @@ keywords:
 
 <head>
   <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does OpenTelemetry work with NestJS dependency injection?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry fully supports NestJS DI. TracingModule can be imported and services are automatically traced when called from instrumented controllers."}},{"@type":"Question","name":"What is the performance impact of OpenTelemetry on NestJS applications?","acceptedAnswer":{"@type":"Answer","text":"With BatchSpanProcessor, expect 0.5-2ms added latency per request, 2-5% CPU increase, and 15-35MB additional memory. Minimal impact for most production workloads."}},{"@type":"Question","name":"Can I trace TypeORM and Prisma queries in NestJS with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Yes, auto-instrumentation includes TypeORM, Prisma, Sequelize, and other ORMs. Database queries are automatically traced with parameters visible in base14 Scout."}},{"@type":"Question","name":"How do I trace BullMQ background jobs in NestJS?","acceptedAnswer":{"@type":"Answer","text":"BullMQ jobs are automatically traced. Add custom spans in processors using trace.getTracer() for detailed business logic tracing visible in base14 Scout."}},{"@type":"Question","name":"Does OpenTelemetry work with NestJS microservices?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry traces distributed NestJS microservices automatically. Context propagates across HTTP, gRPC, and message queue boundaries for end-to-end visibility."}}]})}
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does OpenTelemetry work with NestJS dependency injection?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry fully supports NestJS DI. TracingModule can be imported and services are automatically traced when called from instrumented controllers."}},{"@type":"Question","name":"What is the performance impact of OpenTelemetry on NestJS applications?","acceptedAnswer":{"@type":"Answer","text":"With BatchSpanProcessor, expect 0.5-2ms added latency per request, 2-5% CPU increase, and 15-35MB additional memory. Minimal impact for most production workloads."}},{"@type":"Question","name":"Can I trace TypeORM and Prisma queries in NestJS with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"The SQL these ORMs issue is traced at the driver level by instrumentation-pg (or the matching driver package) in the auto-instrumentations bundle. ORM-level spans for TypeORM, Prisma, and Sequelize need their own instrumentation packages, which are not part of auto-instrumentations-node."}},{"@type":"Question","name":"How do I trace BullMQ background jobs in NestJS?","acceptedAnswer":{"@type":"Answer","text":"BullMQ jobs are automatically traced. Add custom spans in processors using trace.getTracer() for detailed business logic tracing visible in base14 Scout."}},{"@type":"Question","name":"Does OpenTelemetry work with NestJS microservices?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry traces distributed NestJS microservices automatically. Context propagates across HTTP, gRPC, and message queue boundaries for end-to-end visibility."}}]})}
   </script>
 </head>
 
@@ -53,7 +53,7 @@ keywords:
 
 # NestJS
 
-## Introduction
+## Overview
 
 Implement OpenTelemetry instrumentation for NestJS applications to enable
 comprehensive application performance monitoring (APM), distributed tracing, and
@@ -126,8 +126,8 @@ Before starting, ensure you have:
 | ----------------------------- | --------------- | ------------------- |
 | Node.js                       | 18.0.0          | 20.x LTS            |
 | NestJS                        | 9.0.0           | 10.3.0+             |
-| @opentelemetry/sdk-node       | 0.40.0          | 0.54+               |
-| @opentelemetry/auto-inst...   | 0.40.0          | 0.54+               |
+| @opentelemetry/sdk-node       | 0.40.0          | 0.200+              |
+| @opentelemetry/auto-inst...   | 0.40.0          | 0.76+               |
 | TypeORM (if used)             | 0.3.0           | 0.3.20+             |
 | BullMQ (if used)              | 4.0.0           | 5.x                 |
 | @nestjs/websockets (optional) | 10.0.0          | 10.3.0+             |
@@ -142,6 +142,8 @@ npm install --save \
   @opentelemetry/sdk-node \
   @opentelemetry/auto-instrumentations-node \
   @opentelemetry/exporter-trace-otlp-http \
+  @opentelemetry/exporter-metrics-otlp-http \
+  @opentelemetry/sdk-metrics \
   @opentelemetry/resources \
   @opentelemetry/semantic-conventions \
   @opentelemetry/api
@@ -173,11 +175,10 @@ import { Module, OnModuleInit } from '@nestjs/common';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
-import { Resource } from '@opentelemetry/resources';
+import { resourceFromAttributes } from '@opentelemetry/resources';
 import {
-  SEMRESATTRS_SERVICE_NAME,
-  SEMRESATTRS_SERVICE_VERSION,
-  SEMRESATTRS_DEPLOYMENT_ENVIRONMENT,
+  ATTR_SERVICE_NAME,
+  ATTR_SERVICE_VERSION,
 } from '@opentelemetry/semantic-conventions';
 
 @Module({})
@@ -186,12 +187,12 @@ export class TracingModule implements OnModuleInit {
 
   onModuleInit() {
     this.sdk = new NodeSDK({
-      resource: new Resource({
-        [SEMRESATTRS_SERVICE_NAME]:
+      resource: resourceFromAttributes({
+        [ATTR_SERVICE_NAME]:
           process.env.OTEL_SERVICE_NAME || 'nestjs-api',
-        [SEMRESATTRS_SERVICE_VERSION]:
+        [ATTR_SERVICE_VERSION]:
           process.env.npm_package_version || '1.0.0',
-        [SEMRESATTRS_DEPLOYMENT_ENVIRONMENT]:
+        'deployment.environment.name':
           process.env.NODE_ENV || 'development',
       }),
       traceExporter: new OTLPTraceExporter({
@@ -251,16 +252,15 @@ Create instrumentation file loaded before application bootstrap:
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
-import { Resource } from '@opentelemetry/resources';
+import { resourceFromAttributes } from '@opentelemetry/resources';
 import {
-  SEMRESATTRS_SERVICE_NAME,
-  SEMRESATTRS_DEPLOYMENT_ENVIRONMENT,
+  ATTR_SERVICE_NAME,
 } from '@opentelemetry/semantic-conventions';
 
 const sdk = new NodeSDK({
-  resource: new Resource({
-    [SEMRESATTRS_SERVICE_NAME]: 'nestjs-api',
-    [SEMRESATTRS_DEPLOYMENT_ENVIRONMENT]: process.env.NODE_ENV,
+  resource: resourceFromAttributes({
+    [ATTR_SERVICE_NAME]: 'nestjs-api',
+    'deployment.environment.name': process.env.NODE_ENV,
   }),
   traceExporter: new OTLPTraceExporter({
     url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT,
@@ -313,7 +313,7 @@ OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 OTEL_EXPORTER_OTLP_ENDPOINT=http://scout-collector:4318
 
 # Resource attributes
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment=production,service.namespace=backend
+OTEL_RESOURCE_ATTRIBUTES=deployment.environment.name=production,service.namespace=backend
 
 # Performance tuning
 OTEL_BSP_MAX_QUEUE_SIZE=2048
@@ -332,6 +332,124 @@ node --require ./instrumentation.js dist/main.js
 </Tabs>
 ```
 
+## Traces
+
+Traces show the complete path of a request through your NestJS application,
+from the incoming HTTP route, down through the NestJS handler, into database
+queries and Redis calls, and back out as the response.
+
+### Automatic Trace Collection
+
+Once the `TracingModule` is loaded, NestJS captures trace data for every request
+with no per-handler code:
+
+**Captured Information:**
+
+- HTTP method, route, and status code for every controller endpoint
+- Request duration and a timing breakdown across each span
+- PostgreSQL queries, including the executed SQL (with `instrumentation-pg`);
+  TypeORM, Prisma, and Sequelize need their own instrumentation packages
+- Redis commands, including those issued by BullMQ (with
+  `instrumentation-ioredis`)
+- Outbound HTTP calls to other services (with `instrumentation-http`)
+- Exceptions and stack traces recorded on the failing span
+- Distributed context propagation across microservices (W3C Trace Context)
+
+**Trace Hierarchy:**
+
+```text
+HTTP Request Span (root: GET /users/:id)
+├── UsersController.findOne Span
+│   ├── PostgreSQL Query Span (SELECT ... FROM users)
+│   └── Redis GET Span (cache lookup)
+└── Redis Span (BullMQ enqueue: welcome-email job)
+```
+
+### Key Tracing Features
+
+- **Automatic HTTP tracking**: every controller route is traced with no code
+  changes
+- **NestJS-aware spans**: controller handlers, guards, interceptors, and pipes
+  are traced through `instrumentation-nestjs-core`; spans for your own service
+  methods are added manually
+- **Error capturing**: thrown exceptions and filtered errors are recorded with
+  full stack traces
+- **Context propagation**: distributed traces follow requests across HTTP, gRPC,
+  and message-queue boundaries
+- **Async support**: context propagates across `async`/`await` and RxJS
+  observables
+
+> View traces in your base14 Scout dashboard to follow request flows and find
+> the slow span in a chain.
+
+#### Reference
+
+[Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
+
+## Metrics
+
+Metrics aggregate runtime measurements over time, such as request rate, latency
+distributions, and error counts. Where traces explain a single request, metrics
+power dashboards and alerts across all of them.
+
+### Enable Metrics in the SDK
+
+Add a metric reader to the `NodeSDK` so OpenTelemetry exports runtime and HTTP
+metrics alongside traces:
+
+```typescript showLineNumbers title="src/tracing/tracing.module.ts"
+import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
+
+const otlpEndpoint =
+  process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4318';
+
+// inside new NodeSDK({ ... })
+metricReader: new PeriodicExportingMetricReader({
+  exporter: new OTLPMetricExporter({
+    url: `${otlpEndpoint}/v1/metrics`,
+  }),
+  exportIntervalMillis: 10000,
+}),
+```
+
+The HTTP instrumentation also emits server request-duration and request-count
+metrics without further code.
+
+### Custom Business Metrics
+
+The HTTP instrumentation already emits the standard server metrics, including
+the `http.server.request.duration` histogram (its sample count gives you request
+rate, latency percentiles, and error ratio per route), so there is no need to
+hand-roll request latency. Reserve custom metrics for business events the
+instrumentation cannot see, such as domain actions:
+
+```typescript showLineNumbers title="src/articles/articles.service.ts"
+import { Injectable } from '@nestjs/common';
+import { metrics } from '@opentelemetry/api';
+
+const meter = metrics.getMeter('nestjs-api');
+const articlesCreated = meter.createCounter('articles.created', {
+  description: 'Articles created',
+});
+
+@Injectable()
+export class ArticlesService {
+  async create(authorId: string /* ... */): Promise<void> {
+    // ... persist the article ...
+    articlesCreated.add(1, { 'author.id': authorId });
+  }
+}
+```
+
+> View metrics in your base14 Scout dashboard to chart request rate, latency
+> percentiles, and error ratio per route from the automatic HTTP histogram,
+> alongside your custom business counters.
+
+#### Reference
+
+[Official Metrics Documentation](https://opentelemetry.io/docs/concepts/signals/metrics/)
+
 ## Production Configuration
 
 For production deployments with BatchSpanProcessor and resource attributes:
@@ -341,13 +459,12 @@ import { Module, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
-import { Resource } from '@opentelemetry/resources';
+import { resourceFromAttributes } from '@opentelemetry/resources';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import {
-  SEMRESATTRS_SERVICE_NAME,
-  SEMRESATTRS_SERVICE_VERSION,
-  SEMRESATTRS_DEPLOYMENT_ENVIRONMENT,
-  SEMRESATTRS_SERVICE_INSTANCE_ID,
+  ATTR_SERVICE_NAME,
+  ATTR_SERVICE_VERSION,
+  ATTR_SERVICE_INSTANCE_ID,
 } from '@opentelemetry/semantic-conventions';
 
 @Module({})
@@ -365,11 +482,11 @@ export class TracingModule implements OnModuleInit, OnModuleDestroy {
     });
 
     this.sdk = new NodeSDK({
-      resource: new Resource({
-        [SEMRESATTRS_SERVICE_NAME]: process.env.OTEL_SERVICE_NAME,
-        [SEMRESATTRS_SERVICE_VERSION]: process.env.npm_package_version,
-        [SEMRESATTRS_DEPLOYMENT_ENVIRONMENT]: process.env.NODE_ENV,
-        [SEMRESATTRS_SERVICE_INSTANCE_ID]: process.env.HOSTNAME || process.pid.toString(),
+      resource: resourceFromAttributes({
+        [ATTR_SERVICE_NAME]: process.env.OTEL_SERVICE_NAME,
+        [ATTR_SERVICE_VERSION]: process.env.npm_package_version,
+        'deployment.environment.name': process.env.NODE_ENV,
+        [ATTR_SERVICE_INSTANCE_ID]: process.env.HOSTNAME || process.pid.toString(),
         'service.namespace': process.env.SERVICE_NAMESPACE || 'default',
         'container.id': process.env.CONTAINER_ID,
         'k8s.pod.name': process.env.K8S_POD_NAME,
@@ -556,7 +673,9 @@ export class UsersService {
 
 ### TypeORM Database Instrumentation
 
-TypeORM queries are automatically instrumented:
+The SQL that TypeORM issues is traced at the driver level by `instrumentation-pg`
+in the auto-instrumentations bundle (ORM-level spans require the separate
+`@opentelemetry/instrumentation-typeorm` package):
 
 ```typescript showLineNumbers title="src/users/entities/user.entity.ts"
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
@@ -1184,8 +1303,10 @@ With BatchSpanProcessor, expect +0.5-2ms latency per request, +2-5% CPU, and
 
 ### Can I trace TypeORM, Prisma, and Sequelize?
 
-Yes, auto-instrumentation includes TypeORM, Prisma, Sequelize, and other ORMs.
-Database queries are automatically traced with parameters.
+The SQL these ORMs issue is traced at the driver level by `instrumentation-pg`
+(or the equivalent driver package) in the auto-instrumentations bundle. ORM-level
+spans for TypeORM, Prisma, and Sequelize need their own instrumentation packages,
+which are not part of `auto-instrumentations-node`.
 
 ### How do I trace BullMQ background jobs?
 
@@ -1224,14 +1345,6 @@ using `Reflector` and add attributes to active spans.
 
 ## What's Next?
 
-### Related Guides
-
-- [Hono Instrumentation](./hono.md) - Lightweight Node.js web framework
-- [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)
-  \- Manual spans and advanced patterns
-- [All framework guides](/instrument/apps/auto-instrumentation/) -
-  Auto-instrumentation overview for every language
-
 ### Scout Platform Features
 
 - [Creating Alerts](../../../guides/creating-alerts-with-logx.md) - Set up
@@ -1268,11 +1381,13 @@ Here's a complete working NestJS application with OpenTelemetry instrumentation:
     "@nestjs/platform-express": "^10.3.0",
     "@nestjs/typeorm": "^10.0.1",
     "@nestjs/bull": "^10.0.1",
-    "@opentelemetry/sdk-node": "^0.54.0",
-    "@opentelemetry/auto-instrumentations-node": "^0.54.0",
-    "@opentelemetry/exporter-trace-otlp-http": "^0.54.0",
-    "@opentelemetry/resources": "^1.28.0",
-    "@opentelemetry/semantic-conventions": "^1.28.0",
+    "@opentelemetry/sdk-node": "^0.218.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.76.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.218.0",
+    "@opentelemetry/exporter-metrics-otlp-http": "^0.218.0",
+    "@opentelemetry/sdk-metrics": "^2.7.1",
+    "@opentelemetry/resources": "^2.7.1",
+    "@opentelemetry/semantic-conventions": "^1.41.1",
     "@opentelemetry/api": "^1.9.0",
     "typeorm": "^0.3.20",
     "pg": "^8.11.0",
@@ -1295,10 +1410,18 @@ NODE_ENV=production
 OTEL_SERVICE_NAME=nestjs-api
 OTEL_SERVICE_VERSION=1.0.0
 OTEL_EXPORTER_OTLP_ENDPOINT=http://scout-collector:4318
+OTEL_SEMCONV_STABILITY_OPT_IN=http,database
 
 DATABASE_URL=postgres://user:pass@postgres:5432/nestjs
 REDIS_URL=redis://redis:6379
 ```
+
+`OTEL_SEMCONV_STABILITY_OPT_IN=http,database` opts the instrumentation into the
+stable HTTP and database semantic conventions (for example
+`http.request.method`, `http.response.status_code`, and `db.query.text`).
+Without it, the instrumentation keeps emitting the older experimental attribute
+names (`http.method`, `http.status_code`, `db.statement`). Use `http/dup` and
+`database/dup` instead to emit both old and new during a migration.
 
 ### GitHub Repository
 
@@ -1311,3 +1434,19 @@ Complete working example:
 - [NestJS Documentation](https://docs.nestjs.com/)
 - [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/)
 - [TypeORM Documentation](https://typeorm.io/)
+
+## Related Guides
+
+- [Express Instrumentation](./express.md) - The HTTP layer NestJS runs on by
+  default
+- [Next.js Instrumentation](./nextjs.md) - Full-stack React framework on Node.js
+- [Fastify Instrumentation](./fastify.md) - Alternate NestJS HTTP adapter
+- [Hono Instrumentation](./hono.md) - Lightweight Node.js web framework
+- [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)
+  \- Manual spans and advanced patterns
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
+  up the collector for local development
+- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
+  Production collector deployment
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language

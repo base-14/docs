@@ -82,7 +82,7 @@ management command tracing.
 :::tip TL;DR
 
 Install `opentelemetry-instrumentation-django` and
-`opentelemetry-instrumentation-psycopg2`, then initialize tracing in
+`opentelemetry-instrumentation-psycopg`, then initialize tracing in
 `manage.py` or your WSGI/ASGI entry point using
 `DjangoInstrumentor().instrument()`. Django's ORM queries, views, middleware,
 and Celery tasks are traced automatically with no per-view code changes
@@ -201,7 +201,7 @@ pip install opentelemetry-api opentelemetry-sdk
 pip install opentelemetry-instrumentation-django
 
 # Install database instrumentation (PostgreSQL)
-pip install opentelemetry-instrumentation-psycopg2
+pip install opentelemetry-instrumentation-psycopg
 
 # Install Celery instrumentation (optional)
 pip install opentelemetry-instrumentation-celery
@@ -225,18 +225,18 @@ Add dependencies to `pyproject.toml`:
 [tool.poetry.dependencies]
 python = "^3.10"
 django = "^5.2"
-psycopg2-binary = "^2.9"
+psycopg = {extras = ["binary"], version = "^3.3"}
 celery = "^5.4"
 redis = "^5.0"
 
 # OpenTelemetry dependencies
-opentelemetry-api = "^1.27"
-opentelemetry-sdk = "^1.27"
-opentelemetry-instrumentation-django = "^0.48b0"
-opentelemetry-instrumentation-psycopg2 = "^0.48b0"
-opentelemetry-instrumentation-celery = "^0.48b0"
-opentelemetry-instrumentation-redis = "^0.48b0"
-opentelemetry-exporter-otlp = "^1.27"
+opentelemetry-api = "^1.41"
+opentelemetry-sdk = "^1.41"
+opentelemetry-instrumentation-django = "^0.62b0"
+opentelemetry-instrumentation-psycopg = "^0.62b0"
+opentelemetry-instrumentation-celery = "^0.62b0"
+opentelemetry-instrumentation-redis = "^0.62b0"
+opentelemetry-exporter-otlp = "^1.41"
 ```
 
 Install dependencies:
@@ -253,16 +253,16 @@ Add to `Pipfile`:
 ```toml title="Pipfile" showLineNumbers
 [packages]
 django = "~=5.2"
-psycopg2-binary = "~=2.9"
+psycopg = {extras = ["binary"], version = "~=3.3"}
 celery = "~=5.4"
 redis = "~=5.0"
-opentelemetry-api = "~=1.27"
-opentelemetry-sdk = "~=1.27"
-opentelemetry-instrumentation-django = "~=0.48b0"
-opentelemetry-instrumentation-psycopg2 = "~=0.48b0"
-opentelemetry-instrumentation-celery = "~=0.48b0"
-opentelemetry-instrumentation-redis = "~=0.48b0"
-opentelemetry-exporter-otlp = "~=1.27"
+opentelemetry-api = "~=1.41"
+opentelemetry-sdk = "~=1.41"
+opentelemetry-instrumentation-django = "~=0.62b0"
+opentelemetry-instrumentation-psycopg = "~=0.62b0"
+opentelemetry-instrumentation-celery = "~=0.62b0"
+opentelemetry-instrumentation-redis = "~=0.62b0"
+opentelemetry-exporter-otlp = "~=1.41"
 ```
 
 Install:
@@ -286,7 +286,7 @@ opentelemetry-bootstrap -a install
 
 # This automatically installs:
 # - opentelemetry-instrumentation-django
-# - opentelemetry-instrumentation-psycopg2
+# - opentelemetry-instrumentation-psycopg
 # - opentelemetry-instrumentation-celery
 # - opentelemetry-instrumentation-redis
 # (based on your installed packages)
@@ -324,7 +324,7 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.instrumentation.django import DjangoInstrumentor
-from opentelemetry.instrumentation.psycopg2 import Psycopg2Instrumentor
+from opentelemetry.instrumentation.psycopg import PsycopgInstrumentor
 
 
 def initialize_tracing():
@@ -333,7 +333,7 @@ def initialize_tracing():
     resource = Resource.create({
         "service.name": os.getenv("OTEL_SERVICE_NAME", "django-order-service"),
         "service.version": os.getenv("APP_VERSION", "1.0.0"),
-        "deployment.environment": os.getenv("ENVIRONMENT", "development"),
+        "deployment.environment.name": os.getenv("ENVIRONMENT", "development"),
     })
 
     # Create tracer provider
@@ -355,7 +355,7 @@ def initialize_tracing():
     DjangoInstrumentor().instrument()
 
     # Instrument PostgreSQL
-    Psycopg2Instrumentor().instrument()
+    PsycopgInstrumentor().instrument()
 
     print("OpenTelemetry tracing initialized successfully")
 ```
@@ -487,12 +487,20 @@ DB_PORT=5432
 OTEL_SERVICE_NAME=django-order-service
 OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 OTEL_EXPORTER_OTLP_INSECURE=true
+OTEL_SEMCONV_STABILITY_OPT_IN=http,database
 APP_VERSION=1.0.0
 
 # Celery (optional)
 CELERY_BROKER_URL=redis://localhost:6379/0
 CELERY_RESULT_BACKEND=redis://localhost:6379/0
 ```
+
+`OTEL_SEMCONV_STABILITY_OPT_IN=http,database` opts the instrumentation into the
+stable HTTP and database semantic conventions (for example
+`http.request.method`, `http.response.status_code`, and `db.query.text`).
+Without it, the instrumentation keeps emitting the older experimental attribute
+names (`http.method`, `http.status_code`, `db.statement`). Use `http/dup` and
+`database/dup` instead to emit both old and new during a migration.
 
 ### Docker Compose Configuration
 
@@ -567,6 +575,122 @@ managed infrastructure optimized for Django applications with high query volume.
 
 :::
 
+## Traces
+
+Traces follow a request through your Django application, from the incoming URL
+route, through middleware and the view, into ORM queries, cache lookups,
+outbound HTTP calls, and Celery task dispatch, and back out as the response.
+
+### Automatic Trace Collection
+
+Once `DjangoInstrumentor` is applied, every request is traced with no per-view
+code:
+
+**Captured Information:**
+
+- HTTP method, resolved URL pattern, and status code for each view
+- Request duration and a span-by-span timing breakdown
+- Django ORM queries (psycopg / MySQL), including the executed SQL
+- Redis cache operations (with `RedisInstrumentor`)
+- Celery task enqueue and execution spans (with `CeleryInstrumentor`)
+- Exceptions recorded on the failing span with stack traces
+- Distributed context propagation across services (W3C Trace Context)
+
+**Trace Hierarchy:**
+
+```text
+HTTP Request Span (root: GET /api/orders/<id>)
+├── Middleware Span (AuthenticationMiddleware)
+├── OrderViewSet.retrieve Span
+│   ├── ORM Query Span (SELECT ... FROM orders)
+│   └── Redis GET Span (cache lookup)
+└── Celery Enqueue Span (send_receipt task)
+```
+
+### Key Tracing Features
+
+- **Automatic HTTP tracking**: every URL route is traced with no code changes
+- **ORM visibility**: Django ORM and raw SQL queries appear as child spans with
+  the executed statement
+- **CBV and DRF support**: function views, class-based views, and DRF ViewSets
+  are all traced with their resolved route
+- **Error capturing**: unhandled exceptions and error handlers are recorded with
+  full stack traces
+- **Context propagation**: distributed traces follow requests across HTTP and
+  Celery boundaries
+
+> View traces in your base14 Scout dashboard to follow request flows and find
+> the slow span in a chain.
+
+#### Reference
+
+[Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
+
+## Metrics
+
+Metrics aggregate runtime measurements over time, such as request rate, latency
+distributions, and error counts. Where traces explain a single request, metrics
+power dashboards and alerts across all of them.
+
+### Enable the Meter Provider
+
+Configure a `MeterProvider` with an OTLP exporter alongside your tracer setup so
+metrics are exported to Scout:
+
+```python title="otel_config.py" showLineNumbers
+import os
+from opentelemetry import metrics
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import (
+    OTLPMetricExporter,
+)
+
+# Same OTLP endpoint and gRPC transport as the tracer setup above
+resource = Resource.create(
+    {"service.name": os.getenv("OTEL_SERVICE_NAME", "django-order-service")}
+)
+reader = PeriodicExportingMetricReader(
+    OTLPMetricExporter(
+        endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317"),
+        insecure=os.getenv("OTEL_EXPORTER_OTLP_INSECURE", "true") == "true",
+    ),
+    export_interval_millis=15000,
+)
+metrics.set_meter_provider(MeterProvider(resource=resource, metric_readers=[reader]))
+```
+
+### Custom Business Metrics
+
+Django auto-instrumentation already emits the standard HTTP server metrics,
+including the `http.server.request.duration` histogram (its sample count gives
+you request rate, latency percentiles, and error ratio per route), so there is
+no need to hand-roll request latency. Reserve custom metrics for business
+events the instrumentation cannot see, such as domain actions:
+
+```python title="apps/articles/views.py" showLineNumbers
+from opentelemetry import metrics
+
+meter = metrics.get_meter("django-app")
+articles_created = meter.create_counter(
+    "articles.created",
+    unit="1",
+    description="Articles created",
+)
+
+# Inside the view, after the article is persisted:
+articles_created.add(1, {"author_id": str(user_id)})
+```
+
+> View metrics in your base14 Scout dashboard to chart request rate, latency
+> percentiles, and error ratio per route from the automatic HTTP histogram,
+> alongside your custom business counters.
+
+#### Reference
+
+[Official Metrics Documentation](https://opentelemetry.io/docs/concepts/signals/metrics/)
+
 ## Production Configuration
 
 Production deployments require optimized sampling, secure credential management,
@@ -584,7 +708,7 @@ from opentelemetry.sdk.trace.sampling import TraceIdRatioBased, ParentBased
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.instrumentation.django import DjangoInstrumentor
-from opentelemetry.instrumentation.psycopg2 import Psycopg2Instrumentor
+from opentelemetry.instrumentation.psycopg import PsycopgInstrumentor
 from opentelemetry.instrumentation.redis import RedisInstrumentor
 
 
@@ -594,7 +718,7 @@ def initialize_tracing():
     resource = Resource.create({
         "service.name": os.getenv("OTEL_SERVICE_NAME", "django-order-service"),
         "service.version": os.getenv("APP_VERSION", "1.0.0"),
-        "deployment.environment": os.getenv("ENVIRONMENT", "production"),
+        "deployment.environment.name": os.getenv("ENVIRONMENT", "production"),
         "cloud.provider": os.getenv("CLOUD_PROVIDER", "aws"),
         "cloud.region": os.getenv("AWS_REGION", "us-east-1"),
         "k8s.cluster.name": os.getenv("K8S_CLUSTER", "production"),
@@ -636,7 +760,7 @@ def initialize_tracing():
     )
 
     # Instrument database
-    Psycopg2Instrumentor().instrument(enable_commenter=True, commenter_options={})
+    PsycopgInstrumentor().instrument(enable_commenter=True, commenter_options={})
 
     # Instrument Redis
     RedisInstrumentor().instrument()
@@ -1078,7 +1202,7 @@ class CustomHeaderMiddleware(MiddlewareMixin):
     def process_response(self, request, response):
         # Add response attributes
         current_span = trace.get_current_span()
-        current_span.set_attribute("http.response.content_length", len(response.content))
+        current_span.set_attribute("http.response.body.size", len(response.content))
         return response
 
 
@@ -1311,7 +1435,7 @@ class PaymentService:
                 timeout=10
             )
 
-            span.set_attribute("http.status_code", response.status_code)
+            span.set_attribute("http.response.status_code", response.status_code)
 
             if response.status_code == 200:
                 transaction_id = response.json().get("id")
@@ -1624,10 +1748,10 @@ application = get_wsgi_application()
 Instrument the database driver explicitly:
 
 ```python title="myproject/tracing.py" showLineNumbers
-from opentelemetry.instrumentation.psycopg2 import Psycopg2Instrumentor
+from opentelemetry.instrumentation.psycopg import PsycopgInstrumentor
 
-# For PostgreSQL with psycopg2
-Psycopg2Instrumentor().instrument(enable_commenter=True)
+# For PostgreSQL with psycopg
+PsycopgInstrumentor().instrument(enable_commenter=True)
 
 # For MySQL
 from opentelemetry.instrumentation.pymysql import PyMySQLInstrumentor
@@ -1780,15 +1904,18 @@ def initialize_tracing():
 
 ### SQL Parameter Obfuscation
 
-Database queries may contain sensitive values:
+Database queries may contain sensitive values. The query text lands on the span
+as `db.query.text` only when `OTEL_SEMCONV_STABILITY_OPT_IN` includes `database`
+and `opentelemetry-instrumentation-psycopg` is `>=0.62b0`; on older versions, or
+without the opt-in, the attribute is named `db.statement` instead.
 
 ```python title="myproject/tracing.py" showLineNumbers
 """SQL query sanitization."""
-from opentelemetry.instrumentation.psycopg2 import Psycopg2Instrumentor
+from opentelemetry.instrumentation.psycopg import PsycopgInstrumentor
 
 
 # Enable SQL commenter to identify queries, but disable parameter logging
-Psycopg2Instrumentor().instrument(
+PsycopgInstrumentor().instrument(
     enable_commenter=True,
     commenter_options={
         "db_driver": True,
@@ -1802,6 +1929,7 @@ Custom query sanitization:
 
 ```python title="myproject/middleware.py" showLineNumbers
 """Sanitize database queries in spans."""
+import re
 from opentelemetry import trace
 
 
@@ -1818,12 +1946,12 @@ class QuerySanitizationMiddleware:
         current_span = trace.get_current_span()
 
         if hasattr(current_span, 'attributes'):
-            if 'db.statement' in current_span.attributes:
+            if 'db.query.text' in current_span.attributes:
                 # Replace parameter values with placeholders
-                sql = current_span.attributes['db.statement']
+                sql = current_span.attributes['db.query.text']
                 # Remove values: WHERE email = 'user@example.com' -> WHERE email = ?
                 sanitized = re.sub(r"= '.*?'", "= ?", sql)
-                current_span.attributes['db.statement'] = sanitized
+                current_span.attributes['db.query.text'] = sanitized
 
         return response
 ```
@@ -2027,7 +2155,8 @@ OTLPSpanExporter(
 ### 11. How do I trace multiple databases?
 
 Django's database instrumentation traces all configured databases automatically.
-Span attributes include `db.name` to differentiate between databases.
+Span attributes include `db.namespace` to differentiate between databases (with
+the `database` semconv opt-in set; older builds emit the deprecated `db.name`).
 
 ### 12. Can I disable tracing for specific views?
 
@@ -2253,17 +2382,6 @@ from a single pane.
 - **[Celery Documentation](https://docs.celeryproject.org/)** \- Distributed
   task queue documentation
 
-### Related Guides
-
-- **[Flask Instrumentation](/instrument/apps/auto-instrumentation/flask)** \-
-  Lightweight Python framework instrumentation
-- **[FastAPI Instrumentation](/instrument/apps/auto-instrumentation/fast-api)**
-  \- Async Python API framework
-- **[Python Custom Instrumentation](/instrument/apps/custom-instrumentation/python)**
-  \- Advanced manual instrumentation patterns
-- **[Celery Tracing](/instrument/apps/auto-instrumentation/celery)** \- Deep
-  dive into Celery distributed tracing
-
 ### Tools & Resources
 
 - **[Base14 Scout](https://base14.io/scout)** \- Managed OpenTelemetry platform
@@ -2272,3 +2390,20 @@ from a single pane.
   Development tool for query analysis
 - **[Django REST Framework](https://www.django-rest-framework.org/)** \- API
   framework with automatic instrumentation
+
+## Related Guides
+
+- [Flask Instrumentation](/instrument/apps/auto-instrumentation/flask) -
+  Lightweight Python framework instrumentation
+- [FastAPI Instrumentation](/instrument/apps/auto-instrumentation/fast-api) -
+  Async Python API framework
+- [Celery Tracing](/instrument/apps/auto-instrumentation/celery) - Distributed
+  task queue instrumentation
+- [Python Custom Instrumentation](/instrument/apps/custom-instrumentation/python)
+  \- Manual spans and advanced patterns
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
+  up the collector for local development
+- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
+  Production collector deployment
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language

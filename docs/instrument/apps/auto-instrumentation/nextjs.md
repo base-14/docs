@@ -1692,6 +1692,9 @@ const meterProvider = new MeterProvider({
 
 ### Related Guides
 
+- [NestJS Instrumentation](./nestjs.md) - Structured TypeScript framework on
+  Node.js
+- [Express.js Instrumentation](./express.md) - Classic Node.js web framework
 - [Node.js Instrumentation](./nodejs.md) - General Node.js OTel setup
 - [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)
   \- Manual spans and advanced patterns

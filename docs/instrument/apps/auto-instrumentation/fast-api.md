@@ -1994,6 +1994,8 @@ all your endpoints.
 
 ## Related Guides
 
+- [Django Instrumentation](./django.md) - Full-featured Python framework with ORM
+- [Flask Instrumentation](./flask.md) - Lightweight Python web framework
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
   up collector for local development
 - [Python Custom Instrumentation](../custom-instrumentation/python.md) - Manual

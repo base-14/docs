@@ -357,7 +357,7 @@ def initialize_tracing(app):
     resource = Resource.create({
         "service.name": os.getenv("OTEL_SERVICE_NAME", "flask-order-service"),
         "service.version": os.getenv("APP_VERSION", "1.0.0"),
-        "deployment.environment": os.getenv("ENVIRONMENT", "development"),
+        "deployment.environment.name": os.getenv("ENVIRONMENT", "development"),
     })
 
     # Create tracer provider
@@ -477,9 +477,17 @@ CELERY_RESULT_BACKEND=redis://localhost:6379/0
 OTEL_SERVICE_NAME=flask-order-service
 OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 OTEL_EXPORTER_OTLP_INSECURE=true
+OTEL_SEMCONV_STABILITY_OPT_IN=http,database
 APP_VERSION=1.0.0
 ENVIRONMENT=development
 ```
+
+`OTEL_SEMCONV_STABILITY_OPT_IN=http,database` opts the instrumentation into the
+stable HTTP and database semantic conventions (for example
+`http.request.method`, `http.response.status_code`, and `db.query.text`).
+Without it, the instrumentation keeps emitting the older experimental attribute
+names (`http.method`, `http.status_code`, `db.statement`). Use `http/dup` and
+`database/dup` instead to emit both old and new during a migration.
 
 ### WSGI Entry Point
 
@@ -575,6 +583,122 @@ managed infrastructure optimized for Flask microservices.
 
 :::
 
+## Traces
+
+Traces follow a request through your Flask application, from the incoming route,
+through view functions and blueprints, into SQLAlchemy queries, Redis calls, and
+Celery task dispatch, and back out as the response.
+
+### Automatic Trace Collection
+
+Once `FlaskInstrumentor` (plus the SQLAlchemy, Redis, and Celery instrumentors)
+is applied, every request is traced with no per-view code. Outbound HTTP calls
+need their own instrumentor (`RequestsInstrumentor` / `URLLib3Instrumentor`):
+
+**Captured Information:**
+
+- HTTP method, route rule, and status code for each view
+- Request duration and a span-by-span timing breakdown
+- SQLAlchemy queries, including the executed SQL (`SQLAlchemyInstrumentor`)
+- Redis commands (`RedisInstrumentor`)
+- Celery task enqueue and execution spans (`CeleryInstrumentor`)
+- Exceptions recorded on the failing span with stack traces
+- Distributed context propagation across services (W3C Trace Context)
+
+**Trace Hierarchy:**
+
+```text
+HTTP Request Span (root: GET /api/orders/<id>)
+├── orders.get_order Span
+│   ├── SQLAlchemy Query Span (SELECT ... FROM orders)
+│   └── Redis GET Span (cache lookup)
+└── Celery Enqueue Span (send_receipt task)
+```
+
+### Key Tracing Features
+
+- **Automatic HTTP tracking**: every route is traced with no code changes
+- **SQLAlchemy visibility**: ORM and Core queries appear as child spans with the
+  executed SQL
+- **Error capturing**: unhandled exceptions and error handlers are recorded with
+  full stack traces
+- **Context propagation**: distributed traces follow requests across HTTP and
+  Celery boundaries
+- **Blueprint support**: views registered on blueprints are traced with their
+  resolved route rule
+
+> View traces in your base14 Scout dashboard to follow request flows and find
+> the slow span in a chain.
+
+#### Reference
+
+[Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
+
+## Metrics
+
+Metrics aggregate runtime measurements over time, such as request rate, latency
+distributions, and error counts. Where traces explain a single request, metrics
+power dashboards and alerts across all of them.
+
+### Enable the Meter Provider
+
+Configure a `MeterProvider` with an OTLP exporter alongside your tracer setup so
+metrics are exported to Scout:
+
+```python title="app/telemetry.py" showLineNumbers
+import os
+from opentelemetry import metrics
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import (
+    OTLPMetricExporter,
+)
+
+# Same OTLP endpoint and gRPC transport as the tracer setup above
+resource = Resource.create(
+    {"service.name": os.getenv("OTEL_SERVICE_NAME", "flask-order-service")}
+)
+reader = PeriodicExportingMetricReader(
+    OTLPMetricExporter(
+        endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317"),
+        insecure=os.getenv("OTEL_EXPORTER_OTLP_INSECURE", "true") == "true",
+    ),
+    export_interval_millis=15000,
+)
+metrics.set_meter_provider(MeterProvider(resource=resource, metric_readers=[reader]))
+```
+
+### Custom Business Metrics
+
+Flask auto-instrumentation already emits the standard HTTP server metrics,
+including the `http.server.request.duration` histogram (its sample count gives
+you request rate, latency percentiles, and error ratio per route), so there is
+no need to hand-roll request latency. Reserve custom metrics for business
+events the instrumentation cannot see, such as domain actions:
+
+```python title="app/routes/articles.py" showLineNumbers
+from opentelemetry import metrics
+
+meter = metrics.get_meter("flask-app")
+articles_created = meter.create_counter(
+    "articles.created",
+    unit="1",
+    description="Articles created",
+)
+
+# Inside the view, after the article is persisted:
+articles_created.add(1, {"author_id": str(g.current_user.id)})
+```
+
+> View metrics in your base14 Scout dashboard to chart request rate, latency
+> percentiles, and error ratio per route from the automatic HTTP histogram,
+> alongside your custom business counters.
+
+#### Reference
+
+[Official Metrics Documentation](https://opentelemetry.io/docs/concepts/signals/metrics/)
+
 ## Production Configuration
 
 Production deployments require optimized sampling, secure credential management,
@@ -603,7 +727,7 @@ def initialize_production_tracing(app):
     resource = Resource.create({
         "service.name": os.getenv("OTEL_SERVICE_NAME", "flask-order-service"),
         "service.version": os.getenv("APP_VERSION", "1.0.0"),
-        "deployment.environment": os.getenv("ENVIRONMENT", "production"),
+        "deployment.environment.name": os.getenv("ENVIRONMENT", "production"),
         "cloud.provider": os.getenv("CLOUD_PROVIDER", "aws"),
         "cloud.region": os.getenv("AWS_REGION", "us-east-1"),
         "k8s.cluster.name": os.getenv("K8S_CLUSTER", "production"),
@@ -1058,9 +1182,8 @@ Flask request hooks are automatically traced:
 
 ```python title="app/__init__.py" showLineNumbers
 """Flask hooks with custom attributes."""
-from flask import request, g
+from flask import request
 from opentelemetry import trace
-import time
 
 
 def register_hooks(app):
@@ -1069,13 +1192,11 @@ def register_hooks(app):
     @app.before_request
     def before_request():
         """Before request hook - adds custom attributes."""
-        g.start_time = time.time()
-
         # Get current span and add custom attributes
         current_span = trace.get_current_span()
-        current_span.set_attribute("http.user_agent", request.user_agent.string)
-        current_span.set_attribute("http.method", request.method)
-        current_span.set_attribute("http.path", request.path)
+        current_span.set_attribute("user_agent.original", request.user_agent.string)
+        current_span.set_attribute("http.request.method", request.method)
+        current_span.set_attribute("url.path", request.path)
 
         if request.is_json:
             current_span.set_attribute("http.request.content_type", "application/json")
@@ -1086,13 +1207,8 @@ def register_hooks(app):
         current_span = trace.get_current_span()
 
         # Record response attributes
-        current_span.set_attribute("http.status_code", response.status_code)
-        current_span.set_attribute("http.response.content_length", response.content_length or 0)
-
-        # Calculate request duration
-        if hasattr(g, 'start_time'):
-            duration_ms = (time.time() - g.start_time) * 1000
-            current_span.set_attribute("http.request.duration_ms", duration_ms)
+        current_span.set_attribute("http.response.status_code", response.status_code)
+        current_span.set_attribute("http.response.body.size", response.content_length or 0)
 
         return response
 
@@ -1266,7 +1382,7 @@ class PaymentService:
                 timeout=10
             )
 
-            span.set_attribute("http.status_code", response.status_code)
+            span.set_attribute("http.response.status_code", response.status_code)
 
             if response.status_code == 200:
                 transaction_id = response.json().get("id")
@@ -1355,7 +1471,7 @@ def init_extensions(app):
         """Log SQL queries in current span."""
         current_span = trace.get_current_span()
         current_span.add_event("sql_query_start", {
-            "db.statement": statement[:100],  # Truncate long queries
+            "db.query.text": statement[:100],  # Truncate long queries
         })
 
     app.logger.info("Extensions initialized with OpenTelemetry tracing")
@@ -1925,17 +2041,6 @@ production configurations is available at:
 - **[SQLAlchemy Documentation](https://www.sqlalchemy.org/)** \- ORM and Core
   documentation
 
-### Related Guides
-
-- **[Django Instrumentation](/instrument/apps/auto-instrumentation/django)** \-
-  Full-featured Python framework with ORM
-- **[FastAPI Instrumentation](/instrument/apps/auto-instrumentation/fast-api)**
-  \- Modern async Python framework
-- **[Python Custom Instrumentation](/instrument/apps/custom-instrumentation/python)**
-  \- Advanced manual instrumentation patterns
-- **[Celery Tracing](/instrument/apps/auto-instrumentation/celery)** \-
-  Distributed task queue instrumentation
-
 ### Tools & Resources
 
 - **[Base14 Scout](https://base14.io/scout)** \- Managed OpenTelemetry platform
@@ -1944,3 +2049,20 @@ production configurations is available at:
   extension for Flask
 - **[Flask-SQLAlchemy](https://flask-sqlalchemy.palletsprojects.com/)** \- Flask
   extension for SQLAlchemy
+
+## Related Guides
+
+- [Django Instrumentation](/instrument/apps/auto-instrumentation/django) -
+  Full-featured Python framework with ORM
+- [FastAPI Instrumentation](/instrument/apps/auto-instrumentation/fast-api) -
+  Modern async Python framework
+- [Celery Tracing](/instrument/apps/auto-instrumentation/celery) - Distributed
+  task queue instrumentation
+- [Python Custom Instrumentation](/instrument/apps/custom-instrumentation/python)
+  \- Manual spans and advanced patterns
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
+  up the collector for local development
+- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
+  Production collector deployment
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language

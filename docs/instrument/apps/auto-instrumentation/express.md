@@ -1916,14 +1916,6 @@ Then filter and query by tenant attributes in base14 Scout dashboard.
 
 ## What's Next?
 
-### Related Guides
-
-- [Hono Instrumentation](./hono.md) - Lightweight, edge-first Node.js framework
-- [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)
-  \- Manual spans and advanced patterns
-- [All framework guides](/instrument/apps/auto-instrumentation/) -
-  Auto-instrumentation overview for every language
-
 ### Advanced Topics
 
 - [OpenTelemetry Collector Configuration](../../collector-setup/otel-collector-config.md)
@@ -2046,3 +2038,20 @@ calls in real time.
 - [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/)
 - [Official Metrics Documentation](https://opentelemetry.io/docs/concepts/signals/metrics/)
 - [Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
+
+## Related Guides
+
+- [NestJS Instrumentation](./nestjs.md) - Structured framework that runs on top
+  of Express
+- [Next.js Instrumentation](./nextjs.md) - Full-stack React framework on Node.js
+- [Fastify Instrumentation](./fastify.md) - High-performance Node.js web
+  framework
+- [Hono Instrumentation](./hono.md) - Lightweight, edge-first Node.js framework
+- [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)
+  \- Manual spans and advanced patterns
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
+  up the collector for local development
+- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
+  Production collector deployment
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language

@@ -1190,6 +1190,8 @@ these resources:
 
 ### Related Guides
 
+- [Spring Boot Instrumentation](./spring-boot.md) - Most widely used JVM web
+  framework
 - [Quarkus Instrumentation](./quarkus.md) - Kubernetes-native JVM framework
 - [Java Custom Instrumentation](../custom-instrumentation/java.md) - Manual
   spans and advanced patterns
