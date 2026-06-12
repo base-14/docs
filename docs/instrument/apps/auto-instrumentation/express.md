@@ -53,7 +53,8 @@ Express is the most widely used Node.js web framework.
 
 Express.js applications benefit from automatic instrumentation of the framework
 itself, as well as popular libraries including MongoDB (Mongoose), Redis
-(IORedis), BullMQ, Socket.IO, and dozens of commonly used Node.js components.
+(IORedis, which also captures BullMQ queue traffic), Socket.IO, and dozens of
+commonly used Node.js components.
 With OpenTelemetry, you can monitor production performance, debug slow requests,
 trace distributed transactions across microservices, and identify database query
 bottlenecks without significant code modifications. The async-native design of
@@ -2047,6 +2048,8 @@ calls in real time.
 - [Fastify Instrumentation](./fastify.md) - High-performance Node.js web
   framework
 - [Hono Instrumentation](./hono.md) - Lightweight, edge-first Node.js framework
+- [BullMQ Instrumentation](./bullmq.md) - Trace background jobs enqueued from
+  Express
 - [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)
   \- Manual spans and advanced patterns
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
