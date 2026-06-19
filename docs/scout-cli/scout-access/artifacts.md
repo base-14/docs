@@ -138,9 +138,9 @@ Upload is a three-step flow against the Scout API:
    so a long upload never fails finalization.
 
 :::warning Permission required
-Uploading needs the `scout-artifact-write` role on your account. A `403` response
-means the role is missing — ask an administrator to grant it, then re-authenticate
-with `scout login --account <slug> --force`.
+Uploading artifacts requires additional permission on your account. If the upload
+is denied, ask an administrator to grant your account upload access, then
+re-authenticate with `scout login --account <slug> --force`.
 :::
 
 :::note Large uploads
