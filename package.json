@@ -33,7 +33,7 @@
     "@docusaurus/module-type-aliases": "^3.10.1",
     "@docusaurus/tsconfig": "^3.10.1",
     "@docusaurus/types": "^3.10.1",
-    "docusaurus-plugin-llms": "^0.3.0",
+    "docusaurus-plugin-llms": "^0.4.0",
     "gray-matter": "^4.0.3",
     "markdownlint-cli": "^0.49.0",
     "patch-package": "^8.0.1",
@@ -60,7 +60,11 @@
     "node-forge": "1.4.0",
     "yaml": "2.8.3",
     "uuid": "^14.0.0",
-    "qs": "6.15.2"
+    "qs": "6.15.2",
+    "http-proxy-middleware": "^3.0.7",
+    "webpack-bundle-analyzer": {
+      "ws": "^7.5.11"
+    }
   },
   "engines": {
     "node": ">=24.0"
