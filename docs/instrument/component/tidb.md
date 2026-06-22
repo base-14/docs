@@ -57,9 +57,9 @@ There is no native TiDB receiver and no `information_schema` / `SHOW STATUS`
 scraping in play - the OpenTelemetry Collector's `prometheus` receiver scrapes
 each component's status endpoint directly. Metric names are prefixed per
 component (`pd_*`, `tikv_*`, `tidb_*`), plus PD's embedded `etcd_*` and TiKV's
-`raft_engine_*` (the Raft log WAL) and `tikv_engine_*` (RocksDB); TiDB emits
-900+ distinct metric names across the three endpoints. This guide configures
-the receiver and ships the metrics to base14 Scout.
+`raft_engine_*` (the Raft log WAL) and `tikv_engine_*` (RocksDB); the cluster
+emits 900+ distinct metric names across the three endpoints. This guide
+configures the receiver and ships the metrics to base14 Scout.
 
 ## Prerequisites
 
@@ -67,7 +67,7 @@ the receiver and ships the metrics to base14 Scout.
 | ---------------------- | ------- | ----------- |
 | TiDB (PD/TiKV/TiDB)    | 6.5     | 8.5+        |
 | OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | —           |
+| base14 Scout           | Any     | -           |
 
 Before starting:
 
