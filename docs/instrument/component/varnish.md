@@ -89,8 +89,8 @@ logs or your trace path, not in these metrics.
 
 ### Diagnostic - for investigation and tuning
 
-Higher cardinality; enable on demand. In production you can drop this
-tier with `metric_relabel_configs` and keep Core + Operational.
+Higher cardinality; reach for these during an incident or a capacity
+review.
 
 | Group | Metrics | When you reach for it |
 |---|---|---|
@@ -242,12 +242,8 @@ service:
       exporters: [otlphttp/b14]
 ```
 
-To control metric volume in production, drop the Diagnostic tier with a
-`metric_relabel_configs` block on the scrape config while keeping the
-Core and Operational series.
-
 > **Semconv version note**: `deployment.environment.name` is the current
-> OTel attribute (semantic conventions v1.27+, stable in v1.40.0). The
+> OTel attribute (semantic conventions v1.27+, stable as of v1.41.0). The
 > legacy `deployment.environment` is still accepted by Scout for
 > backward compatibility, but new configs should emit the dotted form.
 
@@ -444,6 +440,5 @@ logs or your trace path.
   [Create Your First Dashboard](../../guides/create-your-first-dashboard.md).
 - **Monitor More Components**: Add monitoring for
   [NGINX](./nginx.md), [Caddy](./caddy.md), and other components.
-- **Fine-tune Collection**: Drop the Diagnostic tier in production with
-  `metric_relabel_configs` to control volume; keep it available for
-  incident investigation.
+- **Fine-tune Collection**: Adjust the `scrape_interval` to your traffic
+  and retention needs.
