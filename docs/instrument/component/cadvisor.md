@@ -1,14 +1,14 @@
 ---
 title: >
-  cAdvisor OpenTelemetry Monitoring - Container CPU, Memory,
-  and Collector Setup
+  cAdvisor OpenTelemetry Monitoring - Per-Container CPU, Memory,
+  OOM Events, and Collector Setup
 sidebar_label: cAdvisor
 id: collecting-cadvisor-telemetry
 sidebar_position: 48
 description: >
-  Collect per-container resource metrics from cAdvisor with the
-  OpenTelemetry Collector. Monitor container CPU, memory, filesystem,
-  and network using the Prometheus receiver and export to base14 Scout.
+  Scrape cAdvisor with the OpenTelemetry Collector's prometheus receiver.
+  Monitor per-container CPU, memory, OOM events, filesystem, and network,
+  and ship to base14 Scout.
 keywords:
   - cadvisor opentelemetry
   - cadvisor otel collector
@@ -16,7 +16,7 @@ keywords:
   - cadvisor prometheus receiver
   - container resource monitoring
   - cadvisor observability
-  - per-container cpu memory metrics
+  - per-container cpu memory oom metrics
   - cadvisor telemetry collection
 ---
 
@@ -24,7 +24,7 @@ keywords:
 
 <head>
   <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does this work with cAdvisor running in Kubernetes?","acceptedAnswer":{"@type":"Answer","text":"Yes. Set targets to the cAdvisor pod or service address. cAdvisor is commonly run as a DaemonSet so each node's containers are measured by a local cAdvisor instance."}},{"@type":"Question","name":"Why are some metric names different from the kubelet's cAdvisor endpoint?","acceptedAnswer":{"@type":"Answer","text":"The kubelet embeds a cAdvisor and exposes a curated subset under /metrics/cadvisor. A standalone cAdvisor exposes the full native metric set on :8080/metrics. The core container and machine metric names match."}},{"@type":"Question","name":"How do I reduce the cAdvisor metric volume?","acceptedAnswer":{"@type":"Answer","text":"Use metric_relabel_configs with a keep action to retain only the metric families you need, for example container_cpu and container_memory series."}},{"@type":"Question","name":"What is the difference between container_memory_usage_bytes and container_memory_working_set_bytes?","acceptedAnswer":{"@type":"Answer","text":"container_memory_usage_bytes includes reclaimable page cache. container_memory_working_set_bytes excludes cache that can be evicted under pressure, so it is the figure the OOM killer acts on and the better signal for memory alerts."}}]})}
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does this work with cAdvisor running in Kubernetes?","acceptedAnswer":{"@type":"Answer","text":"Yes. cAdvisor is embedded in the kubelet, so you can scrape the kubelet's /metrics/cadvisor endpoint, or run cAdvisor as a DaemonSet so each node's containers are measured by a local instance. The container and machine metric names match either way."}},{"@type":"Question","name":"How do I monitor cAdvisor on multiple hosts?","acceptedAnswer":{"@type":"Answer","text":"Add one scrape target per cAdvisor instance to the prometheus receiver. The receiver attaches an instance label to each series, which distinguishes the hosts in Scout."}},{"@type":"Question","name":"What is the difference between container_memory_usage_bytes and container_memory_working_set_bytes?","acceptedAnswer":{"@type":"Answer","text":"container_memory_usage_bytes includes reclaimable page cache and reads higher. container_memory_working_set_bytes is the non-reclaimable memory the OOM-killer counts, so it is the OOM-risk signal and the better basis for memory alerts."}},{"@type":"Question","name":"Why does cAdvisor need to run privileged?","acceptedAnswer":{"@type":"Answer","text":"cAdvisor reads host cgroup and filesystem statistics directly. It needs --privileged, the /dev/kmsg device, and read-only mounts of /, /sys, /var/lib/docker, /var/run, and /dev/disk to collect per-container resource metrics."}}]})}
   </script>
 </head>
 
@@ -32,45 +32,142 @@ keywords:
 
 # cAdvisor
 
-cAdvisor (Container Advisor) exposes per-container resource metrics in
-Prometheus format on `:8080/metrics`. The OpenTelemetry Collector
-scrapes this endpoint with the Prometheus receiver, collecting
-container-level CPU, memory, filesystem, and network metrics plus
-machine-level capacity, then ships them to base14 Scout. This guide
-configures the receiver, connects to a cAdvisor instance, and exports
-the metrics.
+cAdvisor (Container Advisor) exposes Prometheus text at `/metrics` on
+`:8080`. The OpenTelemetry Collector's `prometheus` receiver scrapes it
+directly, collecting 90+ metrics across per-container CPU, memory
+(including OOM events), filesystem, and network, plus host-capacity
+(`machine_*`) figures, then ships them to base14 Scout. This guide
+configures the receiver, deploys cAdvisor with the access it needs, and
+exports the metrics.
 
 ## Prerequisites
 
-| Requirement            | Minimum | Recommended |
-| ---------------------- | ------- | ----------- |
-| cAdvisor               | 0.45    | 0.49+       |
-| OTel Collector Contrib | 0.90.0  | 0.152+      |
-| base14 Scout           | Any     | -           |
+| Requirement            | Minimum | Recommended      |
+| ---------------------- | ------- | ---------------- |
+| cAdvisor               | 0.45    | 0.49+ (v0.49.1)  |
+| OTel Collector Contrib | 0.90.0  | 0.153.0          |
+| base14 Scout           | Any     | -                |
 
 Before starting:
 
-- cAdvisor's metrics port (8080) must be reachable from the host
-  running the Collector
-- No authentication is required for the metrics endpoint by default
+- cAdvisor's metrics port (`8080`) must be reachable from the host
+  running the Collector.
+- cAdvisor needs `--privileged`, the `/dev/kmsg` device, and read-only
+  mounts of `/`, `/sys`, `/var/lib/docker`, `/var/run`, and `/dev/disk`
+  to read host cgroup and filesystem statistics (see
+  [Access Setup](#access-setup)).
+- No authentication is required on the metrics endpoint by default.
 - OTel Collector installed - see
-  [Docker Compose Setup](../collector-setup/docker-compose-example.md)
+  [Docker Compose Setup](../collector-setup/docker-compose-example.md).
 
 ## What You'll Monitor
 
-- **CPU**: cumulative per-container CPU time, per-core breakdown
-- **Memory**: usage including cache, working set (the OOM-relevant
-  figure), and limits
-- **Filesystem**: bytes consumed per container per device
-- **Network**: bytes received and transmitted per interface
-- **Machine**: total CPU cores and memory on the host node
+Metrics are grouped into three tiers by how you use them. Scrape Core
+always, alert on Operational, and reach for Diagnostic during an
+incident or capacity review.
+
+A few things to know about this surface before you read the tiers:
+
+- **`up` is the liveness signal here.** The `prometheus` receiver emits
+  `up` = 1 when cAdvisor's `/metrics` endpoint responds. That is the
+  liveness signal for the cAdvisor scrape itself; cAdvisor in turn
+  reports per-container health - CPU, memory working set, and OOM
+  events.
+- **cAdvisor is one of the highest-cardinality exporters.** Every
+  `container_*` series carries `name`, `id`, and `image` labels (plus
+  `pod` / `namespace` / `container` under Kubernetes), and the
+  filesystem / network families add a series per device and per
+  interface. Scope it with a `container_.*|machine_.*|up` keep filter
+  (see [Configuration](#configuration)).
+- **It reports on every container the host runs.** Under Kubernetes this
+  also surfaces system pods. The empty-`name` (root cgroup) series is
+  the machine-wide aggregate.
+- **`working_set` is the OOM-risk figure.**
+  `container_memory_working_set_bytes` is non-reclaimable - what the
+  OOM-killer counts - while `container_memory_usage_bytes` includes
+  reclaimable page cache and reads higher.
+- **`go_*` / `process_*` are cAdvisor's own runtime**, not container
+  metrics. The keep filter drops them.
+
+### Core - is it up and serving
+
+| Metric | What it tells you |
+|---|---|
+| `up` | Prometheus scrape liveness - 1 means cAdvisor's `/metrics` responded. The liveness signal on this surface. |
+| `container_cpu_usage_seconds_total` | Cumulative CPU time per container; the rate approximates cores in use. Headline compute load. |
+| `container_memory_working_set_bytes` | Non-reclaimable memory - what the OOM-killer counts. Headline memory-pressure / OOM-risk signal. |
+| `container_oom_events_total` | OOM-kill events for the container; a rising count means it is being killed for memory. |
+
+### Operational - what to alert on
+
+| Group | Metrics | What it tells you |
+|---|---|---|
+| Memory | `container_memory_usage_bytes`, `container_spec_memory_limit_bytes` | Total memory including reclaimable cache, and the configured limit - the denominator for OOM-risk %. |
+| CPU detail | `container_cpu_system_seconds_total`, `container_cpu_user_seconds_total`, `container_cpu_load_average_10s` | Kernel/user-mode CPU split and the 10-second load average (runnable tasks). |
+| Network | `container_network_receive_bytes_total`, `container_network_transmit_bytes_total`, `container_network_receive_errors_total`, `container_network_transmit_errors_total`, `container_network_receive_packets_dropped_total`, `container_network_transmit_packets_dropped_total` | Per-interface throughput, interface errors, and dropped packets (buffer saturation). |
+| Filesystem | `container_fs_usage_bytes`, `container_fs_limit_bytes`, `container_fs_reads_bytes_total`, `container_fs_writes_bytes_total` | Bytes used vs device size (disk-full %) and read/write throughput per device. |
+| Lifecycle | `container_tasks_state`, `container_start_time_seconds`, `container_last_seen` | Task count by state, start time (a change means a restart), and last-seen freshness. |
+| Host capacity | `machine_memory_bytes`, `machine_cpu_cores` | Host total memory and logical CPU count - the denominators for machine-wide utilization. |
+
+### Diagnostic - for investigation and tuning
+
+Higher cardinality; reach for these during an incident or a capacity
+review.
+
+| Group | Representative metrics | When you reach for it |
+|---|---|---|
+| Memory breakdown | `container_memory_rss`, `container_memory_cache`, `container_memory_swap`, ... | Anonymous vs page-cache vs swap split behind the working-set figure. |
+| Container spec / limits | `container_spec_cpu_period`, `container_spec_cpu_shares`, `container_spec_memory_swap_limit_bytes`, ... | The static cgroup limits the container was configured with. |
+| Filesystem I/O detail | `container_fs_reads_total`, `container_fs_writes_total`, `container_fs_io_time_seconds_total`, ... | Operation counts and I/O time behind the byte throughput. |
+| Per-device block I/O | `container_blkio_device_usage_total` | Block I/O bytes by device and operation. |
+| Packet counts | `container_network_receive_packets_total`, `container_network_transmit_packets_total` | Drill-down behind the rx/tx byte, error, and drop counters. |
+| Machine hardware | `machine_cpu_physical_cores`, `machine_cpu_sockets`, `machine_swap_bytes`, ... | Host physical-core, socket, and swap capacity detail. |
+| Build / scrape flags | `cadvisor_version_info`, `container_scrape_error`, `machine_scrape_error` | cAdvisor build labels and its own collection-error flags (1 = it failed to read stats). |
+| cAdvisor runtime + scrape meta | `go_*`, `process_*`, `scrape_duration_seconds`, ... | cAdvisor's own Go-runtime/process series and the receiver-side scrape meta - the keep filter drops these. |
 
 Full metric list: run `curl -s http://localhost:8080/metrics` against
 your cAdvisor instance.
 
+## Key Alerts to Configure
+
+Threshold guidance for the most useful Core and Operational series. The
+ratios are against each container's own configured limit, not invented
+absolutes; tune them to your workload.
+
+| Metric | Condition | Why it matters |
+|---|---|---|
+| `up` | `== 0` for > 1m | No per-container metrics are arriving - check the cAdvisor container and the scrape target. |
+| `rate(container_oom_events_total)` | `> 0` | A container was OOM-killed - raise its limit or fix the leak. |
+| `container_memory_working_set_bytes / container_spec_memory_limit_bytes` | `> 0.9` (when a limit is set) | OOM-kill is imminent for that container. |
+| `rate(container_cpu_usage_seconds_total)` | approaching the container's CPU quota | The container is CPU-bound and likely throttled - scale out or raise the quota. |
+| `container_fs_usage_bytes / container_fs_limit_bytes` | `> 0.9` | Disk pressure on that device - free space or expand. |
+| `rate(container_network_receive_errors_total + container_network_transmit_errors_total)` | `> 0` | Interface errors or drops - check host networking and throughput ceilings. |
+| `time() - container_last_seen` | `>` several scrape intervals | cAdvisor stopped seeing the container - it may have exited unexpectedly. |
+
 ## Access Setup
 
-Verify your cAdvisor instance is reachable:
+cAdvisor reads host cgroup and filesystem statistics directly, so it
+runs as a privileged container with the `/dev/kmsg` device and several
+read-only host mounts. Deploy it alongside the Collector:
+
+```yaml showLineNumbers title="compose.yaml (excerpt)"
+services:
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    privileged: true
+    devices:
+      - /dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /var/run:/var/run:ro
+      - /dev/disk:/dev/disk:ro
+    ports:
+      - "8080:8080"
+```
+
+Verify the endpoint is serving metrics:
 
 ```bash showLineNumbers title="Verify access"
 # Confirm cAdvisor is serving metrics
@@ -80,14 +177,17 @@ curl -s http://localhost:8080/metrics | head -20
 curl -s http://localhost:8080/metrics | grep container_cpu_usage_seconds_total
 ```
 
-cAdvisor must see the host's container runtime and cgroup state to
-populate per-container labels (`container`, `pod`, `namespace`,
-`image`). When the host uses containerd rather than docker, point
-cAdvisor at the containerd socket with
-`--containerd=/run/containerd/containerd.sock`; otherwise the metrics
-appear with empty per-container labels.
+The metrics endpoint has no authentication by default. Restrict the port
+to the Collector's network and front it appropriately in production.
 
 ## Configuration
+
+The `prometheus` receiver scrapes cAdvisor's `/metrics` endpoint
+(the default path, so no `metrics_path` override is needed). The
+`metric_relabel_configs` keep filter scopes collection to the
+`container_*` and `machine_*` families plus `up`, dropping cAdvisor's
+own `go_*` / `process_*` runtime noise - the high-cardinality control
+for this surface.
 
 ```yaml showLineNumbers title="config/otel-collector.yaml"
 receivers:
@@ -95,16 +195,19 @@ receivers:
     config:
       scrape_configs:
         - job_name: cadvisor
-          scrape_interval: 30s
-          metrics_path: /metrics
+          scrape_interval: 10s
           static_configs:
             - targets:
                 - ${env:CADVISOR_HOST}:8080
+          metric_relabel_configs:
+            - source_labels: [__name__]
+              regex: "container_.*|machine_.*|up"
+              action: keep
 
 processors:
   resource:
     attributes:
-      - key: environment
+      - key: deployment.environment.name
         value: ${env:ENVIRONMENT}
         action: upsert
       - key: service.name
@@ -139,50 +242,11 @@ SERVICE_NAME=your_service_name
 OTEL_EXPORTER_OTLP_ENDPOINT=https://<your-tenant>.base14.io
 ```
 
-### Filtering Metrics
-
-cAdvisor exposes a large catalog including Go runtime and process
-internals. To collect only the container and machine metrics:
-
-```yaml showLineNumbers title="config/otel-collector.yaml (filter)"
-receivers:
-  prometheus:
-    config:
-      scrape_configs:
-        - job_name: cadvisor
-          scrape_interval: 30s
-          static_configs:
-            - targets:
-                - ${env:CADVISOR_HOST}:8080
-          metric_relabel_configs:
-            - source_labels: [__name__]
-              regex: "container_.*|machine_.*"
-              action: keep
-```
-
-## Metrics Reference
-
-| Metric | Type | Unit | Description |
-| --- | --- | --- | --- |
-| `container_cpu_usage_seconds_total` | counter | s | Cumulative CPU time consumed per container cgroup. |
-| `container_memory_usage_bytes` | gauge | By | Current memory usage including cache. |
-| `container_memory_working_set_bytes` | gauge | By | Working-set memory (the OOM-relevant figure). |
-| `container_fs_usage_bytes` | gauge | By | Filesystem bytes consumed by the container. |
-| `container_network_receive_bytes_total` | counter | By | Cumulative bytes received per interface. |
-| `container_network_transmit_bytes_total` | counter | By | Cumulative bytes transmitted per interface. |
-| `machine_cpu_cores` | gauge | `{cpu}` | Total CPU cores on the host node. |
-| `machine_memory_bytes` | gauge | By | Total memory on the host node. |
-
-Container-level series carry `container`, `pod`, `namespace`, and
-`image` labels sourced from cAdvisor. Machine-level series
-(`machine_*`) are node-scoped and carry no container labels.
-
-## Workload Guidance
-
-Run any container workload so cAdvisor reports non-trivial
-per-container metrics. An idle host with no running containers leaves
-the `container_*` counters flat, so confirm at least one workload is
-active before checking the data in Scout.
+> **Semconv version note**: `deployment.environment.name` is the current
+> OTel attribute (introduced in semantic conventions v1.27.0, stable as
+> of v1.41.0). The legacy `deployment.environment` is still accepted by
+> Scout for backward compatibility, but new configs should emit the
+> dotted form.
 
 ## Verify the Setup
 
@@ -205,25 +269,43 @@ address.
 
 **Fix**:
 
-1. Verify cAdvisor is running: `docker ps | grep cadvisor`
-2. Confirm cAdvisor's metrics port (8080) is published or reachable
-   from the Collector host
-3. Check firewall rules if the Collector runs on a separate host
+1. Verify cAdvisor is running: `docker ps | grep cadvisor`.
+2. Confirm cAdvisor's metrics port (`8080`) is published or reachable
+   from the Collector host.
+3. Check firewall rules if the Collector runs on a separate host.
 
-### Metrics appear with empty container labels
+### cAdvisor returns errors or empty per-container metrics
 
-**Cause**: cAdvisor cannot read the container runtime, so it reports
-metric names without per-container `container` / `pod` / `namespace` /
-`image` labels.
+**Cause**: cAdvisor cannot read host cgroup or filesystem statistics, so
+it reports collection errors or metric names with empty per-container
+labels.
+
+**Look at**: `container_scrape_error` / `machine_scrape_error` - `1`
+means cAdvisor failed to read stats.
 
 **Fix**:
 
-1. On a containerd host, pass
-   `--containerd=/run/containerd/containerd.sock` to cAdvisor
-2. Mount the host's cgroup filesystem (`/sys/fs/cgroup`) into the
-   cAdvisor container
-3. Confirm cAdvisor runs with the privileges needed to read host
-   container state
+1. Confirm cAdvisor runs with `--privileged` and the `/dev/kmsg` device.
+2. Verify the read-only host mounts (`/`, `/sys`, `/var/lib/docker`,
+   `/var/run`, `/dev/disk`) are all present.
+3. Check the cAdvisor container logs for cgroup access errors.
+
+### Metric volume or cardinality is too high
+
+**Cause**: cAdvisor emits a series per container plus a series per device
+and per interface, and exposes its own `go_*` / `process_*` runtime
+internals.
+
+**Look at**: `scrape_samples_scraped` for the per-scrape series count.
+
+**Fix**:
+
+1. Keep the `container_.*|machine_.*|up` keep filter so collection is
+   scoped to the container and machine families and cAdvisor's own
+   runtime series are dropped.
+2. Drop the high-cardinality per-device / per-interface Diagnostic detail
+   with an additional `metric_relabel_configs` rule if it is not needed.
+3. A longer `scrape_interval` also reduces sample volume.
 
 ### No metrics appearing in Scout
 
@@ -231,73 +313,66 @@ metric names without per-container `container` / `pod` / `namespace` /
 
 **Fix**:
 
-1. Check Collector logs for export errors:
-   `docker logs otel-collector`
-2. Verify `OTEL_EXPORTER_OTLP_ENDPOINT` is set correctly
-3. Confirm the pipeline includes both the receiver and exporter
-
-### Network counters stay flat
-
-**Cause**: The container produces no network traffic, so
-`container_network_*` counters do not advance.
-
-**Fix**:
-
-1. This is expected for containers that do not send or receive
-   traffic
-2. CPU and working-set memory are the reliable liveness signals - use
-   those to confirm collection is working
+1. Check Collector logs for export errors: `docker logs otel-collector`.
+2. Verify `OTEL_EXPORTER_OTLP_ENDPOINT` is set correctly.
+3. Confirm the pipeline includes both the receiver and the exporter.
 
 ## FAQ
 
 **Does this work with cAdvisor running in Kubernetes?**
 
-Yes. Set `targets` to the cAdvisor pod or service address. cAdvisor is
-commonly run as a DaemonSet so each node's containers are measured by
-a local cAdvisor instance.
+Yes. cAdvisor is embedded in the kubelet, so you can scrape the kubelet's
+`/metrics/cadvisor` endpoint, or run cAdvisor as a DaemonSet so each
+node's containers are measured by a local instance. The container and
+machine metric names match either way.
 
-**Why are some metric names different from the kubelet's cAdvisor
-endpoint?**
+**How do I monitor cAdvisor on multiple hosts?**
 
-The kubelet embeds a cAdvisor and exposes a curated subset under
-`/metrics/cadvisor`. A standalone cAdvisor exposes the full native
-metric set on `:8080/metrics`. The core
-`container_*` and `machine_*` names match.
-
-**How do I reduce the metric volume?**
-
-Use `metric_relabel_configs` with a `keep` action to retain only the
-metric families you need (for example `container_cpu_.*` and
-`container_memory_.*`), as shown in
-[Filtering Metrics](#filtering-metrics).
+Add one scrape target per cAdvisor instance to the `prometheus`
+receiver's `static_configs`. The receiver attaches an `instance` label to
+each series, which distinguishes the hosts in Scout.
 
 **What is the difference between `container_memory_usage_bytes` and
 `container_memory_working_set_bytes`?**
 
-`container_memory_usage_bytes` includes reclaimable page cache.
-`container_memory_working_set_bytes` excludes cache that can be
-evicted under pressure, so it is the figure the OOM killer acts on and
-the better signal for memory alerts.
+`container_memory_usage_bytes` includes reclaimable page cache and reads
+higher. `container_memory_working_set_bytes` is the non-reclaimable
+memory the OOM-killer counts, so it is the OOM-risk signal and the better
+basis for memory alerts.
 
-## What's Next?
+**Why does cAdvisor need to run privileged?**
 
-- **Create Dashboards**: Explore pre-built dashboards or build
-  your own. See
-  [Create Your First Dashboard](../../guides/create-your-first-dashboard.md)
-- **Monitor More Components**: Add monitoring for
-  [Redis](./redis.md),
-  [etcd](./etcd.md),
-  and other components
-- **Fine-tune Collection**: Use `metric_relabel_configs` to filter
-  specific metric families and reduce storage volume
+cAdvisor reads host cgroup and filesystem statistics directly. It needs
+`--privileged`, the `/dev/kmsg` device, and read-only mounts of `/`,
+`/sys`, `/var/lib/docker`, `/var/run`, and `/dev/disk` to collect
+per-container resource metrics.
 
 ## Related Guides
 
-- [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
-  - Advanced collector configuration
-- [Docker Compose Setup](../collector-setup/docker-compose-example.md)
-  - Run the Collector locally
-- [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
-  - Production deployment
-- [Creating Alerts](../../guides/creating-alerts-with-logx.md)
-  - Alert on container metrics
+- [OTel Collector Configuration](../collector-setup/otel-collector-config.md) -
+  Advanced collector configuration.
+- [Docker Compose Setup](../collector-setup/docker-compose-example.md) -
+  Run the Collector locally.
+- [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md) -
+  Production deployment.
+- [Creating Alerts](../../guides/creating-alerts-with-logx.md) -
+  Alert on container metrics.
+- [Docker Engine Monitoring](./docker.md) -
+  Per-container metrics from the Docker Engine API via the `docker_stats`
+  receiver.
+- [Kubelet Stats Monitoring](./kubelet-stats.md) -
+  Node, pod, and container metrics from the kubelet Summary API.
+
+## What's Next?
+
+- **Create Dashboards**: Explore pre-built dashboards or build your own.
+  See
+  [Create Your First Dashboard](../../guides/create-your-first-dashboard.md).
+- **Monitor More Components**: Add monitoring for
+  [Docker Engine](./docker.md),
+  [Kubelet Stats](./kubelet-stats.md),
+  and other components.
+- **Fine-tune Collection**: The `container_.*|machine_.*|up` keep filter
+  scopes collection to the container and machine families. The per-device
+  / per-interface Diagnostic detail is there when you need to drill in
+  during an incident or a capacity review.
