@@ -1,14 +1,14 @@
 ---
 title: >
-  SNMP OpenTelemetry Monitoring - Network Devices, UPSes, and
-  Infrastructure Metrics
+  SNMP OpenTelemetry Monitoring - Routers, UPSes, Linux Hosts, and
+  Collector Setup
 sidebar_label: SNMP
 id: collecting-snmp-telemetry
 sidebar_position: 43
 description: >
-  Collect SNMP metrics from routers, switches, UPSes, and any
-  net-snmp host with the OpenTelemetry Collector's snmpreceiver.
-  Map OIDs to OTel metrics and ship to base14 Scout.
+  Collect SNMP metrics from routers, switches, UPSes, and net-snmp
+  hosts with the OpenTelemetry Collector's snmpreceiver. Map OIDs to
+  link state, throughput, and battery runway, and ship to base14 Scout.
 keywords:
   - snmp opentelemetry
   - snmp otel collector
@@ -18,8 +18,6 @@ keywords:
   - ups monitoring snmp
   - opentelemetry snmp receiver
   - if-mib opentelemetry
-  - host-resources-mib opentelemetry
-  - powernet-mib opentelemetry
   - iot monitoring snmp
 ---
 
@@ -43,7 +41,7 @@ makes SNMP a natural bridge into broader IoT and OT telemetry work.
 | Requirement | Minimum | Recommended |
 | --- | --- | --- |
 | SNMP version | v1 | v2c or v3 |
-| OTel Collector Contrib | 0.90.0 | 0.152+ |
+| OTel Collector Contrib | 0.90.0 | 0.153.0 |
 | Target devices | SNMP-enabled | SNMPv2c/v3 with community or user configured |
 | base14 Scout | Any | - |
 
@@ -57,19 +55,93 @@ Before starting:
 
 ## What You'll Monitor
 
-- **Linux / net-snmp hosts**: memory (total, available, cached,
-  buffered), per-CPU utilization, 1/5/15-minute load averages,
-  process and user session counts
-- **Network devices** (IF-MIB): per-interface bytes in/out
-  (64-bit ifHCOctets), error counters, nominal speed,
-  administrative and operational status, interface count
-- **UPSes** (PowerNet-MIB and standard UPS-MIB): battery status,
-  capacity, temperature, runtime remaining, input voltage and
-  frequency, output voltage, load percentage, current, online/on-battery
-  state
-- **Any scalar or table OID** the device exposes — `snmpreceiver`
-  treats OIDs as first-class; you map each to a metric with a unit
-  and description
+`snmpreceiver` has no fixed metric set. Each metric below exists
+because the config maps an OID — scalar or column — to an OTel dotted
+name with an explicit unit and type, so the emitted set IS the config;
+you choose the names when you map each OID. The tiers are organised by
+how you use the metrics across three device classes: `[net]` for the
+router, `[ups]` for the UPS, `[host]` for the Linux host.
+
+Four things shape how this surface reads, regardless of device:
+
+- **There is no `up` series and no health metric.** Liveness is the
+  receiver scraping the device successfully — the device answering its
+  OIDs. A sustained scrape error in the Collector log is the
+  device-unreachable signal.
+- **Two metric types.** `network.io` and `network.errors` are
+  monotonic cumulative sums (interface octet/error counters, each
+  carrying a `direction` attribute); everything else is a gauge.
+- **One endpoint per receiver instance.** Use one `snmp/<device>`
+  block per device (or per device class sharing credentials). Each
+  pipeline stamps a distinct `service.name`, so every device appears
+  as its own service in Scout. Column OIDs fan out to one resource per
+  row — `network.interface.name` from `ifName`, `cpu.index` from the
+  `hrProcessorTable`.
+- **Static labels come from a processor, not the receiver.**
+  `device.kind` (compute / network / power), `device.manufacturer`,
+  `device.model.identifier`, and `site.id` are added by a `resource`
+  processor — `snmpreceiver` can only attach values it actually
+  fetches over SNMP.
+
+Several MIBs store fixed-point values as scaled integers:
+`system.cpu.load_average.*` is `laLoadInt` (×100),
+`ups.battery.runtime_remaining` is `TimeTicks` (centiseconds, not
+seconds), and some PowerNet frequencies use units of 0.1 Hz. Rescale
+these in the backend or a `transform` processor; do not assume base
+units.
+
+### Core - is the link, power, or host healthy
+
+The per-device-class headline pair: link state plus throughput for the
+router, output state plus battery runway for the UPS, load plus
+available memory for the host.
+
+| Metric | Type | Class | What it tells you |
+|---|---|---|---|
+| `network.interface.oper_status` | gauge | [net] | Operational link state (1=up, 2=down, …) — the outage signal. |
+| `network.io` | sum | [net] | Per-interface bytes in/out (ifHCOctets) — headline throughput. |
+| `ups.output.status` | gauge | [ups] | 2=onLine, 3=onBattery, … — the utility-power-lost signal. |
+| `ups.battery.capacity` | gauge | [ups] | Remaining battery capacity (%) — the runway. |
+| `system.cpu.load_average.1m` | gauge | [host] | 1-minute load average ×100 — headline host load. |
+| `system.memory.available` | gauge | [host] | Available real memory (KiB) — headline host memory. |
+
+### Operational - what to alert on
+
+The error counters, status/replace enums, voltage and load readings,
+and the saturation denominators (`network.interface.speed`,
+`system.memory.total`) the Core numbers are read against.
+
+| Metric | Type | Class | What it tells you |
+|---|---|---|---|
+| `network.errors` | sum | [net] | Interface in/out errors — rising = a link or cabling problem. |
+| `network.interface.admin_status` | gauge | [net] | Administrative state (1=up, 2=down) — compare with oper_status. |
+| `network.interface.speed` | gauge | [net] | Nominal speed (Mbit/s) — denominator for saturation. |
+| `ups.battery.status` | gauge | [ups] | 1=unknown, 2=normal, 3=low (replace is the separate `ups.battery.replace_indicator`). |
+| `ups.battery.replace_indicator` | gauge | [ups] | 2=battery needs replacing. |
+| `ups.battery.runtime_remaining` | gauge | [ups] | Estimated runtime (centiseconds, TimeTicks). |
+| `ups.input.voltage` | gauge | [ups] | Input line voltage (V) — utility quality. |
+| `ups.output.load` | gauge | [ups] | Output load (% of rated capacity) — overload risk. |
+| `system.cpu.utilization` | gauge | [host] | Per-CPU utilization (%, per-core fan-out). |
+| `system.cpu.load_average.5m` | gauge | [host] | 5-minute load average ×100. |
+| `system.cpu.load_average.15m` | gauge | [host] | 15-minute load average ×100. |
+| `system.memory.total` | gauge | [host] | Total real memory (KiB) — denominator for memory pressure. |
+| `system.processes.count` | gauge | [host] | Running process count. |
+
+### Diagnostic - for investigation and tuning
+
+Inventory and second-order context. Reach for these during an incident
+or a capacity review.
+
+| Metric | Type | Class | What it tells you |
+|---|---|---|---|
+| `system.network.interfaces.count` | gauge | [net] | ifNumber — interface inventory. |
+| `system.users.count` | gauge | [host] | Active user sessions. |
+| `system.memory.cached` | gauge | [host] | Cached memory (KiB). |
+| `system.memory.buffered` | gauge | [host] | Buffered memory (KiB). |
+| `ups.battery.temperature` | gauge | [ups] | Battery temperature (Cel). |
+| `ups.input.frequency` | gauge | [ups] | Input line frequency (Hz). |
+| `ups.output.voltage` | gauge | [ups] | Output voltage (V). |
+| `ups.output.current` | gauge | [ups] | Output current (A). |
 
 Full receiver reference:
 [OTel SNMP Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/snmpreceiver).
@@ -80,6 +152,26 @@ It ships three simulated devices (communities `linux-host`,
 `cisco-router`, `apc-ups`) on `udp://snmpsim:1161`, so the config
 below works unchanged against the simulator if you swap the real
 endpoints for that address.
+
+## Key Alerts to Configure
+
+The state reads below — `oper_status == 2`, `output.status == 3`,
+`battery.status == 3`, `replace_indicator == 2` — are MIB-defined enum
+values, not invented thresholds. Everything else is relative to your
+own baseline or the device's own rating; tune to your fleet.
+
+| Alert | Condition | Why it matters |
+|---|---|---|
+| Link down (unplanned) | `network.interface.oper_status` == 2 while `network.interface.admin_status` == 1 | The interface is administratively up but operationally down — an unplanned outage, not a config change. |
+| Interface errors rising | `rate(network.errors)` > 0 / rising vs baseline | Errors climbing point to a link, duplex, or cabling fault. |
+| Interface saturation | `network.io` rate approaching `network.interface.speed` | The link is near its nominal capacity; expect drops and queueing. |
+| UPS on battery | `ups.output.status` == 3 (onBattery) | Utility power is lost; the load is now on battery runway. |
+| UPS battery low / replace | `ups.battery.status` == 3 or `ups.battery.replace_indicator` == 2 | The battery is degraded or end-of-life; schedule a replacement. |
+| UPS battery runway short | `ups.battery.capacity` dropping vs baseline / `ups.battery.runtime_remaining` falling | Remaining runtime is shrinking; plan a graceful shutdown before it hits zero. |
+| UPS overload | `ups.output.load` high vs the unit's rated capacity | The UPS is carrying more than it should; shed load or upgrade. |
+| Host memory pressure | `system.memory.available` dropping vs baseline | Free real memory is shrinking toward swap or OOM. |
+| Host CPU saturation | `system.cpu.load_average.1m` rising above the core count | Sustained load above the core count means the run queue is backing up. |
+| Device unreachable | sustained `snmpreceiver` scrape errors / no data for the device | The device stopped answering its OIDs — there is no `up` series, so the scrape error is the liveness signal. |
 
 ## Access Setup
 
@@ -302,7 +394,7 @@ receivers:
 
     metrics:
       ups.battery.status:
-        description: "Battery status - 1=unknown, 2=normal, 3=low, 4=replace"
+        description: "Battery status - 1=unknown, 2=normal, 3=low"
         unit: "1"
         gauge: { value_type: int }
         scalar_oids:
@@ -394,33 +486,33 @@ processors:
   # service.name so it appears as its own service in Scout.
   resource/linux:
     attributes:
-      - { key: service.name,            value: "linux-host-01",            action: insert }
-      - { key: service.namespace,       value: ${env:SERVICE_NAMESPACE},   action: insert }
-      - { key: environment,             value: ${env:ENVIRONMENT},         action: insert }
-      - { key: device.kind,             value: compute,                    action: insert }
-      - { key: device.manufacturer,     value: "generic-linux",            action: insert }
-      - { key: device.model.identifier, value: "net-snmp",                 action: insert }
-      - { key: site.id,                 value: ${env:SITE_ID},             action: insert }
+      - { key: service.name,                value: "linux-host-01",            action: insert }
+      - { key: service.namespace,           value: ${env:SERVICE_NAMESPACE},   action: insert }
+      - { key: deployment.environment.name, value: ${env:ENVIRONMENT},         action: insert }
+      - { key: device.kind,                 value: compute,                    action: insert }
+      - { key: device.manufacturer,         value: "generic-linux",            action: insert }
+      - { key: device.model.identifier,     value: "net-snmp",                 action: insert }
+      - { key: site.id,                     value: ${env:SITE_ID},             action: insert }
 
   resource/router:
     attributes:
-      - { key: service.name,            value: "cisco-router-01",          action: insert }
-      - { key: service.namespace,       value: ${env:SERVICE_NAMESPACE},   action: insert }
-      - { key: environment,             value: ${env:ENVIRONMENT},         action: insert }
-      - { key: device.kind,             value: network,                    action: insert }
-      - { key: device.manufacturer,     value: "cisco",                    action: insert }
-      - { key: device.model.identifier, value: "ISR-C2900",                action: insert }
-      - { key: site.id,                 value: ${env:SITE_ID},             action: insert }
+      - { key: service.name,                value: "cisco-router-01",          action: insert }
+      - { key: service.namespace,           value: ${env:SERVICE_NAMESPACE},   action: insert }
+      - { key: deployment.environment.name, value: ${env:ENVIRONMENT},         action: insert }
+      - { key: device.kind,                 value: network,                    action: insert }
+      - { key: device.manufacturer,         value: "cisco",                    action: insert }
+      - { key: device.model.identifier,     value: "ISR-C2900",                action: insert }
+      - { key: site.id,                     value: ${env:SITE_ID},             action: insert }
 
   resource/ups:
     attributes:
-      - { key: service.name,            value: "apc-ups-01",               action: insert }
-      - { key: service.namespace,       value: ${env:SERVICE_NAMESPACE},   action: insert }
-      - { key: environment,             value: ${env:ENVIRONMENT},         action: insert }
-      - { key: device.kind,             value: power,                      action: insert }
-      - { key: device.manufacturer,     value: "apc",                      action: insert }
-      - { key: device.model.identifier, value: "Smart-UPS-SRT",            action: insert }
-      - { key: site.id,                 value: ${env:SITE_ID},             action: insert }
+      - { key: service.name,                value: "apc-ups-01",               action: insert }
+      - { key: service.namespace,           value: ${env:SERVICE_NAMESPACE},   action: insert }
+      - { key: deployment.environment.name, value: ${env:ENVIRONMENT},         action: insert }
+      - { key: device.kind,                 value: power,                      action: insert }
+      - { key: device.manufacturer,         value: "apc",                      action: insert }
+      - { key: device.model.identifier,     value: "Smart-UPS-SRT",            action: insert }
+      - { key: site.id,                     value: ${env:SITE_ID},             action: insert }
 
 exporters:
   otlphttp/b14:
@@ -469,6 +561,12 @@ device with `device.kind=network` — there is no separate
 `network.device.*` namespace. Each simulated (or real) device
 appears as its own service in Scout because each receiver pipeline
 stamps a distinct `service.name`.
+
+> **Semconv version note**: `deployment.environment.name` is the
+> current OTel attribute (introduced in semantic conventions v1.27.0,
+> stable as of v1.41.0). The legacy `deployment.environment` is still
+> accepted by Scout for backward compatibility, but new configs should
+> emit the dotted form.
 
 ### Shipping via a Local Scout Collector
 
@@ -563,8 +661,9 @@ column_oids:
       - { name: direction, value: receive }
 ```
 
-Expect wraparound on high-throughput interfaces; ifInOctets wraps
-at ~34 GiB.
+Expect wraparound on high-throughput interfaces; as a Counter32 in
+octets, ifInOctets wraps at 2^32 bytes (~4 GiB), so a busy link can
+roll over in seconds.
 
 ### Metric values look wrong by a factor of 10 or 100
 
@@ -572,7 +671,14 @@ at ~34 GiB.
 (for example, UCD `laLoadInt` uses ×100; PowerNet `upsAdvOutputFrequency`
 uses units of 0.1 Hz). `upsAdvBatteryRunTimeRemaining` is a
 `TimeTicks` value — centiseconds, not seconds — so a 30-minute
-runtime reads as `180000`.
+runtime reads as `180000`. The Operational
+`ups.battery.runtime_remaining` and the Diagnostic
+`ups.input.frequency` are the series this most often bites.
+
+**Look at**: the raw `system.cpu.load_average.*` and
+`ups.battery.runtime_remaining` values against what the device's own
+CLI reports — a clean ×100 or centisecond offset confirms it is a
+scaling issue, not a bad OID.
 
 **Fix**:
 
@@ -582,7 +688,14 @@ runtime reads as `180000`.
 
 ### Scrape errors flood the log during a device outage
 
-**Cause**: The receiver logs each failed scrape at error level.
+**Cause**: The receiver logs each failed scrape at error level. With
+no `up` series, a sustained run of these entries is the
+device-unreachable signal.
+
+**Look at**: whether the affected pipeline's metrics go stale in
+Scout (`network.io`, `ups.output.status`, or `system.memory.available`
+stop updating) — that, alongside the scrape errors, confirms the
+device is down rather than a transient packet drop.
 
 **Fix**:
 
@@ -611,8 +724,8 @@ and let the generator emit identical metric blocks.
 
 **Can I receive SNMP traps with this receiver?**
 
-No. `snmpreceiver` is poll-only. Trap ingestion is handled by a
-separate (still-in-development) receiver. If you need traps now,
+No. `snmpreceiver` is poll-only, and the Collector has no SNMP-trap
+receiver (the request to add one was declined). To capture traps,
 forward them into the Collector as logs via `snmptrapd` + a file or
 syslog receiver.
 
@@ -634,11 +747,12 @@ pipeline. This keeps each pipeline self-contained.
 
 **Can I map string values (DisplayString) to numeric metrics?**
 
-No. `snmpreceiver` expects numeric types (Integer, Counter*,
-Gauge32, TimeTicks). If a MIB returns a DisplayString like UCD
-`laLoad` (`"0.21"`), switch to the integer-scaled sibling OID
-(`laLoadInt`, ×100) and document the scaling in the metric
-description.
+No. A numeric metric needs a numeric SNMP type (Integer, Counter*,
+Gauge32, TimeTicks); `snmpreceiver` can read a DisplayString only as a
+resource-attribute value, not as a metric. If a MIB returns a
+DisplayString like UCD `laLoad` (`"0.21"`), switch to the
+integer-scaled sibling OID (`laLoadInt`, ×100) and document the scaling
+in the metric description.
 
 **Does polling add significant load on devices?**
 
@@ -646,6 +760,19 @@ A 30-second `collection_interval` against a dozen scalar OIDs and
 a single interface table is negligible for modern network gear.
 For very large `ifTable` walks on older devices, raise the
 interval or reduce the column list.
+
+## Related Guides
+
+- [OTel Collector Configuration](../collector-setup/otel-collector-config.md) —
+  Advanced Collector configuration
+- [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
+  Run the Collector locally
+- [Docker Monitoring](./docker.md) — Host-level container metrics
+  alongside network gear
+- [HAProxy Monitoring](./haproxy.md) — Monitor the load balancer in
+  front of those network devices
+- [IoT & Edge Instrumentation](../iot/index.md) — MQTT, Sparkplug B,
+  OPC-UA, and edge Collector patterns beyond SNMP
 
 ## What's Next?
 
@@ -662,16 +789,3 @@ interval or reduce the column list.
   guides for [MQTT](../iot/mqtt-trace-propagation.md),
   [Sparkplug B](../iot/sparkplug.md), and [OPC-UA](../iot/opcua.md)
   paths when you need protocols SNMP cannot reach.
-
-## Related Guides
-
-- [OTel Collector Configuration](../collector-setup/otel-collector-config.md) —
-  Advanced Collector configuration
-- [Docker Compose Setup](../collector-setup/docker-compose-example.md) —
-  Run the Collector locally
-- [Docker Monitoring](./docker.md) — Host-level container metrics
-  alongside network gear
-- [HAProxy Monitoring](./haproxy.md) — Monitor the load balancer in
-  front of those network devices
-- [IoT & Edge Instrumentation](../iot/index.md) — MQTT, Sparkplug B,
-  OPC-UA, and edge Collector patterns beyond SNMP
