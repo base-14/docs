@@ -1,14 +1,14 @@
 ---
 title: >
-  PgBouncer OpenTelemetry Monitoring - Connection Pools,
-  Query Throughput, and Collector Setup
+  PgBouncer OpenTelemetry Monitoring - Pool Saturation, Client Wait,
+  and Collector Setup
 sidebar_label: PgBouncer
 id: collecting-pgbouncer-telemetry
 sidebar_position: 28
 description: >
-  Collect PgBouncer metrics with the OpenTelemetry Collector. Monitor
-  connection pools, query throughput, and client wait times using the
-  pgbouncer-exporter and export to base14 Scout.
+  Collect PgBouncer metrics with the OpenTelemetry Collector. Monitor pool
+  saturation, client wait time, and query throughput via the pgbouncer_exporter
+  and ship to base14 Scout.
 keywords:
   - pgbouncer opentelemetry
   - pgbouncer otel collector
@@ -22,71 +22,152 @@ keywords:
 
 # PgBouncer
 
-PgBouncer does not expose a native Prometheus endpoint. The
-`pgbouncer-exporter` sidecar connects to PgBouncer's admin
-interface (the virtual `pgbouncer` database) and translates
-`SHOW STATS` and `SHOW POOLS` output into 44 Prometheus
-metrics with the `pgbouncer_*` prefix. The OpenTelemetry
-Collector scrapes the exporter using the Prometheus receiver,
-collecting metrics across connection pools, query throughput,
-client wait times, and server utilization. This guide
-configures the exporter, the Collector, and ships metrics
-to base14 Scout.
+PgBouncer exposes its statistics only over its admin console; the
+prometheuscommunity `pgbouncer_exporter` translates them to Prometheus on
+`:9127`, and the OpenTelemetry Collector's `prometheus` receiver scrapes it.
+This collects metrics across pool saturation and client wait, query and
+transaction throughput, client and server connection counts against the
+configured caps, and per-database limits, then ships them to base14 Scout.
+PgBouncer has no native Prometheus endpoint and there is no `pgbouncerreceiver`
+in collector-contrib, so the exporter is part of the pipeline. This guide
+configures the exporter and the receiver, sets up admin-console access, and
+ships metrics to Scout.
 
 ## Prerequisites
 
 | Requirement            | Minimum | Recommended |
-| ---------------------- | ------- | ----------- |
-| PgBouncer              | 1.12    | 1.23+       |
-| pgbouncer-exporter     | 0.7.0   | latest      |
-| OTel Collector Contrib | 0.90.0  | latest      |
-| base14 Scout           | Any     | ---         |
+| ---------------------- | ------- | ------------------------ |
+| PgBouncer              | 1.x     | 1.25+ (e.g. 1.25.2)      |
+| pgbouncer_exporter     | -       | 0.12+ (e.g. 0.12.0)      |
+| OTel Collector Contrib | 0.90.0  | 0.153.0                  |
+| base14 Scout           | Any     | -                        |
 
 Before starting:
 
-- PgBouncer must be accessible from the host running the
-  exporter
-- The exporter must be accessible from the host running
-  the Collector
-- A PgBouncer user listed in `stats_users` or `admin_users`
-  (see [Access Setup](#access-setup))
-- Scout account and API credentials
-- Scout Collector installed and configured (see
-  [Quick Start](../../guides/quick-start.md))
-
-:::info Docker images
-For Docker deployments, use `edoburu/pgbouncer`
-(multi-architecture including ARM64) or `bitnami/pgbouncer`
-with an explicit version tag. The Bitnami image does not
-publish a `latest` tag.
-:::
+- PgBouncer must be reachable from the host running the exporter, over its
+  admin console (the virtual `pgbouncer` database on the listen port, default
+  `6432`).
+- The exporter must be reachable from the host running the Collector, on
+  `:9127`.
+- A PgBouncer user listed in `stats_users` or `admin_users` (see
+  [Access Setup](#access-setup)).
+- A Scout account and OTLP endpoint.
+- OTel Collector installed - see
+  [Docker Compose Setup](../collector-setup/docker-compose-example.md).
 
 ## What You'll Monitor
 
-- **Connection Pools**: client active/waiting connections,
-  server active/idle/used/testing/login connections, max
-  wait time
-- **Traffic & Throughput**: SQL transactions pooled,
-  queries pooled, bytes sent/received, query duration
-- **Client Experience**: client wait time, server
-  in-transaction time, cancel requests
-- **Configuration State**: max client connections, max user
-  connections, pool size, database count
-- **Health**: `pgbouncer_up` status, free clients/servers,
-  used clients/servers, cached DNS entries
+Metrics are grouped into three tiers by how you use them. Scrape Core always,
+alert on Operational, and reach for Diagnostic during an incident or capacity
+review.
+
+A few things shape how you read this surface:
+
+- **Two liveness signals.** `up` (from the `prometheus` receiver) is 1 when the
+  exporter's `/metrics` responds; `pgbouncer_up` is 1 when the exporter could
+  reach PgBouncer's admin console. A healthy pipeline has both at 1. `up == 1`
+  with `pgbouncer_up == 0` means the exporter is running but cannot talk to
+  PgBouncer.
+- **The exporter is required.** PgBouncer exposes stats only over its admin
+  console; there is no native Prometheus endpoint and no dedicated collector
+  receiver. The only pure-collector alternative is the `sqlqueryreceiver`
+  pointed at the same admin console with hand-mapped `SHOW` queries (more
+  config, custom metric names).
+- **Pool exhaustion is the signal that matters.** When every server connection
+  in a pool is busy, new clients queue: `pgbouncer_pools_client_waiting_connections`
+  rises and `pgbouncer_pools_client_maxwait_seconds` grows. That wait is added
+  latency on every query. Pool capacity is `pgbouncer_databases_pool_size`.
+- **Pool mode shapes interpretation.** Server-connection reuse - and thus the
+  idle / active server counts - differs across session, transaction, and
+  statement mode.
+- **Per-pool / per-database cardinality.** The `pgbouncer_pools_*` and
+  `pgbouncer_databases_*` families are labeled by database and user, so series
+  count scales with `#databases x #users`.
+- **Admin access.** The exporter must authenticate as a user listed in
+  PgBouncer's `stats_users` / `admin_users`; `SHOW STATS` needs stats access.
+
+### Core - is it up, reachable, and serving
+
+| Metric | What it tells you |
+|---|---|
+| `up` | Prometheus scrape liveness - 1 when the exporter's `/metrics` responded. |
+| `pgbouncer_up` | 1 when the exporter reached PgBouncer's admin console - the PgBouncer liveness signal. |
+| `pgbouncer_pools_client_waiting_connections` | Clients queued waiting for a server connection - pool exhaustion. |
+| `pgbouncer_pools_client_maxwait_seconds` | Longest a client is currently waiting for a connection - exhaustion severity / added latency. |
+| `pgbouncer_stats_totals_queries_pooled_total` | Queries routed through the pooler - headline throughput. |
+
+### Operational - what to alert on
+
+| Metric | What it tells you |
+|---|---|
+| `pgbouncer_pools_client_active_connections` | Clients with an assigned server connection (actively served). |
+| `pgbouncer_pools_server_active_connections` | Server connections currently executing client queries. |
+| `pgbouncer_pools_server_idle_connections` | Idle server connections available to take work - 0 with waiting clients means saturation. |
+| `pgbouncer_pools_server_used_connections` | Recently used server connections. |
+| `pgbouncer_stats_totals_sql_transactions_pooled_total` | Transactions routed through the pooler. |
+| `pgbouncer_stats_totals_queries_duration_seconds_total` | Cumulative query time - average latency is its rate over `queries_pooled`. |
+| `pgbouncer_stats_totals_client_wait_seconds_total` | Cumulative time clients spent waiting for a connection. |
+| `pgbouncer_stats_totals_received_bytes_total` | Bytes received from clients. |
+| `pgbouncer_stats_totals_sent_bytes_total` | Bytes sent to clients. |
+| `pgbouncer_client_connections` | Total client connections to PgBouncer. |
+| `pgbouncer_config_max_client_connections` | `max_client_conn` - the global client-connection ceiling. |
+| `pgbouncer_databases_current_connections` | Current server connections per database. |
+| `pgbouncer_databases_max_connections` | Configured per-database connection limit. |
+| `pgbouncer_databases_pool_size` | Configured pool size per database - the saturation denominator. |
+| `pgbouncer_databases_paused` | 1 when the database is paused (clients cannot connect). |
+| `pgbouncer_free_servers` | Free server-connection slots. |
+| `pgbouncer_used_servers` | Used server-connection slots. |
+
+### Diagnostic - for investigation and tuning
+
+Higher cardinality; reach for these during an incident or a capacity review.
+Grouped, not exhaustive - see the upstream reference for the full list.
+
+| Group | Representative metrics | When you reach for it |
+|---|---|---|
+| Prepared-statement counters | `pgbouncer_stats_totals_binds_total`, `pgbouncer_stats_totals_client_parses_total`, `pgbouncer_stats_totals_server_parses_total` | Prepared-statement parse / bind volume; these are newer SHOW STATS columns. |
+| Server-connection lifecycle | `pgbouncer_pools_server_login_connections`, `pgbouncer_pools_server_testing_connections`, `pgbouncer_pools_server_being_canceled_connections` | Backends stuck in login / testing / cancel transitions. |
+| Cancel requests | `pgbouncer_pools_client_active_cancel_connections`, `pgbouncer_pools_client_waiting_cancel_connections` | Cancellation activity during query cancels. |
+| Pool / database / user counts | `pgbouncer_pools`, `pgbouncer_databases`, `pgbouncer_users` | Topology size as you add databases and users. |
+| DNS cache | `pgbouncer_cached_dns_names`, `pgbouncer_in_flight_dns_queries` | Backend-host resolution when PgBouncer resolves by DNS. |
+| Version / build info | `pgbouncer_version_info`, `pgbouncer_exporter_build_info` | The running PgBouncer and exporter versions. |
+| Exporter handler stats | `promhttp_metric_handler_requests_total` | The exporter's own `/metrics` handler. |
+| Runtime / scrape meta | `go_*`, `process_*`, `scrape_duration_seconds` | Exporter Go-runtime and Prometheus scrape housekeeping series. |
 
 Full metric reference:
-[pgbouncer-exporter metrics](https://github.com/prometheus-community/pgbouncer_exporter#metrics)
+[pgbouncer_exporter](https://github.com/prometheus-community/pgbouncer_exporter#metrics),
+or run `curl -s http://localhost:9127/metrics` against the exporter.
+
+## Key Alerts to Configure
+
+Threshold guidance for the most useful Core and Operational series. These are
+starting points; tune them to your workload.
+
+| Metric | Warning | Critical | Why it matters |
+|---|---|---|---|
+| `up` | - | `== 0` for > 1m | No PgBouncer metrics are arriving - check the exporter container. |
+| `pgbouncer_up` | - | `== 0` for > 1m | The exporter is up but cannot reach PgBouncer's admin console - check PgBouncer and the stats user. |
+| `pgbouncer_pools_client_waiting_connections` | `> 0` sustained | Rising across scrapes | Clients are queuing for server connections - raise the pool size or fix slow queries holding connections. |
+| `pgbouncer_pools_client_maxwait_seconds` | `>` a few seconds | Growing | A client has waited too long for a connection; the pool is saturated and latency is added to every query. |
+| `pgbouncer_client_connections / pgbouncer_config_max_client_connections` | `> 0.9` | Approaching 1.0 | Approaching `max_client_conn` - new clients will be refused; raise the cap or shed load. |
+| `pgbouncer_databases_current_connections` vs `pgbouncer_databases_max_connections` | Approaching the limit | At the limit | A database has reached its connection limit. |
+| `pgbouncer_databases_paused` | - | `== 1` | A database is paused - clients cannot connect (maintenance or blocked). |
+| `pgbouncer_pools_server_idle_connections` | - | `== 0` with waiting clients `> 0` | Every backend is busy - the pool or the backend is the bottleneck. |
+
+The `max_client_conn` ratio compares the live client count against PgBouncer's
+own configured cap (`pgbouncer_config_max_client_connections`), not an invented
+absolute. The maxwait threshold is small fixed wait-time guidance - any client
+that has waited several seconds for a connection is on a saturated pool.
 
 ## Access Setup
 
-PgBouncer requires two configuration changes to support the
-exporter.
+PgBouncer exposes statistics only over its admin console - the virtual
+`pgbouncer` database on the listen port (default `6432`). The exporter
+authenticates there as a stats user and runs the `SHOW` commands.
 
 ### 1. Create a monitoring user
 
-Add the exporter's connecting user to `stats_users` in
-`pgbouncer.ini`:
+Add the exporter's connecting user to `stats_users` in `pgbouncer.ini`:
 
 ```ini showLineNumbers title="pgbouncer.ini"
 [pgbouncer]
@@ -94,11 +175,12 @@ stats_users = otel_monitor
 ignore_startup_parameters = extra_float_digits
 ```
 
-- `stats_users` grants read-only access to `SHOW` commands
-- `ignore_startup_parameters` is required because the
-  exporter's PostgreSQL driver sends `extra_float_digits`
-  during connection startup, which PgBouncer rejects by
-  default
+- `stats_users` grants read-only access to the `SHOW` commands the exporter
+  runs (`SHOW STATS`, `SHOW POOLS`, `SHOW DATABASES`, `SHOW LISTS`). A user in
+  `admin_users` also works.
+- `ignore_startup_parameters` is required because the exporter's PostgreSQL
+  driver sends `extra_float_digits` during connection startup, which PgBouncer
+  rejects by default.
 
 ### 2. Add authentication
 
@@ -110,33 +192,42 @@ Add the monitoring user to `userlist.txt`:
 
 ### 3. Verify access
 
-```bash showLineNumbers title="Verify exporter connectivity"
-# Connect to PgBouncer admin interface
+Confirm the user can read stats over the admin console:
+
+```bash showLineNumbers title="Verify admin-console access"
+psql -p 6432 pgbouncer -c 'SHOW STATS;'
+# or with an explicit connection string:
 psql "postgres://otel_monitor:your_password@localhost:6432/pgbouncer?sslmode=disable" \
-  -c "SHOW STATS;"
+  -c 'SHOW STATS;'
 ```
 
-No write permissions are needed. The exporter only reads
-pool and traffic statistics.
+No write permissions are needed. The exporter only reads pool and traffic
+statistics.
 
 ## Configuration
 
-### pgbouncer-exporter
+### pgbouncer_exporter
 
-Run the exporter as a sidecar alongside PgBouncer:
+Run the exporter alongside PgBouncer. Its connection string points at
+PgBouncer's admin console - the virtual `pgbouncer` database on the listen port
+(default `6432`):
 
-```bash showLineNumbers title="Run pgbouncer-exporter"
+```bash showLineNumbers title="Run pgbouncer_exporter"
 docker run -d \
   --name pgbouncer-exporter \
   -p 9127:9127 \
   prometheuscommunity/pgbouncer-exporter \
-  --pgBouncer.connectionString="postgres://${PGBOUNCER_USER}:${PGBOUNCER_PASSWORD}@pgbouncer-host:6432/pgbouncer?sslmode=disable"
+  --pgBouncer.connectionString="postgres://${PGBOUNCER_USER}:${PGBOUNCER_PASSWORD}@${PGBOUNCER_HOST}:6432/pgbouncer?sslmode=disable"
 ```
 
-The exporter listens on port 9127 and serves metrics at
+The exporter listens on `:9127` and serves the `pgbouncer_*` metrics at
 `/metrics`.
 
 ### OTel Collector
+
+The `prometheus` receiver scrapes the exporter. The keep filter scopes
+collection to the PgBouncer surface and the scrape-liveness series, dropping
+the exporter's own `go_*` / `process_*` / `promhttp_*` runtime metrics:
 
 ```yaml showLineNumbers title="config/otel-collector.yaml"
 receivers:
@@ -144,15 +235,19 @@ receivers:
     config:
       scrape_configs:
         - job_name: pgbouncer
-          scrape_interval: 30s
+          scrape_interval: 10s
           static_configs:
             - targets:
                 - ${env:PGBOUNCER_EXPORTER_HOST}:9127
+          metric_relabel_configs:
+            - source_labels: [__name__]
+              regex: 'pgbouncer_.*|up'
+              action: keep
 
 processors:
   resource:
     attributes:
-      - key: environment
+      - key: deployment.environment.name
         value: ${env:ENVIRONMENT}
         action: upsert
       - key: service.name
@@ -163,7 +258,6 @@ processors:
     timeout: 10s
     send_batch_size: 1024
 
-# Export to base14 Scout
 exporters:
   otlphttp/b14:
     endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT}
@@ -178,9 +272,21 @@ service:
       exporters: [otlphttp/b14]
 ```
 
+> **Semconv version note**: `deployment.environment.name` is the current OTel
+> attribute (semantic conventions v1.27+, stable as of v1.41.0). The legacy
+> `deployment.environment` is still accepted by Scout for backward
+> compatibility, but new configs should emit the dotted form.
+
+To keep more or fewer series, adjust the `regex` in `metric_relabel_configs`.
+Dropping the keep filter entirely sends the exporter's runtime and scrape-meta
+metrics too.
+
 ### Environment Variables
 
 ```bash showLineNumbers title=".env"
+PGBOUNCER_HOST=pgbouncer
+PGBOUNCER_USER=otel_monitor
+PGBOUNCER_PASSWORD=your_password
 PGBOUNCER_EXPORTER_HOST=localhost
 ENVIRONMENT=your_environment
 SERVICE_NAME=your_service_name
@@ -189,51 +295,55 @@ OTEL_EXPORTER_OTLP_ENDPOINT=https://<your-tenant>.base14.io
 
 ## Verify the Setup
 
-Start the exporter and Collector, then check for metrics
-within 60 seconds:
+Start the exporter and Collector, then check for metrics within 60 seconds:
 
 ```bash showLineNumbers title="Verify metrics collection"
-# Check exporter is serving metrics
-curl -s http://localhost:9127/metrics \
-  | grep pgbouncer_up
+# Confirm the admin console answers
+psql -p 6432 pgbouncer -c 'SHOW STATS'
 
+# Confirm the exporter is serving metrics and reached PgBouncer
+curl -s http://localhost:9127/metrics | grep pgbouncer_up
 # Expected: pgbouncer_up 1
 
-# Check Collector logs for successful scrape
+# Check Collector logs for the scraped PgBouncer metrics
 docker logs otel-collector 2>&1 | grep -i "pgbouncer"
 ```
 
+A healthy pipeline shows both `up` and `pgbouncer_up` at 1.
+
 ## Troubleshooting
 
-### pgbouncer_up showing 0
+### `pgbouncer_up` is 0
 
-**Cause**: The exporter cannot connect to PgBouncer's admin
-interface.
+**Cause**: The exporter is running but cannot reach PgBouncer's admin console.
 
-**Fix**:
-
-1. Verify PgBouncer is running:
-   `docker ps | grep pgbouncer` or `ss -tlnp | grep 6432`
-2. Test the connection string manually:
-   `psql "postgres://otel_monitor:pass@localhost:6432/pgbouncer?sslmode=disable"`
-3. Confirm the user is listed in `stats_users` or
-   `admin_users` in `pgbouncer.ini`
-4. Check that `ignore_startup_parameters` includes
-   `extra_float_digits`
-
-### Connection refused on port 9127
-
-**Cause**: The exporter is not running or not reachable
-from the Collector.
+**Look at**: `up` is 1 (the exporter scrape works) while `pgbouncer_up` is 0
+(the exporter cannot talk to PgBouncer).
 
 **Fix**:
 
-1. Verify the exporter container is running:
-   `docker ps | grep pgbouncer-exporter`
-2. Confirm port 9127 is exposed:
-   `curl http://localhost:9127/metrics`
-3. Check firewall rules if the Collector runs on a
-   separate host
+1. Check the exporter's connection string - host, port `6432`, and the virtual
+   `pgbouncer` database.
+2. Test the admin console manually:
+
+   ```bash showLineNumbers title="Test the admin console"
+   psql "postgres://otel_monitor:your_password@localhost:6432/pgbouncer?sslmode=disable" \
+     -c 'SHOW STATS'
+   ```
+
+3. Confirm the connecting user is listed in `stats_users` or `admin_users` in
+   `pgbouncer.ini`.
+4. Confirm `ignore_startup_parameters` includes `extra_float_digits`.
+
+### `up` is 0
+
+**Cause**: The exporter container is down or unreachable from the Collector.
+
+**Fix**:
+
+1. Verify the exporter is running: `docker ps | grep pgbouncer-exporter`.
+2. Confirm `:9127` is reachable: `curl http://localhost:9127/metrics`.
+3. Check firewall rules if the Collector runs on a separate host.
 
 ### No metrics appearing in Scout
 
@@ -241,96 +351,112 @@ from the Collector.
 
 **Fix**:
 
-1. Check Collector logs for export errors:
-   `docker logs otel-collector`
-2. Verify `OTEL_EXPORTER_OTLP_ENDPOINT` is set correctly
-3. Verify your Scout Collector is running
-4. Confirm the pipeline includes both the receiver and
-   exporter
+1. Check Collector logs for export errors: `docker logs otel-collector`.
+2. Verify `OTEL_EXPORTER_OTLP_ENDPOINT` is set correctly.
+3. Confirm the pipeline includes both the receiver and the exporter.
 
-### Exporter fails with "unsupported startup parameter"
+### Server connection counts read differently than expected
 
-**Cause**: `ignore_startup_parameters` is not set in
-`pgbouncer.ini`.
+**Cause**: Interpretation depends on the pool mode. Server-connection reuse,
+and thus the idle / active server counts, differs across session, transaction,
+and statement mode.
+
+**Look at**: the Diagnostic server-lifecycle series
+(`pgbouncer_pools_server_login_connections`,
+`pgbouncer_pools_server_testing_connections`) alongside
+`pgbouncer_pools_server_idle_connections` and `_active_connections` to see
+where backends sit.
 
 **Fix**:
 
-1. Add `ignore_startup_parameters = extra_float_digits`
-   to the `[pgbouncer]` section
-2. Reload PgBouncer: `pgbouncer -R` or send `SIGHUP`
-3. Restart the exporter
+1. Confirm the pool mode for the database (`SHOW DATABASES` /
+   `pgbouncer.ini`).
+2. Read idle / active counts against that mode - session mode pins a backend
+   per client for the whole session; transaction mode returns it between
+   transactions.
 
 ## FAQ
 
+**Why do I need a separate exporter?**
+
+PgBouncer exposes its statistics only over its admin console, not over HTTP,
+and there is no `pgbouncerreceiver` in collector-contrib. The
+`pgbouncer_exporter` connects to the admin console, runs `SHOW STATS` /
+`SHOW POOLS` / `SHOW DATABASES` / `SHOW LISTS`, and exposes `pgbouncer_*` in
+Prometheus format. The only pure-collector alternative is the
+`sqlqueryreceiver` pointed at the same admin console with hand-mapped `SHOW`
+queries (more config, custom metric names).
+
+**What is the difference between `up` and `pgbouncer_up`?**
+
+There are two liveness signals. `up` comes from the `prometheus` receiver and
+is 1 when the exporter's `/metrics` responded. `pgbouncer_up` comes from the
+exporter and is 1 when it could reach PgBouncer's admin console. Both at 1 is
+healthy; `up == 1` with `pgbouncer_up == 0` means the exporter is running but
+cannot talk to PgBouncer.
+
 **Does this work with PgBouncer in Kubernetes?**
 
-Yes. Deploy the exporter as a sidecar container in the
-same pod as PgBouncer. Set the exporter's connection
-string to `localhost:6432` since both containers share
-the pod network. Point the Collector's scrape target to
-the pod IP or a headless service on port 9127.
+Yes. Run the `pgbouncer_exporter` as a sidecar in the same pod as PgBouncer,
+with its connection string pointed at the admin console on `localhost:6432`
+since both containers share the pod network. Supply the stats-user credentials
+via a Kubernetes secret. Point the Collector's scrape target at the pod IP or a
+headless service on `:9127`.
 
-**How do I monitor multiple PgBouncer instances?**
+**What pool mode should I use, and does it change monitoring?**
 
-Add multiple targets to the scrape config:
+The exporter works with all pool modes (`session`, `transaction`, `statement`).
+Pool mode does not change the monitoring interface - the exporter reads the
+admin console regardless - but it changes how to read the server-connection
+counts, because backend reuse differs across the modes.
 
-```yaml showLineNumbers title="Multiple PgBouncer instances"
+**How do I monitor multiple databases or PgBouncer instances?**
+
+The `pgbouncer_pools_*` and `pgbouncer_databases_*` families are labeled by
+database and user, so series multiply with `#databases x #users` on one
+instance. For multiple PgBouncer instances, run one exporter per instance and
+add each as a scrape target; the `instance` label differentiates them:
+
+```yaml showLineNumbers title="config/otel-collector.yaml (multiple instances)"
 receivers:
   prometheus:
     config:
       scrape_configs:
         - job_name: pgbouncer
-          scrape_interval: 30s
+          scrape_interval: 10s
           static_configs:
             - targets:
                 - pgbouncer-exporter-1:9127
                 - pgbouncer-exporter-2:9127
 ```
 
-Each PgBouncer instance needs its own exporter sidecar.
-The `instance` label differentiates metrics from each
-target.
+**Why are some `pgbouncer_stats_totals_*` metrics missing?**
 
-**Why is pgbouncer_up showing 0?**
-
-The exporter cannot reach PgBouncer's admin interface.
-Common causes: the connecting user is not in `stats_users`,
-`ignore_startup_parameters` does not include
-`extra_float_digits`, or PgBouncer is not listening on the
-expected port. See the
-[Troubleshooting](#pgbouncer_up-showing-0) section.
-
-**What pool mode should I use for monitoring?**
-
-The exporter works with all PgBouncer pool modes
-(`session`, `transaction`, `statement`). Pool mode affects
-how PgBouncer manages backend connections, not the
-monitoring interface. The exporter connects to the virtual
-`pgbouncer` database, which is independent of pool mode
-settings for application databases.
-
-## What's Next?
-
-- **Create Dashboards**: Explore pre-built dashboards or
-  build your own. See
-  [Create Your First Dashboard](../../guides/create-your-first-dashboard.md)
-- **Monitor More Components**: Add monitoring for
-  [PostgreSQL](./postgres.md),
-  [HAProxy](./haproxy.md),
-  and other components
-- **Fine-tune Collection**: Adjust `scrape_interval` based
-  on pool churn rate - high-traffic deployments may benefit
-  from 15s intervals
+The `pgbouncer_stats_totals_*` set reflects PgBouncer's `SHOW STATS` columns,
+and the prepared-statement parse / bind counters are newer columns. Older
+PgBouncer versions expose fewer of them - what you see depends on the PgBouncer
+version, not the exporter.
 
 ## Related Guides
 
-- [OTel Collector Configuration](../collector-setup/otel-collector-config.md)
-  --- Advanced collector configuration
-- [Docker Compose Setup](../collector-setup/docker-compose-example.md)
-  --- Run the Collector locally
-- [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md)
-  --- Production deployment
-- [PostgreSQL Monitoring](./postgres.md)
-  --- Monitor the databases behind PgBouncer
-- [Creating Alerts](../../guides/creating-alerts-with-logx.md)
-  --- Alert on PgBouncer metrics
+- [PostgreSQL Monitoring](./postgres.md) - Monitor the PostgreSQL backend
+  PgBouncer pools in front of.
+- [HAProxy Monitoring](./haproxy.md) - Another exporter-fronted Prometheus
+  surface in the data path.
+- [OTel Collector Configuration](../collector-setup/otel-collector-config.md) -
+  Advanced collector configuration.
+- [Docker Compose Setup](../collector-setup/docker-compose-example.md) - Run
+  the Collector locally.
+- [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md) -
+  Production deployment.
+- [Creating Alerts](../../guides/creating-alerts-with-logx.md) - Alert on
+  PgBouncer metrics.
+
+## What's Next?
+
+- **Create Dashboards**: Explore pre-built dashboards or build your own. See
+  [Create Your First Dashboard](../../guides/create-your-first-dashboard.md).
+- **Monitor More Components**: Add monitoring for
+  [PostgreSQL](./postgres.md), [HAProxy](./haproxy.md), and other components.
+- **Fine-tune Collection**: Adjust the `scrape_interval` to your pool churn,
+  and widen or narrow the keep filter to the series you want to retain.
