@@ -236,6 +236,7 @@ def setup_telemetry(
         "service.name": service_name,
         "service.version": version("ai-content-quality"),
         "deployment.environment": os.getenv("SCOUT_ENVIRONMENT", "development"),
+        "environment": os.getenv("SCOUT_ENVIRONMENT", "development"),
     })
 
     trace_provider = TracerProvider(resource=resource)
@@ -401,6 +402,9 @@ processors:
   attributes:
     actions:
       - key: deployment.environment
+        value: ${SCOUT_ENVIRONMENT}
+        action: upsert
+      - key: environment
         value: ${SCOUT_ENVIRONMENT}
         action: upsert
 

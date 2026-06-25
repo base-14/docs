@@ -110,6 +110,7 @@ pub fn init_telemetry(service_name: &str, otlp_endpoint: &str) -> TelemetryGuard
     let resource = Resource::builder()
         .with_service_name(service_name)
         .with_attribute(KeyValue::new("deployment.environment", "production"))
+        .with_attribute(KeyValue::new("environment", "production"))
         .build();
 
     let exporter = opentelemetry_otlp::SpanExporter::builder()

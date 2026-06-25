@@ -288,7 +288,7 @@ OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 OTEL_EXPORTER_OTLP_ENDPOINT=http://scout-collector:4318
 
 # Resource attributes
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment=production,service.namespace=backend
+OTEL_RESOURCE_ATTRIBUTES=deployment.environment=development,environment=development,service.namespace=backend
 
 # Instrumentation settings
 OTEL_NODE_ENABLED_INSTRUMENTATIONS=http,express,mongodb,redis
@@ -478,7 +478,7 @@ services:
       - OTEL_SERVICE_NAME=nodejs-api
       - OTEL_SERVICE_VERSION=1.0.0
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://scout-collector:4318
-      - OTEL_RESOURCE_ATTRIBUTES=deployment.environment=production
+      - OTEL_RESOURCE_ATTRIBUTES=deployment.environment=development,environment=development
 
   scout-collector:
     image: otel/opentelemetry-collector-contrib:latest

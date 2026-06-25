@@ -291,6 +291,10 @@ pub fn init_telemetry(
             "deployment.environment",
             config.environment.clone(),
         ))
+        .with_attribute(KeyValue::new(
+            "environment",
+            config.environment.clone(),
+        ))
         .build();
 
     // --- Traces ---
@@ -1798,6 +1802,9 @@ processors:
   attributes:
     actions:
       - key: deployment.environment
+        value: ${SCOUT_ENVIRONMENT}
+        action: upsert
+      - key: environment
         value: ${SCOUT_ENVIRONMENT}
         action: upsert
 

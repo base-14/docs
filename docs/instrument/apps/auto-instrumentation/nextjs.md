@@ -205,6 +205,7 @@ const resource = resourceFromAttributes({
   [ATTR_SERVICE_NAME]: serviceName,
   [ATTR_SERVICE_VERSION]: process.env.npm_package_version || '1.0.0',
   'deployment.environment': process.env.NODE_ENV || 'development',
+  'environment': process.env.NODE_ENV || 'development',
 });
 
 const traceExporter = new OTLPTraceExporter({
@@ -315,7 +316,7 @@ PORT=3000
 # OpenTelemetry
 OTEL_SERVICE_NAME=nextjs-app
 OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment=production,service.namespace=api
+OTEL_RESOURCE_ATTRIBUTES=deployment.environment=development,environment=development,service.namespace=api
 
 # MongoDB
 MONGODB_URI=mongodb://mongo:27017/nextjs-app?replicaSet=rs0
@@ -368,6 +369,7 @@ const resource = resourceFromAttributes({
   [ATTR_SERVICE_NAME]: serviceName,
   [ATTR_SERVICE_VERSION]: '1.0.0',
   'deployment.environment': process.env.NODE_ENV || 'development',
+  'environment': process.env.NODE_ENV || 'development',
 });
 
 // Traces
@@ -1141,6 +1143,8 @@ export function setupBrowserTelemetry() {
       process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0',
     'deployment.environment':
       process.env.NEXT_PUBLIC_DEPLOYMENT_ENVIRONMENT || 'development',
+    'environment':
+      process.env.NEXT_PUBLIC_DEPLOYMENT_ENVIRONMENT || 'development',
   });
 
   const provider = new WebTracerProvider({
@@ -1235,7 +1239,7 @@ OTEL_SERVICE_NAME=nextjs-app
 NEXT_PUBLIC_OTEL_EXPORTER_OTLP_ENDPOINT=https://collector.example.com
 NEXT_PUBLIC_OTEL_SERVICE_NAME=nextjs-web
 NEXT_PUBLIC_APP_VERSION=1.0.0
-NEXT_PUBLIC_DEPLOYMENT_ENVIRONMENT=production
+NEXT_PUBLIC_DEPLOYMENT_ENVIRONMENT=development
 ```
 
 The browser endpoint usually differs from the server endpoint - it must be

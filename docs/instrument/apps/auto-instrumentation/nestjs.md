@@ -194,6 +194,8 @@ export class TracingModule implements OnModuleInit {
           process.env.npm_package_version || '1.0.0',
         'deployment.environment.name':
           process.env.NODE_ENV || 'development',
+        'environment':
+          process.env.NODE_ENV || 'development',
       }),
       traceExporter: new OTLPTraceExporter({
         url:
@@ -261,6 +263,7 @@ const sdk = new NodeSDK({
   resource: resourceFromAttributes({
     [ATTR_SERVICE_NAME]: 'nestjs-api',
     'deployment.environment.name': process.env.NODE_ENV,
+    'environment': process.env.NODE_ENV,
   }),
   traceExporter: new OTLPTraceExporter({
     url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT,
@@ -313,7 +316,7 @@ OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 OTEL_EXPORTER_OTLP_ENDPOINT=http://scout-collector:4318
 
 # Resource attributes
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment.name=production,service.namespace=backend
+OTEL_RESOURCE_ATTRIBUTES=deployment.environment.name=development,environment=development,service.namespace=backend
 
 # Performance tuning
 OTEL_BSP_MAX_QUEUE_SIZE=2048
@@ -486,6 +489,7 @@ export class TracingModule implements OnModuleInit, OnModuleDestroy {
         [ATTR_SERVICE_NAME]: process.env.OTEL_SERVICE_NAME,
         [ATTR_SERVICE_VERSION]: process.env.npm_package_version,
         'deployment.environment.name': process.env.NODE_ENV,
+        'environment': process.env.NODE_ENV,
         [ATTR_SERVICE_INSTANCE_ID]: process.env.HOSTNAME || process.pid.toString(),
         'service.namespace': process.env.SERVICE_NAMESPACE || 'default',
         'container.id': process.env.CONTAINER_ID,

@@ -340,14 +340,14 @@ For containerized deployments:
 # Service identification
 OTEL_SERVICE_NAME=go-api
 OTEL_SERVICE_VERSION=1.0.0
-DEPLOYMENT_ENV=production
+DEPLOYMENT_ENV=development
 
 # Exporter configuration
 OTEL_EXPORTER_OTLP_ENDPOINT=scout-collector:4318
 OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 
 # Resource attributes
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment=production,service.namespace=backend
+OTEL_RESOURCE_ATTRIBUTES=deployment.environment=development,environment=development,service.namespace=backend
 
 # Sampling (optional)
 OTEL_TRACES_SAMPLER=parentbased_always_on
@@ -1062,7 +1062,7 @@ go build -ldflags="-s -w" -o server cmd/server/main.go
 # Run with production config
 export OTEL_SERVICE_NAME=go-api
 export OTEL_EXPORTER_OTLP_ENDPOINT=scout-collector:4318
-export DEPLOYMENT_ENV=production
+export DEPLOYMENT_ENV=development
 
 ./server
 ```
@@ -1089,7 +1089,7 @@ WORKDIR /root/
 COPY --from=builder /app/server .
 
 ENV OTEL_SERVICE_NAME=go-api
-ENV DEPLOYMENT_ENV=production
+ENV DEPLOYMENT_ENV=demo
 
 EXPOSE 8080
 

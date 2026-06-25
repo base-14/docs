@@ -370,6 +370,9 @@ processors:
       - key: deployment.environment
         value: ${env:SCOUT_ENVIRONMENT}
         action: upsert
+      - key: environment
+        value: ${env:SCOUT_ENVIRONMENT}
+        action: upsert
 
 exporters:
   otlp_http/b14:

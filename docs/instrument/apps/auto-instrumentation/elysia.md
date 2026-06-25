@@ -397,7 +397,7 @@ services:
       OTEL_SERVICE_NAME: elysia-articles
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       OTEL_METRIC_EXPORT_INTERVAL: "10000"
-      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=${SCOUT_ENVIRONMENT:-development},service.namespace=examples
+      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=${SCOUT_ENVIRONMENT:-development},environment=${SCOUT_ENVIRONMENT:-development},service.namespace=examples
     depends_on:
       db:
         condition: service_healthy
@@ -427,7 +427,7 @@ services:
       OTEL_SERVICE_NAME: elysia-notify
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       OTEL_METRIC_EXPORT_INTERVAL: "10000"
-      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=${SCOUT_ENVIRONMENT:-development},service.namespace=examples
+      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=${SCOUT_ENVIRONMENT:-development},environment=${SCOUT_ENVIRONMENT:-development},service.namespace=examples
     depends_on:
       otel-collector:
         condition: service_started
@@ -495,7 +495,7 @@ export SCOUT_ENDPOINT=https://your-scout-endpoint.base14.io
 export SCOUT_CLIENT_ID=your-client-id
 export SCOUT_CLIENT_SECRET=your-client-secret
 export SCOUT_TOKEN_URL=https://auth.base14.io/oauth/token
-export SCOUT_ENVIRONMENT=production
+export SCOUT_ENVIRONMENT=development
 ```
 
 The collector configuration uses the `oauth2client` extension for
@@ -512,7 +512,7 @@ OTEL_SERVICE_NAME=elysia-articles
 OTEL_SERVICE_VERSION=1.2.0
 OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
 OTEL_METRIC_EXPORT_INTERVAL=60000
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment=production,service.namespace=articles
+OTEL_RESOURCE_ATTRIBUTES=deployment.environment=demo,environment=demo,service.namespace=articles
 DATABASE_URL=postgresql://app_user:secure_password@db-primary:5432/articles_prod
 NOTIFY_URL=http://notify:8081
 PORT=8080
@@ -1464,7 +1464,7 @@ structured log export.
 Set `OTEL_RESOURCE_ATTRIBUTES` as an environment variable:
 
 ```bash showLineNumbers
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment=production,service.namespace=articles
+OTEL_RESOURCE_ATTRIBUTES=deployment.environment=development,environment=development,service.namespace=articles
 ```
 
 These attributes are added to the resource and appear on every span, metric,

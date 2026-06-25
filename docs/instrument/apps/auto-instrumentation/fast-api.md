@@ -303,7 +303,8 @@ def setup_telemetry(otel_endpoint: str) -> None:
     resource = Resource.create({
         "service.name": service_name,
         "service.version": os.getenv("APP_VERSION", "1.0.0"),
-        "deployment.environment": os.getenv("ENVIRONMENT", "development")
+        "deployment.environment": os.getenv("ENVIRONMENT", "development"),
+        "environment": os.getenv("ENVIRONMENT", "development")
     })
 
     # Configure trace provider
@@ -761,7 +762,8 @@ resource = Resource.create({
     "service.namespace": os.getenv("SERVICE_NAMESPACE", "production"),
 
     # Deployment information
-    "deployment.environment": os.getenv("ENVIRONMENT", "production"),
+    "deployment.environment": os.getenv("ENVIRONMENT", "development"),
+    "environment": os.getenv("ENVIRONMENT", "development"),
     "deployment.region": os.getenv("AWS_REGION", "us-east-1"),
 
     # Instance identification
@@ -809,6 +811,7 @@ def setup_telemetry() -> None:
     resource = Resource.create({
         "service.name": service_name,
         "deployment.environment": environment,
+        "environment": environment,
         "service.version": os.getenv("APP_VERSION", "dev"),
     })
 
@@ -856,7 +859,7 @@ services:
       - "8000:8000"
     environment:
       # Application config
-      ENVIRONMENT: production
+      ENVIRONMENT: development
       APP_VERSION: "1.2.0"
 
       # OpenTelemetry config
@@ -899,7 +902,7 @@ Create a `.env.example` file for your team:
 
 ```bash title=".env.example" showLineNumbers
 # Application
-ENVIRONMENT=production
+ENVIRONMENT=development
 APP_VERSION=1.0.0
 SERVICE_NAMESPACE=my-company
 
@@ -1373,7 +1376,7 @@ Run with OTLP exporter pointing to Scout Collector:
 
 ```bash
 # Set production environment variables
-export ENVIRONMENT=production
+export ENVIRONMENT=development
 export OTEL_SERVICE_NAME=fastapi-app
 export OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
 export APP_VERSION=1.0.0
@@ -1396,7 +1399,7 @@ docker run -d \
   -p 8000:8000 \
   -e OTEL_SERVICE_NAME=fastapi-app \
   -e OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318 \
-  -e ENVIRONMENT=production \
+  -e ENVIRONMENT=development \
   fastapi-app:latest
 ```
 
@@ -1867,6 +1870,7 @@ def setup_telemetry(otel_endpoint: str = None):
         "service.version": os.getenv("APP_VERSION", "1.0.0"),
         "service.namespace": os.getenv("SERVICE_NAMESPACE", "default"),
         "deployment.environment": environment,
+        "environment": environment,
         "service.instance.id": socket.gethostname(),
         "host.name": socket.gethostname(),
     })

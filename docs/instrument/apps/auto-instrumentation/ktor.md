@@ -254,7 +254,7 @@ OTEL_TRACES_EXPORTER=otlp
 OTEL_METRICS_EXPORTER=otlp
 OTEL_LOGS_EXPORTER=otlp
 OTEL_METRIC_EXPORT_INTERVAL=10000
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment=development
+OTEL_RESOURCE_ATTRIBUTES=deployment.environment=development,environment=development
 ```
 
 The agent reads these variables at startup. No application code or config
@@ -465,7 +465,7 @@ OTEL_BSP_SCHEDULE_DELAY=5000
 OTEL_BSP_MAX_EXPORT_BATCH_SIZE=512
 
 OTEL_METRIC_EXPORT_INTERVAL=30000
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment=production,host.name=${HOSTNAME}
+OTEL_RESOURCE_ATTRIBUTES=deployment.environment=demo,environment=demo,host.name=${HOSTNAME}
 ```
 
 ### Docker Production Configuration

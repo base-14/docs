@@ -306,7 +306,7 @@ View traces in Scout Grafana dashboard
 Add custom resource attributes to all spans:
 
 ```bash
-OTEL_RESOURCE_ATTRIBUTES=environment=production,team=backend
+OTEL_RESOURCE_ATTRIBUTES=environment=demo,team=backend
 ```
 
 ## Related Guides

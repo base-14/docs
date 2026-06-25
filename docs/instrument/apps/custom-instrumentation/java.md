@@ -161,7 +161,8 @@ public class OpenTelemetryConfig {
                 .merge(Resource.create(Attributes.of(
                         AttributeKey.stringKey("service.name"), SERVICE_NAME,
                         AttributeKey.stringKey("service.version"), SERVICE_VERSION,
-                        AttributeKey.stringKey("deployment.environment"), "production"
+                        AttributeKey.stringKey("deployment.environment"), "production",
+                        AttributeKey.stringKey("environment"), "production"
                 )));
 
         // Create OTLP trace exporter

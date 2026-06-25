@@ -218,6 +218,9 @@ processors:
       - key: deployment.environment.name
         value: ${env:ENVIRONMENT}
         action: upsert
+      - key: environment
+        value: ${env:ENVIRONMENT}
+        action: upsert
       - key: service.name
         value: ${env:SERVICE_NAME}
         action: upsert
@@ -250,9 +253,10 @@ To control metric volume in production, drop the Diagnostic tier with a
 `filter` processor while keeping the Core and Operational series.
 
 > **Semconv version note**: `deployment.environment.name` is the current
-> OTel attribute. The legacy `deployment.environment` is still accepted by
-> Scout for backward compatibility, but new configs should emit the dotted
-> form.
+> OTel attribute. Scout's UI filters on the lowercase `environment` key,
+> so emit it alongside the OTel-native `deployment.environment.name`. The
+> legacy `deployment.environment` is still accepted for backward
+> compatibility.
 
 ### Environment Variables
 

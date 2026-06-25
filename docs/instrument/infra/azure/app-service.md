@@ -304,6 +304,7 @@ processors:
       # resources (site + plan + AI). Per-record `azuremonitor.resource_id`
       # metric dimension splits same-named metrics across resources.
       - {key: deployment.environment.name, value: "${env:ENVIRONMENT}",             action: insert}
+      - {key: environment,                 value: "${env:ENVIRONMENT}",             action: insert}
       - {key: service.name,                value: "${env:APPSERVICE_SERVICE_NAME}", action: insert}
 
 service:
@@ -563,6 +564,7 @@ processors:
       # cloud.resource_id is NOT pinned - the receiver lifts the per-record
       # Azure resource ID to this attribute automatically (UPPERCASED).
       - {key: deployment.environment.name, value: "${env:APPSERVICELOGS_ENVIRONMENT}",         action: insert}
+      - {key: environment,                 value: "${env:APPSERVICELOGS_ENVIRONMENT}",         action: insert}
       - {key: service.name,                value: "${env:APPSERVICELOGS_SERVICE_NAME}",        action: insert}
 
 service:

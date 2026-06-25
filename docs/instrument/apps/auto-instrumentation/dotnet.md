@@ -200,6 +200,8 @@ public static class TelemetrySetup
                 .AddService(serviceName)
                 .AddAttributes([
                     new KeyValuePair<string, object>("deployment.environment",
+                        builder.Environment.EnvironmentName.ToLowerInvariant()),
+                    new KeyValuePair<string, object>("environment",
                         builder.Environment.EnvironmentName.ToLowerInvariant())
                 ]))
             .WithTracing(tracing => tracing
@@ -414,6 +416,8 @@ public static WebApplicationBuilder AddTelemetry(this WebApplicationBuilder buil
             .AddService(serviceName)
             .AddAttributes([
                 new KeyValuePair<string, object>("deployment.environment",
+                    builder.Environment.EnvironmentName.ToLowerInvariant()),
+                new KeyValuePair<string, object>("environment",
                     builder.Environment.EnvironmentName.ToLowerInvariant())
             ]))
         .WithTracing(tracing => tracing
@@ -488,6 +492,8 @@ builder.Services.AddOpenTelemetry()
             serviceInstanceId: Environment.MachineName)
         .AddAttributes([
             new KeyValuePair<string, object>("deployment.environment",
+                builder.Environment.EnvironmentName.ToLowerInvariant()),
+            new KeyValuePair<string, object>("environment",
                 builder.Environment.EnvironmentName.ToLowerInvariant()),
             new KeyValuePair<string, object>("service.namespace", "production"),
             new KeyValuePair<string, object>("host.name", Environment.MachineName),
@@ -1513,6 +1519,8 @@ public static class TelemetrySetup
                 .AddService(serviceName)
                 .AddAttributes([
                     new KeyValuePair<string, object>("deployment.environment",
+                        builder.Environment.EnvironmentName.ToLowerInvariant()),
+                    new KeyValuePair<string, object>("environment",
                         builder.Environment.EnvironmentName.ToLowerInvariant())
                 ]))
             .WithTracing(tracing => tracing

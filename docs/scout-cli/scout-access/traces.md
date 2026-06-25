@@ -73,7 +73,7 @@ scout traces payment-service --status Error
 Filter by attributes:
 
 ```bash
-scout traces payment-service --attr user_id=123 --resource environment=prod
+scout traces payment-service --attr user_id=123 --resource environment=development
 ```
 
 Drill into a specific trace:
@@ -91,7 +91,7 @@ scout traces payment-service --discover
 Restrict to a specific deployment environment:
 
 ```bash
-scout traces payment-service --environment production
+scout traces payment-service --environment development
 ```
 
 ## Filtering Logic

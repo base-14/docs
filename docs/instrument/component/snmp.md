@@ -489,6 +489,7 @@ processors:
       - { key: service.name,                value: "linux-host-01",            action: insert }
       - { key: service.namespace,           value: ${env:SERVICE_NAMESPACE},   action: insert }
       - { key: deployment.environment.name, value: ${env:ENVIRONMENT},         action: insert }
+      - { key: environment,                 value: ${env:ENVIRONMENT},         action: insert }
       - { key: device.kind,                 value: compute,                    action: insert }
       - { key: device.manufacturer,         value: "generic-linux",            action: insert }
       - { key: device.model.identifier,     value: "net-snmp",                 action: insert }
@@ -499,6 +500,7 @@ processors:
       - { key: service.name,                value: "cisco-router-01",          action: insert }
       - { key: service.namespace,           value: ${env:SERVICE_NAMESPACE},   action: insert }
       - { key: deployment.environment.name, value: ${env:ENVIRONMENT},         action: insert }
+      - { key: environment,                 value: ${env:ENVIRONMENT},         action: insert }
       - { key: device.kind,                 value: network,                    action: insert }
       - { key: device.manufacturer,         value: "cisco",                    action: insert }
       - { key: device.model.identifier,     value: "ISR-C2900",                action: insert }
@@ -509,6 +511,7 @@ processors:
       - { key: service.name,                value: "apc-ups-01",               action: insert }
       - { key: service.namespace,           value: ${env:SERVICE_NAMESPACE},   action: insert }
       - { key: deployment.environment.name, value: ${env:ENVIRONMENT},         action: insert }
+      - { key: environment,                 value: ${env:ENVIRONMENT},         action: insert }
       - { key: device.kind,                 value: power,                      action: insert }
       - { key: device.manufacturer,         value: "apc",                      action: insert }
       - { key: device.model.identifier,     value: "Smart-UPS-SRT",            action: insert }
@@ -562,11 +565,11 @@ device with `device.kind=network` — there is no separate
 appears as its own service in Scout because each receiver pipeline
 stamps a distinct `service.name`.
 
-> **Semconv version note**: `deployment.environment.name` is the
-> current OTel attribute (introduced in semantic conventions v1.27.0,
-> stable as of v1.41.0). The legacy `deployment.environment` is still
-> accepted by Scout for backward compatibility, but new configs should
-> emit the dotted form.
+> **Semconv version note**: `deployment.environment.name` is the current OTel
+> attribute (introduced in semantic conventions v1.27.0, stable as of v1.41.0).
+> Scout's UI filters on the lowercase `environment` key, so emit it alongside
+> the OTel-native `deployment.environment.name`. The legacy
+> `deployment.environment` is still accepted for backward compatibility.
 
 ### Shipping via a Local Scout Collector
 

@@ -268,7 +268,8 @@ def setup_telemetry(engine=None):
         {
             "service.name": "my-ai-service",
             "service.version": "1.0.0",
-            "deployment.environment": "production",
+            "deployment.environment": "development",
+            "environment": "development",
         }
     )
 
@@ -1149,7 +1150,7 @@ span.add_event(
 OTEL_SERVICE_NAME=my-ai-service
 OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
 OTEL_ENABLED=true
-SCOUT_ENVIRONMENT=production
+SCOUT_ENVIRONMENT=development
 
 # LLM Provider
 LLM_PROVIDER=anthropic
@@ -1198,6 +1199,9 @@ processors:
   attributes:
     actions:
       - key: deployment.environment
+        value: ${SCOUT_ENVIRONMENT}
+        action: upsert
+      - key: environment
         value: ${SCOUT_ENVIRONMENT}
         action: upsert
 

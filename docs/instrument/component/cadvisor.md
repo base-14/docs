@@ -210,6 +210,9 @@ processors:
       - key: deployment.environment.name
         value: ${env:ENVIRONMENT}
         action: upsert
+      - key: environment
+        value: ${env:ENVIRONMENT}
+        action: upsert
       - key: service.name
         value: ${env:SERVICE_NAME}
         action: upsert
@@ -244,9 +247,10 @@ OTEL_EXPORTER_OTLP_ENDPOINT=https://<your-tenant>.base14.io
 
 > **Semconv version note**: `deployment.environment.name` is the current
 > OTel attribute (introduced in semantic conventions v1.27.0, stable as
-> of v1.41.0). The legacy `deployment.environment` is still accepted by
-> Scout for backward compatibility, but new configs should emit the
-> dotted form.
+> of v1.41.0). Scout's UI filters on the lowercase `environment` key, so
+> emit it alongside the OTel-native `deployment.environment.name`. The
+> legacy `deployment.environment` is still accepted for backward
+> compatibility.
 
 ## Verify the Setup
 

@@ -248,6 +248,10 @@ pub fn init_telemetry(config: &Config) -> anyhow::Result<TelemetryGuard> {
             "deployment.environment",
             config.environment.clone(),
         ))
+        .with_attribute(KeyValue::new(
+            "environment",
+            config.environment.clone(),
+        ))
         .build();
 
     let trace_exporter = opentelemetry_otlp::SpanExporter::builder()

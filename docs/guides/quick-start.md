@@ -111,6 +111,9 @@ processors:
       - key: deployment.environment
         value: production
         action: upsert
+      - key: environment
+        value: production
+        action: upsert
       - key: service.namespace
         value: my-namespace
         action: upsert

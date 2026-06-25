@@ -261,6 +261,7 @@ processors:
       - {key: cloud.region,                value: "${env:PGFLEX_REGION}",                      action: insert}
       - {key: cloud.resource_id,           value: "${env:PGFLEX_SERVER_RESOURCE_ID}",          action: insert}
       - {key: deployment.environment.name, value: "${env:ENVIRONMENT}",                        action: insert}
+      - {key: environment,                 value: "${env:ENVIRONMENT}",                        action: insert}
       - {key: service.name,                value: "${env:PGFLEX_SERVICE_NAME}",                action: insert}
 
 service:
@@ -601,6 +602,7 @@ processors:
       # cloud.resource_id is NOT pinned - the receiver lifts the per-record
       # Azure resource ID to this attribute automatically (UPPERCASED).
       - {key: deployment.environment.name, value: "${env:PGFLEXLOGS_ENVIRONMENT}",             action: insert}
+      - {key: environment,                 value: "${env:PGFLEXLOGS_ENVIRONMENT}",             action: insert}
       - {key: service.name,                value: "${env:PGFLEXLOGS_SERVICE_NAME}",            action: insert}
 
 service:

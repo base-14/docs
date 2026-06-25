@@ -335,7 +335,7 @@ OTEL_METRICS_EXPORTER=otlp
 OTEL_LOGS_EXPORTER=otlp
 
 # Resource attributes
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment=production,service.namespace=myapp
+OTEL_RESOURCE_ATTRIBUTES=deployment.environment=development,environment=development,service.namespace=myapp
 ```
 
 ```mdx-code-block
@@ -404,7 +404,7 @@ def init_telemetry():
     resource = Resource(attributes={
         ResourceAttributes.SERVICE_NAME: os.getenv("OTEL_SERVICE_NAME"),
         ResourceAttributes.SERVICE_VERSION: os.getenv("APP_VERSION", "1.0.0"),
-        ResourceAttributes.DEPLOYMENT_ENVIRONMENT: os.getenv("ENVIRONMENT", "production"),
+        ResourceAttributes.DEPLOYMENT_ENVIRONMENT: os.getenv("ENVIRONMENT", "development"),
     })
 
     trace.set_tracer_provider(TracerProvider(resource=resource))
@@ -435,7 +435,7 @@ from opentelemetry.semconv.resource import ResourceAttributes
 resource = Resource(attributes={
     ResourceAttributes.SERVICE_NAME: os.getenv("OTEL_SERVICE_NAME", "celery-worker"),
     ResourceAttributes.SERVICE_VERSION: os.getenv("APP_VERSION", "1.0.0"),
-    ResourceAttributes.DEPLOYMENT_ENVIRONMENT: os.getenv("ENVIRONMENT", "production"),
+    ResourceAttributes.DEPLOYMENT_ENVIRONMENT: os.getenv("ENVIRONMENT", "development"),
     ResourceAttributes.SERVICE_NAMESPACE: os.getenv("SERVICE_NAMESPACE", "myapp"),
     ResourceAttributes.SERVICE_INSTANCE_ID: socket.gethostname(),
     ResourceAttributes.HOST_NAME: socket.gethostname(),
@@ -453,7 +453,7 @@ resource = Resource(attributes={
 OTEL_SERVICE_NAME=celery-worker-production
 APP_VERSION=2.1.3
 SERVICE_NAMESPACE=production
-ENVIRONMENT=production
+ENVIRONMENT=demo
 
 # Scout Collector Endpoint
 OTEL_EXPORTER_OTLP_ENDPOINT=https://scout-collector.example.com:4318

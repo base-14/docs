@@ -171,6 +171,9 @@ processors:
       - key: deployment.environment.name
         value: ${env:ENVIRONMENT}
         action: upsert
+      - key: environment
+        value: ${env:ENVIRONMENT}
+        action: upsert
       - key: service.name
         value: ${env:SERVICE_NAME}
         action: upsert
@@ -245,9 +248,10 @@ Core + Operational, add a `metric_relabel_configs` block to the scrape job:
 ```
 
 > **Semconv version note**: `deployment.environment.name` is the current
-> dotted OTel attribute. The legacy `deployment.environment` is still
-> accepted by Scout for backward compatibility, but new configs should emit
-> the dotted form.
+> dotted OTel attribute. Scout's UI filters on the lowercase
+> `environment` key, so emit it alongside the OTel-native
+> `deployment.environment.name`. The legacy `deployment.environment` is
+> still accepted for backward compatibility.
 
 ## Verify the Setup
 

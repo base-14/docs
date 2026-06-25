@@ -318,7 +318,7 @@ quarkus.otel.exporter.otlp.protocol=grpc
 quarkus.otel.traces.exporter=otlp
 
 # Service resource attributes
-quarkus.otel.resource.attributes=service.name=quarkus-order-service,service.version=1.0.0,deployment.environment=development
+quarkus.otel.resource.attributes=service.name=quarkus-order-service,service.version=1.0.0,deployment.environment=development,environment=development
 
 # Sampling (always-on for dev, probabilistic for production)
 quarkus.otel.traces.sampler=always_on
@@ -364,7 +364,8 @@ services:
       QUARKUS_OTEL_RESOURCE_ATTRIBUTES: >-
         service.name=quarkus-order-service,
         service.version=1.0.0,
-        deployment.environment=docker
+        deployment.environment=docker,
+        environment=docker
       QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://postgres:5432/orders
       QUARKUS_DATASOURCE_USERNAME: quarkus
       QUARKUS_DATASOURCE_PASSWORD: quarkus123
@@ -454,7 +455,8 @@ image compilation for minimal resource usage.
 %prod.quarkus.otel.resource.attributes=\
   service.name=quarkus-order-service,\
   service.version=${APP_VERSION:1.0.0},\
-  deployment.environment=production,\
+  deployment.environment=demo,\
+  environment=demo,\
   cloud.provider=aws,\
   cloud.region=${AWS_REGION:us-east-1},\
   k8s.cluster.name=${K8S_CLUSTER:production},\
@@ -574,7 +576,8 @@ spec:
               value: >-
                 service.name=quarkus-order-service,
                 service.version=1.0.0,
-                deployment.environment=production,
+                deployment.environment=demo,
+                environment=demo,
                 k8s.cluster.name=production,
                 k8s.namespace.name=$(K8S_NAMESPACE),
                 k8s.pod.name=$(K8S_POD_NAME)
@@ -1867,7 +1870,7 @@ quarkus.otel.exporter.otlp.endpoint=http://localhost:4317
 quarkus.otel.exporter.otlp.protocol=grpc
 quarkus.otel.traces.exporter=otlp
 quarkus.otel.traces.sampler=always_on
-quarkus.otel.resource.attributes=service.name=quarkus-order-service,service.version=1.0.0,deployment.environment=development
+quarkus.otel.resource.attributes=service.name=quarkus-order-service,service.version=1.0.0,deployment.environment=development,environment=development
 
 # OpenTelemetry - Production
 %prod.quarkus.otel.exporter.otlp.endpoint=https://scout.base14.io:4317

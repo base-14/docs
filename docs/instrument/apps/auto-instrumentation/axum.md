@@ -213,6 +213,7 @@ pub fn init_telemetry(service_name: &str, otlp_endpoint: &str) -> anyhow::Result
         .with_attribute(KeyValue::new("service.version", "1.0.0"))
         .with_attribute(KeyValue::new("service.namespace", "production"))
         .with_attribute(KeyValue::new("deployment.environment", "production"))
+        .with_attribute(KeyValue::new("environment", "production"))
         .build();
 
     // Configure trace exporter
@@ -456,6 +457,7 @@ pub fn init_production_telemetry(
         .with_service_name(service_name.to_string())
         .with_attribute(KeyValue::new("service.version", env!("CARGO_PKG_VERSION")))
         .with_attribute(KeyValue::new("deployment.environment", "production"))
+        .with_attribute(KeyValue::new("environment", "production"))
         .build();
 
     let trace_exporter = opentelemetry_otlp::SpanExporter::builder()
@@ -506,6 +508,7 @@ fn build_resource(service_name: &str, environment: &str) -> Resource {
         .with_attribute(KeyValue::new("service.version", env!("CARGO_PKG_VERSION")))
         .with_attribute(KeyValue::new("service.namespace", "production"))
         .with_attribute(KeyValue::new("deployment.environment", environment.to_string()))
+        .with_attribute(KeyValue::new("environment", environment.to_string()))
         .with_attribute(KeyValue::new("host.name", hostname))
         .with_attribute(KeyValue::new(
             "process.runtime.name",

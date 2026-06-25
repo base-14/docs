@@ -75,7 +75,7 @@ scout logs payment-service --contains "timeout" --since 10m
 Filter by attributes:
 
 ```bash
-scout logs payment-service --attr user_id=123 --resource environment=prod
+scout logs payment-service --attr user_id=123 --resource environment=development
 ```
 
 Correlate with a trace:
@@ -87,7 +87,7 @@ scout logs payment-service --trace-id abc123def456
 Restrict to a specific deployment environment:
 
 ```bash
-scout logs payment-service --environment production
+scout logs payment-service --environment development
 ```
 
 Output only log bodies:

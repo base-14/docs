@@ -235,6 +235,7 @@ processors:
       - {key: cloud.resource_id, value: "${env:FRONTDOOR_RESOURCE_ID}",     action: insert}
       - {key: deployment.environment.name,
                                  value: "${env:DEPLOYMENT_ENVIRONMENT}",    action: insert}
+      - {key: environment,       value: "${env:DEPLOYMENT_ENVIRONMENT}",    action: insert}
       - {key: service.name,      value: "${env:FRONTDOOR_SERVICE_NAME}",    action: insert}
 
 service:

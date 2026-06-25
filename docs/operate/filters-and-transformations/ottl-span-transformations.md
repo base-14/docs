@@ -55,6 +55,7 @@ processors:
       - context: span
         statements:
           - set(attributes["deployment.environment"], "production")
+          - set(attributes["environment"], "production")
           - delete_key(attributes, "credit_card_number")
 ```
 

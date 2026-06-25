@@ -416,6 +416,7 @@ OpenTelemetry::SDK.configure do |c|
   # Add resource attributes for production context
   c.resource = OpenTelemetry::SDK::Resources::Resource.create({
     'deployment.environment' => Rails.env,
+    'environment' => Rails.env,
     'service.namespace' => ENV.fetch('SERVICE_NAMESPACE', 'production'),
     'service.instance.id' => Socket.gethostname,
     'host.name' => Socket.gethostname,
@@ -461,6 +462,7 @@ OpenTelemetry::SDK.configure do |c|
   # Resource attributes
   c.resource = OpenTelemetry::SDK::Resources::Resource.create({
     'deployment.environment' => Rails.env,
+    'environment' => Rails.env,
     'service.instance.id' => Socket.gethostname
   })
 
@@ -1532,6 +1534,7 @@ OpenTelemetry::SDK.configure do |c|
   # Resource attributes
   c.resource = OpenTelemetry::SDK::Resources::Resource.create({
     'deployment.environment' => Rails.env,
+    'environment' => Rails.env,
     'service.instance.id' => Socket.gethostname
   })
 

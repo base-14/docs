@@ -507,6 +507,7 @@ builder.Services.AddOpenTelemetry()
         .AddAttributes(new[]
         {
             new KeyValuePair<string, object>("deployment.environment", environment),
+            new KeyValuePair<string, object>("environment", environment),
             new KeyValuePair<string, object>("service.namespace", "examples"),
         }))
     .WithMetrics(metrics => metrics

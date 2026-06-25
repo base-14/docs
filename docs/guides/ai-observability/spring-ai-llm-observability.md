@@ -2245,7 +2245,7 @@ Set resource attributes to identify the deployment in your observability
 backend:
 
 ```bash showLineNumbers
-export OTEL_RESOURCE_ATTRIBUTES="service.name=ai-customer-support,deployment.environment=production,service.version=1.2.0"
+export OTEL_RESOURCE_ATTRIBUTES="service.name=ai-customer-support,deployment.environment=demo,environment=demo,service.version=1.2.0"
 ```
 
 For production, always route telemetry through an OpenTelemetry Collector rather
@@ -2463,6 +2463,9 @@ processors:
   attributes:
     actions:
       - key: deployment.environment
+        value: ${SCOUT_ENVIRONMENT}
+        action: upsert
+      - key: environment
         value: ${SCOUT_ENVIRONMENT}
         action: upsert
 

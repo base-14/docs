@@ -144,7 +144,7 @@ Configure the agent using environment variables:
 ```bash title=".env" showLineNumbers
 # Service identification
 OTEL_SERVICE_NAME=your-service-name
-OTEL_RESOURCE_ATTRIBUTES=service.namespace=your-namespace,deployment.environment=production
+OTEL_RESOURCE_ATTRIBUTES=service.namespace=your-namespace,deployment.environment=development,environment=development
 
 # OTLP Exporter configuration
 OTEL_EXPORTER_OTLP_ENDPOINT=http://scout-collector:4318
@@ -239,7 +239,7 @@ COPY target/my-service-1.0.0.jar /app/app.jar
 # Set environment variables (can be overridden at runtime)
 ENV OTEL_SERVICE_NAME=my-service
 ENV OTEL_EXPORTER_OTLP_ENDPOINT=http://scout-collector:4318
-ENV OTEL_RESOURCE_ATTRIBUTES=deployment.environment=production
+ENV OTEL_RESOURCE_ATTRIBUTES=deployment.environment=demo,environment=demo
 
 # Run application with agent
 ENTRYPOINT ["java", "-javaagent:/app/opentelemetry-javaagent.jar", "-jar", "/app/app.jar"]
@@ -260,7 +260,7 @@ services:
     environment:
       OTEL_SERVICE_NAME: my-service
       OTEL_EXPORTER_OTLP_ENDPOINT: http://scout-collector:4318
-      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=dev,service.version=1.0.0
+      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=dev,environment=dev,service.version=1.0.0
       OTEL_TRACES_EXPORTER: otlp
       OTEL_METRICS_EXPORTER: otlp
       OTEL_LOGS_EXPORTER: otlp
@@ -304,7 +304,7 @@ spec:
         - name: OTEL_EXPORTER_OTLP_ENDPOINT
           value: "http://scout-collector.observability.svc:4318"
         - name: OTEL_RESOURCE_ATTRIBUTES
-          value: "deployment.environment=prod"
+          value: "deployment.environment=demo,environment=demo"
         volumeMounts:
         - {name: otel-agent, mountPath: /otel-agent}
       volumes:
@@ -492,7 +492,7 @@ Boot 4.0:
 ```properties title="src/main/resources/application.properties" showLineNumbers
 # Service identification
 otel.service.name=my-service
-otel.resource.attributes=service.namespace=my-namespace,deployment.environment=production
+otel.resource.attributes=service.namespace=my-namespace,deployment.environment=development,environment=development
 
 # OTLP Exporter
 otel.exporter.otlp.endpoint=http://scout-collector:4318

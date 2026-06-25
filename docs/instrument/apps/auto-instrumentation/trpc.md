@@ -535,6 +535,9 @@ processors:
       - key: deployment.environment
         value: ${env:SCOUT_ENVIRONMENT}
         action: upsert
+      - key: environment
+        value: ${env:SCOUT_ENVIRONMENT}
+        action: upsert
   filter/noisy:
     error_mode: ignore
     traces:
@@ -616,7 +619,7 @@ services:
       OTEL_SERVICE_NAME: trpc-articles
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
       OTEL_METRIC_EXPORT_INTERVAL: "10000"
-      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=${SCOUT_ENVIRONMENT:-development},service.namespace=examples
+      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=${SCOUT_ENVIRONMENT:-development},environment=${SCOUT_ENVIRONMENT:-development},service.namespace=examples
     depends_on:
       db:
         condition: service_healthy
@@ -638,7 +641,7 @@ services:
       OTEL_SERVICE_NAME: trpc-notify
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
       OTEL_METRIC_EXPORT_INTERVAL: "10000"
-      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=${SCOUT_ENVIRONMENT:-development},service.namespace=examples
+      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=${SCOUT_ENVIRONMENT:-development},environment=${SCOUT_ENVIRONMENT:-development},service.namespace=examples
     depends_on:
       otel-collector:
         condition: service_started
@@ -699,7 +702,7 @@ OTEL_SERVICE_NAME=trpc-articles
 OTEL_SERVICE_VERSION=1.2.0
 OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
 OTEL_METRIC_EXPORT_INTERVAL=60000
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment=production,service.namespace=articles,service.instance.id=${HOSTNAME}
+OTEL_RESOURCE_ATTRIBUTES=deployment.environment=demo,environment=demo,service.namespace=articles,service.instance.id=${HOSTNAME}
 DATABASE_URL=postgresql://app_user:secure_password@db-primary:5432/trpc_articles?sslmode=require
 NOTIFY_URL=http://notify:8081
 LOG_LEVEL=warn

@@ -358,6 +358,7 @@ def initialize_tracing(app):
         "service.name": os.getenv("OTEL_SERVICE_NAME", "flask-order-service"),
         "service.version": os.getenv("APP_VERSION", "1.0.0"),
         "deployment.environment.name": os.getenv("ENVIRONMENT", "development"),
+        "environment": os.getenv("ENVIRONMENT", "development"),
     })
 
     # Create tracer provider
@@ -727,7 +728,8 @@ def initialize_production_tracing(app):
     resource = Resource.create({
         "service.name": os.getenv("OTEL_SERVICE_NAME", "flask-order-service"),
         "service.version": os.getenv("APP_VERSION", "1.0.0"),
-        "deployment.environment.name": os.getenv("ENVIRONMENT", "production"),
+        "deployment.environment.name": os.getenv("ENVIRONMENT", "development"),
+        "environment": os.getenv("ENVIRONMENT", "development"),
         "cloud.provider": os.getenv("CLOUD_PROVIDER", "aws"),
         "cloud.region": os.getenv("AWS_REGION", "us-east-1"),
         "k8s.cluster.name": os.getenv("K8S_CLUSTER", "production"),
@@ -929,7 +931,7 @@ spec:
             - name: OTEL_TRACE_SAMPLE_RATE
               value: '0.1'
             - name: ENVIRONMENT
-              value: production
+              value: demo
             - name: APP_VERSION
               value: '1.0.0'
             - name: DATABASE_URL
