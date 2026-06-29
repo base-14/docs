@@ -1,5 +1,5 @@
 ---
-title: React Browser RUM with @base-14/scout-react
+title: React OpenTelemetry Instrumentation - Browser Tracing & Web Vitals
 sidebar_label: React
 sidebar_position: 17
 description:
