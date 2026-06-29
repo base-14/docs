@@ -55,12 +55,22 @@ error, crash, scroll, and frame metric is gathered automatically.
 | Native crashes (Android) | `native_crash` span with NDK signal info, tombstone, ApplicationExitInfo subreason, PSS/RSS | Custom NDK signal handler (`scout_signal_handler.c`) + `ApplicationExitInfo` (API 30+) + JVM uncaught handler |
 | Frame metrics (RN) | `react_native.frame.refresh_rate`, `slow_frames_rate`, `freeze_rate`, `frozen_frame` spans | rAF-based polling loop + `view.slow_frames_json` |
 | Long tasks | `long_task` span with `id`, `duration`, `threshold` | `PerformanceObserver('longtask')` (web) + main-thread polling (RN) |
-| ANRs | `anr` span with `duration`, `threshold` | Timer drift detector + iOS `MetricKit.didReceive` hang payloads |
+| ANRs (with thread dumps) | `anr` span with `duration`, `threshold`, `source_thread` (`main`/`js`), `main_thread_stack`, `threads_json`, `thread_count`, breadcrumbs | Native `ScoutAnrWatchdog` on a dedicated background thread tracks both main-thread (Looper / `DispatchQueue.main`) **and** JS-thread heartbeats. On Android captures `Thread.getAllStackTraces()` (32 KB / 64 frames-per-thread cap); on iOS captures the main thread via Mach `thread_suspend` + frame-pointer walking + `dladdr()` symbolication |
+| iOS UI hang | `ui_hang` span with `duration`, `threshold`, `main_thread_stack`, breadcrumbs | `AppHangWatchdog` `CFRunLoop` heartbeat at the configured `iosHangThresholdMs` (default 250 ms — sub-ANR) |
+| `screen_load` span | `screen.name`, `screen.load_time` (seconds), `view.loading_time_ms` | Emitted on every React Navigation transition; backs per-screen Avg/P95 Load Time dashboard panels |
+| Screen attribution on every span | `screen.name` stamped via `Scout.commonAttributes()` on every span/metric | `Scout.setCurrentScreen(name)` called by the built-in route trackers; reads via `getCurrentScreen()` |
+| Session attributes | `setSessionAttributes({ … })` stamps arbitrary key-value pairs on every subsequent span/metric/log until cleared | In-memory map merged into `Scout.commonAttributes()` |
+| CPU usage gauge | `react_native.cpu.usage` (percent) | Periodic 10 s sampling — Android reads `/proc/<pid>/stat` ticks via wall-clock delta; iOS sums `cpu_usage` across task threads via Mach `thread_basic_info` |
+| Device orientation | `device.orientation` runtime attribute (`portrait`/`landscape`) | Auto-updated on `Dimensions.change` |
+| Jailbreak / root detection | `device.is_jail_broken` resource attribute (`"true"`/`"false"`) | Path probes — `/Applications/Cydia.app` etc. on iOS, `Build.TAGS=test-keys` + su-binary + Magisk packages on Android |
+| Battery discharge rate (Android) | `device.battery.discharge_rate` runtime attribute (µA, sampled every 60 s) | `BatteryManager.BATTERY_PROPERTY_CURRENT_NOW` |
+| NDK build-id (Android) | `ndk.build_id` resource attribute (40-char SHA1) | Parses `.note.gnu.build-id` ELF section from `libscout_signal_handler.so` (works whether the `.so` is extracted to `nativeLibraryDir` or loaded directly from inside the APK) |
+| `app_crash` + `native_crash` carry the crashed session | `crash.previous_session_id`, `crash.session_started_at`, `crash.last_screen` | Persisted across the crash boundary via the marker file (`app_crash`), NDK signal-handler globals (Android `native_crash`), and `KSCrash.userInfo` (iOS `native_crash`) |
 | Scroll depth | `display.scroll.max_depth`, `max_depth_scroll_top`, `max_scroll_height`, `max_scroll_height_time_ms` on `screen_view` | `RN.ScrollView` lazy-getter wrap (RN) + `window.scroll` listener (web) |
 | Web vitals | `web_vital` span with `name`, `value`, `rating` (LCP, INP, CLS, FCP, TTFB) | `web-vitals` library on web |
 | CSP violations | `error` span with `error.csp.violated_directive`, `blocked_uri`, `disposition` | `securitypolicyviolation` event listener (web) |
 | Page lifecycle | `view.page_states_json`, `view.in_foreground_periods_json` | `visibilitychange` + `freeze`/`resume` events (web), `AppState` (RN) |
-| Session management | `session.id` UUID, `session.type: user`, `enduser.anonymous_id` persisted across sessions | AsyncStorage (RN) / localStorage (web) |
+| Session management | `session.id` UUID, `session.type: user`, `user.anonymous_id` persisted across sessions | AsyncStorage (RN) / localStorage (web) |
 | Resource attributes | `service.*`, `device.*`, `os.*`, `network.*`, `a11y.*` (~20 a11y flags), `screen.*`, `viewport.*`, `application.current_locale` | Collected at init |
 | Configurable batching | `traceExportIntervalMs`, `traceMaxQueueSize`, `traceMaxExportBatchSize`, `logExportScheduledDelayMs`, `metricExportIntervalMs`, `exportTimeoutMs` | OTel `BatchSpanProcessor` config |
 | Retry with backoff | Exponential backoff + full jitter on network errors / 408 / 429 / 5xx; default 3 retries, 1s initial, 30s cap | Custom `wrapWithRetry` exporter wrapper |
@@ -113,7 +123,7 @@ npm install @base-14/scout-react@latest
 Or pin to a specific version:
 
 ```bash
-npm install @base-14/scout-react@0.1.7
+npm install @base-14/scout-react@0.1.11
 ```
 
 ### Babel plugin (React Native only)
@@ -227,6 +237,66 @@ createRoot(document.getElementById('root')!).render(
 );
 ```
 
+### SSR-aware initialization
+
+For any setup where the same React tree renders both server-side (SSR / SSG)
+and in the browser — Next.js, Remix, Astro, Gatsby, Docusaurus —
+`Scout.initialize()` must run only in the browser. The SDK depends on
+`window`, `document`, and `localStorage`, all of which are absent during SSR
+build time. Two common patterns:
+
+**`useEffect`-gated (Next.js client component, Remix client-only, etc.):**
+
+```tsx
+'use client';
+import { useEffect } from 'react';
+import Scout from '@base-14/scout-react';
+
+let initialized = false;
+
+export function ScoutBootstrap() {
+  useEffect(() => {
+    if (initialized) return;
+    initialized = true;
+    void Scout.initialize({
+      serviceName: 'my-web-app',
+      endpoint: 'https://rum.example.com/<tenant>/otlp',
+      secure: true,
+      headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_SCOUT_TOKEN}` },
+      captureConsole: true,
+    });
+  }, []);
+  return null;
+}
+```
+
+Render `<ScoutBootstrap />` once at the root of your app.
+
+**`typeof window !== 'undefined'` guard (any framework, top-level module):**
+
+```ts title="src/scout-client.ts"
+import Scout from '@base-14/scout-react';
+
+let initialized = false;
+if (typeof window !== 'undefined' && !initialized) {
+  initialized = true;
+  void Scout.initialize({
+    serviceName: 'my-web-app',
+    endpoint: 'https://rum.example.com/<tenant>/otlp',
+    secure: true,
+    headers: { Authorization: `Bearer ${YOUR_TOKEN}` },
+    captureConsole: true,
+  });
+}
+```
+
+Import this module once from your client entry (Vite `main.tsx`, CRA
+`index.tsx`, Next.js `app/layout.tsx`, Docusaurus `clientModules`, etc.).
+
+The `!initialized` flag is a belt-and-braces idempotency check — bundlers
+and HMR sometimes re-evaluate top-level modules, and you don't want a
+second Scout instance attached.
+
 ## Configuration
 
 Every option you can pass to `Scout.initialize()`:
@@ -281,14 +351,16 @@ Every option you can pass to `Scout.initialize()`:
 | Field | Type | Default | Description |
 |---|---|---|---|
 | `sessionTimeoutMinutes` | `number` | `30` | Inactivity before new session |
-| `sessionSampleRate` | `number (0-100)` | `100` | Per-session binary sampling rate. Below `100`, full sessions are dropped (never partial) so traces stay coherent. |
+| `sessionSampleRate` | `number (0-100)` | `1` | Per-session binary sampling rate. Default is `1` (1% of sessions) to bound telemetry volume for production. Error / crash / ANR / UI-hang spans bypass this gate (controlled by `alwaysCaptureErrors`) so failures are always captured regardless of sampling. Below `100`, full sessions are dropped (never partial) so traces stay coherent. |
 
 ### Thresholds
 
 | Field | Type | Default | Min | Description |
 |---|---|---|---|---|
 | `longTaskThresholdMs` | `number` | `100` | `20` | JS task duration that qualifies as a `long_task` span. Below `20` is clamped up. |
-| `anrThresholdMs` | `number` | `5000` | `1000` | Main-thread block duration that fires an `anr` span. Below `1000` is clamped up. |
+| `anrThresholdMs` | `number` | `5000` | `1000` | Main-thread / JS-thread block duration that fires an `anr` span. Below `1000` is clamped up. Watchdog polls every `threshold/10` ms (min 200 ms). |
+| `iosHangThresholdMs` | `number` | `250` | `50` | iOS-only sub-ANR threshold that fires a `ui_hang` span. Set to `0` to disable. Catches micro-stutters (tap → 300 ms freeze → recover) that the 5 s ANR threshold misses. |
+| `maxTombstoneBytes` | `number` | `131072` | `4096` | Android-only cap on `crash.tombstone` payload size for `ApplicationExitInfo` crashes. Some tombstones are multi-MB; this prevents span-payload bloat. |
 
 ### Resource attributes
 
@@ -313,6 +385,7 @@ to `true`** except `captureConsole` / `capturePrintStatements`.
 | `enableAnrDetection` | `true` | `anr` spans, iOS hang watchdog, Android ANR detector. |
 | `enableFrameMetrics` | `true` | `react_native.frame.refresh_rate` / `slow_frames_rate` / `freeze_rate` metrics + `frozen_frame` spans + `view.slow_frames_json` attribute. |
 | `enableMemoryMetrics` | `true` | RN-only process memory polling. |
+| `enableCpuMetrics` | `true` | `react_native.cpu.usage` gauge. Android reads `/proc/<pid>/stat` and computes percentage via wall-clock delta; iOS uses Mach `thread_info` summed across all task threads. Sampled every 10 s. |
 | `enableWebVitals` | `true` | Web-only LCP / INP / CLS / FCP / TTFB spans. |
 | `enableBatteryTracking` | `true` | `device.battery.level` / `device.battery.state` on every span. |
 | `enableNetworkTracking` | `true` | `http.request` spans, fetch/XHR wrap, GraphQL parse, provider classification, `traceparent` injection. |
@@ -344,9 +417,9 @@ Scout.setUser('user-123', {
 });
 ```
 
-Maps to OpenTelemetry semantic-convention attributes — `enduser.id` is the
+Maps to OpenTelemetry semantic-convention attributes — `user.id` is the
 primary key; everything else in the `attributes` map is prefixed
-`enduser.<key>` so it lands as `enduser.email`, `enduser.plan`, etc. Errors
+`user.<key>` so it lands as `user.email`, `user.plan`, etc. Errors
 and crashes captured after this call carry these attributes automatically —
 your dashboard can filter "errors for users on plan=pro."
 
@@ -370,6 +443,23 @@ Each flag becomes a `feature_flag.<name>` attribute. The killer use case:
 when an error span is emitted, the flag values **active at error time** are
 attached to it, so you can correlate "this crash only happens when
 `new-checkout=true`."
+
+### `Scout.setSessionAttributes(attrs)` — session-scoped attribute bag
+
+```ts
+Scout.setSessionAttributes({
+  'tenant.id': 'acme',
+  'tenant.plan': 'enterprise',
+  'build.flavor': 'play',
+});
+```
+
+A simple key-value map merged into `commonAttributes()` on every span,
+metric, and log. Survives session rotations until you call
+`Scout.clearSessionAttributes()`. Use for stable integrator-supplied
+context that isn't a user identity (tenant id, deployment region, build
+flavor, A/B test cohort). Mirrors `scout-flutter`'s
+`ScoutFlutter.setSessionAttributes`.
 
 ### `Scout.setRuntimeAttribute(key, value)` — free-form session attribute
 
@@ -403,10 +493,11 @@ Scout.addBreadcrumb('navigation', 'screen: /payment');
 
 | To remove | Call |
 |---|---|
-| The user identity (and all `enduser.*` attributes) | `Scout.clearUser()` |
+| The user identity (and all `user.*` attributes) | `Scout.clearUser()` |
 | The B2B account identity | `Scout.clearAccount()` |
 | A single feature flag | `Scout.setFeatureFlag(name, null)` |
 | All feature flags at once | `Scout.clearFeatureFlags()` |
+| All session attributes | `Scout.clearSessionAttributes()` |
 | A single runtime attribute | `Scout.setRuntimeAttribute(key, null)` (`null` or `undefined` deletes the key) |
 | All breadcrumbs (rarely needed) | They roll out of the ring buffer naturally; no explicit clear |
 
@@ -455,7 +546,7 @@ On the next launch after a crash, both pipelines drain into the same
 `native_crash` span with full attribute coverage:
 
 ```text
-crash.type:                 mach
+crash.type:                 mach | signal | nsexception | cppexception
 crash.reason:               EXC_BREAKPOINT
 crash.mach_exception:       EXC_BREAKPOINT
 crash.mach_code:            KERN_INVALID_ADDRESS
@@ -469,6 +560,9 @@ crash.device_model:         iPhone17,2
 crash.machine:              arm64e
 crash.build_type:           debug
 crash.report_id:            04446A8C-65BC-486C-A7CD-F7A65DAB797B
+crash.bundle_id:            io.base14.example
+crash.app_id:               io.base14.example   (alias of crash.bundle_id)
+crash.app_version:          1.4.2 (build 412)
 crash.stack_trace:          libswiftCore.dylib 0x… $ss17_assertionFailure…
 crash.registers_json:       { "basic": { "pc": …, "lr": …, "sp": …, "fp": …,
                               "x0": …, …, "x29": … },
@@ -516,8 +610,65 @@ crash.build_fingerprint:    google/sdk_gphone64_arm64/...
 crash.kernel:               Linux version 5.15.…
 crash.process_uptime_secs:  847
 crash.last_screen:          OrderDetailScreen
-crash.registers / .memory_map  (NDK path only)
+crash.pc / .lr / .fp / .sp                          (NDK arm64 register snapshot)
+crash.exception_register:   x16: 0x… x17: 0x…      (NDK arm64; PAC/BTI diagnosis)
+crash.registers / .memory_map                       (NDK path only)
 ```
+
+## Native ANR detection with thread dumps
+
+The SDK runs a native watchdog on a dedicated background thread that
+tracks **two heartbeats** independently — the native main thread
+(Android `Looper.getMainLooper()` / iOS `DispatchQueue.main`) **and**
+the JS thread (via a periodic `notifyJsAlive()` call from JS at
+`anrThresholdMs / 5` intervals). If either is silent past
+`anrThresholdMs`, the watchdog fires immediately while the thread is
+still blocked — captures the dump, ships it via a native event
+(`ScoutAnr`), and JS attaches it to an `anr` span when it processes
+the event.
+
+This is critical for React Native: a pure-JS busy loop blocks the JS
+thread but the Android UI thread keeps responding, so the OS-level
+ANR never fires. The watchdog's JS-thread heartbeat fills that gap.
+
+Attributes on the `anr` span:
+
+```text
+anr.duration:             5.391   (seconds)
+anr.threshold:            5.0
+anr.source_thread:        js      (or "main")
+anr.thread_count:         44
+anr.main_thread_stack:    "android.os.MessageQueue.nativePollOnce ..."
+anr.threads_json:         [{"name":"main", "state":"RUNNABLE", "frames":[…]}, …]   (~25 KB)
+breadcrumbs:              [<full trail>]
+screen.name:              "Profile"
+```
+
+### Implementation per platform
+
+- **Android** — `ScoutAnrWatchdog.kt` on a `HandlerThread`; posts
+  heartbeat runnables to the main `Looper`; `ScoutThreadDumpCollector`
+  serializes every thread via `Thread.getAllStackTraces()` capped at
+  32 KB / 64 frames per thread.
+- **iOS** — `AppHangWatchdog.swift` runs two tiers — `ui_hang` at
+  `iosHangThresholdMs` (default 250 ms), `anr` at `anrThresholdMs`
+  (default 5000 ms). `ScoutThreadBacktrace.swift` captures the main
+  thread via Mach `thread_suspend` + `thread_get_state` + FP/LR frame
+  walking + `dladdr()` symbolication, arm64 + x86_64.
+
+### Testing it from the example diagnostics panel
+
+The Expo example (`examples/platform-design-mobile`) ships six test
+buttons that exercise the SDK's failure-mode paths:
+
+| Button | Triggers | Expected span |
+|---|---|---|
+| **anr (JS thread, 6s freeze)** | `while (Date.now() < end) {}` on JS thread | `anr` with `source_thread=js` |
+| **anr (UI thread, 6s freeze)** | `ScoutCrash.__debugBlockMainThread(6000)` blocks the Android UI thread / iOS main thread for 6s | `anr` with `source_thread=main` |
+| **anr (JS thread, 12s long freeze)** | Same as JS freeze, longer duration | `anr` with `duration ≈ 12s` |
+| **ui_hang (UI thread, 500ms)** | iOS-only — 500 ms main-thread block triggers `AppHangWatchdog` at default 250 ms threshold | `ui_hang` (iOS only) |
+| **manual breadcrumb** | `Scout.addBreadcrumb('manual', '<msg>')` | breadcrumb in the next captured span's trail |
+| **log info / warn / error** | `Scout.logInfo(…)` / `logWarning(…)` / `logError(…)` | three OTel log records |
 
 ## React Native lifecycle integration
 
@@ -575,7 +726,7 @@ What's still lost:
 
 The repo ships a runnable Expo example at
 `examples/platform-design-mobile`. Its `package.json` depends on the
-published SDK (`"@base-14/scout-react": "^0.1.7"`):
+published SDK (`"@base-14/scout-react": "^0.1.11"`):
 
 ```bash
 git clone https://github.com/base-14/scout-react.git
@@ -628,7 +779,7 @@ collector on the host.
 
   ```ts
   beforeSend: (event) => {
-    delete event['enduser.email'];
+    delete event['user.email'];
     delete event['http.url']; // if it contains tokens in query string
     return event;
   }
