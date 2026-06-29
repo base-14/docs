@@ -56,9 +56,9 @@ manual `Scout.track(...)` calls anywhere in your app.
 | INV vital (Interaction → Next View) | `app_vital` span with `vital.name = inv`, `vital.from_screen`, `vital.to_screen` | Tap timestamp correlated with next `screen_view` within 5 s |
 | Errors (Flutter framework) | `error` span with `error.id`, `error.fingerprint`, `error.handled`, breadcrumbs | `FlutterError.onError` + `PlatformDispatcher.instance.onError` |
 | Manual error reporting | `error` span | `ScoutFlutter.reportError(e, stackTrace)` |
-| Native crashes (iOS) | `native_crash` span with `crash.reason`, registers (FAR/ESR), mach_exception, callstack_tree, binary_images | KSCrash 2.5+ all five monitors + MetricKit `MXCrashDiagnostic` / `MXHangDiagnostic` |
+| Native crashes (iOS) | `native_crash` span with `crash.reason`, registers (FAR/ESR), mach_exception, callstack_tree, binary_images | KSCrash 2.x all five monitors + MetricKit `MXCrashDiagnostic` / `MXHangDiagnostic` |
 | Native crashes (Android) | `native_crash` span with `crash.reason`, signal info, tombstone (≤ 32 KB), `crash.os_reason_*`, PSS/RSS | Custom NDK signal handler + `ApplicationExitInfo` (API 30+; reflective subReason on API 31+) |
-| ANR | `anr` span with `anr.duration`, `anr.threshold` | iOS: `AppHangWatchdog` (5 s default). Android: `Choreographer` + ApplicationExitInfo `REASON_ANR` |
+| ANR | `anr` span with `anr.duration`, `anr.threshold`, `anr.thread_count`, `anr.threads_json`, `anr.main_thread_stack`, and breadcrumbs | iOS: `AppHangWatchdog` (5 s default). Android: `Choreographer` + ApplicationExitInfo `REASON_ANR`. Captures a full thread dump at detection time. |
 | UI hang (iOS) | `ui_hang` span with `ui_hang.duration`, `ui_hang.threshold` | iOS-only sub-ANR watchdog at 250 ms (configurable). Complements KSCrash mainThreadDeadlock and the 5 s ANR detector |
 | Long tasks | `long_task` span with `long_task.duration`, `long_task.threshold` | Dart isolate event-loop polling |
 | HTTP requests | `http.request` span with method, URL, status, duration, headers | `HttpOverrides` global wrap + Dio interceptor (optional) |
@@ -68,10 +68,12 @@ manual `Scout.track(...)` calls anywhere in your app.
 | Frame metrics | `flutter.frame.build_time`, `flutter.frame.raster_time` histograms | `WidgetsBinding.instance.addTimingsCallback` |
 | Memory + CPU | `flutter.memory.usage`, `flutter.cpu.usage` gauges | Platform channel poll |
 | Network connectivity | `network.connection.type` resource attribute (`wifi`, `cellular`, `none`) | `connectivity_plus` listener |
-| Battery | `device.battery.level`, `device.battery.state` resource attributes | `battery_plus` listener |
+| Battery | `device.battery.level`, `device.battery.state`, `device.battery.discharge_rate` resource attributes | `battery_plus` + platform channel |
+| Device orientation | `device.orientation` resource attribute (`portrait` / `landscape`) | Orientation-change listener |
+| Device integrity | `device.is_jail_broken` resource attribute | Jailbreak / root heuristic via platform channel |
 | Logs | OTLP logs | `ScoutFlutter.log*()` and (opt-in) `print` / `debugPrint` capture |
-| Anonymous user id | `enduser.anonymous_id` on every span | UUID v4 minted on first launch, persisted to temp dir |
-| WebView bridge | Embedded web pages adopt the native `session.id` + `enduser.anonymous_id`; their spans flow back as `span.source = "webview"` | `ScoutWebViewBridge.attach()` + `injectShim()` on every page finish |
+| Anonymous user id | `user.anonymous_id` on every span | UUID v4 minted on first launch, persisted to temp dir |
+| WebView bridge | Embedded web pages adopt the native `session.id` + `user.anonymous_id`; their spans flow back as `span.source = "webview"` | `ScoutWebViewBridge.attach()` + `injectShim()` on every page finish |
 
 ## Prerequisites
 
@@ -79,7 +81,7 @@ manual `Scout.track(...)` calls anywhere in your app.
 |---|---|
 | Flutter SDK | ≥ 3.7.0 |
 | Dart SDK | ≥ 3.7.0 |
-| iOS deployment target | ≥ 13.0 (KSCrash 2.5 requirement) |
+| iOS deployment target | ≥ 12.0 |
 | Android `minSdkVersion` | ≥ 21 (`ApplicationExitInfo` features activate from API 30+) |
 | `compileSdkVersion` | ≥ 34 (recommended) |
 | CocoaPods | ≥ 1.11 |
@@ -87,41 +89,30 @@ manual `Scout.track(...)` calls anywhere in your app.
 
 ## Installation
 
-scout_flutter is distributed by GitHub tag, not pub.dev, so you pin to
-an exact released version:
+scout_flutter is published on [pub.dev](https://pub.dev/packages/scout_flutter).
+Add it to your `pubspec.yaml`:
 
 ```yaml
 # pubspec.yaml
 dependencies:
-  scout_flutter:
-    git:
-      url: https://github.com/base-14/scout-flutter.git
-      ref: v0.1.5
+  scout_flutter: ^0.1.20
 ```
 
-```bash
-flutter pub get
-```
-
-### Upgrading
-
-Flutter caches git dependencies aggressively. Bumping the `ref:` alone
-sometimes doesn't refetch — when in doubt:
+Or:
 
 ```bash
-flutter pub cache repair scout_flutter
-flutter pub get
+flutter pub add scout_flutter
 ```
 
 ### iOS — CocoaPods install
 
 The first build after adding scout_flutter triggers a pod install for
-the KSCrash 2.5+ and MetricKit dependencies. Make sure your iOS
-Podfile has `platform :ios, '13.0'` or higher:
+the KSCrash 2.x and MetricKit dependencies. Make sure your iOS
+Podfile has `platform :ios, '12.0'` or higher:
 
 ```ruby
 # ios/Podfile
-platform :ios, '13.0'
+platform :ios, '12.0'
 ```
 
 Then:
@@ -196,11 +187,11 @@ timeline regardless of which Navigator pushed a route.
 
 ```dart
 ScoutFlutter.setUser(
-  'user-123',
+  id: 'user-123',
   attributes: {
-    'email': 'jane@example.com',
-    'plan': 'pro',
-    'role': 'admin',
+    'email': 'jane@example.com',   // → user.email
+    'plan': 'pro',                 // → user.plan
+    'role': 'admin',               // → user.role
   },
 );
 
@@ -208,8 +199,32 @@ ScoutFlutter.setUser(
 ScoutFlutter.clearUser();
 ```
 
-`enduser.id` and every attribute prefixed `enduser.*` ride on every
-span until cleared.
+`id` is optional. `user.id` and every attribute ride on every span
+until cleared — bare attribute keys are auto-prefixed with `user.`, and
+keys already starting with `user.` pass through unchanged. `setUser`
+**replaces** the whole user map, so pass everything you want each call.
+
+### Setting session attributes
+
+Session attributes attach to every subsequent span, metric, and log for
+the rest of the session. Keys are stored verbatim (no auto-prefix).
+
+```dart
+// Replaces all existing session attributes.
+ScoutFlutter.setSessionAttributes({'tenant': 'acme', 'ab_bucket': 'B'});
+
+// Add one without clobbering the rest — merge with the current view:
+ScoutFlutter.setSessionAttributes({
+  ...ScoutFlutter.sessionAttributes,
+  'feature.new_checkout': 'true',
+});
+
+// Clear all.
+ScoutFlutter.clearSessionAttributes();
+```
+
+They persist until you call `clearSessionAttributes()` — they are **not**
+cleared automatically on session rotation.
 
 ## Configuration
 
@@ -223,7 +238,7 @@ opt-in.
 |---|---|---|---|
 | `serviceName` | `String` | **(required)** | Logical app identifier. Used as `service.name`. |
 | `endpoint` | `String` | **(required)** | OTLP-HTTP collector URL. `/v1/traces`, `/v1/metrics`, `/v1/logs` are appended automatically. |
-| `serviceVersion` | `String` | `'1.0.0'` | Maps to `service.version`. Set to your app build version. |
+| `serviceVersion` | `String?` | `null` | Maps to `service.version`. Set to your app build version. |
 | `secure` | `bool` | `true` | When `endpoint` has no scheme, prefix `https://` (true) or `http://` (false). |
 | `headers` | `Map<String, String>?` | `null` | Extra HTTP headers on every OTLP export. Use for auth. |
 | `resourceAttributes` | `Map<String, String>?` | `null` | Extra attributes merged into every signal's `Resource`. Use for `deployment.region`, `team`, etc. Static — set once at init. |
@@ -241,7 +256,9 @@ opt-in.
 | Field | Type | Default | Description |
 |---|---|---|---|
 | `sessionTimeoutMinutes` | `int` | `30` | Inactivity timeout before a new `session.id` is minted. |
-| `sessionSampleRate` | `double (0-100)` | `100.0` | Percent of sessions sampled. Below 100, full sessions are dropped (not individual events) so session traces stay coherent. |
+| `maxSessionDurationMinutes` | `int` | `60` | Hard cap on session lifetime; rotates on the next ID read past this age regardless of activity. `0` disables. |
+| `sessionSampleRate` | `double (0-100)` | `1.0` | Percent of sessions sampled — default **1%**. Below 100, full sessions are dropped (not individual events) so session traces stay coherent. |
+| `alwaysCaptureErrors` | `bool` | `true` | Error / crash / ANR-class spans bypass `sessionSampleRate` and are always exported. Set `false` to subject them to the same gate. |
 
 ### Thresholds
 
@@ -250,6 +267,7 @@ opt-in.
 | `longTaskThresholdMs` | `int` | `100` | `20` | Dart isolate task duration that qualifies as a `long_task` span. |
 | `anrThresholdMs` | `int` | `5000` | `1000` | Main-thread block duration that fires an `anr` span. |
 | `iosHangThresholdMs` | `int` | `250` | `50` (or `0` to disable) | iOS only — sub-ANR `ui_hang` watchdog. Complements ANR (5 s) and KSCrash `mainThreadDeadlock` (5 s+). Catches micro-stutter / jank. |
+| `maxTombstoneBytes` | `int` | `131072` | `4096` | Max bytes of Android `ApplicationExitInfo` tombstone (ANR / native post-mortem) captured per report. |
 
 ### Offline buffer
 
@@ -294,7 +312,7 @@ ScoutFlutterConfig(
     if ((event['http.url'] as String?)?.contains('/health') == true) {
       return null;
     }
-    event.remove('enduser.email');
+    event.remove('user.email');
     return event;
   },
 )
@@ -338,15 +356,22 @@ In parallel, an `MXMetricManagerSubscriber` collects asynchronous
 delivers the morning after a crash — useful for catching kernel-killed
 crashes that KSCrash couldn't intercept.
 
-#### Triggering a real native crash (testing)
+#### Triggering a crash (testing)
+
+scout_flutter does not ship a "simulate crash" API. To validate
+end-to-end capture, trigger a real fault — and **never** use `exit()`,
+which is a graceful shutdown that no crash reporter intercepts:
 
 ```dart
-import 'package:scout_flutter/scout_flutter.dart';
-
-// Wires the plugin's "synthesise SIGSEGV" path. Use this — NOT
-// `exit()` — when validating end-to-end crash capture.
-await ScoutFlutter.platformChannel.simulateCrash();
+// Uncaught Dart error → `error` span (and, if fatal, `app_crash` on relaunch).
+throw StateError('test crash');
 ```
+
+For a true native signal (SIGSEGV on Android, `fatalError()` on iOS),
+add a small platform-channel method on the app side. The repo's
+`example/` app and the
+[`flutter/samples/platform_design`](https://github.com/flutter/samples/tree/main/platform_design)
+sample ship ready-made crash / ANR / deadlock buttons for exactly this.
 
 ### Android — NDK signal handler + ApplicationExitInfo
 
@@ -391,7 +416,7 @@ replays it on next `initialize()`.
 Embed a WebView showing a page instrumented with `@base14/scout-react`
 (web entry) v0.1.5+, and `scout_flutter` will flatten the WebView's
 RUM session into the **native** session — both runtimes share one
-`session.id` and `enduser.anonymous_id`, and the embedded page's spans
+`session.id` and `user.anonymous_id`, and the embedded page's spans
 flow back into the native pipeline tagged with
 `span.source = "webview"`.
 
@@ -434,7 +459,7 @@ The bridge:
    web SDK appears.
 3. Receives bridged span payloads via the channel and re-emits them
    as native spans with `span.source = "webview"`, `session.id`,
-   `enduser.anonymous_id`, and the rest of the native common
+   `user.anonymous_id`, and the rest of the native common
    attributes.
 
 The bridge is currently a **parallel** transport — both the web SDK's
@@ -488,9 +513,9 @@ adb reverse tcp:34318 tcp:34318
 | `native_crash` not appearing after iOS crash | KSCrash writes asynchronously; the report drains on the *next* launch. Force-quit and relaunch the app, then check the collector log. |
 | Android `native_crash` empty on API < 30 | `ApplicationExitInfo` requires API 30+. Older devices only get whatever the in-process NDK handler caught. |
 | WebView spans not tagged `span.source = webview` | Either the embedded page isn't `@base14/scout-react` v0.1.5+ (no `window.Scout`), or your `NavigationDelegate.onPageFinished` is missing the `injectShim(...)` call. |
-| `Observer already has a Navigator` assertion | You're on an old version. v0.1.5+ makes `navigatorObserver` a factory — each read returns a fresh instance. Bump the dep. |
+| `Observer already has a Navigator` assertion | `navigatorObserver` returns a fresh instance on every read, so attaching it to multiple Navigators is fine. If you hit this, you're caching one instance and reusing it — read `ScoutFlutter.navigatorObserver` afresh per Navigator. |
 | HTTP requests not getting `traceparent` | The host isn't in `firstPartyHosts`. Add it explicitly (e.g. `'api.example.com'`) or use a wildcard (`'*.example.com'`). |
-| Crash button gives a graceful shutdown instead of SIGSEGV | You're calling `exit()` instead of `ScoutFlutter.platformChannel.simulateCrash()`. `exit()` is graceful and no crash reporter intercepts it. |
+| Crash button gives a graceful shutdown instead of SIGSEGV | You're calling `exit()`, which is graceful — no crash reporter intercepts it. Trigger a real fault instead (an uncaught error, or a native null-deref via your own platform-channel method). |
 
 ## Performance considerations
 
@@ -507,7 +532,7 @@ adb reverse tcp:34318 tcp:34318
 ## Security considerations
 
 - **PII scrubbing.** Use `beforeSend` to redact attributes
-  (`event.remove('enduser.email')`) or drop entire events (return
+  (`event.remove('user.email')`) or drop entire events (return
   `null`). It runs synchronously on every span / metric / log before
   export.
 - **Custom headers for auth.** Pass
@@ -558,12 +583,10 @@ Yes:
 
 ```dart
 ScoutFlutter.logInfo('checkout started', attributes: {'cart.size': 3});
-ScoutFlutter.logError(
-  'payment failed',
-  error: e,
-  stackTrace: st,
-  attributes: {'order.id': 'ord-1'},
-);
+ScoutFlutter.logError('payment failed', attributes: {'order.id': 'ord-1'});
+
+// For an error with a stack trace, use reportError (emits an `error` span):
+ScoutFlutter.reportError(e, st);
 ```
 
 ## What's next
