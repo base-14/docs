@@ -3,25 +3,24 @@ title: React OpenTelemetry Instrumentation - Browser Tracing & Web Vitals
 sidebar_label: React
 sidebar_position: 17
 description:
-  React OpenTelemetry instrumentation for browser tracing, fetch/XHR
-  requests, and Core Web Vitals. Export to base14 Scout via OTLP.
+  Auto-instrument React web apps with @base-14/scout-react — captures routes,
+  clicks, fetch/XHR, errors, Core Web Vitals, long tasks, frustration signals,
+  and frame metrics. Exports OpenTelemetry traces, metrics, and logs to base14
+  Scout via OTLP.
 keywords:
   [
     react opentelemetry,
-    react opentelemetry instrumentation,
-    react monitoring,
-    react apm,
-    react distributed tracing,
-    react performance monitoring,
-    frontend monitoring,
-    react instrumentation,
-    opentelemetry react,
-    browser monitoring,
-    web vitals opentelemetry,
-    react fetch tracing,
-    spa monitoring,
+    react rum,
+    react real user monitoring,
     react browser tracing,
-    opentelemetry browser sdk,
+    react web vitals,
+    scout-react,
+    react performance monitoring,
+    react crash reporting,
+    react frustration detection,
+    spa monitoring,
+    react fetch tracing,
+    opentelemetry react,
   ]
 ---
 
@@ -29,160 +28,207 @@ keywords:
 
 <head>
   <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I add OpenTelemetry tracing to a React application?","acceptedAnswer":{"@type":"Answer","text":"Install @opentelemetry/sdk-trace-web and @opentelemetry/auto-instrumentations-web, call setupTelemetry() before your React app renders, and point the OTLP exporter at your base14 Scout Collector endpoint."}},{"@type":"Question","name":"What does OpenTelemetry auto-instrumentation capture in the browser?","acceptedAnswer":{"@type":"Answer","text":"Auto-instrumentation captures fetch and XHR requests, document load timing, and user interactions like clicks and form submissions - all with no manual span code required."}},{"@type":"Question","name":"Can I monitor Core Web Vitals with OpenTelemetry in React?","acceptedAnswer":{"@type":"Answer","text":"Yes, you can capture Core Web Vitals (LCP, FID, CLS) alongside OpenTelemetry traces to correlate real user performance metrics with distributed traces in base14 Scout."}},{"@type":"Question","name":"Does OpenTelemetry browser tracing work with React Router?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry traces navigation events and route changes in single-page React apps. Each route transition and associated API calls are captured as linked spans."}}]})}
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I add Real User Monitoring to a React web app with base14 Scout?","acceptedAnswer":{"@type":"Answer","text":"Install @base-14/scout-react, call Scout.initialize() once on app boot from the browser, and wrap your root with ScoutErrorBoundary. Routes, clicks, fetch/XHR, errors, Core Web Vitals, and lifecycle events are then captured automatically and exported as OTLP traces, metrics, and logs to your Scout endpoint."}},{"@type":"Question","name":"What does @base-14/scout-react capture in the browser without manual instrumentation?","acceptedAnswer":{"@type":"Answer","text":"Every click, route navigation, fetch and XHR request, JavaScript error, unhandled rejection, Core Web Vital (LCP/INP/CLS/FCP/TTFB), long task, frozen frame, scroll depth, CSP violation, page lifecycle transition, and frustration signal (rage click / dead click / error click) — all as OTel-shaped spans, metrics, and logs."}},{"@type":"Question","name":"Does scout-react work with React Router / Next.js / Remix / Docusaurus?","acceptedAnswer":{"@type":"Answer","text":"Yes. The route tracker subscribes to the History API which every SPA router uses. For SSR setups (Next.js, Remix, Astro, Docusaurus), initialize Scout inside a useEffect or guard with a typeof window check so it runs only in the browser, never during SSR."}},{"@type":"Question","name":"How do I scrub PII before telemetry leaves the browser?","acceptedAnswer":{"@type":"Answer","text":"Pass a beforeSend callback to Scout.initialize(). It runs on every span, metric, and log before export — return null to drop the event, or mutate the attributes object to redact specific fields (e.g. user.email, query-string tokens)."}}]})}
   </script>
 </head>
 
 <!-- markdownlint-enable MD013 MD011 -->
 
-# React
+# React (web)
 
-Implement OpenTelemetry auto instrumentation for `React` applications to collect
-traces using the JavaScript OTel SDK.
+`@base-14/scout-react` ships **zero-config Real User Monitoring** for React
+web apps. One npm install, one `Scout.initialize()` call, and every click,
+route change, fetch request, error, Core Web Vital, long task, and lifecycle
+transition is captured as an OpenTelemetry span / metric / log and exported
+via OTLP to your Scout endpoint.
 
 :::tip TL;DR
-
-Install the `@opentelemetry/auto-instrumentations-web` package, call
-`setupTelemetry()` before your React app renders, and point the OTLP exporter
-at your Scout Collector endpoint. This gives you automatic tracing for fetch/XHR
-requests, document load timing, and user interactions with no manual span code
-required.
-
+`npm install @base-14/scout-react`, call `Scout.initialize({ serviceName,
+endpoint, headers })` once on app boot from the browser, optionally wrap your
+root with `ScoutErrorBoundary`. No manual `Scout.track(...)` calls needed —
+the SDK auto-instruments the entire browser-RUM surface.
 :::
 
-## Overview
+:::info Mobile (React Native)?
+The same SDK package targets React Native. See the
+[React Native + React Web instrumentation guide](../../mobile/react-native.md)
+for the full reference including native crash capture, ANR detection,
+session-context persistence, and Expo integration.
+:::
 
-This guide demonstrates how to:
+## What you get
 
-- Set up OpenTelemetry auto instrumentation for React
-- Configure automatic request and response tracing
-- Export telemetry data to Scout Collector
+| Capability | Signal | How it's captured |
+|---|---|---|
+| Route / page navigation | `screen_view` ROOT span with `view.id`, `view.loading_type`, `view.referrer`, `screen_load` span with `screen.load_time` | History API + `popstate` listener |
+| Click tracking | `user_interaction` span (`type=click`, target selector, x/y, composed-path) | Capture-phase `click` listener |
+| Frustration signals | `user_interaction.action.frustration.type` (`rage_click` / `dead_click` / `error_click`) | DOM mutation observer + error correlation |
+| Fetch / XHR | `http.request` span with method / `url.full` / `http.response.status_code` / `http.duration_ms` / phase breakdown (DNS / connect / SSL / TTFB / download / redirect) / `network.protocol.name` / GraphQL operation parse / third-party provider classification (Stripe / CloudFront / Google Fonts / …) | Global `fetch` + `XMLHttpRequest` wrap + `PerformanceResourceTiming` |
+| Errors | `error` span with `error.id`, `error.type`, `error.message`, `error.stack_trace`, `error.fingerprint`, `error.causes_json`, `breadcrumbs` | `window.onerror` + `unhandledrejection` + `ErrorBoundary` |
+| `app_crash` (catch-all) | Emitted on next launch if the previous session didn't exit cleanly (`pagehide` never fired) | Session marker in `localStorage` |
+| Core Web Vitals | `web_vital` spans for LCP / INP / CLS / FCP / TTFB plus sub-parts (input_delay, processing_duration, presentation_delay for INP; load_delay, load_time, render_delay for LCP; layout-shift rects for CLS) | `web-vitals` library |
+| Long tasks | `long_task` span with `long_task.duration`, blocking_duration, render_start, style_and_layout_start, first_ui_event_timestamp, `scripts_json` | `PerformanceObserver('longtask')` + `long-animation-frame` (Chrome 123+) |
+| Frozen frames | `frozen_frame` span (≥ 700 ms blocks) | Same `PerformanceObserver` |
+| Scroll depth | `display.scroll.max_depth`, `max_scroll_height`, `max_scroll_height_time_ms` on `screen_view` | `window.scroll` listener with rAF coalescing |
+| CSP violations | `error` span with `error.csp.violated_directive`, `blocked_uri`, `disposition` | `securitypolicyviolation` event listener |
+| Page lifecycle | `app_paused` / `app_resumed` spans + `view.page_states_json` + `view.in_foreground_periods_json` | `visibilitychange` + `freeze` / `resume` events |
+| Background flush | All batched signals force-flushed on `visibilitychange=hidden` / `pagehide` | OTel `BatchSpanProcessor.forceFlush()` |
+| Resource attributes | `service.name`, `service.version`, `app.bundle_id`, `os.name`, `device.locale`, `network.connection.type`, `viewport.width/height`, `screen.pixel_ratio`, `a11y.*` (~20 accessibility flags) | Collected at init |
+| Identity + session attrs | `user.id` + `user.*` (from `setUser`), `account.id` (from `setAccount`), `feature_flag.*` (from `setFeatureFlag`), arbitrary session bag (from `setSessionAttributes`) | In-memory; merged into every span via `commonAttributes()` |
+| Retry with jitter | Exponential backoff with full jitter on 5xx / 408 / 429 / network errors; configurable max retries | `wrapWithRetry` exporter wrapper |
+| Offline buffer | Retry-exhausted batches persisted to `localStorage`; replayed on `Scout.initialize()` + `visibilitychange=visible` + `online` events | Per-signal FIFO item caps |
 
-### Prerequisites
+## Prerequisites
 
-- Node.js 16+
-- React application setup
-- OTLP Collector setup
+- React 18 or 19
+- A Scout collector / RUM ingest endpoint reachable from the browser
 
-## Why Instrument apps in the Browser?
-
-Browser-based applications run in an environment where performance is influenced
-by factors like network speed, device type and user behavior. Instrumentation
-helps developers understand how the app performs in real-world usage, identify
-slow interactions, and improve user experience.
-
-### What to Monitor in React Apps
-
-- **Component Lifecycle**: Track mount/update/unmount cycles
-- **User Interactions**: Clicks, form submissions, navigation
-- **Performance**: Core Web Vitals (LCP, FID, CLS)
-
-## Auto Instrumentation Setup
-
-OpenTelemetry auto instrumentation allows developers to capture telemetry data
-(mainly traces) without writing manual code.
-
-> Note: OpenTelemetry auto instrumentation does not collect metrics by default.
-> To capture meaningful metrics, you'll need to define and export them manually
-> through custom instrumentation.
-
-### Install Required Packages
+## Install
 
 ```bash
-npm install @opentelemetry/sdk-trace-web
-npm install @opentelemetry/auto-instrumentations-web
-npm install @opentelemetry/exporter-trace-otlp-http
-npm install @opentelemetry/resources
-npm install @opentelemetry/exporter-trace-otlp-http
-npm install @opentelemetry/resources
-npm install @opentelemetry/semantic-conventions
+npm install @base-14/scout-react
 ```
 
-### Setup OpenTelemetry
+## Initialize
 
-```js
-// src/telemetry.js
-import { WebTracerProvider } from "@opentelemetry/sdk-trace-web";
-import { registerInstrumentations } from "@opentelemetry/instrumentation";
-import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
-import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
-import { getWebAutoInstrumentations } from "@opentelemetry/auto-instrumentations-web";
-import { Resource } from "@opentelemetry/resources";
-import { SemanticResourceAttributes } from "@opentelemetry/semantic-conventions";
-import { ZoneContextManager } from "@opentelemetry/context-zone";
+`Scout.initialize()` must run only in the browser. For pure CSR (Create React
+App, Vite without SSR), import it from your client entry. For any SSR setup
+(Next.js, Remix, Astro, Docusaurus, etc.), gate it with `useEffect` or a
+`typeof window !== 'undefined'` check so it doesn't run during SSR build time
+when `window` / `document` / `localStorage` are absent.
 
-export const setupTelemetry = () => {
-  const resource = new Resource({
-    [SemanticResourceAttributes.SERVICE_NAME]: "react-service",
-    [SemanticResourceAttributes.SERVICE_VERSION]: "1.0.0",
-  });
+### Pure CSR (Vite, CRA)
 
-  const traceExporter = new OTLPTraceExporter({
-    url: "http://<scout-collector-endpoint>:4318/v1/traces",
-  });
+```tsx title="src/main.tsx"
+import Scout from '@base-14/scout-react';
+import { ScoutErrorBoundary } from '@base-14/scout-react/react';
+import { BrowserRouter } from 'react-router-dom';
+import { createRoot } from 'react-dom/client';
+import App from './App';
 
-  const provider = new WebTracerProvider({ resource });
+await Scout.initialize({
+  serviceName: 'my-web-app',
+  endpoint: 'https://rum.example.com/<tenant>/otlp',
+  secure: true,
+  headers: { Authorization: `Bearer ${import.meta.env.VITE_SCOUT_TOKEN}` },
+});
 
-  provider.addSpanProcessor(new BatchSpanProcessor(traceExporter));
-
-  // Register the tracer provider with ZoneContextManager as it:
-  // 1. Maintains context across async operations (Promises, setTimeout, etc.)
-  // 2. Ensures proper trace context propagation in React's async rendering
-
-  provider.register({
-    contextManager: new ZoneContextManager(),
-  });
-
-  registerInstrumentations({
-    instrumentations: [
-      getWebAutoInstrumentations({
-        "@opentelemetry/instrumentation-fetch": {
-          propagateTraceHeaderCorsUrls: [/.*/],
-        },
-        "@opentelemetry/instrumentation-xml-http-request": {
-          propagateTraceHeaderCorsUrls: [/.*/],
-        },
-      }),
-    ],
-  });
-};
-```
-
-### Initialize in index.js
-
-```js
-// src/index.js
-import React from "react";
-import ReactDOM from "react-dom";
-import App from "./App";
-import { setupTelemetry } from "./telemetry";
-
-setupTelemetry();
-
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById("root"),
+createRoot(document.getElementById('root')!).render(
+  <ScoutErrorBoundary>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </ScoutErrorBoundary>,
 );
 ```
 
-### Auto-instrumentation Capabilities
+### SSR-aware (Next.js, Remix, Docusaurus, etc.)
 
-OpenTelemetry's auto-instrumentation for browser applications automatically
-track everal key interactions:
+Run `Scout.initialize()` inside `useEffect` (which only fires on the client),
+or guard a top-level module with a `typeof window` check:
 
-1. **User Interactions**
+```tsx title="components/ScoutBootstrap.tsx (Next.js client component)"
+'use client';
+import { useEffect } from 'react';
+import Scout from '@base-14/scout-react';
 
-2. **Fetch/XHR Requests**
+let initialized = false;
 
-3. **Document Loading**
+export function ScoutBootstrap() {
+  useEffect(() => {
+    if (initialized) return;
+    initialized = true;
+    void Scout.initialize({
+      serviceName: 'my-web-app',
+      endpoint: 'https://rum.example.com/<tenant>/otlp',
+      secure: true,
+      headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_SCOUT_TOKEN}` },
+    });
+  }, []);
+  return null;
+}
+```
 
-## CORS Setup for Otel Collector
+Render `<ScoutBootstrap />` once at the root of your app.
 
-Add the following CORS headers to the Otel Collector configuration:
+The `!initialized` flag is a belt-and-braces idempotency check — bundler HMR
+sometimes re-evaluates top-level modules.
 
-```yaml
+## Identity + session attributes
+
+Once `Scout.initialize()` resolves you can attach identity and arbitrary
+session-scoped attributes. Every subsequent span, metric, and log carries them
+automatically until you change or clear them.
+
+```ts
+// End-user identity → user.id + user.<key> on every span
+Scout.setUser('user-123', {
+  email: 'jane@example.com',
+  plan: 'pro',
+});
+
+// B2B tenant → account.id + account.name
+Scout.setAccount('acme-corp', 'Acme Corp');
+
+// Session-scoped attribute bag (tenant id, build flavor, A/B cohort)
+Scout.setSessionAttributes({
+  'tenant.id': 'acme',
+  'tenant.plan': 'enterprise',
+  'build.flavor': 'production',
+});
+
+// Feature flags — attached to every error span emitted while flags are active
+Scout.setFeatureFlag('new-checkout', true);
+Scout.setFeatureFlag('checkout-variant', 'B');
+
+// Manual breadcrumbs (rolling 100-entry trail attached to every crash / error)
+Scout.addBreadcrumb('checkout', 'added item to cart');
+
+// Logs — go to the OTel log pipeline with active trace context
+Scout.logInfo('app booted');
+Scout.logError('payment failed', { 'order.id': 'ord-42' });
+
+// Manual error report (handled errors)
+try { /* … */ } catch (err) { Scout.reportError(err, { handled: true }); }
+```
+
+On sign-out, clear identity / account / flags:
+
+```ts
+async function signOut() {
+  await api.signOut();
+  Scout.clearUser();
+  Scout.clearAccount();
+  Scout.clearFeatureFlags();
+  Scout.clearSessionAttributes();
+}
+```
+
+## Filtering / PII redaction
+
+Pass a `beforeSend` callback that runs on every span / metric / log before
+export. Return `null` to drop, or mutate the attributes object to redact:
+
+```ts
+Scout.initialize({
+  // …
+  beforeSend: (event) => {
+    if (String(event['url.full'] ?? '').includes('/health')) return null;
+    delete event['user.email'];
+    return event;
+  },
+});
+```
+
+The callback sees per-span attributes only; resource attributes (e.g.
+`service.name`, `os.name`, `device.*`) aren't in the event payload.
+
+## CORS
+
+The browser SDK exports via OTLP-HTTP. If your collector is on a different
+origin you'll need to allow CORS:
+
+```yaml title="collector config"
 receivers:
   otlp:
     protocols:
@@ -190,20 +236,55 @@ receivers:
         endpoint: 0.0.0.0:4318
         cors:
           allowed_origins:
-            - "https://example.com"
+            - "https://my-web-app.example.com"
 ```
 
-> View these traces in base14 Scout observability backend.
+## Auto-instrumentation toggles
 
-## What's Next?
+Every auto-instrumentation can be turned off independently — see the
+[React Native + React Web reference](../../mobile/react-native.md#auto-instrumentation-toggles)
+for the complete list (`enableErrorTracking`, `enableWebVitals`,
+`enableNetworkTracking`, `enableLongTaskDetection`, `enableAutoTapTracking`,
+`captureConsole`, etc.). All default to `true` except `captureConsole`.
 
-To monitor logs and metrics, see the
-[custom instrumentation guide for JavaScript browser applications](https://github.com/base-14/docs/tree/main/docs/instrument/apps/custom-instrumentation/javascript-browser.md)
+## Sampling
 
-## Related Guides
+`sessionSampleRate` defaults to `1` (1% of sessions) to bound telemetry
+volume in production. Error / crash / ANR / UI-hang spans bypass this gate
+(controlled by `alwaysCaptureErrors`, default `true`) so failures are always
+captured regardless of sampling. Below `100`, full sessions are dropped
+(never partial) so traces stay coherent.
 
-- [Custom JavaScript Browser Instrumentation](../custom-instrumentation/javascript-browser.md)
-  \- Manual instrumentation for logs and metrics
-- [Express.js Instrumentation](./express.md) - Backend Node.js framework
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
-  up collector for local development
+For development bump it to `100`:
+
+```ts
+Scout.initialize({
+  // …
+  sessionSampleRate: 100,
+});
+```
+
+## Full reference
+
+For the complete configuration surface (transport, batching, retry, offline
+buffer, thresholds, resource attrs, every `enable*` toggle, native crash
+setup, ANR detection, troubleshooting, FAQ), see the
+[React Native + React Web instrumentation guide](../../mobile/react-native.md).
+The same package and the same APIs apply across React Native and React web —
+only the entry import (`@base-14/scout-react` vs
+`@base-14/scout-react/native`) and the runtime-specific captures differ.
+
+## What's next
+
+- [Configure your collector](../../collector-setup/docker-compose-example.md)
+  to receive OTLP-HTTP on `:4318`
+- [React Native + React Web instrumentation reference](../../mobile/react-native.md)
+- [Custom JavaScript browser instrumentation](../custom-instrumentation/javascript-browser.md)
+  for manual span / metric / log emission
+
+## References
+
+- Package: [`@base-14/scout-react`](https://www.npmjs.com/package/@base-14/scout-react)
+- Repository: [github.com/base-14/scout-react](https://github.com/base-14/scout-react)
+- OpenTelemetry JS SDK: [opentelemetry-js](https://github.com/open-telemetry/opentelemetry-js)
+- Web Vitals: [github.com/GoogleChrome/web-vitals](https://github.com/GoogleChrome/web-vitals)
