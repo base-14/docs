@@ -3,9 +3,9 @@ title: Flutter Mobile Observability
 sidebar_label: Flutter Mobile Observability
 sidebar_position: 5
 description:
-  Add OpenTelemetry observability to your Flutter app. Choose between automatic
-  RUM instrumentation or manual SDK control, wire telemetry into your app, and
-  verify spans in your collector.
+  Add OpenTelemetry observability to your Flutter app with the scout_flutter
+  SDK — zero-config RUM. Install, initialize, and verify spans in your
+  collector.
 keywords:
   [
     flutter observability,
@@ -25,9 +25,8 @@ run on battery, connectivity is unreliable, and the OS can kill your app at any
 time. OpenTelemetry gives you traces, metrics, and error data from your Flutter
 app exported to any OTLP-compatible collector.
 
-This guide walks you through choosing an instrumentation approach, adding
-dependencies, wiring telemetry into your app, and verifying that spans reach
-your collector.
+This guide walks you through adding the `scout_flutter` SDK, initializing it
+in your app, and verifying that spans reach your collector.
 
 ## Time to Complete
 
@@ -35,14 +34,13 @@ your collector.
 
 ## What You'll Accomplish
 
-- Choose between automatic RUM and manual SDK instrumentation
-- Add OpenTelemetry dependencies to your Flutter project
-- Initialize telemetry in your app entry point
+- Add the `scout_flutter` SDK to your Flutter project
+- Initialize zero-config RUM in your app entry point
 - Verify spans are flowing to your collector
 
 ## Prerequisites
 
-- **Flutter SDK 3.32.0+** and **Dart SDK 3.9.2+** installed
+- **Flutter SDK 3.7.0+** and **Dart SDK 3.7.0+** installed
 - A running **OpenTelemetry Collector** with an OTLP endpoint
   (see [Docker Compose Setup](../instrument/collector-setup/docker-compose-example.md)
   for local development)
@@ -88,63 +86,18 @@ updates far outweighs the small infra cost. Reserve **Direct to Scout** for
 prototypes or internal tools where simplicity matters more than control.
 :::
 
-## Step 1: Choose Your Approach
+## Step 1: Add the SDK
 
-Two instrumentation paths are available. Pick the one that fits your needs.
-
-| | Flutterific RUM | Manual SDK |
-| :--- | :--- | :--- |
-| **Package** | `flutterrific_opentelemetry` | `opentelemetry` |
-| **Session tracking** | Automatic | Manual |
-| **Device/app/network context** | Automatic on every span | Manual |
-| **Navigation spans** | Automatic | Manual |
-| **Screen load/dwell times** | Automatic | Not included |
-| **Cold start measurement** | Automatic | Manual |
-| **Jank/ANR detection** | Automatic | Not included |
-| **HTTP tracing** | Via `RumHttpClient` wrapper | Via `HttpService` wrapper |
-| **W3C trace context propagation** | Automatic (`traceparent` header) | Automatic |
-| **Battery-aware sampling** | Automatic (4-tier adaptive) | Automatic |
-| **Breadcrumb trail** | Automatic (last 20 actions on error spans) | Not included |
-| **Error boundary widget** | Included | Not included |
-| **Flush on background** | Automatic (`AppLifecycleListener`) | Manual |
-| **Conversion funnel tracking** | Not included | Via `FunnelTrackingService` |
-| **Custom spans and events** | Supported | Supported |
-| **Best for** | RUM dashboards, UX monitoring | Backend correlation, fine-grained control |
-
-> **Decision guide**: Use **Flutterific RUM** if you want session-level UX
-> monitoring (jank, screen times, navigation, breadcrumbs, battery-aware
-> sampling) with minimal code. Use the **Manual SDK** if you need conversion
-> funnel tracking or full control over span creation and batching.
-
-Full reference docs:
-
-- [Flutter RUM with Flutterific](../instrument/mobile/flutter-rum-flutterific.md)
-- [Flutter OpenTelemetry (Manual SDK)](../instrument/mobile/flutter.md)
-
-## Step 2: Install Dependencies
-
-Add the packages for your chosen approach.
-
-**Flutterific RUM:**
+The `scout_flutter` SDK is a single package with one `initialize()` call —
+it auto-captures the full RUM set (taps, navigation, errors, native crashes,
+ANR, HTTP, frame metrics, logs) and exports OTLP, with no pipeline to
+hand-build. It is published on
+[pub.dev](https://pub.dev/packages/scout_flutter). Add it to your
+`pubspec.yaml`:
 
 ```yaml title="pubspec.yaml"
 dependencies:
-  flutterrific_opentelemetry: ^0.3.2
-  device_info_plus: ^11.0.0
-  package_info_plus: ^8.0.0
-  connectivity_plus: ^6.0.0
-  battery_plus: ^6.0.0
-```
-
-**Manual SDK:**
-
-```yaml title="pubspec.yaml"
-dependencies:
-  opentelemetry: ^0.18.10
-  http: ^1.1.0
-  uuid: ^4.0.0
-  flutter_dotenv: ^6.0.0
-  device_info_plus: ^11.3.3
+  scout_flutter: ^0.1.20
 ```
 
 Then install:
@@ -153,66 +106,40 @@ Then install:
 flutter pub get
 ```
 
-## Step 3: Initialize Telemetry
+## Step 2: Initialize Telemetry
 
-Both approaches initialize telemetry before `runApp()`. Below are the minimal
-entry points - see the reference docs for the complete file listings.
-
-**Flutterific RUM** - create `lib/main_otel.dart`:
-
-```dart title="lib/main_otel.dart"
-import 'package:flutter/material.dart';
-import 'package:flutterrific_opentelemetry/flutterrific_opentelemetry.dart';
-import 'main.dart';
-import 'otel/otel_config.dart';
-import 'otel/rum_cold_start.dart';
-
-Future<void> main() async {
-  RumColdStart.markMainStart();
-  await OTelConfig.initialize();
-  WidgetsBinding.instance.addObserver(OTelConfig.lifecycleObserver);
-  runApp(const MyApp());
-  RumColdStart.measureFirstFrame();
-}
-```
-
-> **Note**: The full `lib/otel/` directory with all supporting files is
-> documented in the
-> [Flutterific RUM reference](../instrument/mobile/flutter-rum-flutterific.md#create-the-libotel-directory).
-
-**Manual SDK** - wrap your existing `main()` in `runZonedGuarded`:
+Initialize the SDK before `runApp()` in `lib/main.dart`:
 
 ```dart title="lib/main.dart"
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'services/telemetry_service.dart';
+import 'package:scout_flutter/scout_flutter.dart';
 
-void main() {
-  runZonedGuarded(() async {
-    WidgetsFlutterBinding.ensureInitialized();
-    await TelemetryService.instance.initialize();
-    runApp(const MyApp());
-  }, (error, stack) {
-    TelemetryService.instance.recordCrash(error, stack);
-  });
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Fire-and-forget — never block app startup on SDK init.
+  unawaited(ScoutFlutter.initialize(
+    config: ScoutFlutterConfig(
+      serviceName: 'my-app',
+      endpoint: 'https://otel.example.com',
+      headers: const {'Authorization': 'Bearer <token>'},
+    ),
+  ));
+  runApp(ScoutFlutter.observeScroll(child: const MyApp()));
 }
 ```
 
-> **Note**: The full `TelemetryService`, `MetricsService`, and `LogService`
-> implementations are documented in the
-> [Manual SDK reference](../instrument/mobile/flutter.md#configuration).
+Attach `ScoutFlutter.navigatorObserver` to every `Navigator` for screen
+tracking. See the [SDK reference](../instrument/mobile/flutter.md) for the
+full configuration surface.
 
-Run the app with the appropriate entry point:
+Then run:
 
 ```bash
-# Flutterific RUM
-flutter run --target=lib/main_otel.dart
-
-# Manual SDK (default entry point)
 flutter run
 ```
 
-## Step 4: Verify Telemetry
+## Step 3: Verify Telemetry
 
 Once the app is running, confirm spans are reaching your collector.
 
@@ -222,10 +149,9 @@ Once the app is running, confirm spans are reaching your collector.
    docker logs otel-collector 2>&1 | grep -i "traces"
    ```
 
-2. **Look for expected span names** - depending on your approach:
-   - Flutterific RUM: `app.cold_start`, `navigation.push`, `screen.load`,
-     `screen.dwell`, `jank.frame`
-   - Manual SDK: `GET /api/products`, `screen_view`, `device.app.lifecycle`
+2. **Look for expected span names**:
+   - `screen_view`, `user_interaction`, `http.request`, `app_startup`,
+     `error`, `native_crash`, `anr`
 
 3. **Open Scout** - navigate to the Traces view and filter by
    `service.name = your-app-name`. You should see spans arriving within
@@ -239,10 +165,8 @@ Once the app is running, confirm spans are reaching your collector.
 
 ## Next Steps
 
-- [Flutter RUM with Flutterific](../instrument/mobile/flutter-rum-flutterific.md)
-  - full reference for automatic RUM instrumentation
-- [Flutter OpenTelemetry (Manual SDK)](../instrument/mobile/flutter.md) - full
-  reference for manual SDK instrumentation
+- [Scout Flutter SDK reference](../instrument/mobile/flutter.md) - full
+  configuration and capability reference
 - [Create Your First Dashboard](./create-your-first-dashboard.md) - build
   dashboards from your mobile telemetry data
 - [Creating Alerts with LogX](./creating-alerts-with-logx.md) - set up alerts
