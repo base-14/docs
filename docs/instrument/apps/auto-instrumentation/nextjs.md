@@ -1696,6 +1696,8 @@ const meterProvider = new MeterProvider({
 
 ### Related Guides
 
+- [Angular Instrumentation](./angular.md) - browser plus Express/Postgres
+  full-stack across all three signals
 - [NestJS Instrumentation](./nestjs.md) - Structured TypeScript framework on
   Node.js
 - [Express.js Instrumentation](./express.md) - Classic Node.js web framework

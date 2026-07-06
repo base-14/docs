@@ -876,7 +876,7 @@ guides:
 
 ```bash showLineNumbers title="Quick Start"
 git clone https://github.com/base-14/examples.git
-cd examples/nodejs/express-mongodb
+cd examples/nodejs/express-typescript-mongodb
 
 npm install
 docker-compose up -d
@@ -892,7 +892,7 @@ MongoDB, Redis, WebSockets, and BullMQ integration.
 
 ```bash showLineNumbers title="Quick Start"
 git clone https://github.com/base-14/examples.git
-cd examples/nodejs/nestjs-typeorm
+cd examples/nodejs/nestjs-postgres
 
 npm install
 docker-compose up -d
@@ -925,6 +925,8 @@ performance across your applications.
 
 ## Related Guides
 
+- [Angular Instrumentation](./angular.md) - browser front-end over a Node.js
+  API, emitting all three signals
 - [Express.js Instrumentation](./express.md) - Express-specific
   auto-instrumentation
 - [Custom Node.js Instrumentation](../custom-instrumentation/javascript-node.md)

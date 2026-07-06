@@ -64,8 +64,14 @@ your collector is working first, try the
 | NestJS            | [NestJS](./nestjs)               | Controllers, services, guards, interceptors       |
 | Next.js           | [Next.js](./nextjs)              | SSR, API routes, middleware, React components     |
 | Node.js (generic) | [Node.js](./nodejs)              | HTTP, filesystem, child processes                 |
-| React             | [React](./react)                 | Client-side rendering, user interactions          |
 | Vercel AI SDK     | [Vercel AI SDK](./vercel-ai-sdk) | LLM calls, AI pipelines, token/cost tracking      |
+
+### Frontend / Browser
+
+| Framework | Guide                | What's Instrumented                                            |
+| --------- | -------------------- | -------------------------------------------------------------- |
+| Angular   | [Angular](./angular) | Browser traces, Core Web Vitals metrics, error logs (zoneless) |
+| React     | [React](./react)     | Routes, clicks, fetch/XHR, Core Web Vitals, error logs         |
 
 ### Java / JVM
 

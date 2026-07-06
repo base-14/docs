@@ -2045,6 +2045,8 @@ calls in real time.
 
 ## Related Guides
 
+- [Angular Instrumentation](./angular.md) - browser front-end that propagates
+  trace context into an Express API
 - [NestJS Instrumentation](./nestjs.md) - Structured framework that runs on top
   of Express
 - [Next.js Instrumentation](./nextjs.md) - Full-stack React framework on Node.js
