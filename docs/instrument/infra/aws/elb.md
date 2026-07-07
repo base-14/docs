@@ -3,6 +3,7 @@ date: 2025-11-19
 id: collecting-aws-elb-telemetry
 title: AWS ELB Monitoring with OpenTelemetry - ALB, NLB & CLB Metrics
 sidebar_label: AWS ALB
+sidebar_position: 3
 description:
   Stream AWS Application Load Balancer metrics via CloudWatch Metrics
   Stream. Monitor request rates, response times, and target health with
@@ -29,10 +30,11 @@ keywords:
 
 ## Overview
 
-This guide will walk you through collecting rich telemetry data from your
-Application ELB using CloudWatch Metrics Stream. We recommend using CloudWatch
-Metrics Stream over Prometheus exporters as it provides faster metric delivery
-(2-3 minute latency) and is more efficient for AWS services.
+This guide covers collecting Application Load Balancer metrics (request counts,
+response times, HTTP status codes, and target health) via CloudWatch Metrics
+Stream, plus access logs through a Lambda forwarder. We recommend CloudWatch
+Metrics Stream over Prometheus exporters: it needs no per-service exporter and
+integrates natively with AWS.
 
 ## Collecting Application ELB Metrics
 
@@ -47,8 +49,8 @@ Stream** instead of Prometheus exporters. CloudWatch Metrics Stream provides:
 ### Step 1: Set up CloudWatch Metrics Stream
 
 Follow our comprehensive
-[CloudWatch Metrics Stream guide](cloudwatch-metrics-stream.md) to set up the
-infrastructure.
+[CloudWatch Metrics Stream guide](cloudwatch-metrics/cloudwatch-metrics-stream.md)
+to set up the infrastructure.
 
 ### Step 2: Configure Application ELB metrics filtering
 
@@ -349,19 +351,27 @@ def lambda_handler(event, context):
   }
 ```
 
-> Set `OTEL_ENDPOINT` and `S3_BUCKET_NAME` with the correct values.
+> Set the Lambda's environment variables: `CLIENT_ID`, `CLIENT_SECRET`,
+> `TOKEN_URL`, and `ENDPOINT_URL` (the full Scout OTLP logs URL the function
+> POSTs to).
 
-After deploying these changes, generate some traffic to your ALB and check in
-Scout to see your ELB's metrics and logs.
+After deploying these changes, send traffic through the load balancer, then
+check Scout for the AWS/ApplicationELB metrics (request counts, response times,
+HTTP status codes) and the access logs forwarded by the Lambda.
 
 ---
 
-With this setup, your ALB becomes fully observable through Scout.
+With traffic flowing, alert on `HTTPCode_ELB_5XX_Count` and
+`HTTPCode_Target_5XX_Count` for error spikes, `TargetResponseTime` (p99) for
+latency, `UnHealthyHostCount` for targets failing health checks, and
+`RejectedConnectionCount` for LCU saturation. The access logs add per-request
+detail - client IP, target, `elb_status_code`, and the processing-time fields -
+to debug the 5xx spikes the metrics surface.
 
 ## Related Guides
 
-- [CloudWatch Metrics Stream Setup](./cloudwatch-metrics-stream.md) - Set up AWS
-  metrics streaming
+- Set up AWS metrics streaming with
+  [CloudWatch Metrics Stream Setup](./cloudwatch-metrics/cloudwatch-metrics-stream.md).
 - [RDS Monitoring](./rds.md) - Monitor AWS RDS databases
 - [ElastiCache Monitoring](./elasticache.md) - Monitor Redis and Memcached
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set

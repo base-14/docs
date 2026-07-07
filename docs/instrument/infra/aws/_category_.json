@@ -1,10 +1,5 @@
 {
   "label": "AWS",
   "position": 4,
-  "collapsed": false,
-  "link": {
-    "type": "generated-index",
-    "title": "AWS Monitoring Guide",
-    "description": "Monitor AWS Lambda, RDS, ElastiCache, ELB, and VPC with OpenTelemetry. Stream CloudWatch metrics and collect AWS infrastructure telemetry."
-  }
+  "collapsed": false
 }

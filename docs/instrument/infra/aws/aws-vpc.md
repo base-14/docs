@@ -15,7 +15,7 @@ keywords:
     aws observability,
   ]
 tags: [aws, vpc, s3, lambda, otlp]
-sidebar_position: 2
+sidebar_position: 7
 ---
 
 # Send AWS VPC Flow Logs

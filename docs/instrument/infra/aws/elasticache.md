@@ -3,6 +3,7 @@ date: 2025-04-28
 id: collecting-aws-elasticache-telemetry
 title: AWS ElastiCache Monitoring with OpenTelemetry - Redis & Memcached Metrics
 sidebar_label: AWS ElastiCache
+sidebar_position: 4
 description:
   Monitor AWS ElastiCache Redis and Memcached with OpenTelemetry and
   CloudWatch Metrics Stream. Track cache hit rates, evictions, memory,
@@ -93,8 +94,8 @@ Before starting:
 ## Step 1: Set up CloudWatch Metrics Stream
 
 Follow our comprehensive
-[CloudWatch Metrics Stream guide](cloudwatch-metrics-stream.md) to
-set up the streaming infrastructure (S3 bucket, Kinesis Firehose,
+[CloudWatch Metrics Stream guide](cloudwatch-metrics/cloudwatch-metrics-stream.md)
+to set up the streaming infrastructure (S3 bucket, Kinesis Firehose,
 Metrics Stream).
 
 When configuring the Metrics Stream:
@@ -395,8 +396,8 @@ Then include both in the pipeline:
 
 ## Related Guides
 
-- [CloudWatch Metrics Stream Setup](./cloudwatch-metrics-stream.md) —
-  Configure AWS metrics streaming
+- Configure AWS metrics streaming with
+  [CloudWatch Metrics Stream Setup](./cloudwatch-metrics/cloudwatch-metrics-stream.md).
 - [Redis Monitoring](../../component/redis.md) — Self-hosted Redis
   monitoring with OpenTelemetry
 - [Memcached Monitoring](../../component/memcached.md) — Self-hosted

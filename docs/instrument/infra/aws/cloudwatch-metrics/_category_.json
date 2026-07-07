@@ -1,0 +1,9 @@
+{
+  "label": "CloudWatch Metrics",
+  "position": 1,
+  "collapsed": false,
+  "link": {
+    "type": "doc",
+    "id": "aws-cloudwatch-overview"
+  }
+}

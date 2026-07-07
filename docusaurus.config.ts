@@ -171,6 +171,10 @@ const config: Config = {
       {
         redirects: [
           {
+            from: "/instrument/infra/aws/collecting-aws-cloudwatch-metrics-using-kinesis-streams/",
+            to: "/instrument/infra/aws/cloudwatch-metrics/collecting-aws-cloudwatch-metrics-firehose-s3-lambda/",
+          },
+          {
             from: "/guides/github-actions-observability/",
             to: "/guides/cicd-observability/github-actions-observability/",
           },

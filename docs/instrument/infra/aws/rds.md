@@ -3,6 +3,7 @@ date: 2025-04-26
 id: collecting-aws-rds-postgres-telemetry
 title: AWS RDS PostgreSQL Monitoring with OpenTelemetry - Metrics, Logs & Alerts
 sidebar_label: AWS RDS
+sidebar_position: 2
 description:
   Monitor AWS RDS PostgreSQL with OpenTelemetry and CloudWatch Metrics
   Stream. Collect connections, replication lag, IOPS, and query
@@ -93,8 +94,8 @@ Before starting:
 ## Step 1: Set up CloudWatch Metrics Stream
 
 Follow our comprehensive
-[CloudWatch Metrics Stream guide](cloudwatch-metrics-stream.md) to set
-up the streaming infrastructure (S3 bucket, Kinesis Firehose, Metrics
+[CloudWatch Metrics Stream guide](cloudwatch-metrics/cloudwatch-metrics-stream.md)
+to set up the streaming infrastructure (S3 bucket, Kinesis Firehose, Metrics
 Stream).
 
 When configuring the Metrics Stream, select the **AWS/RDS** namespace
@@ -220,8 +221,8 @@ OTEL_EXPORTER_OTLP_ENDPOINT=https://<your-tenant>.base14.io
 
 > **Note**: CloudWatch Metrics Stream delivers the infrastructure
 > metrics (CPU, memory, IOPS) automatically. The PostgreSQL receiver
-> above collects the database-internal metrics. Together they give
-> you the full picture.
+> above collects the database-internal metrics. Read them together to
+> correlate host pressure with in-database activity.
 
 ## Step 4: Collect RDS PostgreSQL logs
 
@@ -411,8 +412,8 @@ and data volume.
 
 ## Related Guides
 
-- [CloudWatch Metrics Stream Setup](./cloudwatch-metrics-stream.md) —
-  Configure AWS metrics streaming
+- Configure AWS metrics streaming with
+  [CloudWatch Metrics Stream Setup](./cloudwatch-metrics/cloudwatch-metrics-stream.md).
 - [PostgreSQL Basic Monitoring](../../component/postgres.md) — Direct
   PostgreSQL monitoring with the OTel receiver
 - [PostgreSQL Advanced Monitoring](../../component/postgres-advanced.md)
