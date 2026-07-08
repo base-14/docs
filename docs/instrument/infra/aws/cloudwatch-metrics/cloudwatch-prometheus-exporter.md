@@ -24,7 +24,7 @@ keywords:
 
 <head>
   <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How does the Prometheus CloudWatch exporter work?","acceptedAnswer":{"@type":"Answer","text":"The Prometheus CloudWatch exporter polls the CloudWatch GetMetricData API for the namespaces and metrics you list in its config and exposes them at /metrics on port 9106. The OpenTelemetry Collector's Prometheus receiver scrapes that endpoint and forwards the metrics to base14 Scout over OTLP."}},{"@type":"Question","name":"Do I need a public endpoint to pull CloudWatch metrics?","acceptedAnswer":{"@type":"Answer","text":"No. The exporter and the Collector reach out to the CloudWatch API; nothing inbound is required. This is the main operational advantage of the pull approach over Firehose HTTP endpoint delivery."}},{"@type":"Question","name":"What IAM permissions does the CloudWatch exporter need?","acceptedAnswer":{"@type":"Answer","text":"cloudwatch:GetMetricData, cloudwatch:GetMetricStatistics, cloudwatch:ListMetrics, and tag:GetResources. These are read-only and can be granted through an IAM user, an instance role, or IRSA on EKS."}},{"@type":"Question","name":"How fresh are metrics pulled through the exporter?","acceptedAnswer":{"@type":"Answer","text":"Freshness is the scrape interval plus CloudWatch's own metric-availability delay, which is typically a couple of minutes. This is slower than the push approaches, so choose pull when scrape-model fit and metric selection matter more than latency. To control cost, select only the metrics you need and raise period_seconds, or use YACE for tag-based discovery with batched GetMetricData."}}]})}
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How does the Prometheus CloudWatch exporter work?","acceptedAnswer":{"@type":"Answer","text":"The Prometheus CloudWatch exporter polls the CloudWatch GetMetricData API for the namespaces and metrics you list in its config and exposes them at /metrics on port 9106. The OpenTelemetry Collector's Prometheus receiver scrapes that endpoint and forwards the metrics to base14 Scout over OTLP."}},{"@type":"Question","name":"Do I need a public endpoint to pull CloudWatch metrics?","acceptedAnswer":{"@type":"Answer","text":"No. The exporter and the Collector reach out to the CloudWatch API; nothing inbound is required. This is the main operational advantage of the pull approach over Firehose HTTP endpoint delivery."}},{"@type":"Question","name":"What IAM permissions does the CloudWatch exporter need?","acceptedAnswer":{"@type":"Answer","text":"cloudwatch:GetMetricData, cloudwatch:GetMetricStatistics, cloudwatch:ListMetrics, and tag:GetResources. These are read-only and can be granted through an IAM user, an instance role, or EKS Pod Identity or IRSA."}},{"@type":"Question","name":"How fresh are metrics pulled through the exporter?","acceptedAnswer":{"@type":"Answer","text":"Freshness is the scrape interval plus CloudWatch's own metric-availability delay, which is typically a couple of minutes. This is slower than the push approaches, so choose pull when scrape-model fit and metric selection matter more than latency. To control cost, select only the metrics you need and raise period_seconds, or use YACE for tag-based discovery with batched GetMetricData."}}]})}
   </script>
 </head>
 
@@ -75,7 +75,7 @@ OTel Collector ◀─ scrape /metrics ─ CloudWatch exporter ──────
 Before starting:
 
 - AWS credentials for the exporter, via an IAM user, an EC2 instance role, or
-  IRSA on EKS.
+  EKS Pod Identity or IRSA.
 - Have your Scout OAuth client ID, client secret, token URL, and OTLP
   endpoint ready (see
   [Scout Exporter Configuration](../../../collector-setup/scout-exporter.md)).
@@ -143,10 +143,44 @@ docker run -d --name cloudwatch-exporter -p 9106:9106 \
   prom/cloudwatch-exporter:latest
 ```
 
-On Kubernetes, run it as a Deployment with the config mounted from a ConfigMap
-and AWS access granted through IRSA:
+On Kubernetes, run it as a Deployment with the config in a ConfigMap and AWS
+access granted to its ServiceAccount. Apply the manifests below, then grant the
+ServiceAccount access (next section):
 
 ```yaml showLineNumbers title="cloudwatch-exporter.yaml"
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudwatch-exporter-config
+data:
+  config.yml: |
+    region: us-east-1
+    period_seconds: 60
+    delay_seconds: 120
+    set_timestamp: false
+    metrics:
+      - aws_namespace: AWS/EC2
+        aws_metric_name: CPUUtilization
+        aws_dimensions: [InstanceId]
+        aws_statistics: [Average]
+      - aws_namespace: AWS/RDS
+        aws_metric_name: CPUUtilization
+        aws_dimensions: [DBInstanceIdentifier]
+        aws_statistics: [Average]
+      - aws_namespace: AWS/RDS
+        aws_metric_name: FreeableMemory
+        aws_dimensions: [DBInstanceIdentifier]
+        aws_statistics: [Average]
+      - aws_namespace: AWS/ApplicationELB
+        aws_metric_name: RequestCount
+        aws_dimensions: [LoadBalancer]
+        aws_statistics: [Sum]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cloudwatch-exporter
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -185,6 +219,36 @@ spec:
   ports:
     - port: 9106
       targetPort: 9106
+```
+
+### Grant the ServiceAccount AWS access
+
+The `cloudwatch-exporter` ServiceAccount needs the read-only policy from
+Step 1. On EKS, prefer **Pod Identity** - it needs no OIDC provider or
+per-cluster trust policy. IRSA still works for Fargate or existing OIDC
+clusters.
+
+**EKS Pod Identity (recommended).** Create an IAM role that trusts the
+`pods.eks.amazonaws.com` principal (allowing `sts:AssumeRole` and
+`sts:TagSession`), attach the Step 1 policy, install the
+`eks-pod-identity-agent` add-on, then associate the role:
+
+```bash showLineNumbers title="Pod Identity association"
+aws eks create-pod-identity-association \
+  --cluster-name <cluster> \
+  --namespace <namespace> \
+  --service-account cloudwatch-exporter \
+  --role-arn arn:aws:iam::<account-id>:role/cloudwatch-exporter
+```
+
+**IRSA (alternative).** Create the role with an OIDC trust policy for the
+cluster, then annotate the ServiceAccount so the pod assumes it:
+
+```yaml showLineNumbers title="ServiceAccount IRSA annotation"
+metadata:
+  name: cloudwatch-exporter
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::<account-id>:role/cloudwatch-exporter
 ```
 
 ## Step 3: Scrape the exporter with the Collector
@@ -337,7 +401,7 @@ approach over Firehose HTTP endpoint delivery.
 
 `cloudwatch:GetMetricData`, `cloudwatch:GetMetricStatistics`,
 `cloudwatch:ListMetrics`, and `tag:GetResources`. These are read-only and can
-be granted through an IAM user, an instance role, or IRSA on EKS.
+be granted through an IAM user, an instance role, or EKS Pod Identity or IRSA.
 
 **How fresh are metrics pulled through the exporter?**
 

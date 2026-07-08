@@ -189,6 +189,19 @@ ENVIRONMENT=production
 
 Metrics now flow CloudWatch → Firehose → Collector → Scout.
 
+:::note IAM roles are created for you
+
+As you complete Steps 2 and 3 in the console, AWS creates two service roles
+automatically: a Firehose role that can write to the S3 backup bucket
+(`s3:PutObject`, `s3:AbortMultipartUpload`, `s3:GetBucketLocation`,
+`s3:ListBucket`) and log delivery errors, and a CloudWatch Metric Stream role
+that trusts `streams.metrics.cloudwatch.amazonaws.com` and can call
+`firehose:PutRecord` and `firehose:PutRecordBatch` on the stream. If you
+provision with Terraform or CloudFormation instead, create both roles
+explicitly with those permissions.
+
+:::
+
 ## Verify the setup
 
 1. In the Firehose console, open your stream's **Monitoring** tab and confirm
