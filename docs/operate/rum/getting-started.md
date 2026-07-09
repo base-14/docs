@@ -19,7 +19,7 @@ keywords:
 ---
 
 RUM (Real User Monitoring) is a mobile monitoring app built into Scout.
-It gives you visibility into how real users experience your Flutter
+It gives you visibility into how real users experience your mobile
 applications: tracking crashes, errors, ANRs, app startup, screen performance,
 network calls, and full session timelines.
 
