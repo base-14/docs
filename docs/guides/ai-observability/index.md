@@ -58,6 +58,7 @@ and a fallback to a different provider.
 
 | Guide                                                                                     | What It Covers                                                                                                                                                                |
 | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [AI Agent Observability](./agent-observability)                                           | Framework-agnostic concepts and patterns: the agent timeline, GenAI operation types, conversation-id propagation, tool-call (`execute_tool`) instrumentation, MCP tools, multi-agent handoffs, agent metrics and evaluation |
 | [LLM Observability](./llm-observability)                                                  | End-to-end guide (Python): GenAI semantic conventions, token/cost metrics, agent pipeline spans, evaluation tracking, PII scrubbing, production deployment                    |
 | [Rust LLM Observability](./rust-llm-observability)                                        | End-to-end guide (Rust): GenAI semantic conventions, multi-provider LLM with fallback, token/cost metrics, multi-stage pipeline spans, retry observability, Docker deployment |
 | [Spring AI LLM Observability](./spring-ai-llm-observability)                                    | End-to-end guide (Java): Three-layer instrumentation (Java Agent + Spring AI + manual OTel), GenAI semantic conventions, tool calling, RAG, domain metrics, Docker deployment |
@@ -86,6 +87,10 @@ LLM-specific layer:
 - **LLM spans** with model, provider, token counts, cost
 - **Prompt/completion events** with PII scrubbing
 - **Agent spans** with pipeline orchestration context
+- **Tool-call spans** (`execute_tool`) with tool name, arguments, result, and
+  error type - where most agentic failures live
+- **Multi-agent handoffs** bound by `gen_ai.conversation.id` so a full run
+  reads as one timeline across agents and downstream services
 - **Evaluation events** with quality scores and pass/fail
 - **Cost metrics** with attribution by agent and business operation
 - **Retry/fallback tracking** with error type classification
@@ -112,14 +117,20 @@ OpenTelemetry defines
 [GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/)
 for standardized LLM telemetry. Key attributes:
 
-| Attribute                    | Example             | Purpose           |
-| ---------------------------- | ------------------- | ----------------- |
-| `gen_ai.operation.name`      | `"chat"`            | Operation type    |
-| `gen_ai.provider.name`       | `"anthropic"`       | LLM provider      |
-| `gen_ai.request.model`       | `"claude-sonnet-4"` | Model used        |
-| `gen_ai.usage.input_tokens`  | `1240`              | Tokens consumed   |
-| `gen_ai.usage.output_tokens` | `320`               | Tokens generated  |
-| `gen_ai.agent.name`          | `"draft"`           | Agent in pipeline |
+| Attribute                    | Example             | Purpose               |
+| ---------------------------- | ------------------- | --------------------- |
+| `gen_ai.operation.name`      | `"invoke_agent"`    | Operation type        |
+| `gen_ai.provider.name`       | `"anthropic"`       | LLM provider          |
+| `gen_ai.request.model`       | `"claude-sonnet-4"` | Model used            |
+| `gen_ai.usage.input_tokens`  | `1240`              | Tokens consumed       |
+| `gen_ai.usage.output_tokens` | `320`               | Tokens generated      |
+| `gen_ai.conversation.id`     | `"conv-8f2a"`       | Binds a full agent run|
+| `gen_ai.agent.name`          | `"draft"`           | Agent in pipeline     |
+| `gen_ai.tool.name`           | `"search_orders"`   | Tool an agent invoked |
+
+For the agent-specific attributes (`gen_ai.conversation.id`,
+`gen_ai.tool.*`, multi-agent handoffs), see the
+[AI Agent Observability guide](./agent-observability).
 
 ### GenAI Metrics
 
