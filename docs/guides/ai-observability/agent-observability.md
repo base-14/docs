@@ -49,7 +49,7 @@ Python SDK, but every pattern is portable - the attribute names are the
 so the same telemetry works with any OpenTelemetry backend, including base14
 Scout.
 
-![AI agent observability dashboard in Scout](/img/docs/llm-o11y.png)
+![AI agent timeline showing one conversation across an orchestrator, a billing sub-agent, tool calls, and downstream Stripe and database spans](/img/docs/agent-timeline.svg)
 
 :::tip TL;DR
 
