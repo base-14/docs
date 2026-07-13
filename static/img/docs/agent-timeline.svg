@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600" font-family="'Inter','Helvetica Neue',Arial,sans-serif" role="img" aria-label="AI agent timeline trace waterfall">
+<rect x="4" y="4" width="1192" height="592" rx="16" fill="#ffffff" stroke="#e9ecef" stroke-width="2"/>
+<text x="34" y="46" font-size="25" font-weight="600" fill="#1e1e1e">Agent timeline &#8212; one conversation, every span</text>
+<text x="35" y="74" font-size="15" font-family="'SFMono-Regular','Menlo','Consolas',monospace" fill="#868e96">gen_ai.conversation.id = conv-8f2a</text>
+<line x1="34" y1="92" x2="1166" y2="92" stroke="#f1f3f5" stroke-width="2"/>
+<text x="30" y="127" font-size="13.5" font-family="'SFMono-Regular','Menlo','Consolas',monospace" fill="#343a40">POST /chat</text>
+<rect x="440.0" y="112" width="610.0" height="22" rx="5" fill="#e9ecef" stroke="#868e96" stroke-width="1.5"/>
+<text x="1058.0" y="127" font-size="12" font-family="'SFMono-Regular','Menlo','Consolas',monospace" fill="#868e96">6.1s</text>
+<circle cx="38" cy="163" r="2" fill="#ced4da"/>
+<text x="46" y="167" font-size="13.5" font-family="'SFMono-Regular','Menlo','Consolas',monospace" fill="#343a40">invoke_agent orchestrator</text>
+<rect x="445.0" y="152" width="600.0" height="22" rx="5" fill="#d0bfff" stroke="#9c36b5" stroke-width="1.5"/>
+<text x="1053.0" y="167" font-size="12" font-family="'SFMono-Regular','Menlo','Consolas',monospace" fill="#868e96">6.0s</text>
+<circle cx="54" cy="203" r="2" fill="#ced4da"/>
+<text x="62" y="207" font-size="13.5" font-family="'SFMono-Regular','Menlo','Consolas',monospace" fill="#343a40">chat claude-sonnet-4</text>
+<rect x="450.0" y="192" width="120.0" height="22" rx="5" fill="#a5d8ff" stroke="#1971c2" stroke-width="1.5"/>
+<text x="578.0" y="207" font-size="12" font-family="'SFMono-Regular','Menlo','Consolas',monospace" fill="#868e96">1.2s</text>
+<circle cx="54" cy="243" r="2" fill="#ced4da"/>
+<text x="62" y="247" font-size="13.5" font-family="'SFMono-Regular','Menlo','Consolas',monospace" fill="#343a40">execute_tool search_orders</text>
+<rect x="580.0" y="232" width="90.0" height="22" rx="5" fill="#b2f2bb" stroke="#2f9e44" stroke-width="1.5"/>
+<text x="678.0" y="247" font-size="12" font-family="'SFMono-Regular','Menlo','Consolas',monospace" fill="#868e96">0.9s</text>
+<circle cx="70" cy="283" r="2" fill="#ced4da"/>
+<text x="78" y="287" font-size="13.5" font-family="'SFMono-Regular','Menlo','Consolas',monospace" fill="#343a40">db.query SELECT orders</text>
+<rect x="590.0" y="272" width="10.0" height="22" rx="5" fill="#e9ecef" stroke="#868e96" stroke-width="1.5"/>
+<text x="608.0" y="287" font-size="12" font-family="'SFMono-Regular','Menlo','Consolas',monospace" fill="#868e96">18ms</text>
+<circle cx="54" cy="323" r="2" fill="#ced4da"/>
+<text x="62" y="327" font-size="13.5" font-family="'SFMono-Regular','Menlo','Consolas',monospace" fill="#343a40">invoke_agent billing</text>
+<rect x="680.0" y="312" width="240.0" height="22" rx="5" fill="#d0bfff" stroke="#9c36b5" stroke-width="1.5"/>
+<text x="928.0" y="327" font-size="12" font-family="'SFMono-Regular','Menlo','Consolas',monospace" fill="#868e96">2.4s</text>
+<circle cx="70" cy="363" r="2" fill="#ced4da"/>
+<text x="78" y="367" font-size="13.5" font-family="'SFMono-Regular','Menlo','Consolas',monospace" fill="#343a40">chat claude-sonnet-4</text>
+<rect x="690.0" y="352" width="110.0" height="22" rx="5" fill="#a5d8ff" stroke="#1971c2" stroke-width="1.5"/>
+<text x="808.0" y="367" font-size="12" font-family="'SFMono-Regular','Menlo','Consolas',monospace" fill="#868e96">1.1s</text>
+<circle cx="70" cy="403" r="2" fill="#ced4da"/>
+<text x="78" y="407" font-size="13.5" font-family="'SFMono-Regular','Menlo','Consolas',monospace" fill="#343a40">execute_tool issue_refund</text>
+<rect x="800.0" y="392" width="120.0" height="22" rx="5" fill="#b2f2bb" stroke="#2f9e44" stroke-width="1.5"/>
+<text x="928.0" y="407" font-size="12" font-family="'SFMono-Regular','Menlo','Consolas',monospace" fill="#868e96">1.2s</text>
+<circle cx="86" cy="443" r="2" fill="#ced4da"/>
+<text x="94" y="447" font-size="13.5" font-family="'SFMono-Regular','Menlo','Consolas',monospace" fill="#343a40">HTTP POST api.stripe.com</text>
+<rect x="810.0" y="432" width="110.0" height="22" rx="5" fill="#e9ecef" stroke="#868e96" stroke-width="1.5"/>
+<text x="928.0" y="447" font-size="12" font-family="'SFMono-Regular','Menlo','Consolas',monospace" fill="#868e96">1.1s</text>
+<circle cx="54" cy="483" r="2" fill="#ced4da"/>
+<text x="62" y="487" font-size="13.5" font-family="'SFMono-Regular','Menlo','Consolas',monospace" fill="#343a40">chat claude-sonnet-4</text>
+<rect x="930.0" y="472" width="110.0" height="22" rx="5" fill="#a5d8ff" stroke="#1971c2" stroke-width="1.5"/>
+<text x="1048.0" y="487" font-size="12" font-family="'SFMono-Regular','Menlo','Consolas',monospace" fill="#868e96">1.1s</text>
+<rect x="36" y="548" width="16" height="16" rx="4" fill="#d0bfff" stroke="#9c36b5" stroke-width="1.5"/>
+<text x="60" y="561" font-size="13" fill="#495057">invoke_agent (agent)</text>
+<rect x="250.0" y="548" width="16" height="16" rx="4" fill="#a5d8ff" stroke="#1971c2" stroke-width="1.5"/>
+<text x="274.0" y="561" font-size="13" fill="#495057">chat (LLM)</text>
+<rect x="392.0" y="548" width="16" height="16" rx="4" fill="#b2f2bb" stroke="#2f9e44" stroke-width="1.5"/>
+<text x="416.0" y="561" font-size="13" fill="#495057">execute_tool (tool)</text>
+<rect x="598.8" y="548" width="16" height="16" rx="4" fill="#e9ecef" stroke="#868e96" stroke-width="1.5"/>
+<text x="622.8" y="561" font-size="13" fill="#495057">auto-instrumented (HTTP / DB)</text>
+</svg>
