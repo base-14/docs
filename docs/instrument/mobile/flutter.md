@@ -57,16 +57,16 @@ manual `Scout.track(...)` calls anywhere in your app.
 | Errors (Flutter framework) | `error` span with `error.id`, `error.fingerprint`, `error.handled`, breadcrumbs | `FlutterError.onError` + `PlatformDispatcher.instance.onError` |
 | Manual error reporting | `error` span | `ScoutFlutter.reportError(e, stackTrace)` |
 | Native crashes (iOS) | `native_crash` span with `crash.reason`, registers (FAR/ESR), mach_exception, callstack_tree, binary_images | KSCrash 2.x all five monitors + MetricKit `MXCrashDiagnostic` / `MXHangDiagnostic` |
-| Native crashes (Android) | `native_crash` span with `crash.reason`, signal info, tombstone (≤ 32 KB), `crash.os_reason_*`, PSS/RSS | Custom NDK signal handler + `ApplicationExitInfo` (API 30+; reflective subReason on API 31+) |
-| ANR | `anr` span with `anr.duration`, `anr.threshold`, `anr.thread_count`, `anr.threads_json`, `anr.main_thread_stack`, and breadcrumbs | iOS: `AppHangWatchdog` (5 s default). Android: `Choreographer` + ApplicationExitInfo `REASON_ANR`. Captures a full thread dump at detection time. |
+| Native crashes (Android) | `native_crash` span with `crash.reason`, signal info, tombstone (≤ 128 KB, configurable), `crash.os_reason_*`, PSS/RSS | Custom NDK signal handler + `ApplicationExitInfo` (API 30+; reflective subReason on API 31+). Each OS death is reported exactly once (persisted watermark); normal exits (swipe-away, Force Stop, `exit()`) are never reported as crashes |
+| ANR | `anr` span with `anr.duration`, `anr.threshold`, `anr.thread_count`, `anr.threads_json`, `anr.main_thread_stack`, and breadcrumbs | iOS: `AppHangWatchdog` (5 s default). Android: native ping watchdog polling every 100 ms (deterministic detection, fires once per hang) + ApplicationExitInfo `REASON_ANR` post-mortem. Captures a full thread dump at detection time. |
 | UI hang (iOS) | `ui_hang` span with `ui_hang.duration`, `ui_hang.threshold` | iOS-only sub-ANR watchdog at 250 ms (configurable). Complements KSCrash mainThreadDeadlock and the 5 s ANR detector |
 | Long tasks | `long_task` span with `long_task.duration`, `long_task.threshold` | Dart isolate event-loop polling |
 | HTTP requests | `http.request` span with method, URL, status, duration, headers | `HttpOverrides` global wrap + Dio interceptor (optional) |
 | Distributed tracing | W3C `traceparent` header injected into outgoing requests to hosts in `firstPartyHosts` | Wrap on the HTTP client |
 | Scroll depth | `display.scroll.max_depth`, `display.scroll.max_depth_scroll_top`, `display.scroll.max_scroll_height`, `display.scroll.max_scroll_height_time_ms` on `screen_view` | `ScoutScrollObserver` widget wrapping `NotificationListener<ScrollNotification>` |
 | Lifecycle | `app_paused`, `app_resumed` spans + force-flush on background | `AppLifecycleListener` |
-| Frame metrics | `flutter.frame.build_time`, `flutter.frame.raster_time` histograms | `WidgetsBinding.instance.addTimingsCallback` |
-| Memory + CPU | `flutter.memory.usage`, `flutter.cpu.usage` gauges | Platform channel poll |
+| Frame metrics (opt-in) | `flutter.frame.build_time`, `flutter.frame.raster_time` histograms | `WidgetsBinding.instance.addTimingsCallback`. Off by default (`enableFrameMetrics`) — records on every frame, one stream per screen |
+| Memory + CPU (opt-in) | `flutter.memory.usage`, `flutter.cpu.usage` gauges | Platform channel poll every `vitalsCollectionIntervalSeconds` (60 s). Off by default (`enableMemoryMetrics` / `enableCpuMetrics`) |
 | Network connectivity | `network.connection.type` resource attribute (`wifi`, `cellular`, `none`) | `connectivity_plus` listener |
 | Battery | `device.battery.level`, `device.battery.state`, `device.battery.discharge_rate` resource attributes | `battery_plus` + platform channel |
 | Device orientation | `device.orientation` resource attribute (`portrait` / `landscape`) | Orientation-change listener |
@@ -95,7 +95,7 @@ Add it to your `pubspec.yaml`:
 ```yaml
 # pubspec.yaml
 dependencies:
-  scout_flutter: ^0.1.20
+  scout_flutter: ^0.1.23
 ```
 
 Or:
@@ -257,8 +257,8 @@ opt-in.
 |---|---|---|---|
 | `sessionTimeoutMinutes` | `int` | `30` | Inactivity timeout before a new `session.id` is minted. |
 | `maxSessionDurationMinutes` | `int` | `60` | Hard cap on session lifetime; rotates on the next ID read past this age regardless of activity. `0` disables. |
-| `sessionSampleRate` | `double (0-100)` | `1.0` | Percent of sessions sampled — default **1%**. Below 100, full sessions are dropped (not individual events) so session traces stay coherent. |
-| `alwaysCaptureErrors` | `bool` | `true` | Error / crash / ANR-class spans bypass `sessionSampleRate` and are always exported. Set `false` to subject them to the same gate. |
+| `sessionSampleRate` | `double (0-100)` | `1.0` | Percent of sessions sampled — default **1%**. The decision is made once per session and applies uniformly to **spans, metrics, and logs**: a sampled session sends everything, an unsampled session sends nothing. |
+| `alwaysCaptureErrors` | `bool` | `true` | Error / crash / ANR-class spans and error-level logs bypass `sessionSampleRate` and are always exported. Set `false` to subject them to the same gate. |
 
 ### Thresholds
 
@@ -269,23 +269,53 @@ opt-in.
 | `iosHangThresholdMs` | `int` | `250` | `50` (or `0` to disable) | iOS only — sub-ANR `ui_hang` watchdog. Complements ANR (5 s) and KSCrash `mainThreadDeadlock` (5 s+). Catches micro-stutter / jank. |
 | `maxTombstoneBytes` | `int` | `131072` | `4096` | Max bytes of Android `ApplicationExitInfo` tombstone (ANR / native post-mortem) captured per report. |
 
+### Batching & export (applies to spans, metrics, AND logs)
+
+All three signals share one batching model. Each exporter also holds a
+single keep-alive HTTP connection for its lifetime (idle timeout sized
+to outlive the export interval), so TLS handshakes happen once per app
+session per signal — not once per export.
+
+| Field | Type | Default | Min | Description |
+|---|---|---|---|---|
+| `exportIntervalSeconds` | `int` | `30` | `1` | One export cadence for spans, metrics, and logs. |
+| `maxExportBatchSize` | `int` | `512` | `1` | Max items per export batch, per signal. |
+| `maxQueueSize` | `int` | `2048` | `1` | Max items buffered awaiting export; overflow is dropped. |
+| `maxRetries` | `int` | `0` | `0` | Delivery attempts after a failed export, for every signal. Default **0 = at-most-once**: retrying an ambiguous failure (a timeout whose request the collector may already have ingested) delivers duplicate events. |
+| `metricExportIntervalSeconds` | `int?` | `null` | `1` | Metrics-only override of `exportIntervalSeconds`. Unset means metrics follow the unified interval. |
+| `vitalsCollectionIntervalSeconds` | `int` | `60` | `1` | How often memory/CPU are polled natively (when the gauges are enabled). |
+
+### Per-metric switches
+
+The SDK ships **no metrics by default** — each gauge/histogram family
+is opt-in.
+
+| Field | Default | Description |
+|---|---|---|
+| `enableFrameMetrics` | `false` | `flutter.frame.build_time` / `flutter.frame.raster_time` histograms. They record on **every rendered frame** with one stream per screen — by far the highest-volume metrics the SDK can produce. Frozen-frame detection (the `frozen_frame` span) stays on regardless. |
+| `enableMemoryMetrics` | `false` | The `flutter.memory.usage` gauge. When off, the native poll is skipped entirely. |
+| `enableCpuMetrics` | `false` | The `flutter.cpu.usage` gauge, same behavior. |
+
 ### Offline buffer
 
-When in-memory retry is exhausted, batches are persisted to disk and
-replayed on next `initialize()` or on app resume.
+Offline buffering is **fully disabled by default** — nothing is
+written to disk, and a batch that fails to export is dropped (strict
+at-most-once delivery). Opt in for durability at the cost of possible
+duplicate delivery on replay.
 
 | Field | Type | Default | Description |
 |---|---|---|---|
-| `offlineBufferEnabled` | `bool` | `true` | Master toggle. Set `false` for strict at-most-once delivery. |
-| `offlineMaxTraceItems` | `int` | `5000` | FIFO cap on persisted span items. Oldest evicted first. |
-| `offlineMaxMetricItems` | `int` | `2000` | Same, for metric data points. |
-| `offlineMaxLogItems` | `int` | `5000` | Same, for log records. |
-| `maxOfflineStorageMb` | `int` | `5` | Coarse total-disk cap that runs alongside the per-signal `offlineMax*Items` caps — whichever limit is reached first wins. |
+| `offlineBufferEnabled` | `bool` | `false` | Master toggle. Set `true` to persist failed batches and replay them on next `initialize()` or connectivity change. |
+| `offlineMaxTraceItems` | `int` | `0` | FIFO cap on persisted span items (`0` = signal disabled in the queue). Oldest evicted first. |
+| `offlineMaxMetricItems` | `int` | `0` | Same, for metric data points. |
+| `offlineMaxLogItems` | `int` | `0` | Same, for log records. |
+| `maxOfflineStorageMb` | `int` | `5` | Coarse total-disk cap that runs alongside the per-signal `offlineMax*Items` caps when buffering is enabled — whichever limit is reached first wins. |
 
 ### Auto-instrumentation toggles
 
-Every auto-instrumentation can be turned off independently. **All
-default to `true`** except `capturePrintStatements`.
+Every auto-instrumentation can be turned off independently. Span and
+log instrumentation defaults to **on**; metric collection defaults to
+**off** (see [Per-metric switches](#per-metric-switches)).
 
 | Toggle | Default | What you lose when set to `false` |
 |---|---|---|
@@ -294,7 +324,7 @@ default to `true`** except `capturePrintStatements`.
 | `enableLifecycleTracking` | `true` | `app_paused` / `app_resumed` spans and the background-flush hook. Heavy loss — recommend leaving on. |
 | `enableStartupTracking` | `true` | `app_startup` cold/warm spans **and** the FBC vital. |
 | `enableConnectivityTracking` | `true` | `network.connection.type` resource attr updates on network transitions. |
-| `enablePerformanceMetrics` | `true` | `flutter.memory.usage` and `flutter.cpu.usage` gauges. |
+| `enablePerformanceMetrics` | `true` | Master switch for the whole metrics pipeline (exporter + reader). With it on, individual gauges still need their per-metric switches. |
 | `enableLongTaskDetection` | `true` | `long_task` spans. Tune with `longTaskThresholdMs` instead of disabling. |
 | `enableAnrDetection` | `true` | `anr` spans **and** the iOS `ui_hang` watchdog. |
 | `enableNetworkTracking` | `true` | `http.request` spans + `traceparent` injection. |
@@ -377,21 +407,26 @@ sample ship ready-made crash / ANR / deadlock buttons for exactly this.
 
 The plugin auto-installs a **custom NDK signal handler** that catches
 SIGSEGV / SIGABRT / SIGBUS / SIGILL / SIGFPE before they kill the
-process. A tombstone (up to 32 KB) plus signal info is persisted to
-disk and emitted on next launch as a `native_crash` span.
+process. A compact crash report (signal info, registers, stack,
+memory map, binary images with ELF build-ids) is persisted to disk
+and emitted on next launch as a `native_crash` span.
 
 In parallel, on API 30+ (Android 11+), scout_flutter polls
 `ActivityManager.getHistoricalProcessExitReasons` and emits a
 `native_crash` span for any OS-recorded death newer than the persisted
-watermark. This captures:
+watermark — **each death is reported exactly once across launches**.
+Only crash-class exit reasons are reported (`anr`, `jvm_crash`,
+`native_crash`, `low_memory`); benign exits such as the user swiping
+the app away (`user_requested`), Force Stop (`user_stopped`), or a
+normal `exit()` (`exit_self`) are filtered out and never counted as
+crashes. Captured attributes:
 
-- `crash.os_reason_code` / `crash.os_reason_name` (`crash`,
-  `crash_native`, `anr`, `low_memory`, `excessive_resource_usage`,
-  `initialization_failure`, `signaled`)
-- `crash.os_reason_subcode` (API 31+ via reflection)
+- `crash.type` / `crash.reason`
+- `crash.subreason` (API 31+ via reflection)
 - `crash.exit_status`, `crash.importance`, `crash.death_timestamp_ms`,
   `crash.process_name`, `crash.pid`, `crash.pss_kb`, `crash.rss_kb`
-- `crash.tombstone` — full thread dump (capped at 32 KB)
+- `crash.tombstone` — the OS's full thread dump with native frames
+  (capped at 128 KB by default; tune with `maxTombstoneBytes`)
 
 The two pipelines complement each other: NDK fires in-process at
 crash time, ApplicationExitInfo catches deaths that the OS killed
@@ -408,8 +443,10 @@ the last few seconds (the ones leading up to a crash) would die with
 the in-memory batch queue.
 
 If the in-memory exporter still doesn't deliver in time (OS kills us
-mid-POST), the **offline buffer** persists the batch to disk and
-replays it on next `initialize()`.
+mid-POST), the batch is dropped under the default at-most-once
+delivery. Enable the **offline buffer** (`offlineBufferEnabled: true`
+plus per-signal caps) to persist such batches to disk and replay them
+on next `initialize()`.
 
 ## WebView bridge
 
@@ -475,14 +512,18 @@ glue (~6 lines) per your plugin of choice.
 
 ## What happens when export fails
 
-| Failure | What Scout does |
+Delivery is **at-most-once by default** (`maxRetries: 0`): a batch
+gets one attempt, and a failed batch is dropped rather than risking a
+duplicate delivery (a retried timeout whose first request the
+collector already ingested would store the same events twice).
+
+| Failure | What Scout does (defaults) |
 |---|---|
-| Network blip / 5xx / 429 / 408 | Exponential-backoff retry with full jitter (default 3 attempts, initial 1 s, max 30 s). |
-| Retries exhausted, `offlineBufferEnabled = true` | Batch persisted to disk under the app's temp directory. Replayed on next `initialize()` and on app foreground. |
-| Retries exhausted, `offlineBufferEnabled = false` | Batch dropped silently. |
-| 4xx (non-retryable) | Batch dropped immediately so retry budget isn't burned on a permanent error. |
+| Any export failure, `maxRetries: 0` (default) | One attempt; batch dropped on failure. No duplicates, ever. |
+| `maxRetries > 0` configured | Failed batches are retried up to that many times — with the corresponding duplicate risk on ambiguous failures. |
+| Failure with `offlineBufferEnabled: true` configured | Batch persisted to disk and replayed on next `initialize()` or connectivity change (single replay attempt). |
 | Disk write fails (quota, permissions) | Caught and swallowed; batch dropped. |
-| App crash mid-write | That batch is lost. |
+| App crash mid-batch | The background-flush hook drains buffers on `paused`; anything emitted after the last flush is lost with the process. |
 
 ## Running the example app
 
@@ -519,13 +560,21 @@ adb reverse tcp:34318 tcp:34318
 
 ## Performance considerations
 
-- **Batched OTLP HTTP.** Spans flush every 5 s (configurable). At
-  default settings, telemetry overhead in normal use is 2–4 KB/s.
-- **Disk-backed offline buffer.** Worst-case disk footprint with
-  default per-signal caps is ~25–35 MB. Lower the caps on low-end
-  Android devices if needed.
-- **Sampling.** `sessionSampleRate` drops *full sessions*, never
-  individual events — session traces stay coherent.
+- **Unified 30 s batching.** Spans, metrics, and logs each flush once
+  per `exportIntervalSeconds` (default 30 s) — including logs, which
+  are buffered and batched rather than posted per line.
+- **Connection reuse.** Each signal holds one keep-alive HTTP
+  connection for the app session — TLS handshakes happen ~3 times per
+  session, not once per export.
+- **No metrics unless enabled.** The default configuration ships zero
+  metric data points; the vitals gauges and frame histograms are
+  per-app opt-ins.
+- **Zero disk usage by default.** Offline buffering is off; the only
+  disk writes are crash evidence (crash reports, breadcrumbs, session
+  marker).
+- **Sampling.** `sessionSampleRate` drops *full sessions* — spans,
+  metrics, and logs together — never individual events, so session
+  traces stay coherent.
 - **Async init.** `ScoutFlutter.initialize()` is fire-and-forget. The
   app boot does not wait on it.
 
@@ -569,7 +618,8 @@ disk full, etc.) the error is swallowed; your app keeps running.
 
 A KSCrash report with full register dump + callstack tree typically
 serializes to 30–80 KB. ApplicationExitInfo tombstones are capped at
-32 KB. They're sent as part of the next launch's first batch.
+128 KB by default (`maxTombstoneBytes`). They're sent as part of the
+next launch's first batch — each death exactly once.
 
 **Can I add custom spans?**
 
