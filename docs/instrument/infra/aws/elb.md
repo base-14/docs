@@ -1,8 +1,9 @@
 ---
 date: 2025-11-19
 id: collecting-aws-elb-telemetry
-title: AWS ELB Monitoring with OpenTelemetry - ALB, NLB & CLB Metrics
+title: AWS ALB Monitoring with OpenTelemetry - Application Load Balancer Metrics
 sidebar_label: AWS ALB
+sidebar_position: 3
 description:
   Stream AWS Application Load Balancer metrics via CloudWatch Metrics
   Stream. Monitor request rates, response times, and target health with
@@ -21,7 +22,7 @@ keywords:
 
 <head>
   <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I monitor AWS ALB with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Use CloudWatch Metrics Stream to collect Application Load Balancer metrics with 2-3 minute latency, then send them to an OpenTelemetry Collector and base14 Scout for visualization and alerting."}},{"@type":"Question","name":"What ALB metrics does CloudWatch Metrics Stream provide?","acceptedAnswer":{"@type":"Answer","text":"CloudWatch Metrics Stream delivers all AWS/ApplicationELB metrics including request counts, response times, HTTP status codes, target health, connection counts, and more."}},{"@type":"Question","name":"How do I collect AWS ALB access logs with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Configure a Lambda function triggered by S3 events to process ALB access logs. The Lambda reads log files from S3 and forwards them to your OpenTelemetry Collector endpoint."}},{"@type":"Question","name":"Should I use CloudWatch Metrics Stream or Prometheus for ALB monitoring?","acceptedAnswer":{"@type":"Answer","text":"CloudWatch Metrics Stream is recommended. It offers faster delivery (2-3 min vs 5+ min latency), lower cost with no dedicated exporters needed, and automatic metric discovery for AWS services."}},{"@type":"Question","name":"How do I filter ALB metrics in CloudWatch Metrics Stream?","acceptedAnswer":{"@type":"Answer","text":"Select specific namespaces when configuring the Metrics Stream and choose only AWS/ApplicationELB to collect only ALB metrics, reducing costs and data volume in base14 Scout."}}]})}
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I monitor AWS ALB with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Use CloudWatch Metrics Stream to collect Application Load Balancer metrics with 3-5 minute end-to-end latency, then send them to an OpenTelemetry Collector and base14 Scout for visualization and alerting."}},{"@type":"Question","name":"What ALB metrics does CloudWatch Metrics Stream provide?","acceptedAnswer":{"@type":"Answer","text":"CloudWatch Metrics Stream delivers all AWS/ApplicationELB metrics including request counts, response times, HTTP status codes, target health, connection counts, and more."}},{"@type":"Question","name":"How do I collect AWS ALB access logs with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Configure a Lambda function triggered by S3 events to process ALB access logs. The Lambda reads log files from S3 and forwards them to your OpenTelemetry Collector endpoint."}},{"@type":"Question","name":"Should I use CloudWatch Metrics Stream or Prometheus for ALB monitoring?","acceptedAnswer":{"@type":"Answer","text":"CloudWatch Metrics Stream is recommended. It offers faster delivery (3-5 min end-to-end vs 5+ min latency), lower cost with no dedicated exporters needed, and automatic metric discovery for AWS services."}},{"@type":"Question","name":"How do I filter ALB metrics in CloudWatch Metrics Stream?","acceptedAnswer":{"@type":"Answer","text":"Select specific namespaces when configuring the Metrics Stream and choose only AWS/ApplicationELB to collect only ALB metrics, reducing costs and data volume in base14 Scout."}},{"@type":"Question","name":"How do I set up alerts for AWS ALB?","acceptedAnswer":{"@type":"Answer","text":"Route AWS/ApplicationELB metrics through CloudWatch Metrics Stream to base14 Scout, then alert on sustained HTTPCode_ELB_5XX_Count, HTTPCode_Target_5XX_Count above 1% of requests, TargetResponseTime p99 above 1 second, UnHealthyHostCount above zero, and rising RejectedConnectionCount or TargetConnectionErrorCount."}}]})}
   </script>
 </head>
 
@@ -29,26 +30,81 @@ keywords:
 
 ## Overview
 
-This guide will walk you through collecting rich telemetry data from your
-Application ELB using CloudWatch Metrics Stream. We recommend using CloudWatch
-Metrics Stream over Prometheus exporters as it provides faster metric delivery
-(2-3 minute latency) and is more efficient for AWS services.
+This guide covers collecting Application Load Balancer metrics (request counts,
+response times, HTTP status codes, and target health) via CloudWatch Metrics
+Stream, plus access logs through a Lambda forwarder. We recommend CloudWatch
+Metrics Stream over Prometheus exporters: it needs no per-service exporter and
+integrates natively with AWS.
+
+## What You'll Monitor
+
+ALB monitoring combines two data sources - CloudWatch metrics for the
+aggregate picture and access logs for per-request detail:
+
+**CloudWatch Metrics Stream (AWS/ApplicationELB):**
+
+| Metric | What it tells you |
+| ------ | ----------------- |
+| `RequestCount` | Total requests the load balancer processed |
+| `TargetResponseTime` | Time targets took to respond (watch p90/p99) |
+| `HTTPCode_Target_2XX_Count` / `4XX` / `5XX` | Response codes returned by your targets |
+| `HTTPCode_ELB_4XX_Count` / `5XX_Count` | Errors generated by the load balancer itself |
+| `HealthyHostCount` / `UnHealthyHostCount` | Targets passing / failing health checks |
+| `ActiveConnectionCount` | Concurrent connections through the load balancer |
+| `NewConnectionCount` | New connections established per period |
+| `RejectedConnectionCount` | Connections dropped after hitting the connection limit |
+| `TargetConnectionErrorCount` | Connections that failed to reach a target |
+| `ProcessedBytes` | Total bytes processed (request and response) |
+| `ConsumedLCUs` | Capacity units consumed - the main cost driver |
+| `RequestCountPerTarget` | Average requests per target (scaling signal) |
+
+**Access logs (per-request fields via the Lambda forwarder):**
+
+| Field | What it tells you |
+| ----- | ----------------- |
+| `elb_status_code` | Status the load balancer returned to the client |
+| `target_status_code` | Status the target returned to the load balancer |
+| `target_processing_time` | Seconds the target took to process the request |
+| `request_processing_time` / `response_processing_time` | Time spent inside the load balancer |
+| `client:port` | Client IP and port that made the request |
+| `target:port` | Target IP and port that served it |
+| `request` | Method, URL, and HTTP version |
+| `user_agent` | Client user agent string |
+| `ssl_cipher` / `ssl_protocol` | TLS cipher and protocol negotiated |
+| `trace_id` | `X-Amzn-Trace-Id` for correlating across hops |
+
+## Prerequisites
+
+| Requirement | Minimum | Recommended |
+| ----------- | ------- | ----------- |
+| Load balancer | Application Load Balancer | ALB with access logs enabled |
+| OTel Collector Contrib | 0.90.0 | latest |
+| base14 Scout | Any | - |
+| AWS permissions | CloudWatch, Amazon Data Firehose, S3, Lambda | - |
+
+Before starting:
+
+- An Application Load Balancer serving traffic. This guide covers the
+  `AWS/ApplicationELB` namespace, not Network or Classic load balancers.
+- CloudWatch Metrics Stream infrastructure set up (see Step 1).
+- For access logs: an S3 bucket with ALB access logging enabled and the
+  Lambda forwarder built below.
 
 ## Collecting Application ELB Metrics
 
 For collecting Application ELB metrics, we recommend using **CloudWatch Metrics
 Stream** instead of Prometheus exporters. CloudWatch Metrics Stream provides:
 
-- **Faster delivery**: 2-3 minute latency vs 5+ minutes with polling
-- **Lower cost**: No need to run dedicated exporters
-- **Better scalability**: Native AWS service integration
-- **Automatic metric discovery**: No need to manually configure metric lists
+- **Faster delivery**: 3-5 minutes end-to-end vs 5+ minutes with polling.
+- **Lower cost**: No need to run dedicated exporters.
+- **Better scalability**: Native AWS service integration.
+- **Automatic metric discovery**: No need to manually configure metric lists.
 
 ### Step 1: Set up CloudWatch Metrics Stream
 
 Follow our comprehensive
-[CloudWatch Metrics Stream guide](cloudwatch-metrics-stream.md) to set up the
-infrastructure.
+[CloudWatch Metrics Stream guide](cloudwatch-metrics/cloudwatch-metrics-stream.md)
+to set up the infrastructure.
 
 ### Step 2: Configure Application ELB metrics filtering
 
@@ -66,7 +122,14 @@ guide, make sure to:
 
 ## Collecting Application ELB Logs
 
-### Step 1: Creating a lambda function
+Before wiring up the Lambda, enable access logging on the load balancer so log
+files land in S3. In the EC2 console, open your load balancer, go to
+**Attributes** > **Edit**, turn on **Access logs**, and point them at an S3
+bucket. AWS also needs a bucket policy allowing the ELB log-delivery account to
+write there; the console offers to create it. Without this, the bucket stays
+empty and the Lambda never fires.
+
+### Step 1: Creating a Lambda function
 
 1. Go to your AWS console and search for AWS Lambda, go to Functions and click
    on Create Function.
@@ -76,7 +139,7 @@ guide, make sure to:
    (preferably), and keep other settings as default. Select
    `Create a new role with basic Lambda permissions` for now, we'll require
    more permissions later. So for now, select this option.
-4. Once you are done configuring the lambda function, your Lambda function is
+4. Once you are done configuring the Lambda function, your Lambda function is
    created.
 
 ### Step 2: Configuring Policies for Lambda function
@@ -84,17 +147,33 @@ guide, make sure to:
 > As said in previous step, we need extra permissions in order to access the S3
 > Bucket for execution of our Lambda code, follow along to set it up.
 
-1. Scroll down from your Lambda page, you’ll see a few tabs there. Go to
+1. Scroll down from your Lambda page, you'll see a few tabs there. Go to
    `Configurations` and select `Permissions` from the left sidebar.
-2. Click on the `Execution Role name` link just under Role name, it will take us
-   to AWS IAM page. Here we will add policies to get full S3 access. Once here,
-   click on the `Add permissions` button and select `Attach policies` from the
-   drop down list.
-3. Search "S3" and you'll see a policy `GetObject`, select that and proceed.
+2. Click on the `Execution Role name` link just under Role name to open the
+   role in the AWS IAM console.
+3. Click `Add permissions` > `Create inline policy`, switch to the JSON
+   editor, paste the policy below (scoped to your log bucket only), then name
+   and create it.
+
+```json title="lambda-s3-read-policy.json"
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::your-alb-logs-bucket/*"
+    }
+  ]
+}
+```
+
+Replace `your-alb-logs-bucket` with your bucket name. The function only needs to
+read log objects, so avoid broad policies like `AmazonS3FullAccess`.
 
 ### Step 3: Adding Triggers
 
-1. Navigate to the lambda function that we created just now.
+1. Navigate to the Lambda function we just created.
 2. Click on the `+ Add trigger` button from the Lambda console.
 3. Select S3 from the first drop down of AWS services list. Pick your S3 bucket
    for the second field.
@@ -110,41 +189,36 @@ We will be using python's request module which is not included by default in
 Lambda.
 
 ```bash
-# make a new directory
-mkdir python
-# move into that directory
-cd python
+# create the layer directory (Lambda expects dependencies under python/)
+mkdir -p python
 
-# install requests module
-pip install --target . requests
-# zip the contents under the name dependencies.zip
-zip -r dependencies.zip ../python
+# install the requests module into it
+pip install --target python requests
 
+# zip it with python/ at the archive root
+zip -r dependencies.zip python
 ```
 
 1. Run the above commands to create a zip of the request module and add it as a
-   layer to make it work on AWS lambda.
+   layer to make it work on AWS Lambda.
 2. To upload your zip file, go to AWS Lambda > Layers and click on
    `Create Layer`. [Not inside your specific Lambda function, just the landing
    page of AWS Lambda].
 3. You'll be redirected to Layer configurations page. Here, give a name to your
    layer, an optional description, select `Upload a .zip file`, click on
-   `Upload` and locate the requirements.zip file.
-4. Select your desired architecture and pick `Python 3.x` as your runtime. Hit
-   `Create`. Your layer has now been created.
+   `Upload` and locate the `dependencies.zip` file.
+4. Select the **same architecture** and Python runtime as the function - the
+   layer must match, or the `requests` import fails at runtime. Hit `Create`
+   to build the layer.
 5. Go to your Lambda function, scroll down to Layers section and on the right of
-   it, you’ll find a button that says `Add a layer` to click on.
+   it, you'll find a button that says `Add a layer` to click on.
 6. Pick `Custom layers` from the checkbox and select your custom layer from the
    given drop down below and then click on the button `Add`.
 
 ### Step 5: The Lambda Function
 
-Now, we come to the pivotal section of this document: the code implementation.
-
-The Python script's primary function revolves around retrieving gzipped log
-files stored within an Amazon S3 bucket. Subsequently, it decompresses these
-files, transforms individual log entries into JSON objects, and transmits the
-resultant JSON data to a predetermined HTTP endpoint.
+The Lambda function reads gzipped ALB access-log files from S3, converts each
+log line to OTLP JSON, and posts the result to your Collector endpoint.
 
 ```python
 import json
@@ -195,7 +269,7 @@ def convert_to_otlp_format(logs):
     "attributes": [
      {"key": "service.name", "value": {"stringValue": "alb"}},
      {"key": "cloud.provider", "value": {"stringValue": "aws"}},
-     {"key": "environment", "value": {"stringValue": "staging"}}
+     {"key": "environment", "value": {"stringValue": os.environ.get('ENVIRONMENT', 'production')}}
     ]
    },
    "scopeLogs": [{
@@ -349,19 +423,132 @@ def lambda_handler(event, context):
   }
 ```
 
-> Set `OTEL_ENDPOINT` and `S3_BUCKET_NAME` with the correct values.
+> Set the Lambda's environment variables: `CLIENT_ID`, `CLIENT_SECRET`,
+> `TOKEN_URL`, `ENDPOINT_URL` (your Scout OTLP base endpoint - the function
+> appends `/v1/logs`), and `ENVIRONMENT` (for example `production`).
 
-After deploying these changes, generate some traffic to your ALB and check in
-Scout to see your ELB's metrics and logs.
+## Verify the setup
 
----
+After deploying, send traffic through the load balancer, then confirm both
+paths are flowing:
 
-With this setup, your ALB becomes fully observable through Scout.
+1. In Scout, check for the CloudWatch metrics, named
+   `amazonaws.com/AWS/ApplicationELB/<MetricName>` (request counts, response
+   times, HTTP status codes).
+2. Wait for an access-log object to land in the S3 bucket, then open the
+   Lambda's CloudWatch log group - a successful run logs
+   `Sent batch of N logs ... Response: 200`.
+3. In Scout, check for logs with `service.name = alb`.
+
+Allow 5-10 minutes for the first metrics to arrive through the stream.
+
+## Key alerts to configure
+
+Once telemetry is flowing, set up alerts on these thresholds:
+
+| Metric | Warning | Critical | Why |
+| ------ | ------- | -------- | --- |
+| `HTTPCode_ELB_5XX_Count` | > 0 sustained | spiking | The load balancer itself is failing requests |
+| `HTTPCode_Target_5XX_Count` | > 1% of requests | > 5% of requests | Targets are returning server errors |
+| `TargetResponseTime` (p99) | > 1s | > 3s | Backend latency is degrading user experience |
+| `UnHealthyHostCount` | > 0 | half the targets or more | Targets are failing health checks |
+| `RejectedConnectionCount` | > 0 | sustained | Connection limit reached (LCU saturation) |
+| `TargetConnectionErrorCount` | > 0 | sustained | Load balancer cannot reach its targets |
+
+CloudWatch Metrics Stream adds 3-5 minutes of latency, so treat these as trend
+and capacity alerts, not sub-minute failure detection. The access logs add the
+per-request detail - client IP, target, `elb_status_code`, processing times -
+to debug the 5xx spikes the metrics surface.
+
+## Troubleshooting
+
+### ALB metrics not appearing in Scout
+
+**Cause**: Metrics Stream isn't active or isn't filtered to the ELB namespace.
+
+**Fix**:
+
+1. In CloudWatch > Metrics > Streams, verify the stream is active
+2. Confirm the namespace filter includes `AWS/ApplicationELB`
+3. Check that Firehose delivery is succeeding (look at the S3 error prefix)
+4. Allow 5-10 minutes for initial metrics to flow
+
+### Access logs never reach Scout
+
+**Cause**: Access logging is off, or the Lambda isn't triggered.
+
+**Fix**:
+
+1. Confirm access logging is enabled on the load balancer and objects are
+   landing in the S3 bucket
+2. Verify the bucket policy grants the ELB log-delivery account write access
+3. Check the S3 trigger fires the Lambda on object-create events
+4. Read the Lambda's CloudWatch logs for errors
+
+### Lambda fails with "No module named requests"
+
+**Cause**: The requests layer isn't attached, or its architecture doesn't match.
+
+**Fix**:
+
+1. Attach the `dependencies.zip` layer to the function
+2. Ensure the dependencies sit under `python/` at the archive root
+3. Confirm the layer's architecture and Python runtime match the function
+
+### Lambda gets 401 or 403 from the Collector
+
+**Cause**: Wrong OAuth2 credentials or endpoint.
+
+**Fix**:
+
+1. Verify `CLIENT_ID`, `CLIENT_SECRET`, and `TOKEN_URL`
+2. Confirm `ENDPOINT_URL` is the base OTLP endpoint (the function appends
+   `/v1/logs`)
+3. Check the token `audience` is `b14collector`
+
+## FAQ
+
+**How do I monitor AWS ALB with OpenTelemetry?**
+
+Use CloudWatch Metrics Stream to collect AWS/ApplicationELB metrics with 3-5
+minute end-to-end latency, then forward them through an OpenTelemetry Collector
+to base14 Scout for visualization and alerting.
+
+**What ALB metrics does CloudWatch Metrics Stream provide?**
+
+All AWS/ApplicationELB metrics - request counts, target response times, HTTP
+status codes (ELB and target), healthy/unhealthy host counts, connection
+counts, and consumed LCUs.
+
+**How do I collect AWS ALB access logs with OpenTelemetry?**
+
+Enable access logging on the load balancer, then trigger a Lambda on S3
+object-create events. The Lambda reads each gzipped log file, converts entries
+to OTLP, and forwards them to your Collector endpoint.
+
+**Should I use CloudWatch Metrics Stream or Prometheus for ALB monitoring?**
+
+CloudWatch Metrics Stream is recommended: faster delivery (3-5 min end-to-end
+vs 5+ min), no dedicated exporter to run, and automatic metric discovery for
+AWS services.
+
+**How do I filter ALB metrics in CloudWatch Metrics Stream?**
+
+When configuring the stream, select specific namespaces and choose only
+`AWS/ApplicationELB`. This keeps costs and data volume down in Scout.
+
+**How do I set up alerts for AWS ALB?**
+
+Route AWS/ApplicationELB metrics through CloudWatch Metrics Stream to Scout,
+then alert on sustained `HTTPCode_ELB_5XX_Count`, `HTTPCode_Target_5XX_Count`
+above 1% of requests, `TargetResponseTime` p99 above 1s, `UnHealthyHostCount`
+above zero, and rising `RejectedConnectionCount` or
+`TargetConnectionErrorCount`.
 
 ## Related Guides
 
-- [CloudWatch Metrics Stream Setup](./cloudwatch-metrics-stream.md) - Set up AWS
-  metrics streaming
+- Set up AWS metrics streaming with
+  [CloudWatch Metrics Stream Setup](./cloudwatch-metrics/cloudwatch-metrics-stream.md).
 - [RDS Monitoring](./rds.md) - Monitor AWS RDS databases
 - [ElastiCache Monitoring](./elasticache.md) - Monitor Redis and Memcached
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set

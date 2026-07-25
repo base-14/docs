@@ -945,8 +945,8 @@ operational signals live.
   OpenTelemetry chart this guide uses. Useful for non-AKS Kubernetes
   platforms or operators who prefer a single Scout-curated chart over the
   upstream + values-file approach.
-- [CloudWatch Metrics Stream](../aws/cloudwatch-metrics-stream.md) - the
-  AWS infrastructure-metrics guide. Different pattern from this one
+- [CloudWatch Metrics Stream](../aws/cloudwatch-metrics/cloudwatch-metrics-stream.md)
+  is the AWS infrastructure-metrics guide. Different pattern from this one
   (CloudWatch → Kinesis Firehose → Scout, push-stream forwarder; this
   guide is pull-based collectors).
 - [OpenTelemetry Collector Helm chart][otel-helm] - upstream chart

@@ -3,6 +3,7 @@ date: 2025-04-28
 id: collecting-aws-elasticache-telemetry
 title: AWS ElastiCache Monitoring with OpenTelemetry - Redis & Memcached Metrics
 sidebar_label: AWS ElastiCache
+sidebar_position: 4
 description:
   Monitor AWS ElastiCache Redis and Memcached with OpenTelemetry and
   CloudWatch Metrics Stream. Track cache hit rates, evictions, memory,
@@ -24,7 +25,7 @@ keywords:
 
 <head>
   <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I monitor AWS ElastiCache with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Use CloudWatch Metrics Stream to collect ElastiCache infrastructure metrics (CPU, memory, network) with 2-3 minute latency, and add the OpenTelemetry Redis receiver for cache-specific metrics like command latency, keyspace hits, and connected clients. Both feed into base14 Scout."}},{"@type":"Question","name":"What ElastiCache metrics does CloudWatch collect?","acceptedAnswer":{"@type":"Answer","text":"CloudWatch collects CPUUtilization, EngineCPUUtilization, FreeableMemory, NetworkBytesIn/Out, CurrConnections, NewConnections, CacheHits, CacheMisses, Evictions, ReplicationLag, and BytesUsedForCache for ElastiCache Redis and Memcached."}},{"@type":"Question","name":"Should I use CloudWatch Metrics Stream or the Redis receiver for ElastiCache?","acceptedAnswer":{"@type":"Answer","text":"Use both. CloudWatch provides host-level metrics (CPU, memory, network). The OTel Redis receiver adds cache internals like per-command latency, keyspace statistics, and memory fragmentation ratio. Together they give complete visibility."}},{"@type":"Question","name":"How do I monitor ElastiCache Redis slow commands?","acceptedAnswer":{"@type":"Answer","text":"Enable Redis slow log in your ElastiCache parameter group by setting slowlog-log-slower-than to a threshold in microseconds (e.g., 10000 for 10ms). Forward slow logs via CloudWatch Logs to your OTel Collector for analysis."}},{"@type":"Question","name":"What is a good cache hit rate for ElastiCache Redis?","acceptedAnswer":{"@type":"Answer","text":"A healthy Redis cache hit rate is above 95%. Below 90% indicates that a significant portion of requests are missing the cache and hitting the backend database, which defeats the purpose of caching. Monitor CacheHits / (CacheHits + CacheMisses) to track this ratio."}},{"@type":"Question","name":"How do I set up alerts for ElastiCache?","acceptedAnswer":{"@type":"Answer","text":"Route ElastiCache metrics through CloudWatch Metrics Stream to base14 Scout, then alert on: cache hit rate below 90%, evictions above zero (sustained), memory usage above 80%, CPU above 70%, replication lag above 5 seconds, and current connections approaching the max."}},{"@type":"Question","name":"Can I monitor both ElastiCache Redis and Memcached with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Yes. CloudWatch Metrics Stream supports both engines. For Redis, add the OTel Redis receiver for deeper cache-level metrics. For Memcached, the OTel Memcached receiver collects hit rates, evictions, and connection counts."}}]})}
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Should I use CloudWatch Metrics Stream or the Redis receiver?","acceptedAnswer":{"@type":"Answer","text":"Use both. CloudWatch Metrics Stream provides host-level metrics like CPU, memory, network, and evictions. The OpenTelemetry Redis receiver adds cache internals like keyspace hit rates, memory fragmentation, and per-command detail. Together they give complete visibility."}},{"@type":"Question","name":"How do I monitor ElastiCache Redis slow commands?","acceptedAnswer":{"@type":"Answer","text":"Enable the Redis slow log in your ElastiCache parameter group by setting slowlog-log-slower-than to a threshold in microseconds (for example 10000 for 10ms). Enable log delivery to CloudWatch Logs, then forward it to base14 Scout via the CloudWatch Logs receiver."}},{"@type":"Question","name":"What is a good cache hit rate for ElastiCache Redis?","acceptedAnswer":{"@type":"Answer","text":"A healthy Redis cache hit rate is above 95%. Below 90% means a significant portion of requests miss the cache and hit the backend database. Track CacheHits / (CacheHits + CacheMisses) over time to monitor the ratio."}},{"@type":"Question","name":"Can I monitor Memcached clusters with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Yes. CloudWatch Metrics Stream covers Memcached infrastructure metrics. For cache-specific metrics, the OpenTelemetry Collector has a Memcached receiver that collects hit rates, evictions, connection counts, and memory usage."}},{"@type":"Question","name":"How do I monitor multiple ElastiCache clusters?","acceptedAnswer":{"@type":"Answer","text":"Add multiple Redis receiver blocks with distinct names such as redis/sessions and redis/cache, each pointing at a different cluster endpoint, then include all of them in the metrics pipeline."}},{"@type":"Question","name":"How do I set up alerts for ElastiCache?","acceptedAnswer":{"@type":"Answer","text":"Route ElastiCache metrics through CloudWatch Metrics Stream to base14 Scout, then alert on cache hit rate below 90%, sustained evictions above zero, memory usage above 80%, EngineCPUUtilization above 65%, replication lag above 5 seconds, and connections approaching the max."}}]})}
   </script>
 </head>
 
@@ -35,7 +36,7 @@ keywords:
 This guide covers monitoring AWS ElastiCache (Redis and Memcached)
 using OpenTelemetry and CloudWatch Metrics Stream. You'll collect
 infrastructure metrics from CloudWatch, cache-specific metrics from
-the Redis receiver, and slow logs — all flowing into base14 Scout.
+the Redis receiver, and slow logs - all flowing into base14 Scout.
 
 ## What You'll Monitor
 
@@ -47,7 +48,7 @@ Redis receiver metrics for complete visibility:
 | Metric | What it tells you |
 | ------ | ----------------- |
 | `CPUUtilization` | Instance CPU usage (%) |
-| `EngineCPUUtilization` | Redis/Memcached engine CPU (%) — more relevant than host CPU |
+| `EngineCPUUtilization` | Redis/Memcached engine CPU (%) - more relevant than host CPU |
 | `FreeableMemory` | Available RAM (bytes) |
 | `BytesUsedForCache` | Memory used by the cache engine |
 | `CacheHits` / `CacheMisses` | Cache effectiveness |
@@ -80,21 +81,21 @@ Redis receiver metrics for complete visibility:
 | ElastiCache | Redis 6.x or Memcached 1.6 | Redis 7.x |
 | OTel Collector Contrib | 0.90.0 | latest |
 | base14 Scout | Any | - |
-| AWS permissions | CloudWatch, Kinesis Firehose, S3 | - |
+| AWS permissions | CloudWatch, Amazon Data Firehose, S3, CloudWatch Logs | - |
 
 Before starting:
 
 - ElastiCache cluster must be accessible from the host running the
-  OTel Collector (same VPC)
+  OTel Collector (same VPC).
 - For the Redis receiver: AUTH token if encryption in transit is
-  enabled
-- CloudWatch Metrics Stream infrastructure set up (see Step 1)
+  enabled.
+- CloudWatch Metrics Stream infrastructure set up (see Step 1).
 
 ## Step 1: Set up CloudWatch Metrics Stream
 
 Follow our comprehensive
-[CloudWatch Metrics Stream guide](cloudwatch-metrics-stream.md) to
-set up the streaming infrastructure (S3 bucket, Kinesis Firehose,
+[CloudWatch Metrics Stream guide](cloudwatch-metrics/cloudwatch-metrics-stream.md)
+to set up the streaming infrastructure (S3 bucket, Amazon Data Firehose,
 Metrics Stream).
 
 When configuring the Metrics Stream:
@@ -194,20 +195,21 @@ OTEL_EXPORTER_OTLP_ENDPOINT=https://<your-tenant>.base14.io
 
 ElastiCache Redis supports two log types through CloudWatch:
 
-- **Slow log** — commands exceeding a latency threshold
-- **Engine log** — connection events, failovers, configuration changes
+- **Slow log** - commands exceeding a latency threshold.
+- **Engine log** - connection events, failovers, configuration changes.
 
 Configure the CloudWatch Logs receiver:
 
 ```yaml showLineNumbers title="elasticache-logs-config.yaml"
 receivers:
-  awscloudwatchlogs/elasticache:
+  awscloudwatch/elasticache:
     region: ${env:AWS_REGION}
     logs:
       poll_interval: 1m
       groups:
         named:
-          # Replace <cluster-id> with your ElastiCache cluster ID
+          # Use the log group names you set as ElastiCache log-delivery
+          # destinations (these names are user-chosen, not fixed by AWS)
           /aws/elasticache/cluster/${env:CLUSTER_ID}/slow-log:
           /aws/elasticache/cluster/${env:CLUSTER_ID}/engine-log:
 
@@ -235,7 +237,7 @@ exporters:
 service:
   pipelines:
     logs/elasticache:
-      receivers: [awscloudwatchlogs/elasticache]
+      receivers: [awscloudwatch/elasticache]
       processors: [attributes/add_source, batch]
       exporters: [otlphttp/b14]
 ```
@@ -252,7 +254,7 @@ slowlog-max-len = 128              # Keep last 128 slow commands
 Then in the ElastiCache console, enable **Log delivery** for both
 slow log and engine log, targeting CloudWatch Logs.
 
-## Step 4: Verify the setup
+## Verify the setup
 
 Start the Collector and check for metrics:
 
@@ -263,21 +265,22 @@ redis-cli -h ${REDIS_ENDPOINT%:*} -p 6379 \
   -a ${REDIS_AUTH_TOKEN} ping
 ```
 
-Check Scout for both CloudWatch metrics (prefixed `aws.elasticache.*`)
-and Redis metrics (prefixed `redis.*`).
+Check Scout for both the CloudWatch metrics (named
+`amazonaws.com/AWS/ElastiCache/<MetricName>`) and the Redis receiver metrics
+(prefixed `redis.*`).
 
 ## Key alerts to configure
 
 | Metric | Warning | Critical | Why |
 | ------ | ------- | -------- | --- |
-| Cache hit rate | < 90% | < 80% | Low hit rate means cache isn't effective — requests hit the database instead |
+| Cache hit rate | < 90% | < 80% | Low hit rate means cache isn't effective - requests hit the database instead |
 | `Evictions` | > 0 (sustained) | > 100/min | Evictions mean memory pressure is forcing useful data out |
-| `EngineCPUUtilization` | > 65% | > 80% | Redis is single-threaded — high CPU means commands are queuing |
+| `EngineCPUUtilization` | > 65% | > 80% | Redis is single-threaded - high CPU means commands are queuing |
 | `BytesUsedForCache` | > 80% of max | > 90% of max | Approaching memory limit triggers aggressive eviction |
 | `CurrConnections` | > 80% of max | > 90% of max | Connection exhaustion causes application errors |
 | `ReplicationLag` | > 5s | > 30s | High lag means replicas serve stale data |
-| `redis.memory.fragmentation_ratio` | > 1.5 | > 2.0 | High fragmentation wastes memory — consider a restart |
-| Slow log entries | > 10/min | > 50/min | Frequent slow commands indicate saturation — check slow log |
+| `redis.memory.fragmentation_ratio` | > 1.5 | > 2.0 | High fragmentation wastes memory - consider a restart |
+| Slow log entries | > 10/min | > 50/min | Frequent slow commands indicate saturation - check slow log |
 
 **Cache hit rate formula:**
 `CacheHits / (CacheHits + CacheMisses) * 100`
@@ -296,7 +299,7 @@ and Redis metrics (prefixed `redis.*`).
 
 **Fix**:
 
-1. ElastiCache is VPC-only — the Collector must run in the same VPC
+1. ElastiCache is VPC-only - the Collector must run in the same VPC
    or a peered VPC
 2. Check the security group allows inbound on port 6379 from the
    Collector's security group
@@ -314,7 +317,7 @@ namespace.
 
 1. In CloudWatch > Metrics > Streams, verify the stream is active
 2. Check that the namespace filter includes `AWS/ElastiCache`
-3. Verify Kinesis Firehose delivery is succeeding
+3. Verify Amazon Data Firehose delivery is succeeding
 4. Allow 5-10 minutes for initial metrics to flow
 
 ### High evictions but low memory usage
@@ -328,7 +331,7 @@ while keys with TTLs get evicted.
 1. Check the eviction policy:
    `redis-cli CONFIG GET maxmemory-policy`
 2. If using `volatile-lru`, consider switching to `allkeys-lru`
-3. Review key TTL distribution — sample keys and check their TTLs
+3. Review key TTL distribution - sample keys and check their TTLs
    to identify keys without expiration
 
 ### Cache hit rate dropping
@@ -342,41 +345,40 @@ expiration settings.
    useful keys)
 2. Review whether application code is requesting keys that were
    never cached
-3. Compare `CurrItems` trend — a sudden drop suggests mass
+3. Compare `CurrItems` trend - a sudden drop suggests mass
    expiration
 4. Consider increasing node size or adding shards
 
 ## FAQ
 
+**Should I use CloudWatch Metrics Stream or the Redis receiver?**
+
+Use both. CloudWatch Metrics Stream provides host-level metrics (CPU, memory,
+network, evictions). The OTel Redis receiver adds cache internals like keyspace
+hit rates, memory fragmentation, and per-command detail. Together they give
+complete visibility.
+
 **How do I monitor ElastiCache Redis slow commands?**
 
 Enable the slow log in your ElastiCache parameter group by setting
-`slowlog-log-slower-than` to a threshold in microseconds (10000 =
-10ms). Enable log delivery to CloudWatch Logs, then forward to
-Scout via the CloudWatch Logs receiver.
+`slowlog-log-slower-than` to a threshold in microseconds (10000 = 10ms). Enable
+log delivery to CloudWatch Logs, then forward it to Scout via the CloudWatch
+Logs receiver.
 
-**What is a good cache hit rate?**
+**What is a good cache hit rate for ElastiCache Redis?**
 
-Above 95% is healthy. Below 90% means a significant portion of
-requests miss the cache and hit the backend database. Track the
-ratio over time — a gradual decline often indicates growing data
-volume without proportional cache capacity.
+Above 95% is healthy. Below 90% means a significant portion of requests miss
+the cache and hit the backend database. Track `CacheHits / (CacheHits +
+CacheMisses)` over time - a gradual decline often indicates growing data volume
+without proportional cache capacity.
 
-**Can I monitor Memcached clusters with this setup?**
+**Can I monitor Memcached clusters with OpenTelemetry?**
 
-Yes. CloudWatch Metrics Stream covers Memcached infrastructure
-metrics. For cache-specific metrics, the OTel Collector has a
-[Memcached receiver](../../component/memcached.md) that collects
-hit rates, evictions, connection counts, and memory usage — the
-Memcached equivalent of the Redis receiver above.
-
-**Should I monitor ElastiCache Serverless differently?**
-
-ElastiCache Serverless uses the same CloudWatch metrics namespace
-(`AWS/ElastiCache`) but adds metrics like
-`ElastiCacheProcessingUnits` for capacity tracking. The CloudWatch
-Metrics Stream setup is identical — just include the
-`AWS/ElastiCache` namespace.
+Yes. CloudWatch Metrics Stream covers Memcached infrastructure metrics. For
+cache-specific metrics, the OTel Collector has a
+[Memcached receiver](../../component/memcached.md) that collects hit rates,
+evictions, connection counts, and memory usage - the Memcached equivalent of
+the Redis receiver above.
 
 **How do I monitor multiple ElastiCache clusters?**
 
@@ -393,15 +395,22 @@ receivers:
 Then include both in the pipeline:
 `receivers: [redis/sessions, redis/cache]`.
 
+**How do I set up alerts for ElastiCache?**
+
+Route metrics through CloudWatch Metrics Stream to Scout, then alert on cache
+hit rate below 90%, sustained evictions above zero, memory usage above 80%,
+`EngineCPUUtilization` above 65%, replication lag above 5 seconds, and
+connections approaching the max.
+
 ## Related Guides
 
-- [CloudWatch Metrics Stream Setup](./cloudwatch-metrics-stream.md) —
-  Configure AWS metrics streaming
-- [Redis Monitoring](../../component/redis.md) — Self-hosted Redis
+- Configure AWS metrics streaming with
+  [CloudWatch Metrics Stream Setup](./cloudwatch-metrics/cloudwatch-metrics-stream.md).
+- [Redis Monitoring](../../component/redis.md) - Self-hosted Redis
   monitoring with OpenTelemetry
-- [Memcached Monitoring](../../component/memcached.md) — Self-hosted
+- [Memcached Monitoring](../../component/memcached.md) - Self-hosted
   Memcached monitoring
-- [RDS Monitoring](./rds.md) — Monitor AWS RDS databases
-- [ELB Monitoring](./elb.md) — Monitor AWS Application Load Balancers
+- [RDS Monitoring](./rds.md) - Monitor AWS RDS databases
+- [ALB Monitoring](./elb.md) - Monitor AWS Application Load Balancers
 - [OTel Collector Configuration](../../collector-setup/otel-collector-config.md)
-  — Collector setup basics
+  for collector setup basics

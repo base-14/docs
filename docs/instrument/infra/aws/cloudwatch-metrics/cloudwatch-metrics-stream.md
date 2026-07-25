@@ -1,16 +1,17 @@
 ---
 date: 2025-11-19
-id: collecting-aws-cloudwatch-metrics-using-kinesis-streams
-title: CloudWatch Metrics Streams to OpenTelemetry - Complete Setup Guide
+id: collecting-aws-cloudwatch-metrics-firehose-s3-lambda
+title: CloudWatch Metric Streams to OpenTelemetry - Complete Setup Guide
 sidebar_label: CloudWatch Metrics Stream
+sidebar_position: 3
 description:
-  Stream AWS CloudWatch metrics via Kinesis Firehose to OpenTelemetry
-  Collector. Complete setup for fast, low-latency AWS metrics delivery
-  to base14 Scout.
+  Stream AWS CloudWatch metrics via Amazon Data Firehose, S3, and a Lambda
+  forwarder to base14 Scout over OTLP. Complete low-latency setup guide.
 keywords:
   [
     cloudwatch metrics stream,
     aws metrics streaming,
+    amazon data firehose,
     kinesis firehose,
     aws monitoring setup,
     cloudwatch observability,
@@ -21,49 +22,64 @@ keywords:
 
 <head>
   <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is CloudWatch Metrics Stream and how does it work with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"CloudWatch Metrics Stream uses Amazon Kinesis Firehose to deliver AWS CloudWatch metrics to an OpenTelemetry Collector with only 2-3 minute latency, significantly faster than the traditional polling approach."}},{"@type":"Question","name":"How do I set up CloudWatch Metrics Stream for base14 Scout?","acceptedAnswer":{"@type":"Answer","text":"Create an S3 bucket, set up a Kinesis Firehose stream with Direct PUT as input and S3 as output, then configure a CloudWatch Metrics Stream to send metrics through the Firehose pipeline to base14 Scout."}},{"@type":"Question","name":"Is CloudWatch Metrics Stream faster than polling CloudWatch APIs?","acceptedAnswer":{"@type":"Answer","text":"Yes. CloudWatch Metrics Stream delivers metrics with 2-3 minute latency, which is significantly faster than the 5+ minute latency typical of polling-based approaches."}},{"@type":"Question","name":"Can I filter which AWS metrics are streamed via CloudWatch Metrics Stream?","acceptedAnswer":{"@type":"Answer","text":"Yes. When creating the Metrics Stream you can select specific namespaces (e.g., AWS/EC2, AWS/RDS) instead of all namespaces, reducing costs and data volume."}},{"@type":"Question","name":"What AWS infrastructure do I need for CloudWatch Metrics Stream?","acceptedAnswer":{"@type":"Answer","text":"You need an S3 bucket for storage, an Amazon Kinesis Firehose stream configured with Direct PUT, and a CloudWatch Metrics Stream that routes metrics through the Firehose to your OpenTelemetry Collector."}}]})}
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is CloudWatch Metrics Stream and how does it work with base14 Scout?","acceptedAnswer":{"@type":"Answer","text":"Amazon CloudWatch Metric Streams push metrics continuously through Amazon Data Firehose. In this setup Firehose writes batches to S3, an S3-triggered Lambda converts each batch to OTLP and forwards it to base14 Scout. End-to-end latency is typically three to five minutes, faster than polling the CloudWatch APIs."}},{"@type":"Question","name":"How do I set up CloudWatch Metrics Stream for base14 Scout?","acceptedAnswer":{"@type":"Answer","text":"Create an S3 bucket, set up an Amazon Data Firehose stream with Direct PUT as input and S3 as output, configure a CloudWatch Metric Stream to send metrics through Firehose, then add a Lambda that converts the S3 objects to OTLP and forwards them to base14 Scout."}},{"@type":"Question","name":"Is CloudWatch Metrics Stream faster than polling CloudWatch APIs?","acceptedAnswer":{"@type":"Answer","text":"Yes. Metric Streams deliver to Firehose in two to three minutes. With the S3 and Lambda forwarding hop, end-to-end delivery to Scout is typically three to five minutes, still faster than the five or more minutes typical of API polling."}},{"@type":"Question","name":"Can I filter which AWS metrics are streamed via CloudWatch Metrics Stream?","acceptedAnswer":{"@type":"Answer","text":"Yes. When creating the Metric Stream you can select specific namespaces such as AWS/EC2 or AWS/RDS instead of all namespaces, which reduces cost and data volume."}},{"@type":"Question","name":"What AWS infrastructure do I need for CloudWatch Metrics Stream?","acceptedAnswer":{"@type":"Answer","text":"You need an S3 bucket, an Amazon Data Firehose stream configured with Direct PUT, a CloudWatch Metric Stream that routes metrics through Firehose to S3, and a Lambda function that forwards the metrics to base14 Scout over OTLP."}}]})}
   </script>
 </head>
 
 <!-- markdownlint-enable MD013 MD011 -->
 
-Using Amazon CloudWatch Metric Streams and Amazon Data Firehose, you can get
-CloudWatch metrics into Scout Backend with only a two to three minute latency.
-This is significantly faster than polling approach
+Using Amazon CloudWatch Metric Streams and Amazon Data Firehose (formerly
+Kinesis Data Firehose), you can get CloudWatch metrics into base14 Scout with
+low latency. Firehose buffers the stream in S3, and a Lambda function converts
+each batch to OTLP and forwards it to Scout, so end-to-end delivery is
+typically three to five minutes - faster than polling the CloudWatch APIs.
 
-## Step 1: Creating a S3 Bucket
+:::note Why S3 and Lambda?
 
-First, we'll create an S3 bucket to store the metrics
+Amazon Data Firehose can deliver to an HTTP endpoint directly, but base14
+Scout expects OTLP over an OAuth2-authenticated endpoint, which Firehose
+cannot produce on its own. This pipeline uses S3 as a buffer and a Lambda to
+convert each batch to OTLP and attach the OAuth2 token. If you can run a
+public HTTPS OpenTelemetry Collector, the
+[Firehose to the OTel Collector](./cloudwatch-firehose-receiver.md) approach
+skips S3 and Lambda for lower latency.
 
-### 1. Go to [S3 Dashboard](https://ap-south-1.console.aws.amazon.com/s3)
+:::
+
+## Step 1: Creating an S3 bucket
+
+First, we'll create an S3 bucket to store the metrics.
+
+### 1. Go to the [S3 Dashboard](https://console.aws.amazon.com/s3)
 
 ![S3 Search in Console](/img/cloudwatch-kinesis-stream/search-s3-aws-console.png)
 
-### 2. Click on `Create bucket` button
+### 2. Click `Create bucket`
 
 ![S3 Dashboard ScreenShot](/img/cloudwatch-kinesis-stream/s3-dashboard.png)
 
 ### 3. Enter the bucket name as `cloudwatch-metrics-stream-bucket`
 
-> leave all the other settings to default options.
+> Leave all the other settings at their default options.
 
 ![S3 config page screenshot](/img/cloudwatch-kinesis-stream/create-s3-page.png)
 
-### 4. Scroll down and click on `Create bucket`
+### 4. Scroll down and click `Create bucket`
 
-## Step 2: Creating a Kinesis Firehose stream
+## Step 2: Creating an Amazon Data Firehose stream
 
-Now, we'll create a kinesis stream which cloudwatch can use to stream metrics
+Now, we'll create an Amazon Data Firehose stream that CloudWatch can use to
+stream metrics.
 
-### 1. Go to [Kinsis Firehose Dashboard](https://ap-northeast-3.console.aws.amazon.com/firehose/home)
+### 1. Go to the [Amazon Data Firehose Dashboard](https://console.aws.amazon.com/firehose)
 
-![Amazon Kinesis Firehose Search in Console](/img/cloudwatch-kinesis-stream/search-kinesis-firehose.png)
+![Amazon Data Firehose Search in Console](/img/cloudwatch-kinesis-stream/search-kinesis-firehose.png)
 
-### 2. Click on `Create Firehose Stream` button
+### 2. Click `Create Firehose Stream`
 
-![AWS Kinesis Firehose Dashboard](/img/cloudwatch-kinesis-stream/kinesis-firehose-dashboard.png)
+![Amazon Data Firehose Dashboard](/img/cloudwatch-kinesis-stream/kinesis-firehose-dashboard.png)
 
-### 3. Set up the Sources
+### 3. Set up the sources
 
 - Select `Direct PUT` as the input source and `S3` as the output.
 - Select the S3 bucket name we created.
@@ -71,37 +87,49 @@ Now, we'll create a kinesis stream which cloudwatch can use to stream metrics
 > Format is `s3://<your-bucket-name>`
 
 - Enable `New Line Delimiter` and leave everything else as default settings.
-- Scroll down and click on `Create Firehose Stream`.
+- Scroll down and click `Create Firehose Stream`.
   ![Firehose source config](/img/cloudwatch-kinesis-stream/configure-source-in-kinesis.png)
 
-## Step 3: Creating a Metrics Stream pipeline
+## Step 3: Creating a Metric Stream pipeline
 
-Now, we'll configure cloudwatch to use the kinesis firehose stream to stream
-metrics to S3
+Now, we'll configure CloudWatch to use the Firehose stream to send metrics to
+S3.
 
-### 1. Navigate to Cloudwatch dashboard and
-
-### Select streams under Metrics
+### 1. Navigate to the CloudWatch dashboard and select Streams under Metrics
 
 ![cloudwatch dashboard](/img/cloudwatch-kinesis-stream/cloudwatch-dashboard.png)
 
-### 2. Click on `Create Metrics Stream`
+### 2. Click `Create Metric Stream`
 
 ![cloudwatch metrics stream dashboard](/img/cloudwatch-kinesis-stream/cloudwatch-metrics-stream.png)
 
-### 3. Configuring the Stream
+### 3. Configuring the stream
 
 - Select `Custom Setup with Firehose`.
-- Change output format to `JSON`
+- Change the output format to `JSON`.
 - Select the required metrics.
-- Give a name to the pipeline. `Click on`Create Metrics Stream`.
+- Give the pipeline a name, then click `Create Metric Stream`.
 
-> Good Job, Now the Cloudwatch metrics are streaming to a S3 bucket.
+> Firehose is now writing CloudWatch metric batches to the S3 bucket.
 
-## Step 4: Creating a lambda function
+:::note IAM roles are created for you
 
-Now, let's create a lambda function to read from the s3 and send it to Scout
-Collector
+As you complete Steps 2 and 3 in the console, AWS creates two service roles
+automatically: a Firehose role that can write to the destination S3 bucket
+(`s3:PutObject`, `s3:AbortMultipartUpload`, `s3:GetBucketLocation`,
+`s3:ListBucket`) and log delivery errors, and a CloudWatch Metric Stream role
+that trusts `streams.metrics.cloudwatch.amazonaws.com` and can call
+`firehose:PutRecord` and `firehose:PutRecordBatch` on the stream. If you
+provision with Terraform or CloudFormation instead, create both roles
+explicitly with those permissions. (The Lambda's own read role is configured
+in Step 4.)
+
+:::
+
+## Step 4: Creating a Lambda function
+
+Now, let's create a Lambda function to read from S3 and forward the metrics to
+base14 Scout.
 
 ### 1. Create a layer with all the necessary packages
 
@@ -116,17 +144,17 @@ pip install --target . requests
 zip -r dependencies.zip ../python
 ```
 
-### 2. Navigate to AWS Lambda dashboard and click on `Layers`
+### 2. Navigate to the AWS Lambda dashboard and click `Layers`
 
 ![lambda dashboard](/img/cloudwatch-kinesis-stream/lambda-dashboard.png)
 
-- Click on `Create layer` button
+- Click `Create layer`.
 
-### 3. Fill the necessary details and upload the zip file
+### 3. Fill in the necessary details and upload the zip file
 
 ![create lambda page](/img/cloudwatch-kinesis-stream/create-lambda-layer-page.png)
 
-### 4. Naviagte to functions page and Click on `Create function` button
+### 4. Navigate to the Functions page and click `Create function`
 
 ![lambda functions page](/img/cloudwatch-kinesis-stream/lambda-functions-page.png)
 
@@ -147,7 +175,7 @@ S3 bucket where Firehose writes metrics.
 
 1. Click on the `Configuration` tab and then click on `Permissions`.
 2. Click on the **Role name** link to open the IAM role in a new tab.
-3. Click `Add permissions` → `Create inline policy`.
+3. Click `Add permissions` then `Create inline policy`.
 4. Switch to the `JSON` tab and paste the following policy:
 
 ```json showLineNumbers title="s3-read-policy.json"
@@ -215,12 +243,25 @@ authentication and endpoint configuration.
 | `CLIENT_ID`     | Your Scout OAuth client ID                      |
 | `CLIENT_SECRET` | Your Scout OAuth client secret                  |
 | `TOKEN_URL`     | Your Scout token endpoint URL                   |
-| `ENDPOINT_URL`  | Your Scout OTLP metrics endpoint (HTTP)         |
+| `ENDPOINT_URL`  | Full Scout OTLP metrics URL (include `/v1/metrics`) |
 
 1. Click `Save`.
 
-Now the actual part, copy the below code into the `code source` in your lambda
+`ENDPOINT_URL` is the exact URL the Lambda POSTs to. It does not append
+`/v1/metrics` for you, so include the full path, for example
+`https://otel.play.b14.dev/<YOUR_TENANT>/otlp/v1/metrics`.
+
+Now, copy the code below into the `Code source` editor of your Lambda
 function.
+
+:::warning Keep TLS verification on
+
+The requests below verify TLS certificates by default. Do not set
+`verify=False` in production - it disables certificate validation and exposes
+your credentials and metrics to interception. base14 Scout endpoints use
+valid, publicly trusted certificates, so verification works out of the box.
+
+:::
 
 ```python
 import boto3
@@ -358,7 +399,6 @@ def lambda_handler(event, context):
                     "audience": "b14collector",
                 },
                 auth=(client_id, client_secret),
-                verify=False,
             )
             token_response.raise_for_status()
             access_token = token_response.json()["access_token"]
@@ -376,7 +416,6 @@ def lambda_handler(event, context):
                 endpoint_url,
                 json=otlp_payload,
                 headers=headers,
-                verify=False,
             )
 
             if response.status_code == 200:
@@ -395,17 +434,67 @@ def lambda_handler(event, context):
 
 ```
 
-- Click on the `Deploy`
+- Click `Deploy`.
 
-## That's it, you're done
+## Verify the setup
 
-Head back to the Scout dashboards to view all your AWS Services metrics.
+Confirm metrics are flowing at each hop:
+
+- **Firehose**: open your stream in the Firehose console, check
+  **Monitoring**, and confirm `DeliveryToS3.Success` is non-zero.
+- **S3**: the bucket should show new objects accumulating under the prefix.
+- **Lambda**: check the function's logs for successful forwards and no 4xx or
+  5xx responses from the OTLP endpoint.
+- **Scout**: query a known metric such as
+  `amazonaws.com/AWS/EC2/CPUUtilization`. Allow three to five minutes for the
+  full path from stream through S3 and Lambda to reach Scout.
+
+## FAQ
+
+**What is CloudWatch Metrics Stream and how does it work with base14 Scout?**
+
+Amazon CloudWatch Metric Streams push metrics continuously through Amazon Data
+Firehose. In this setup Firehose writes batches to S3, an S3-triggered Lambda
+converts each batch to OTLP and forwards it to base14 Scout. End-to-end latency
+is typically three to five minutes, faster than polling the CloudWatch APIs.
+
+**How do I set up CloudWatch Metrics Stream for base14 Scout?**
+
+Create an S3 bucket, set up an Amazon Data Firehose stream with Direct PUT as
+input and S3 as output, configure a CloudWatch Metric Stream to send metrics
+through Firehose, then add a Lambda that converts the S3 objects to OTLP and
+forwards them to base14 Scout.
+
+**Is CloudWatch Metrics Stream faster than polling CloudWatch APIs?**
+
+Yes. Metric Streams deliver to Firehose in two to three minutes. With the S3
+and Lambda forwarding hop, end-to-end delivery to Scout is typically three to
+five minutes, still faster than the five or more minutes typical of API
+polling.
+
+**Can I filter which AWS metrics are streamed via CloudWatch Metrics Stream?**
+
+Yes. When creating the Metric Stream you can select specific namespaces such as
+AWS/EC2 or AWS/RDS instead of all namespaces, which reduces cost and data
+volume.
+
+**What AWS infrastructure do I need for CloudWatch Metrics Stream?**
+
+You need an S3 bucket, an Amazon Data Firehose stream configured with Direct
+PUT, a CloudWatch Metric Stream that routes metrics through Firehose to S3, and
+a Lambda function that forwards the metrics to base14 Scout over OTLP.
 
 ## Related Guides
 
-- [Application Load Balancer Monitoring](./elb.md) - Monitor AWS ALB with
-  CloudWatch Metrics Stream
-- [RDS Monitoring](./rds.md) - Monitor AWS RDS databases
-- [ElastiCache Monitoring](./elasticache.md) - Monitor Redis and Memcached
-- [Scout Exporter Configuration](../../collector-setup/scout-exporter.md) -
-  Configure authentication and endpoints
+- [AWS CloudWatch Overview](./overview.md) - Compare all four approaches to
+  get CloudWatch metrics into Scout.
+- [Firehose to the OTel Collector](./cloudwatch-firehose-receiver.md) - The
+  same stream without S3 or Lambda, using the `awsfirehosereceiver`.
+- [Prometheus CloudWatch exporter](./cloudwatch-prometheus-exporter.md) - The
+  pull alternative.
+- [Application Load Balancer Monitoring](../elb.md) - Monitor AWS ALB with
+  CloudWatch Metrics Stream.
+- [RDS Monitoring](../rds.md) - Monitor AWS RDS databases.
+- [ElastiCache Monitoring](../elasticache.md) - Monitor Redis and Memcached.
+- [Scout Exporter Configuration](../../../collector-setup/scout-exporter.md) -
+  Configure authentication and endpoints.

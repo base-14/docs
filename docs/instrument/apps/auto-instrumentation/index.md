@@ -49,6 +49,7 @@ your collector is working first, try the
 | FastAPI    | [FastAPI](./fast-api)      | HTTP requests, async handlers, Pydantic validation                               |
 | Litestar   | [Litestar](./litestar)     | HTTP requests, asyncpg, SQLAlchemy, httpx, msgspec validation                    |
 | Celery     | [Celery](./celery)         | Task execution, retries, worker lifecycle                                        |
+| LangChain  | [LangChain](./langchain)   | Agent runs, LLM calls, tool execution, RAG retrieval, token/cost tracking       |
 | LangGraph  | [LangGraph](./langgraph)   | Agent pipelines, LLM calls, tool nodes, conditional routing, token/cost tracking |
 | LlamaIndex | [LlamaIndex](./llamaindex) | LLM calls, structured output, token/cost tracking, quality evaluation            |
 
