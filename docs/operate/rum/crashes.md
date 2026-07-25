@@ -24,7 +24,7 @@ The **Crashes** tab groups individual crash events into deduplicated crash
 groups so you can prioritize by impact instead of triaging one crash at a
 time.
 
-![Crashes List](/img/rum/crashes/list.png)
+![Crash list with JS Error and Native filter chips above Title, Kind, Type, Occurrences, Sessions, Users, App Version, and Last Seen columns](/img/rum/crashes/list.png)
 
 ---
 
@@ -38,7 +38,7 @@ table below lists every crash group ranked by occurrence.
 | Column | Description |
 | ------ | ----------- |
 | **Title** | The crash's grouping title (exception name or synthetic label) |
-| **Kind** | High-level classification badge for the crash, for example `Native` or `JS Error` |
+| **Kind** | High-level classification badge, either `Native` or `JS Error` |
 | **Type** | More specific classification, for example `native_signal`, `mach`, `jvm_exception`, `jvm_crash`, `exit_self`, `excessive_resources`, `user_requested`, `unknown` |
 | **Occurrences** | Total times this crash group has been seen |
 | **Sessions** | Number of distinct sessions affected |
@@ -48,6 +48,10 @@ table below lists every crash group ranked by occurrence.
 
 Sort by **Occurrences** to prioritize the crashes affecting the most sessions
 first.
+
+`Native` is a crash the platform reported; `JS Error` is anything above the
+platform layer, which on Flutter means Dart and app-level crashes. The badge
+name is shared across RUM platforms - no JavaScript is involved.
 
 ---
 

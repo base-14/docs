@@ -22,7 +22,7 @@ The **Users** tab lists identified users and their activity, so you can start
 from a known user (a support ticket, an account ID) and drill into exactly
 what they experienced.
 
-![Users](/img/rum/users/list.png)
+![User list with Identifier, Sessions, Errors, and Devices columns](/img/rum/users/list.png)
 
 ---
 
@@ -56,7 +56,9 @@ that user has done in the app.
 
 The header identifies the user and the **Devices**, **OS**, and **App
 Versions** they used, followed by **Crashes**, **Errors**, **UI Freezes**,
-and **Sessions** stat cards summarizing their experience.
+and **Sessions** stat cards summarizing their experience. **UI Freezes**
+counts the same frozen-UI events the [ANR](./anr.md) tab groups, so a high
+count there is worth following up on.
 
 ### Screen Performance
 
@@ -103,6 +105,7 @@ The user's sessions with **Session ID**, **Started At**, **Duration**,
 - [Getting Started](./getting-started.md) - Interface layout and shared filters
 - [Sessions](./sessions.md) - Full session timeline and event details
 - [Crashes](./crashes.md) - Crash groups, filterable by affected user
+- [ANR](./anr.md) - Frozen-UI events behind the UI Freezes count
 - [traceX](../tracex/index.md) - Distributed tracing explorer
 - [logX](../logx/index.md) - Log explorer with trace correlation
 - [Instrument a Flutter app](../../instrument/mobile/flutter.md)

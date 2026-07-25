@@ -42,7 +42,7 @@ the corresponding view populates automatically.
 
 | Setting | Value |
 | ------- | ----- |
-| **Protocol** | OTLP - traces sent to `…/v1/traces` |
+| **Protocol** | OTLP - traces sent to `.../v1/traces` |
 | **Endpoint** | The OTLP URL base14 provides for your account, e.g. `https://rum.<region>.base14.io/<ingest-id>/otlp` |
 | **Auth** | `Authorization: Bearer <token>` header (base14 provisions the token) |
 

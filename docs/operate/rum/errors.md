@@ -24,7 +24,7 @@ ranked by occurrence so you can prioritize the errors affecting the most
 users. Use it alongside [Crashes](./crashes.md) to separate fatal crashes from
 recoverable errors.
 
-![Errors](/img/rum/errors/list.png)
+![Error list with Title, Kind, Type, Occurrences, Sessions, Users, App Version, and Last Seen columns](/img/rum/errors/list.png)
 
 ---
 
@@ -35,13 +35,16 @@ recoverable errors.
 | Column | Description |
 | ------ | ----------- |
 | **Title** | The error's grouping title (exception message or a custom label) |
-| **Kind** | High-level classification badge for the error |
+| **Kind** | High-level classification badge, always `JS Error` for Flutter apps |
 | **Type** | More specific classification, for example `flutter_error` (framework-level, such as widget build/layout errors), `uncaught_error` (unhandled Dart exceptions), or `manual_error` (explicitly reported via the SDK) |
 | **Occurrences** | Total times this error group has been seen |
 | **Sessions** | Number of distinct sessions affected |
 | **Users** | Number of distinct users affected |
 | **App Version** | Version most recently associated with the group |
 | **Last Seen** | When the error group was last observed |
+
+Every Dart error is badged `JS Error` regardless of cause, so use **Type** to
+tell error classes apart.
 
 The **Errors** filter category adds `error.message`, `crash.kind`,
 `crash.type`, and `crash.last_screen` to the shared

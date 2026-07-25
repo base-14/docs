@@ -3,9 +3,9 @@ title: RUM Overview
 sidebar_label: Overview
 sidebar_position: 2
 description:
-  Monitor mobile app health at a glance with the RUM Overview dashboard in
-  base14 Scout. Track crash-free rate, sessions, active users, startup times,
-  and trends by app version, OS, and device.
+  Read the RUM Overview tab in base14 Scout, the health dashboard for one
+  mobile app. Track crash-free rate, sessions, active users, cold and warm
+  startup times, and trends broken down by app version, OS, and device.
 keywords:
   [
     rum,

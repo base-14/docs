@@ -3,7 +3,7 @@
   "position": 8,
   "link": {
     "type": "generated-index",
-    "title": "Mobile Real User Monitoring with RUM",
-    "description": "Monitor real mobile user experience with RUM in base14 Scout. Track crash-free rates, app startup performance, screen load times, network calls, and session timelines for your Flutter applications."
+    "title": "Real User Monitoring for Mobile Apps",
+    "description": "Monitor how real users experience your mobile app with RUM in base14 Scout. Track crash-free rates, non-fatal errors, ANRs, app startup and screen load times, network calls, and full session timelines."
   }
 }

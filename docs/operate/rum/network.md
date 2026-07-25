@@ -93,5 +93,5 @@ connection type.
 ## Related Guides
 
 - [Getting Started](./getting-started.md) - Interface layout and shared filters
-- [Sessions](./sessions.md) - See individual `http_request` events in context
+- [Sessions](./sessions.md) - See individual `http.request` events in context
 - [Screens](./screens.md) - Screen-level performance, for issues that aren't network-bound

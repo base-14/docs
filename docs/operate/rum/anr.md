@@ -23,7 +23,7 @@ The **ANR** (Application Not Responding) tab tracks frozen-UI events - periods
 where the app's main thread was blocked and unresponsive to user input -
 grouped by the screen where they occurred.
 
-![ANR](/img/rum/anr/list.png)
+![ANR list grouped by screen with Occurrences, Sessions, Users, App Version, and Last Seen columns](/img/rum/anr/list.png)
 
 ---
 

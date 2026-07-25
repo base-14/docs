@@ -25,7 +25,7 @@ The **Screens** tab measures per-screen performance across your app, so you
 can find the slowest or jankiest screens without knowing what to look for
 up front.
 
-![Screen Performance](/img/rum/screens/list.png)
+![Total Screens, Slowest Screen, Most Janky, and Most Crashing stat cards above a table with Screen, Views, Unique Sessions, Avg Load, P95 Load, Avg Time Spent, Long Tasks, and Crashes columns](/img/rum/screens/list.png)
 
 ---
 

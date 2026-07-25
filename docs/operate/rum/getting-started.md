@@ -3,9 +3,9 @@ title: Getting Started with RUM
 sidebar_label: Getting Started
 sidebar_position: 1
 description:
-  Get started with RUM in base14 Scout. Learn the interface, select a mobile
-  application, and set a time range to monitor real user experience for your
-  Flutter apps.
+  What RUM is in base14 Scout and how to navigate it. Select a mobile
+  application, set a time range, and use the filters sidebar shared by every
+  RUM tab to monitor real user experience in your Flutter apps.
 keywords:
   [
     rum,
@@ -37,10 +37,15 @@ logs you already send to Scout.
 
 This page assumes your app is already sending telemetry to Scout. See
 [Instrument a Flutter app](../../instrument/mobile/flutter.md) for SDK setup.
-By default the SDK batches and compresses telemetry (roughly 2-4 KB/s in
-normal use) and buffers to disk when offline - see
+The SDK batches telemetry and holds one keep-alive connection per signal.
+Offline buffering is off by default, so the only disk writes are crash
+evidence, and metrics are opt-in per app - see
 [Performance considerations](../../instrument/mobile/flutter.md#performance-considerations)
 for the full breakdown.
+
+If you send RUM telemetry from your own OpenTelemetry setup rather than the
+Flutter SDK, [RUM with OpenTelemetry](../../instrument/mobile/rum-opentelemetry.md)
+lists the exact span names and attributes each tab reads.
 
 ---
 
@@ -55,7 +60,7 @@ Every RUM tab shares the same layout:
 | **Application Selector** | Choose which mobile application to inspect (top left) |
 | **Environment Selector** | Scope data to a specific environment, or All |
 | **Search Attributes** | Free-text search across the attributes available on the page |
-| **Navigation Tabs** | Switch between Overview, Crashes, Errors, ANR, Sessions, Screens, Network, and Users |
+| **Navigation Tabs** | Switch between Applications, Overview, Crashes, Errors, ANR, Sessions, Screens, Network, and Users |
 | **Time Picker** | Set the time range for every panel on the page |
 | **Filters Sidebar** | Slice every panel by device, app, session, network, and user attributes |
 
@@ -74,7 +79,7 @@ Each application card shows its **Crash-Free** rate, **Sessions**, **Active
 Users**, and current **Version** for the selected time range, so you can spot
 a struggling app before drilling in.
 
-![Applications](/img/rum/getting-started/applications.png)
+![Grid of application cards, each showing the app name, a platform badge, and Crash-Free, Sessions, Active Users, and Version stats](/img/rum/getting-started/applications.png)
 
 ---
 
@@ -89,8 +94,8 @@ range.
 ## Filters
 
 Every RUM tab has a **Filters** sidebar for narrowing down to a specific slice
-of traffic. The exact categories depend on the page, but five show up almost
-everywhere:
+of traffic. A category only appears when the page's data carries those
+attributes, so the exact set varies by page. These five are the common ones:
 
 ![Filters sidebar with Device, App, Session, and Network categories](/img/rum/getting-started/filters-sidebar.png)
 
@@ -129,3 +134,5 @@ redact or drop specific attributes before they're exported; see
 - [Users](./users.md) - Per-user activity and history
 - [Instrument a Flutter app](../../instrument/mobile/flutter.md) - SDK setup
   and configuration
+- [RUM with OpenTelemetry](../../instrument/mobile/rum-opentelemetry.md) - Span
+  names and attributes RUM reads, for custom instrumentation

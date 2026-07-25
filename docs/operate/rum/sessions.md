@@ -22,7 +22,7 @@ keywords:
 The **Sessions** tab lists individual user sessions so you can go from an
 aggregate stat straight to the exact session that produced it.
 
-![Sessions List](/img/rum/sessions/list.png)
+![Session list with Session ID, User, Started At, Duration, Screens, Errors, Crashes, and Device columns](/img/rum/sessions/list.png)
 
 ---
 
@@ -70,8 +70,11 @@ Two separate attribute panels:
 
 `session.sample_rate` is the app's configured sampling percentage (the SDK
 defaults to 1%); `session.sampled` shows whether this particular session was
-kept. Crash, error, and ANR sessions are typically kept regardless of the
-sample rate, so a low rate doesn't mean those sessions are missing - see
+kept. Crash, error, and ANR spans bypass the sample rate and are always
+exported (`alwaysCaptureErrors`, on by default), so those events are never
+lost. The rest of the session - screen views, network calls, interactions - is
+only recorded when `session.sampled` is true, so an unsampled session that
+crashed shows the crash without the timeline that led up to it. See
 [Sessions](../../instrument/mobile/flutter.md#sessions) in the
 instrumentation guide.
 
