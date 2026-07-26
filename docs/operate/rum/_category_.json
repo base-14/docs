@@ -1,0 +1,9 @@
+{
+  "label": "RUM",
+  "position": 8,
+  "link": {
+    "type": "generated-index",
+    "title": "Real User Monitoring for Mobile Apps",
+    "description": "Monitor how real users experience your mobile app with RUM in base14 Scout. Track crash-free rates, non-fatal errors, ANRs, app startup and screen load times, network calls, and full session timelines."
+  }
+}

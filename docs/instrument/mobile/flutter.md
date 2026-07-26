@@ -643,6 +643,10 @@ ScoutFlutter.reportError(e, st);
 
 - [Configure your collector](/instrument/collector-setup/docker-compose-example/)
   to receive OTLP-HTTP on `:4318`
+- Explore the data in [RUM](/operate/rum/getting-started) - crashes, sessions,
+  screens, and network performance for the app you just instrumented
+- Read [RUM with OpenTelemetry](/instrument/mobile/rum-opentelemetry) if you
+  need the span names and attributes behind those views
 - Look at [React Native + React Web instrumentation](/instrument/mobile/react-native)
   for the JavaScript equivalent (and the WebView bridge counterpart)
 
