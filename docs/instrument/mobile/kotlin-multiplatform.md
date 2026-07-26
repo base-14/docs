@@ -51,9 +51,10 @@ capabilities** documented for each platform, driven from common code:
 - **Android** — the full [scout-android](/instrument/mobile/android)
   set: Activity/Compose screens, taps, JVM + NDK crashes,
   `ApplicationExitInfo`, ANR, jank, startup, lifecycle, HTTP.
-- **iOS** — the full [scout-ios](/instrument/mobile/ios) set: screens,
-  taps, KSCrash native crashes, app hangs, jank, startup, lifecycle,
-  HTTP.
+- **iOS** — the [scout-ios](/instrument/mobile/ios) set: screens, taps,
+  KSCrash native crashes, app hangs, jank, startup, lifecycle, HTTP. One
+  exception: MetricKit is not subscribed on the KMP path (see the
+  [FAQ](#faq)).
 
 Every signal flows through the shared `scout-core` engine — the same
 sessions, sampling, batching, and OTLP export on both platforms. Each
@@ -113,11 +114,15 @@ Make sure `mavenCentral()` is in your `dependencyResolutionManagement`
 repositories. `scout-kmp` pins and re-exports the platform SDKs
 transitively — you don't add them yourself:
 
-| Module | Version |
-|---|---|
-| `scout-core` | 0.1.6 |
-| `scout-android` | 0.1.6 |
-| `scout-ios` | 0.1.8 |
+| Module | Version | Reaches your build as |
+|---|---|---|
+| `scout-core` | 0.1.6 | Maven artifact `io.base14:scout-core` |
+| `scout-android` | 0.1.6 | Maven artifact `io.base14:scout-android` |
+| `scout-ios` | 0.1.8 | Kotlin/Native klib, linked into your iOS framework |
+
+A pure-Swift app consumes `scout-ios` differently — as the `Scout` SPM
+package described in the [iOS](/instrument/mobile/ios) docs. Under KMP
+you never add it yourself.
 
 ## Initialization
 
@@ -192,7 +197,7 @@ Scout.clearSessionAttributes()
 | Field | Type | Default | Description |
 |---|---|---|---|
 | `serviceName` | `String` | **(required)** | Logical app identifier (`service.name`). Must be non-blank. |
-| `endpoint` | `String` | **(required)** | OTLP-HTTP collector URL. Signal paths appended automatically. Must be non-blank. |
+| `endpoint` | `String` | **(required)** | OTLP-HTTP collector URL. `/v1/traces`, `/v1/metrics`, `/v1/logs` are appended automatically. Must be non-blank. |
 | `serviceVersion` | `String?` | `null` | Maps to `service.version`. |
 | `environment` | `String?` | `null` | Deployment environment. |
 | `headers` | `Map<String, String>` | `{}` | Extra HTTP headers on every OTLP export. Use for auth. |
@@ -202,8 +207,8 @@ Scout.clearSessionAttributes()
 
 | Field | Type | Default | Description |
 |---|---|---|---|
-| `sessionSampleRate` | `Double (0-100)` | `1.0` | Percent of sessions sampled — default **1%**. Decided once per session; applies to spans, metrics, and logs together. |
-| `alwaysCaptureErrors` | `Boolean` | `true` | Error / crash / ANR-class signals bypass sampling. |
+| `sessionSampleRate` | `Double (0-100)` | `1.0` | Percent of sessions sampled — default **1%**. Decided once per session; a sampled session sends everything (spans, metrics, logs), an unsampled one sends nothing. |
+| `alwaysCaptureErrors` | `Boolean` | `true` | Error / crash / ANR-class spans bypass `sessionSampleRate` and are always exported. |
 | `sessionTimeoutMinutes` | `Int` | `30` | Inactivity timeout before a new session. |
 | `maxSessionDurationMinutes` | `Int` | `60` | Hard cap on session lifetime. |
 
@@ -226,26 +231,42 @@ Scout.clearSessionAttributes()
 
 | Field | Type | Default | Description |
 |---|---|---|---|
-| `exportIntervalSeconds` | `Int` | `30` | One export cadence for spans, metrics, and logs. |
+| `exportIntervalSeconds` | `Int` | `30` | One export cadence for spans, metrics, and logs (coerced ≥ 1). |
 | `maxExportBatchSize` | `Int` | `512` | Max items per export batch, per signal. |
 | `maxQueueSize` | `Int` | `2048` | Max items buffered awaiting export; overflow dropped. |
 | `maxRetries` | `Int` | `0` | Delivery attempts after a failed export. Default **0 = at-most-once**. |
 | `metricExportIntervalSeconds` | `Int?` | `null` | Metrics-only override of `exportIntervalSeconds`. |
 | `vitalsCollectionIntervalSeconds` | `Int` | `60` | How often memory / CPU / frame gauges are polled (when enabled). |
 
-### Per-metric switches & auto-instrumentation toggles
+### Per-metric switches
 
-The SDK ships **no metrics by default**; each gauge is opt-in
-(`enableMemoryMetrics`, `enableCpuMetrics`, `enableFrameMetrics` — all
-`false`). `enableFrameMetrics` only produces a gauge on Android; iOS has
-no frame gauge. Span and log auto-instrumentation defaults to **on** and
-can be turned off independently: `enableScreenTracking`,
-`enableTapTracking`, `enableHttpTracking`, `enableErrorTracking`,
-`enableCrashTracking`, `enableAnrTracking`, `enableJankTracking`,
-`enableLifecycleTracking`, `enableStartupTracking`, `enableLogging`,
-`enableMetrics` — each a `Boolean` defaulting to `true`. Turning off
-`enableErrorTracking` also makes manual `Scout.reportError(...)` calls
-no-ops.
+The SDK ships **no metrics by default** — each gauge is opt-in.
+
+| Field | Default | Description |
+|---|---|---|
+| `enableMetrics` | `true` | Master switch for the metrics pipeline. Individual gauges still need their own switch below. |
+| `enableMemoryMetrics` | `false` | Memory gauge. |
+| `enableCpuMetrics` | `false` | CPU gauge. |
+| `enableFrameMetrics` | `false` | Frame gauge. Android only — iOS emits no frame gauge. |
+
+### Auto-instrumentation toggles
+
+Every auto-instrumentation can be turned off independently. Span and log
+instrumentation defaults to **on**; metric collection defaults to
+**off** (see [Per-metric switches](#per-metric-switches)).
+
+| Toggle | Default | What you lose when `false` |
+|---|---|---|
+| `enableScreenTracking` | `true` | `screen_view` / `screen_load` / `view_session` spans. |
+| `enableTapTracking` | `true` | All `user_interaction` spans. |
+| `enableHttpTracking` | `true` | `http.request` spans on both platforms. |
+| `enableErrorTracking` | `true` | `error` spans — including manual `Scout.reportError(...)` calls, which become no-ops. |
+| `enableCrashTracking` | `true` | Android JVM + NDK crashes and iOS KSCrash capture. |
+| `enableAnrTracking` | `true` | `anr` spans on both platforms. |
+| `enableJankTracking` | `true` | `long_task` / `frozen_frame` spans. |
+| `enableLifecycleTracking` | `true` | `app_lifecycle.changed` spans and the session foreground/background transitions they drive. |
+| `enableStartupTracking` | `true` | `app_startup` spans and the FBC vital. |
+| `enableLogging` | `true` | `Scout.log*()` calls become no-ops. |
 
 ### Offline buffer
 
@@ -278,7 +299,7 @@ ScoutConfig(
 Runs synchronously on every span / metric / log before export; sees
 per-signal attributes only (not resource attributes).
 
-## Native crashes
+## Native crash setup
 
 Crash capture is on by default (`enableCrashTracking`) and needs no
 app-side setup on either platform:
@@ -320,6 +341,27 @@ The common `Scout` object exposes the same manual API on every platform
 | `recordSpan(name, durationMs, attributes)` | Emit an arbitrary named span. |
 | `addBreadcrumb(type, message)` | Add a breadcrumb. |
 
+## What happens when export fails
+
+Both platforms share `scout-core`'s exporter, so the behaviour is
+identical on Android and iOS. Delivery is **at-most-once by default**
+(`maxRetries = 0`): a batch gets one attempt, and a failed batch is
+dropped rather than risking a duplicate delivery.
+
+A batch counts as delivered only on an HTTP 2xx. Any other status, or a
+transport exception, is a failure.
+
+| Failure | What Scout does (defaults) |
+|---|---|
+| Any export failure, `maxRetries = 0` (default) | One attempt; batch dropped. No duplicates, ever. |
+| `maxRetries = n` configured | Up to `n + 1` attempts total, retried back-to-back with no backoff. Duplicate risk on ambiguous failures. |
+| Failure with `offlineBufferEnabled = true` | Batch persisted to disk and replayed on a later launch. |
+| Queue overflow (`maxQueueSize`, default 2048) | Oldest items dropped before they are ever exported. |
+| Process dies mid-interval | Anything emitted since the last export is lost — there is no flush-on-background hook. Crash evidence is the exception: it is persisted at crash time and replayed on the next launch. |
+
+Set `debugLogging = true` to print each batch's destination and HTTP
+status to the platform console.
+
 ## Troubleshooting
 
 | Symptom | Likely cause + fix |
@@ -329,6 +371,70 @@ The common `Scout` object exposes the same manual API on every platform
 | Crashes not appearing | They drain on the *next* launch on both platforms. Relaunch, then check the collector. |
 | Telemetry hard to distinguish from native SDK data | KMP exports carry a `scout.kmp.version` resource attribute — filter on it. |
 | No telemetry at all | Set `debugLogging = true` to print export attempts and their HTTP status, then confirm the endpoint is reachable from the device. Remember the default `sessionSampleRate` is **1%**. |
+| No MetricKit diagnostics on iOS | Expected. The KMP path does not install the MetricKit subscriber — see the FAQ below. |
+
+## Performance considerations
+
+- **Unified 30 s batching.** Spans, metrics, and logs each flush once
+  per `exportIntervalSeconds` (default 30 s), on both platforms.
+- **No metrics unless enabled.** The default configuration ships zero
+  metric data points; the memory, CPU, and frame gauges are opt-ins.
+- **Zero disk usage by default.** Offline buffering is off; the only
+  disk writes are crash evidence.
+- **Sampling.** `sessionSampleRate` drops *full sessions* — never
+  individual events — so session traces stay coherent.
+- **Idempotent init.** `Scout.initialize` is a no-op once the SDK is
+  running, on both platforms.
+
+## Security considerations
+
+- **PII scrubbing.** Use `beforeSend` to mutate attributes
+  (`attributes.remove("user.email")`) or drop signals (return `false`).
+  It runs in shared code, so one filter covers both platforms.
+- **Custom headers for auth.** Pass
+  `headers = mapOf("Authorization" to "Bearer …")`.
+- **No telemetry-to-disk PII by default.** The offline buffer is off;
+  when enabled, scrub in `beforeSend` before batches hit disk.
+- **TLS.** Use an `https://` endpoint.
+
+## FAQ
+
+**Do I need to add `scout-android` and `scout-ios` separately?**
+
+No. `scout-kmp` depends on them with `api(...)`, so both come in
+transitively at the versions listed under
+[Installation](#installation).
+
+**Does the iOS side go through `ScoutKit`?**
+
+No. `scout-kmp` calls the Kotlin engine (`ScoutEngine`) directly rather
+than the Swift `Scout.start(...)` entry point. KSCrash still installs,
+and ANR detection still runs — but from the Kotlin watchdog, gated by
+`enableAnrTracking`, instead of the Swift `AppHangWatchdog`. The
+practical difference is that **MetricKit is not subscribed on the KMP
+path**, so Apple's asynchronous `MXCrashDiagnostic` / `MXHangDiagnostic`
+payloads are not collected. Everything else in the
+[iOS](/instrument/mobile/ios) capability table applies.
+
+**How do I track screens in a Compose Multiplatform app?**
+
+Call `Scout.setScreen("Checkout")` from shared code at each navigation
+point. The automatic trackers key off platform view containers
+(Activities on Android, `UIViewController` on iOS), and a Compose
+Multiplatform app presents one host container per platform — so
+automatic screen names collapse to that single host.
+
+**Can I still use the platform-specific APIs?**
+
+Yes. The common `Scout` object exposes the cross-platform surface; from
+`androidMain` you can call `io.base14.scout.android.Scout` directly for
+Android-only helpers such as `NavController.trackScoutScreens()` and
+`setBreadcrumbs(...)`, which have no common equivalent.
+
+**How do I tell KMP telemetry apart from native SDK telemetry?**
+
+Every export carries a `scout.kmp.version` resource attribute. Filter on
+it.
 
 ## What's next
 

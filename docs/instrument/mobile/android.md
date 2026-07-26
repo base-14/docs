@@ -58,7 +58,7 @@ opt-in (add one OkHttp interceptor — see below).
 | Errors (handled) | `error` span with `error.fingerprint`, breadcrumbs | `Scout.reportError(...)` |
 | JVM crashes | `app_crash` span with `error.type`, `error.stack_trace`, `error.fingerprint`, `crash.last_screen`, breadcrumbs | `Thread.setDefaultUncaughtExceptionHandler` persists synchronously; replayed on next launch |
 | Native crashes | `native_crash` span with signal info, registers, stack, memory map, binary images (ELF build-ids) | Custom NDK signal handler (`libscout_crash`) + `ApplicationExitInfo` (API 30+). Each OS death is reported exactly once (persisted watermark); normal exits (swipe-away, Force Stop, `exit()`) are never reported as crashes |
-| ANR | `anr` span with thread dump + breadcrumbs | Main-thread watchdog (`scout-anr-watchdog`, polls at `anrThresholdMs / 5`, clamped 200–1000 ms) + `ApplicationExitInfo` `REASON_ANR` post-mortem tombstone |
+| ANR | `anr` span with thread dump + breadcrumbs | Main-thread watchdog (`scout-anr-watchdog`, polls at `anrThresholdMs / 5`, clamped 200-1000 ms) + `ApplicationExitInfo` `REASON_ANR` post-mortem tombstone |
 | Jank | `long_task` (≥ `longTaskThresholdMs`) + `frozen_frame` (≥ `frozenFrameThresholdMs`) | AndroidX `JankStats` per Activity window |
 | Memory (opt-in) | `android.memory.usage` gauge (`By`) | `scout-metrics` thread polling every `vitalsCollectionIntervalSeconds` (60 s). Off by default (`enableMemoryMetrics`) |
 | CPU (opt-in) | `android.cpu.usage` gauge (`%`) | Reads `/proc/self/stat`. Off by default (`enableCpuMetrics`) |
@@ -257,6 +257,25 @@ The SDK ships **no metrics by default** — each gauge is opt-in.
 | `enableCpuMetrics` | `false` | `android.cpu.usage` gauge. |
 | `enableFrameMetrics` | `false` | `android.frame.build_time` gauge. |
 
+### Auto-instrumentation toggles
+
+Every auto-instrumentation can be turned off independently. Span and log
+instrumentation defaults to **on**; metric collection defaults to
+**off** (see [Per-metric switches](#per-metric-switches)).
+
+| Toggle | Default | What you lose when `false` |
+|---|---|---|
+| `enableScreenTracking` | `true` | `screen_view` / `screen_load` / `view_session` spans. |
+| `enableTapTracking` | `true` | All `user_interaction` spans. |
+| `enableHttpTracking` | `true` | `http.request` spans from `ScoutOkHttpInterceptor`. |
+| `enableErrorTracking` | `true` | `error` spans — including manual `Scout.reportError(...)` calls, which become no-ops. |
+| `enableCrashTracking` | `true` | JVM `app_crash` + NDK `native_crash` + `ApplicationExitInfo` fallback. |
+| `enableAnrTracking` | `true` | `anr` spans (watchdog + tombstone). |
+| `enableJankTracking` | `true` | `long_task` / `frozen_frame` spans. |
+| `enableLifecycleTracking` | `true` | `app_lifecycle.changed` spans and the session foreground/background transitions they drive. |
+| `enableStartupTracking` | `true` | `app_startup` spans and the FBC vital. |
+| `enableLogging` | `true` | `Scout.log*()` calls become no-ops. |
+
 ### Offline buffer
 
 Offline buffering is **fully disabled by default** — nothing is written
@@ -281,25 +300,6 @@ in-memory path uses. Size the buffer with those.
 | Field | Type | Default | Description |
 |---|---|---|---|
 | `debugLogging` | `Boolean` | `false` | Print SDK-internal export logging to Logcat. Use it to confirm batches are leaving the device; leave it off in release builds. |
-
-### Auto-instrumentation toggles
-
-Every auto-instrumentation can be turned off independently. Span and log
-instrumentation defaults to **on**; metric collection defaults to
-**off** (see [Per-metric switches](#per-metric-switches)).
-
-| Toggle | Default | What you lose when `false` |
-|---|---|---|
-| `enableScreenTracking` | `true` | `screen_view` / `screen_load` / `view_session` spans. |
-| `enableTapTracking` | `true` | All `user_interaction` spans. |
-| `enableHttpTracking` | `true` | `http.request` spans from `ScoutOkHttpInterceptor`. |
-| `enableErrorTracking` | `true` | `error` spans — including manual `Scout.reportError(...)` calls, which become no-ops. |
-| `enableCrashTracking` | `true` | JVM `app_crash` + NDK `native_crash` + `ApplicationExitInfo` fallback. |
-| `enableAnrTracking` | `true` | `anr` spans (watchdog + tombstone). |
-| `enableJankTracking` | `true` | `long_task` / `frozen_frame` spans. |
-| `enableLifecycleTracking` | `true` | `app_lifecycle.changed` spans and the session foreground/background transitions they drive. |
-| `enableStartupTracking` | `true` | `app_startup` spans and the FBC vital. |
-| `enableLogging` | `true` | `Scout.log*()` calls become no-ops. |
 
 ### Filtering — `beforeSend`
 
@@ -383,6 +383,27 @@ Every method is `@JvmStatic` and a no-op if the SDK is not initialized.
 | `emitGauge(name, value, unit)` | Emit a custom gauge metric. |
 | `recordScreenLoad(name, durationMs)` / `recordViewSession(name, durationMs)` | Timing spans. |
 | `recordSpan(name, durationMs, attributes = {})` | Emit an arbitrary named span. |
+
+## What happens when export fails
+
+Delivery is **at-most-once by default** (`maxRetries = 0`): a batch gets
+one attempt, and a failed batch is dropped rather than risking a
+duplicate delivery. A retried timeout whose first request the collector
+already ingested would store the same events twice.
+
+A batch counts as delivered only on an HTTP 2xx. Any other status, or a
+transport exception, is a failure.
+
+| Failure | What Scout does (defaults) |
+|---|---|
+| Any export failure, `maxRetries = 0` (default) | One attempt; batch dropped. No duplicates, ever. |
+| `maxRetries = n` configured | Up to `n + 1` attempts total, retried back-to-back with no backoff. Duplicate risk on ambiguous failures. |
+| Failure with `offlineBufferEnabled = true` | Batch persisted to `cacheDir` and replayed on a later launch. |
+| Queue overflow (`maxQueueSize`, default 2048) | Oldest items dropped before they are ever exported. |
+| Process dies mid-interval | Anything emitted since the last export is lost — there is no flush-on-background hook. Crash evidence is the exception: it is persisted synchronously at crash time and replayed on the next launch. |
+
+Set `debugLogging = true` to print each batch's destination and HTTP
+status to Logcat.
 
 ## Troubleshooting
 

@@ -1,5 +1,5 @@
 ---
-title: iOS Instrumentation - Native Swift RUM with ScoutKit
+title: iOS Instrumentation - Native Swift RUM with scout-ios
 sidebar_label: iOS
 sidebar_position: 22
 description:
@@ -151,6 +151,24 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 }
 ```
 
+`start` is **idempotent** — a second call is a no-op for both the engine
+and the hang watchdog.
+
+### Screen tracking in SwiftUI
+
+Screen tracking swizzles `UIViewController.viewDidAppear`, so a UIKit
+app gets screen names for free. A SwiftUI app is hosted inside a single
+`UIHostingController`, so the automatic name collapses to that one host.
+Set the name yourself at each navigation point:
+
+```swift
+Scout.setScreen("Checkout")
+```
+
+The same applies to tap labels: give tappable views an
+`.accessibilityLabel(...)` or `.accessibilityIdentifier(...)` so
+`user_interaction` spans carry something friendlier than a class name.
+
 ### Setting user identity
 
 ```swift
@@ -183,7 +201,7 @@ the session.
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `serviceName` | `String` | **(required)** | Logical app identifier. Used as `service.name`. Must be non-blank. |
-| `endpoint` | `String` | **(required)** | OTLP-HTTP collector URL. Signal paths are appended automatically. Must be non-blank. |
+| `endpoint` | `String` | **(required)** | OTLP-HTTP collector URL. `/v1/traces`, `/v1/metrics`, `/v1/logs` are appended automatically. Must be non-blank. |
 | `serviceVersion` | `String?` | `nil` | Maps to `service.version`. |
 | `environment` | `String?` | `nil` | Deployment environment (e.g. `production`). |
 | `headers` | `[String: String]` | `[:]` | Extra HTTP headers on every OTLP export. Use for auth. |
@@ -193,7 +211,7 @@ the session.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `sessionSampleRate` | `Double (0-100)` | `1.0` | Percent of sessions sampled — default **1%**. Decided once per session; applies uniformly to spans, metrics, and logs. |
+| `sessionSampleRate` | `Double (0-100)` | `1.0` | Percent of sessions sampled — default **1%**. Decided once per session; a sampled session sends everything (spans, metrics, logs), an unsampled one sends nothing. |
 | `alwaysCaptureErrors` | `Bool` | `true` | Error / crash / ANR-class spans bypass `sessionSampleRate` and are always exported. |
 | `sessionTimeoutMinutes` | `Int` | `30` | Inactivity timeout before a new `session.id` is minted. |
 | `maxSessionDurationMinutes` | `Int` | `60` | Hard cap on session lifetime. |
@@ -217,14 +235,14 @@ the session.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `exportIntervalSeconds` | `Int` | `30` | One export cadence for spans, metrics, and logs. |
+| `exportIntervalSeconds` | `Int` | `30` | One export cadence for spans, metrics, and logs (coerced ≥ 1). |
 | `maxExportBatchSize` | `Int` | `512` | Max items per export batch, per signal. |
 | `maxQueueSize` | `Int` | `2048` | Max items buffered awaiting export; overflow is dropped. |
 | `maxRetries` | `Int` | `0` | Delivery attempts after a failed export. Default **0 = at-most-once**. |
 | `metricExportIntervalSeconds` | `Int` | `-1` | Metrics-only override of `exportIntervalSeconds`. Any value ≤ 0 means "inherit". |
 | `vitalsCollectionIntervalSeconds` | `Int` | `60` | How often memory / CPU gauges are polled (when enabled). |
 
-### Metrics (opt-in)
+### Per-metric switches
 
 The SDK ships **no metrics by default** — each gauge is opt-in.
 
@@ -233,15 +251,15 @@ The SDK ships **no metrics by default** — each gauge is opt-in.
 | `enableMetrics` | `true` | Master switch for the metrics pipeline. Individual gauges still need their own switch below. |
 | `enableMemoryMetrics` | `false` | `process.memory.usage` gauge. |
 | `enableCpuMetrics` | `false` | `process.cpu.usage` gauge. |
-| `enableFrameMetrics` | `false` | Accepted for parity with Android, but iOS emits no frame gauge today. Frame timing arrives as `long_task` / `frozen_frame` spans instead, governed by `enableJankTracking`. |
+| `enableFrameMetrics` | `false` | Accepted for parity with Android, but iOS emits no frame gauge. Frame timing arrives as `long_task` / `frozen_frame` spans instead, governed by `enableJankTracking`. |
 
 ### Auto-instrumentation toggles
 
 Every auto-instrumentation can be turned off independently. Span and log
 instrumentation defaults to **on**; metric collection defaults to **off**
-(see [Metrics](#metrics-opt-in)).
+(see [Per-metric switches](#per-metric-switches)).
 
-| Parameter | Default | What you lose when `false` |
+| Toggle | Default | What you lose when `false` |
 |---|---|---|
 | `enableScreenTracking` | `true` | `screen_view` / `screen_load` / `view_session` spans. |
 | `enableTapTracking` | `true` | All `user_interaction` spans. |
@@ -355,6 +373,8 @@ Scout.recordViewSession(name: "Checkout", durationMs: 8400)
 Scout.recordSpan(name: "sync", durationMs: 120, attributes: ["items": "12"])
 
 // Manual instrumentation
+// reportHttp also takes `responseSize:` (default -1) and
+// `errorMessage:` (default nil) between statusCode and the timestamps.
 Scout.reportHttp(method: "GET", url: "https://api…", statusCode: 200,
                  startEpochNanos: t0, endEpochNanos: t1)   // → `http.request`
 Scout.reportLongTask(durationMs: 180)                       // → `long_task`
@@ -367,6 +387,27 @@ Scout.startVital("checkout"); Scout.endVital("checkout", description: "ok")
 Scout.recordOperationStep(name: "checkout", step: "payment")
 Scout.addBreadcrumb(type: "tap", message: "Buy")
 ```
+
+## What happens when export fails
+
+Delivery is **at-most-once by default** (`maxRetries: 0`): a batch gets
+one attempt, and a failed batch is dropped rather than risking a
+duplicate delivery. A retried timeout whose first request the collector
+already ingested would store the same events twice.
+
+A batch counts as delivered only on an HTTP 2xx. Any other status, or a
+transport exception, is a failure.
+
+| Failure | What Scout does (defaults) |
+|---|---|
+| Any export failure, `maxRetries: 0` (default) | One attempt; batch dropped. No duplicates, ever. |
+| `maxRetries: n` configured | Up to `n + 1` attempts total, retried back-to-back with no backoff. Duplicate risk on ambiguous failures. |
+| Failure with `offlineBufferEnabled: true` | Batch persisted to disk and replayed on a later launch. |
+| Queue overflow (`maxQueueSize`, default 2048) | Oldest items dropped before they are ever exported. |
+| Process dies mid-interval | Anything emitted since the last export is lost — there is no flush-on-background hook. Crash evidence is the exception: KSCrash writes it at crash time and Scout drains it on the next launch. |
+
+Set `debugLogging: true` to print each batch's destination and HTTP
+status to the console.
 
 ## Troubleshooting
 
@@ -395,6 +436,11 @@ Scout.addBreadcrumb(type: "tap", message: "Buy")
 
 - **Custom headers for auth.** Pass
   `headers: ["Authorization": "Bearer …"]` — sent on every OTLP export.
+- **No `beforeSend` on this path.** The core `beforeSend` filter is not
+  exposed as a `Scout.start(...)` parameter, so attribute scrubbing is
+  not available to a pure-Swift app. Reaching it means driving the SDK
+  from shared Kotlin — see
+  [Kotlin Multiplatform](/instrument/mobile/kotlin-multiplatform).
 - **No telemetry-to-disk PII by default.** The offline buffer is off;
   crash reports contain register / stack detail, not app data.
 - **TLS.** Use an `https://` endpoint.
