@@ -30,7 +30,7 @@ hangs, jank, startup, lifecycle, HTTP — and exports it as OTLP traces,
 metrics, and logs to a Scout collector.
 
 ```swift
-import Scout
+import ScoutKit
 
 Scout.start(
   serviceName: "my-app",
@@ -40,7 +40,8 @@ Scout.start(
 
 That's the only code you write. The SDK is a thin Swift layer
 (`ScoutKit`) over a Kotlin/Native engine (`ScoutNative`) that does all
-the instrumentation — you only ever import and call the `Scout` type.
+the instrumentation — you import `ScoutKit` and call the `Scout` type it
+declares.
 
 ## What You Get
 
@@ -107,6 +108,22 @@ In Xcode: **File → Add Package Dependencies…**, enter
 dependency rule to **Commit / Branch** = `ios-0.1.8`, and add the
 **Scout** library product.
 
+:::note
+
+The product you depend on is `Scout`, but the module you import is
+`ScoutKit`:
+
+```swift
+import ScoutKit   // not `import Scout`
+```
+
+`Scout` is the name of the Kotlin/Native engine framework inside
+`ScoutNative`. `import Scout` compiles, but it gives you the engine
+types (`ScoutEngine`, `ScoutConfig`) rather than the `Scout` entry point
+with `start(...)`, so the call in your app won't resolve.
+
+:::
+
 ## Initialization
 
 Call `Scout.start(...)` once, as early as possible — in
@@ -114,7 +131,7 @@ Call `Scout.start(...)` once, as early as possible — in
 is armed and cold-start timing is anchored:
 
 ```swift
-import Scout
+import ScoutKit
 import UIKit
 
 @main
@@ -165,31 +182,36 @@ the session.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `serviceName` | `String` | **(required)** | Logical app identifier. Used as `service.name`. |
-| `endpoint` | `String` | **(required)** | OTLP-HTTP collector URL. Signal paths are appended automatically. |
+| `serviceName` | `String` | **(required)** | Logical app identifier. Used as `service.name`. Must be non-blank. |
+| `endpoint` | `String` | **(required)** | OTLP-HTTP collector URL. Signal paths are appended automatically. Must be non-blank. |
+| `serviceVersion` | `String?` | `nil` | Maps to `service.version`. |
 | `environment` | `String?` | `nil` | Deployment environment (e.g. `production`). |
 | `headers` | `[String: String]` | `[:]` | Extra HTTP headers on every OTLP export. Use for auth. |
-| `firstPartyHosts` | `[String]` | `[]` | Hosts that receive a W3C `traceparent` header for distributed tracing. Exact match or `*.host` wildcards. Empty = no propagation. |
+| `resourceAttributes` | `[String: String]` | `[:]` | Extra attributes merged into every signal's `Resource`. |
 
-### Sessions & thresholds
+### Sessions
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `sessionSampleRate` | `Double (0-100)` | `1.0` | Percent of sessions sampled — default **1%**. Decided once per session; applies uniformly to spans, metrics, and logs. |
-| `anrThresholdMs` | `Double` | `5000` | Main-thread hang duration that fires an `anr` span (drives `AppHangWatchdog`). |
+| `alwaysCaptureErrors` | `Bool` | `true` | Error / crash / ANR-class spans bypass `sessionSampleRate` and are always exported. |
+| `sessionTimeoutMinutes` | `Int` | `30` | Inactivity timeout before a new `session.id` is minted. |
+| `maxSessionDurationMinutes` | `Int` | `60` | Hard cap on session lifetime. |
 
-### Auto-instrumentation toggles
+### Network
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `enableCrashReporting` | `Bool` | `true` | KSCrash native crash capture **and** the `AppHangWatchdog` + MetricKit subscribers. |
-| `enableScreenTracking` | `Bool` | `true` | `screen_view` / `screen_load` / `view_session` spans. |
-| `enableTapTracking` | `Bool` | `true` | `user_interaction` spans. |
+| `firstPartyHosts` | `[String]` | `[]` | Hosts that receive a W3C `traceparent` header for distributed tracing. Exact match or `*.host` wildcards. Empty = no propagation. |
+| `ignoreUrlPatterns` | `[String]` | `[]` | URL substrings excluded from HTTP tracking. |
 
-HTTP tracking is always on. Screen, tap, jank (`long_task` /
-`frozen_frame`), startup, and lifecycle instrumentation are on by
-default; `long_task` (100 ms) and `frozen_frame` (700 ms) thresholds are
-fixed.
+### Thresholds
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `anrThresholdMs` | `Double` | `5000` | Main-thread hang duration that fires an `anr` span (drives `AppHangWatchdog`). |
+| `longTaskThresholdMs` | `Int` | `100` | Frame interval that qualifies as a `long_task`. |
+| `frozenFrameThresholdMs` | `Int` | `700` | Frame interval that qualifies as a `frozen_frame`. |
 
 ### Batching & export (applies to spans, metrics, AND logs)
 
@@ -199,8 +221,8 @@ fixed.
 | `maxExportBatchSize` | `Int` | `512` | Max items per export batch, per signal. |
 | `maxQueueSize` | `Int` | `2048` | Max items buffered awaiting export; overflow is dropped. |
 | `maxRetries` | `Int` | `0` | Delivery attempts after a failed export. Default **0 = at-most-once**. |
+| `metricExportIntervalSeconds` | `Int` | `-1` | Metrics-only override of `exportIntervalSeconds`. Any value ≤ 0 means "inherit". |
 | `vitalsCollectionIntervalSeconds` | `Int` | `60` | How often memory / CPU gauges are polled (when enabled). |
-| `offlineBufferEnabled` | `Bool` | `false` | Persist failed batches and replay on next launch. Off by default (strict at-most-once). |
 
 ### Metrics (opt-in)
 
@@ -208,9 +230,58 @@ The SDK ships **no metrics by default** — each gauge is opt-in.
 
 | Parameter | Default | Description |
 |---|---|---|
+| `enableMetrics` | `true` | Master switch for the metrics pipeline. Individual gauges still need their own switch below. |
 | `enableMemoryMetrics` | `false` | `process.memory.usage` gauge. |
 | `enableCpuMetrics` | `false` | `process.cpu.usage` gauge. |
-| `enableFrameMetrics` | `false` | Frame metrics. Frozen-frame detection (the `frozen_frame` span) stays on regardless. |
+| `enableFrameMetrics` | `false` | Accepted for parity with Android, but iOS emits no frame gauge today. Frame timing arrives as `long_task` / `frozen_frame` spans instead, governed by `enableJankTracking`. |
+
+### Auto-instrumentation toggles
+
+Every auto-instrumentation can be turned off independently. Span and log
+instrumentation defaults to **on**; metric collection defaults to **off**
+(see [Metrics](#metrics-opt-in)).
+
+| Parameter | Default | What you lose when `false` |
+|---|---|---|
+| `enableScreenTracking` | `true` | `screen_view` / `screen_load` / `view_session` spans. |
+| `enableTapTracking` | `true` | All `user_interaction` spans. |
+| `enableHttpTracking` | `true` | `http.request` spans from the pass-through `NSURLProtocol`. |
+| `enableErrorTracking` | `true` | `error` spans — including manual `Scout.reportError(...)` calls, which become no-ops. |
+| `enableCrashReporting` | `true` | KSCrash native crash capture and the MetricKit subscriber. |
+| `enableAnrTracking` | `true` | `anr` spans from `AppHangWatchdog`. |
+| `enableJankTracking` | `true` | `long_task` / `frozen_frame` spans. |
+| `enableLifecycleTracking` | `true` | `app_lifecycle.changed` spans. |
+| `enableStartupTracking` | `true` | `app_startup` spans and the FBC vital. |
+| `enableLogging` | `true` | `Scout.log*()` calls become no-ops. |
+
+Crash reporting and hang detection are separate switches. Setting
+`enableCrashReporting = false` leaves `AppHangWatchdog` running, and
+setting `enableAnrTracking = false` leaves KSCrash installed.
+
+### Offline buffer
+
+Offline buffering is **fully disabled by default** — nothing is written
+to disk, and a batch that fails to export is dropped (strict
+at-most-once delivery).
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `offlineBufferEnabled` | `Bool` | `false` | Master toggle. Persist failed batches and replay them on the next launch. |
+| `offlineMaxTraceItems` | `Int` | `0` | Accepted, not yet enforced. |
+| `offlineMaxMetricItems` | `Int` | `0` | Accepted, not yet enforced. |
+| `offlineMaxLogItems` | `Int` | `0` | Accepted, not yet enforced. |
+| `maxOfflineStorageMb` | `Int` | `5` | Accepted, not yet enforced. |
+
+The four cap parameters are part of the config surface but nothing reads
+them yet. When `offlineBufferEnabled` is on, the persisted queue is
+bounded by `maxQueueSize` and `maxExportBatchSize` — the same limits the
+in-memory path uses. Size the buffer with those.
+
+### Diagnostics
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `debugLogging` | `Bool` | `false` | Print SDK-internal export logging to the console. Use it to confirm batches are leaving the device; leave it off in release builds. |
 
 ## Native crash setup
 
@@ -247,7 +318,9 @@ kernel-killed crashes KSCrash couldn't intercept.
 
 `AppHangWatchdog` is a Swift-side heartbeat that detects a hung main
 thread and emits an `anr` span with a mach frame-pointer backtrace once
-the hang crosses `anrThresholdMs` (default 5 s).
+the hang crosses `anrThresholdMs` (default 5 s). It is gated by
+`enableAnrTracking`, not `enableCrashReporting` — the two run
+independently.
 
 Because crashes drain on the **next** launch, to test: trigger a real
 fault (`fatalError()`, an out-of-bounds access — never `exit()`, which
@@ -305,6 +378,7 @@ Scout.addBreadcrumb(type: "tap", message: "Buy")
 | Tap labels are class names like `ComposeCanvas` | The tapped surface is a single canvas view (SwiftUI/Compose) with no per-widget accessibility label. Add `.accessibilityLabel(...)` / `.accessibilityIdentifier(...)` to the tappable view. |
 | SPM can't resolve the package | Pin by `revision: "ios-0.1.8"` — the tags are not semver, so `from:` / `exact:` version rules won't match. |
 | HTTP spans missing for a custom session | The pass-through `NSURLProtocol` covers `URLSession.shared` and default configs; a session with a custom `protocolClasses` that omits it won't be traced. |
+| No telemetry at all | Set `debugLogging: true` to print export attempts and their HTTP status, then confirm the endpoint is reachable from the device. Remember the default `sessionSampleRate` is **1%**. |
 
 ## Performance considerations
 

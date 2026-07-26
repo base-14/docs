@@ -266,10 +266,21 @@ at-most-once delivery).
 | Field | Type | Default | Description |
 |---|---|---|---|
 | `offlineBufferEnabled` | `Boolean` | `false` | Master toggle. Persist failed batches and replay them on next `initialize()` or connectivity change. |
-| `offlineMaxTraceItems` | `Int` | `0` | FIFO cap on persisted span items (`0` = disabled in the queue). |
-| `offlineMaxMetricItems` | `Int` | `0` | Same, for metric data points. |
-| `offlineMaxLogItems` | `Int` | `0` | Same, for log records. |
-| `maxOfflineStorageMb` | `Int` | `5` | Coarse total-disk cap alongside the per-signal caps — whichever is reached first wins. |
+| `offlineMaxTraceItems` | `Int` | `0` | Accepted, not yet enforced. |
+| `offlineMaxMetricItems` | `Int` | `0` | Accepted, not yet enforced. |
+| `offlineMaxLogItems` | `Int` | `0` | Accepted, not yet enforced. |
+| `maxOfflineStorageMb` | `Int` | `5` | Accepted, not yet enforced. |
+
+The four cap fields are part of the config surface but nothing reads
+them yet. When `offlineBufferEnabled` is on, the persisted queue is
+bounded by `maxQueueSize` and `maxExportBatchSize` — the same limits the
+in-memory path uses. Size the buffer with those.
+
+### Diagnostics
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `debugLogging` | `Boolean` | `false` | Print SDK-internal export logging to Logcat. Use it to confirm batches are leaving the device; leave it off in release builds. |
 
 ### Auto-instrumentation toggles
 
@@ -282,11 +293,11 @@ instrumentation defaults to **on**; metric collection defaults to
 | `enableScreenTracking` | `true` | `screen_view` / `screen_load` / `view_session` spans. |
 | `enableTapTracking` | `true` | All `user_interaction` spans. |
 | `enableHttpTracking` | `true` | `http.request` spans from `ScoutOkHttpInterceptor`. |
-| `enableErrorTracking` | `true` | `error` spans. Manual `reportError()` still works. |
+| `enableErrorTracking` | `true` | `error` spans — including manual `Scout.reportError(...)` calls, which become no-ops. |
 | `enableCrashTracking` | `true` | JVM `app_crash` + NDK `native_crash` + `ApplicationExitInfo` fallback. |
 | `enableAnrTracking` | `true` | `anr` spans (watchdog + tombstone). |
 | `enableJankTracking` | `true` | `long_task` / `frozen_frame` spans. |
-| `enableLifecycleTracking` | `true` | `app_lifecycle.changed` spans and the background-flush hook. |
+| `enableLifecycleTracking` | `true` | `app_lifecycle.changed` spans and the session foreground/background transitions they drive. |
 | `enableStartupTracking` | `true` | `app_startup` spans and the FBC vital. |
 | `enableLogging` | `true` | `Scout.log*()` calls become no-ops. |
 
@@ -296,12 +307,11 @@ instrumentation defaults to **on**; metric collection defaults to
 ScoutConfig(
   // …
   beforeSend = { name, attributes ->
-    // Return false to drop the signal; mutate attributes for scrubbing.
-    if ((attributes["http.url"] as? String)?.contains("/health") == true) {
-      return@ScoutConfig false
-    }
+    // Mutate attributes to scrub; return false to drop the signal.
     attributes.remove("user.email")
-    true
+    val isHealthCheck = (attributes["http.url"] as? String)
+      ?.contains("/health") == true
+    !isHealthCheck
   },
 )
 ```
@@ -385,6 +395,7 @@ Every method is `@JvmStatic` and a no-op if the SDK is not initialized.
 | Compose screens not tracked | Attach `NavController.trackScoutScreens()`, or call `Scout.setScreen(...)` manually. |
 | Tap labels are class names | The tapped widget has no `contentDescription` / `testTag` / text to resolve a friendlier name. Add a `contentDescription` or `Modifier.testTag(...)`. |
 | Requests not getting `traceparent` | The host isn't in `firstPartyHosts`. Add it (`api.example.com`) or a wildcard (`*.example.com`). |
+| No telemetry at all | Set `debugLogging = true` to print export attempts and their HTTP status to Logcat, then confirm the endpoint is reachable from the device. Remember the default `sessionSampleRate` is **1%**. |
 
 ## Performance considerations
 

@@ -21,11 +21,10 @@ keywords:
 # Kotlin Multiplatform
 
 `scout-kmp` is the unified Kotlin Multiplatform entry point for Scout
-RUM. From **one `commonMain` call** it instruments both Android and iOS
-— routing to the native `scout-android` and `scout-ios` engines under
-the hood — so a KMP app gets the full native Real User Monitoring event
-set (taps, screens, crashes, ANR, jank, startup, lifecycle, HTTP) on
-both platforms without any per-platform initialization code.
+RUM. One `commonMain` call routes to the native `scout-android` and
+`scout-ios` engines, so a KMP app gets the full native Real User
+Monitoring event set on both platforms: taps, screens, crashes, ANR,
+jank, startup, lifecycle, and HTTP.
 
 ```kotlin
 import io.base14.scout.core.ScoutConfig
@@ -39,8 +38,10 @@ Scout.initialize(
 )
 ```
 
-That's the only code you write, in shared code. No Android `Context`
-argument, no iOS glue — the SDK captures both automatically.
+That is the whole setup, in shared code — no Android `Context` argument
+to thread through. HTTP on Android is the one exception: it needs an
+OkHttp interceptor registered in `androidMain` (see
+[HTTP tracking](#http-tracking-on-android)).
 
 ## What You Get
 
@@ -70,7 +71,8 @@ you can tell KMP-originated telemetry apart.
 | ANR (`anr`) | ✓ | ✓ |
 | Jank (`long_task`, `frozen_frame`) | ✓ | ✓ |
 | Errors (`error`) | ✓ | ✓ |
-| Memory / CPU / frame gauges (opt-in) | ✓ | ✓ |
+| Memory / CPU gauges (opt-in) | ✓ | ✓ |
+| Frame gauge (opt-in) | ✓ (`android.frame.build_time`) | — (jank still arrives as `long_task` / `frozen_frame` spans) |
 | Logs | ✓ | ✓ |
 
 See the [Android](/instrument/mobile/android) and
@@ -85,7 +87,11 @@ per-platform mechanisms.
 | Android `minSdkVersion` | ≥ 26 |
 | Android `compileSdkVersion` | 35 |
 | iOS deployment target | ≥ 13.0 |
-| Targets | `androidTarget`, `iosArm64`, `iosSimulatorArm64` |
+| Targets | Android (via the AGP `androidLibrary` KMP plugin), `iosArm64`, `iosSimulatorArm64` |
+
+`scout-kmp` publishes `iosArm64` and `iosSimulatorArm64` only. There is
+no `iosX64` artifact, so the **Intel iOS simulator is unsupported** — on
+an Intel Mac the link step fails with no matching binary.
 
 ## Installation
 
@@ -142,6 +148,29 @@ fun startTelemetry() {
 runs before your app's `onCreate` — so `initialize` needs nothing
 platform-specific. On iOS it delegates straight to the native engine.
 Both platforms inject the `scout.kmp.version` resource attribute.
+
+### HTTP tracking on Android
+
+Android HTTP tracking is opt-in and is the one piece of setup that does
+not live in `commonMain`. Register `ScoutOkHttpInterceptor` on the
+`OkHttpClient` in your `androidMain` source set:
+
+```kotlin
+// androidMain
+import io.base14.scout.android.http.ScoutOkHttpInterceptor
+import okhttp3.OkHttpClient
+
+val client = OkHttpClient.Builder()
+  .addInterceptor(ScoutOkHttpInterceptor())
+  .build()
+```
+
+The interceptor skips your collector endpoint and anything matching
+`ignoreUrlPatterns`, and injects a W3C `traceparent` on hosts listed in
+`firstPartyHosts`.
+
+On iOS nothing is required — the engine installs a pass-through
+`NSURLProtocol` that times every request automatically.
 
 ### Setting user identity & session attributes
 
@@ -208,19 +237,30 @@ Scout.clearSessionAttributes()
 
 The SDK ships **no metrics by default**; each gauge is opt-in
 (`enableMemoryMetrics`, `enableCpuMetrics`, `enableFrameMetrics` — all
-`false`). Span and log auto-instrumentation defaults to **on** and can
-be turned off independently: `enableScreenTracking`, `enableTapTracking`,
-`enableHttpTracking`, `enableErrorTracking`, `enableCrashTracking`,
-`enableAnrTracking`, `enableJankTracking`, `enableLifecycleTracking`,
-`enableStartupTracking`, `enableLogging`, `enableMetrics` — each a
-`Boolean` defaulting to `true`.
+`false`). `enableFrameMetrics` only produces a gauge on Android; iOS has
+no frame gauge. Span and log auto-instrumentation defaults to **on** and
+can be turned off independently: `enableScreenTracking`,
+`enableTapTracking`, `enableHttpTracking`, `enableErrorTracking`,
+`enableCrashTracking`, `enableAnrTracking`, `enableJankTracking`,
+`enableLifecycleTracking`, `enableStartupTracking`, `enableLogging`,
+`enableMetrics` — each a `Boolean` defaulting to `true`. Turning off
+`enableErrorTracking` also makes manual `Scout.reportError(...)` calls
+no-ops.
 
 ### Offline buffer
 
 Disabled by default (strict at-most-once). `offlineBufferEnabled`
-(`false`) is the master toggle; per-signal caps `offlineMaxTraceItems` /
+(`false`) is the master toggle. The cap fields `offlineMaxTraceItems` /
 `offlineMaxMetricItems` / `offlineMaxLogItems` (`0`) and
-`maxOfflineStorageMb` (`5`) bound persisted data when enabled.
+`maxOfflineStorageMb` (`5`) are part of the config surface but nothing
+reads them yet — when the buffer is on, the persisted queue is bounded
+by `maxQueueSize` and `maxExportBatchSize` instead.
+
+### Diagnostics
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `debugLogging` | `Boolean` | `false` | Print SDK-internal export logging to the platform console. Use it to confirm batches are leaving the device; leave it off in release builds. |
 
 ### Filtering — `beforeSend`
 
@@ -288,6 +328,7 @@ The common `Scout` object exposes the same manual API on every platform
 | No `http.request` spans on Android | Android HTTP is opt-in — add `ScoutOkHttpInterceptor` to your `OkHttpClient`. iOS HTTP is automatic. |
 | Crashes not appearing | They drain on the *next* launch on both platforms. Relaunch, then check the collector. |
 | Telemetry hard to distinguish from native SDK data | KMP exports carry a `scout.kmp.version` resource attribute — filter on it. |
+| No telemetry at all | Set `debugLogging = true` to print export attempts and their HTTP status, then confirm the endpoint is reachable from the device. Remember the default `sessionSampleRate` is **1%**. |
 
 ## What's next
 
