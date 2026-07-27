@@ -49,7 +49,7 @@ opt-in (add one OkHttp interceptor — see below).
 | Capability | Signal | Mechanism |
 |---|---|---|
 | Screen / navigation | `screen_view` (long-lived **root span**) + `screen_load` + `view_session` | `ActivityLifecycleCallbacks` (250 ms post-resume debounce); Compose via `NavController.trackScoutScreens()`. Root span is resurrected on the next launch if the process dies mid-screen |
-| App startup | `app_startup` span with `app.startup.type = cold \| warm` | Cold: `Process.getStartUptimeMillis()` → first resume. Warm: `onStart` |
+| App startup | `app_startup` span with `app_startup.type = cold \| warm` | Cold: `Process.getStartUptimeMillis()` → first resume. Warm: `onStart` |
 | FBC vital (First Build Complete) | `app_vital` span with `vital.name = fbc` | Emitted from cold start; ready as a first-class dashboard vital |
 | INV vital (Interaction → Next View) | `app_vital` span with `vital.name = inv` | Tap timestamp correlated with the next `screen_view` within 5 s |
 | Lifecycle | `app_lifecycle.changed` (`device.app.lifecycle.resumed` / `.paused`) | `ProcessLifecycleOwner`; also drives session foreground/background |
@@ -99,7 +99,7 @@ dependencyResolutionManagement {
 
 // app/build.gradle.kts
 dependencies {
-  implementation("io.base14:scout-android:0.1.6")
+  implementation("io.base14:scout-android:0.1.7")
 }
 ```
 

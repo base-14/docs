@@ -90,7 +90,7 @@ Release tags are `ios-<version>` — **not** semver — so pin by
 dependencies: [
   .package(
     url: "https://github.com/base-14/scout-kotlin-multiplatform",
-    revision: "ios-0.1.8"
+    revision: "ios-0.1.9"
   )
 ],
 targets: [
@@ -105,7 +105,7 @@ targets: [
 
 In Xcode: **File → Add Package Dependencies…**, enter
 `https://github.com/base-14/scout-kotlin-multiplatform`, set the
-dependency rule to **Commit / Branch** = `ios-0.1.8`, and add the
+dependency rule to **Commit / Branch** = `ios-0.1.9`, and add the
 **Scout** library product.
 
 :::note
@@ -417,7 +417,7 @@ status to the console.
 | Crash button gives a graceful shutdown | You're calling `exit()`, which no crash reporter intercepts. Trigger a real fault (`fatalError()`, out-of-bounds access). |
 | `anr` never fires | The main thread genuinely isn't hanging, or `anrThresholdMs` is higher than your hang. Try a 6 s `Thread.sleep` on the main thread to confirm the watchdog is armed. |
 | Tap labels are class names like `ComposeCanvas` | The tapped surface is a single canvas view (SwiftUI/Compose) with no per-widget accessibility label. Add `.accessibilityLabel(...)` / `.accessibilityIdentifier(...)` to the tappable view. |
-| SPM can't resolve the package | Pin by `revision: "ios-0.1.8"` — the tags are not semver, so `from:` / `exact:` version rules won't match. |
+| SPM can't resolve the package | Pin by `revision: "ios-0.1.9"` — the tags are not semver, so `from:` / `exact:` version rules won't match. |
 | HTTP spans missing for a custom session | The pass-through `NSURLProtocol` covers `URLSession.shared` and default configs; a session with a custom `protocolClasses` that omits it won't be traced. |
 | No telemetry at all | Set `debugLogging: true` to print export attempts and their HTTP status, then confirm the endpoint is reachable from the device. Remember the default `sessionSampleRate` is **1%**. |
 

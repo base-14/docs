@@ -104,7 +104,7 @@ module's `commonMain`:
 kotlin {
   sourceSets {
     commonMain.dependencies {
-      implementation("io.base14:scout-kmp:0.1.8")
+      implementation("io.base14:scout-kmp:0.1.9")
     }
   }
 }
@@ -116,9 +116,9 @@ transitively — you don't add them yourself:
 
 | Module | Version | Reaches your build as |
 |---|---|---|
-| `scout-core` | 0.1.6 | Maven artifact `io.base14:scout-core` |
-| `scout-android` | 0.1.6 | Maven artifact `io.base14:scout-android` |
-| `scout-ios` | 0.1.8 | Kotlin/Native klib, linked into your iOS framework |
+| `scout-core` | 0.1.7 | Maven artifact `io.base14:scout-core` |
+| `scout-android` | 0.1.7 | Maven artifact `io.base14:scout-android` |
+| `scout-ios` | 0.1.9 | Kotlin/Native klib, linked into your iOS framework |
 
 A pure-Swift app consumes `scout-ios` differently — as the `Scout` SPM
 package described in the [iOS](/instrument/mobile/ios) docs. Under KMP
