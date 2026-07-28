@@ -1,5 +1,7 @@
 ---
 title: Creating Alerts with LogX
+sidebar_label: Creating Alerts with LogX
+sidebar_position: 4.1
 description:
   Create alerts from LogX log queries. Export ClickHouse queries to Grafana
   dashboards and configure alert rules with thresholds and notifications.
@@ -13,9 +15,9 @@ keywords:
   ]
 ---
 
-LogX provides a streamlined workflow for creating alerts based on your log
-queries. This guide walks you through the process of exporting an alert query
-from LogX and setting it up in Grafana's alerting system.
+LogX can turn your current log filters into an alert-ready query. This guide
+covers exporting that query from LogX and setting it up in Grafana's alerting
+system.
 
 ## Time to Complete
 
@@ -110,7 +112,7 @@ In the query editor:
    - **Database**: Enter your organization name (e.g., `acme-corp`)
    - **Table**: Enter `otel_logs`
    - **Timestamp Type**: Select `DateTime64`
-   - **Timestamp Column**: Enter `Timestamp`
+   - **Timestamp Column**: Enter `TimestampTime`
 
 ### Add Your Query
 
@@ -139,25 +141,22 @@ create the alert rule.
 2. Click the **panel title** or **three dots (⋮)** menu
 3. Select **"More..."** → **"New alert rule"**
 
-That's it! Now you can follow the comprehensive
-[Creating Alerts in Grafana](https://grafana.com/docs/grafana/latest/alerting/alerting-rules/create-grafana-managed-rule/)
-guide to configure your alert rule, set thresholds, configure notifications, and
-test your alert.
+The rest of the setup happens in the alert rule editor.
+[Create Your First Alert](creating-your-first-alert.md) picks up at exactly this
+point and covers:
 
-The general alerting guide covers:
-
-- Setting alert rule names and descriptions
-- Defining query conditions and thresholds
-- Configuring evaluation behavior and timing
-- Adding alert details and templates
-- Setting up notifications and contact points
-- Testing and troubleshooting alerts
-- Best practices for alerting
+- Naming the rule and building its condition with reduce and threshold
+  expressions
+- Setting the evaluation interval and pending period
+- Adding labels and annotations
+- Creating contact points and routing with notification policies
+- Silencing an alert during maintenance
 
 ## Verification
 
 1. Use **Preview alerts** to confirm the rule evaluates successfully
-2. Set a short evaluation interval temporarily to validate behavior
+2. Keep the evaluation interval at `5m` or longer - narrower windows can return
+   zero data points against ClickHouse
 3. Trigger a known log condition and verify the alert transitions to Firing
 
 ## Best Practices
@@ -178,13 +177,15 @@ The general alerting guide covers:
 If the alert doesn't fire as expected:
 
 1. Confirm the panel query returns a non-zero value in the time range
-2. Verify the table is `otel_logs` and the timestamp column is `Timestamp`
+2. Verify the table is `otel_logs` and the timestamp column is `TimestampTime`
 3. Ensure the rule uses the same datasource and query as the panel
-4. Check that the evaluation interval matches your log volume
+4. Check the evaluation interval is at least `5m`
 
 ## Next Steps
 
-- [Dashboards and Alerts](../operate/dashboards-and-alerts.md) - General
-  dashboard and alerting overview
+- [Create Your First Alert](creating-your-first-alert.md) - Configure the alert
+  rule, route notifications, and verify it fires
+- [Dashboards and Alerts as Code](../operate/dashboards-and-alerts.md) - Manage
+  the same alert rules declaratively with Grizzly
 - [Grafana Alerting Documentation](https://grafana.com/docs/grafana/latest/alerting/)
   \- Official Grafana alerting guide
