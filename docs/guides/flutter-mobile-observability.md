@@ -97,7 +97,7 @@ hand-build. It is published on
 
 ```yaml title="pubspec.yaml"
 dependencies:
-  scout_flutter: ^0.1.23
+  scout_flutter: ^0.2.0
 ```
 
 Then install:

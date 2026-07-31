@@ -95,7 +95,7 @@ Add it to your `pubspec.yaml`:
 ```yaml
 # pubspec.yaml
 dependencies:
-  scout_flutter: ^0.1.23
+  scout_flutter: ^0.2.0
 ```
 
 Or:
@@ -103,6 +103,16 @@ Or:
 ```bash
 flutter pub add scout_flutter
 ```
+
+:::note What changed in 0.2.0
+The native engine now starts alongside the Flutter SDK on both platforms. This
+is additive for a pure-Flutter app: Flutter telemetry is unchanged, and you also
+get native crash capture and CPU/memory vitals under a native scope
+(`base14.scout.android` or `base14.scout.ios`) next to `base14.scout.flutter`.
+
+The same mechanism lets a native host app share one session with embedded
+Flutter. See [Hybrid (Native + Flutter)](./hybrid.md).
+:::
 
 ### iOS — CocoaPods install
 
