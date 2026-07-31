@@ -161,7 +161,7 @@ metadata:
 spec:
   mode: deployment
   replicas: 1
-  image: otel/opentelemetry-collector-contrib:0.127.0
+  image: otel/opentelemetry-collector-contrib:0.130.1
   serviceAccount: otel-collector-sa
   config:
     extensions:
@@ -444,7 +444,7 @@ metadata:
   namespace: observability
 spec:
   mode: daemonset
-  image: otel/opentelemetry-collector-contrib:0.127.0
+  image: otel/opentelemetry-collector-contrib:0.130.1
   serviceAccount: otel-collector-sa
   config:
     extensions:
@@ -668,7 +668,7 @@ metadata:
 spec:
   mode: deployment
   replicas: 1
-  image: otel/opentelemetry-collector-contrib:0.127.0
+  image: otel/opentelemetry-collector-contrib:0.130.1
   serviceAccount: otel-collector-sa
   config:
     extensions:
