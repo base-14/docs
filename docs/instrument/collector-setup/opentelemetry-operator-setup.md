@@ -964,6 +964,8 @@ rules:
       - services
       - endpoints
       - resourcequotas
+      - replicationcontrollers
+      - replicationcontrollers/status
     verbs: ["get", "list", "watch"]
   - apiGroups: ["apps"]
     resources:
@@ -976,6 +978,10 @@ rules:
     resources:
       - jobs
       - cronjobs
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["autoscaling"]
+    resources:
+      - horizontalpodautoscalers
     verbs: ["get", "list", "watch"]
   - apiGroups: ["events.k8s.io"]
     resources:
