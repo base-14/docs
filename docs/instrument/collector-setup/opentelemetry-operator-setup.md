@@ -262,6 +262,59 @@ spec:
           resource_attributes:
             k8s.cluster.name:
               enabled: true
+
+      # Extract severity from log bodies; anything left unmatched defaults to
+      # INFO. All rules are guarded by severity_text == "" so logs that already
+      # carry severity pass through untouched.
+      transform/severity:
+        error_mode: ignore
+        log_statements:
+          - context: log
+            statements:
+              # k8s events (body is a map from the k8sobjects receiver)
+              - set(severity_text, "WARN") where severity_text == "" and IsMap(body) and body["type"] == "Warning"
+              - set(severity_text, "INFO") where severity_text == "" and IsMap(body) and body["type"] == "Normal"
+              # structured JSON string bodies (direct OTLP logs)
+              - set(cache, ParseJSON(body)) where severity_text == "" and IsString(body) and IsMatch(body, "^\\s*\\{")
+              - set(severity_text, ConvertCase(cache["level"], "upper")) where severity_text == "" and IsString(cache["level"])
+              - set(severity_text, ConvertCase(cache["severity"], "upper")) where severity_text == "" and IsString(cache["severity"])
+              - set(severity_text, "TRACE") where severity_text == "" and cache["level"] == 10
+              - set(severity_text, "DEBUG") where severity_text == "" and cache["level"] == 20
+              - set(severity_text, "INFO") where severity_text == "" and cache["level"] == 30
+              - set(severity_text, "WARN") where severity_text == "" and cache["level"] == 40
+              - set(severity_text, "ERROR") where severity_text == "" and cache["level"] == 50
+              - set(severity_text, "FATAL") where severity_text == "" and cache["level"] == 60
+              # normalize synonyms
+              - set(severity_text, "WARN") where severity_text == "WARNING"
+              - set(severity_text, "ERROR") where severity_text == "ERR"
+              - set(severity_text, "FATAL") where severity_text == "CRITICAL" or severity_text == "PANIC"
+              # default: everything still unlabelled is INFO
+              - set(severity_text, "INFO") where severity_text == ""
+              # severity_text -> severity_number (only if not already set upstream)
+              - set(severity_number, SEVERITY_NUMBER_TRACE) where severity_number == 0 and severity_text == "TRACE"
+              - set(severity_number, SEVERITY_NUMBER_DEBUG) where severity_number == 0 and severity_text == "DEBUG"
+              - set(severity_number, SEVERITY_NUMBER_INFO) where severity_number == 0 and severity_text == "INFO"
+              - set(severity_number, SEVERITY_NUMBER_WARN) where severity_number == 0 and severity_text == "WARN"
+              - set(severity_number, SEVERITY_NUMBER_ERROR) where severity_number == 0 and severity_text == "ERROR"
+              - set(severity_number, SEVERITY_NUMBER_FATAL) where severity_number == 0 and severity_text == "FATAL"
+
+      # k8s events: promote reason/object fields to attributes for faceting in
+      # the logs UI, and replace the raw event JSON body with the
+      # human-readable message. Must run AFTER transform/severity (severity
+      # reads body["type"] before the body is replaced).
+      transform/k8s-events:
+        error_mode: ignore
+        log_statements:
+          - context: log
+            statements:
+              - set(attributes["event.type"], body["type"]) where IsMap(body) and body["type"] != nil
+              - set(attributes["event.reason"], body["reason"]) where IsMap(body) and body["reason"] != nil
+              - set(attributes["k8s.object.kind"], body["regarding"]["kind"]) where IsMap(body) and body["regarding"] != nil
+              - set(attributes["k8s.object.name"], body["regarding"]["name"]) where IsMap(body) and body["regarding"] != nil
+              - set(attributes["k8s.namespace.name"], body["regarding"]["namespace"]) where IsMap(body) and body["regarding"] != nil
+              - set(attributes["event.count"], body["deprecatedCount"]) where IsMap(body) and body["deprecatedCount"] != nil
+              - set(body, body["note"]) where IsMap(body) and body["note"] != nil
+
       transform/service_name_fallback:
         error_mode: ignore
         trace_statements:
@@ -358,7 +411,7 @@ spec:
           exporters: [otlphttp/b14]
         logs:
           receivers: [otlp]
-          processors: [memory_limiter, batch]
+          processors: [memory_limiter, transform/severity, batch]
           exporters: [otlphttp/b14]
         logs/k8s-events:
           receivers: [k8sobjects]
@@ -367,6 +420,8 @@ spec:
             - resource/k8s-events
             - resourcedetection/eks
             - resource/env
+            - transform/severity
+            - transform/k8s-events
             - batch
           exporters: [otlphttp/b14]
         logs/k8s-cluster:
@@ -376,6 +431,7 @@ spec:
             - resource/k8s
             - resourcedetection/eks
             - resource/env
+            - transform/severity
             - batch
           exporters: [otlphttp/b14]
         metrics:
@@ -483,6 +539,20 @@ spec:
         operators:
           - type: container
             id: container-parser
+          # Re-join stack traces / tracebacks that arrive one line per record.
+          # A line is a NEW entry unless it looks like a continuation:
+          #   - starts with whitespace (Python "  File ...", Java "\tat ...")
+          #   - "Caused by: ..." / "... N more" (Java)
+          #   - "Traceback (most recent call last):" (Python)
+          #   - "SomeError: msg" (final line of a Python traceback)
+          - type: recombine
+            id: multiline-stacktraces
+            combine_field: body
+            combine_with: "\n"
+            source_identifier: attributes["log.file.path"]
+            is_first_entry: 'body matches "^[^\\s]" and not (body matches "^(Caused by: |\\.\\.\\. [0-9]+ more|Traceback \\(most recent call last\\)|[A-Za-z_][A-Za-z0-9_.]*(Error|Exception): )")'
+            force_flush_period: 5s
+            max_log_size: 102400
 
     processors:
       batch:
@@ -524,6 +594,91 @@ spec:
           - context: log
             statements:
               - set(resource.attributes["service.name"], resource.attributes["k8s.container.name"]) where resource.attributes["k8s.container.name"] != nil
+
+      # Extract severity from every known container log format; anything left
+      # unmatched defaults to INFO. Rules are ordered and guarded by
+      # severity_text == "" so the first match wins and OTLP logs that already
+      # carry severity are untouched.
+      transform/severity:
+        error_mode: ignore
+        log_statements:
+          - context: log
+            statements:
+              # structured JSON bodies: parse once into cache
+              - set(cache, ParseJSON(body)) where severity_text == "" and IsString(body) and IsMatch(body, "^\\s*\\{")
+              # string level keys (zap json, slf4j, pino string, custom "severity")
+              - set(severity_text, ConvertCase(cache["level"], "upper")) where severity_text == "" and IsString(cache["level"])
+              - set(severity_text, ConvertCase(cache["severity"], "upper")) where severity_text == "" and IsString(cache["severity"])
+              # pino numeric levels
+              - set(severity_text, "TRACE") where severity_text == "" and cache["level"] == 10
+              - set(severity_text, "DEBUG") where severity_text == "" and cache["level"] == 20
+              - set(severity_text, "INFO") where severity_text == "" and cache["level"] == 30
+              - set(severity_text, "WARN") where severity_text == "" and cache["level"] == 40
+              - set(severity_text, "ERROR") where severity_text == "" and cache["level"] == 50
+              - set(severity_text, "FATAL") where severity_text == "" and cache["level"] == 60
+              # klog/glog "I0802 06:33:16.628281 ..." (kube components)
+              - set(severity_text, "INFO") where severity_text == "" and IsString(body) and IsMatch(body, "^I[0-9]{4} ")
+              - set(severity_text, "WARN") where severity_text == "" and IsString(body) and IsMatch(body, "^W[0-9]{4} ")
+              - set(severity_text, "ERROR") where severity_text == "" and IsString(body) and IsMatch(body, "^E[0-9]{4} ")
+              - set(severity_text, "FATAL") where severity_text == "" and IsString(body) and IsMatch(body, "^F[0-9]{4} ")
+              # logfmt level= (argocd, go-kit)
+              - set(severity_text, "TRACE") where severity_text == "" and IsString(body) and IsMatch(body, "(^|[ \\t])level=trace")
+              - set(severity_text, "DEBUG") where severity_text == "" and IsString(body) and IsMatch(body, "(^|[ \\t])level=debug")
+              - set(severity_text, "INFO") where severity_text == "" and IsString(body) and IsMatch(body, "(^|[ \\t])level=info")
+              - set(severity_text, "WARN") where severity_text == "" and IsString(body) and IsMatch(body, "(^|[ \\t])level=warn(ing)?")
+              - set(severity_text, "ERROR") where severity_text == "" and IsString(body) and IsMatch(body, "(^|[ \\t])level=error")
+              - set(severity_text, "FATAL") where severity_text == "" and IsString(body) and IsMatch(body, "(^|[ \\t])level=(fatal|panic)")
+              # python/uvicorn prefix "INFO:", "WARNING:root:", "ERROR: ..."
+              - 'set(severity_text, "DEBUG") where severity_text == "" and IsString(body) and IsMatch(body, "^DEBUG[: ]")'
+              - 'set(severity_text, "INFO") where severity_text == "" and IsString(body) and IsMatch(body, "^INFO[: ]")'
+              - 'set(severity_text, "WARN") where severity_text == "" and IsString(body) and IsMatch(body, "^WARN(ING)?[: ]")'
+              - 'set(severity_text, "ERROR") where severity_text == "" and IsString(body) and IsMatch(body, "^ERROR[: ]")'
+              - 'set(severity_text, "FATAL") where severity_text == "" and IsString(body) and IsMatch(body, "^CRITICAL[: ]")'
+              # zap console "2026-08-02T06:33:16.905Z\tinfo\t..."
+              - set(severity_text, "DEBUG") where severity_text == "" and IsString(body) and IsMatch(body, "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[^\\t]*\\tdebug\\t")
+              - set(severity_text, "INFO") where severity_text == "" and IsString(body) and IsMatch(body, "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[^\\t]*\\tinfo\\t")
+              - set(severity_text, "WARN") where severity_text == "" and IsString(body) and IsMatch(body, "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[^\\t]*\\twarn\\t")
+              - set(severity_text, "ERROR") where severity_text == "" and IsString(body) and IsMatch(body, "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[^\\t]*\\t(error|fatal|dpanic|panic)\\t")
+              # bracketed "[INFO]" (dramatiq, spring-style)
+              - set(severity_text, "DEBUG") where severity_text == "" and IsString(body) and IsMatch(body, "\\[DEBUG\\]")
+              - set(severity_text, "INFO") where severity_text == "" and IsString(body) and IsMatch(body, "\\[INFO\\]")
+              - set(severity_text, "WARN") where severity_text == "" and IsString(body) and IsMatch(body, "\\[WARN(ING)?\\]")
+              - set(severity_text, "ERROR") where severity_text == "" and IsString(body) and IsMatch(body, "\\[ERROR\\]")
+              - set(severity_text, "FATAL") where severity_text == "" and IsString(body) and IsMatch(body, "\\[CRITICAL\\]")
+              # multiline blobs that are clearly error dumps
+              - 'set(severity_text, "ERROR") where severity_text == "" and IsString(body) and IsMatch(body, "(^|\\n)(Traceback \\(most recent call last\\)|[A-Za-z_][A-Za-z0-9_.]*(Error|Exception): )")'
+              # normalize synonyms
+              - set(severity_text, "WARN") where severity_text == "WARNING"
+              - set(severity_text, "ERROR") where severity_text == "ERR"
+              - set(severity_text, "FATAL") where severity_text == "CRITICAL" or severity_text == "PANIC"
+              # default: everything still unlabelled is INFO
+              - set(severity_text, "INFO") where severity_text == ""
+              # severity_text -> severity_number (only if not already set upstream)
+              - set(severity_number, SEVERITY_NUMBER_TRACE) where severity_number == 0 and severity_text == "TRACE"
+              - set(severity_number, SEVERITY_NUMBER_DEBUG) where severity_number == 0 and severity_text == "DEBUG"
+              - set(severity_number, SEVERITY_NUMBER_INFO) where severity_number == 0 and severity_text == "INFO"
+              - set(severity_number, SEVERITY_NUMBER_WARN) where severity_number == 0 and severity_text == "WARN"
+              - set(severity_number, SEVERITY_NUMBER_ERROR) where severity_number == 0 and severity_text == "ERROR"
+              - set(severity_number, SEVERITY_NUMBER_FATAL) where severity_number == 0 and severity_text == "FATAL"
+
+      # Promote high-value fields out of the body into log attributes so the
+      # logs UI can facet/filter on them without parsing the body per row.
+      transform/extract:
+        error_mode: ignore
+        log_statements:
+          - context: log
+            statements:
+              # JSON app logs: promote the logger name for faceting
+              - set(cache, ParseJSON(body)) where IsString(body) and IsMatch(body, "^\\s*\\{")
+              - set(attributes["logger"], cache["logger"]) where IsString(cache["logger"])
+              - set(attributes["logger"], cache["loggerName"]) where attributes["logger"] == nil and IsString(cache["loggerName"])
+              - set(attributes["logger"], cache["name"]) where attributes["logger"] == nil and IsString(cache["name"])
+              # HTTP access logs (nginx / gunicorn / uvicorn): method + status
+              - merge_maps(attributes, ExtractPatterns(body, "\"(?P<http_request_method>GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS) [^\"]*\" (?P<http_response_status_code>[0-9]{3})"), "upsert") where IsString(body) and IsMatch(body, "\"(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS) [^\"]*\" [0-9]{3}")
+              # server errors in access logs are ERRORs even though the line has no level
+              - set(severity_text, "ERROR") where IsString(attributes["http_response_status_code"]) and IsMatch(attributes["http_response_status_code"], "^5")
+              - set(severity_number, SEVERITY_NUMBER_ERROR) where severity_text == "ERROR" and severity_number < SEVERITY_NUMBER_ERROR
+
       transform/service_name_fallback:
         error_mode: ignore
         trace_statements:
@@ -613,7 +768,14 @@ spec:
           exporters: [otlp/agent]
         logs:
           receivers: [otlp, filelog]
-          processors: [memory_limiter, transform/filelog, resource/env, batch]
+          processors:
+            - memory_limiter
+            - transform/filelog
+            - k8sattributes
+            - transform/severity
+            - transform/extract
+            - resource/env
+            - batch
           exporters: [otlp/agent]
         metrics:
           receivers: [otlp]
@@ -769,6 +931,59 @@ spec:
           resource_attributes:
             k8s.cluster.name:
               enabled: true
+
+      # Extract severity from log bodies; anything left unmatched defaults to
+      # INFO. All rules are guarded by severity_text == "" so logs that already
+      # carry severity (e.g. processed by scout-daemon) pass through untouched.
+      transform/severity:
+        error_mode: ignore
+        log_statements:
+          - context: log
+            statements:
+              # k8s events (body is a map from the k8sobjects receiver)
+              - set(severity_text, "WARN") where severity_text == "" and IsMap(body) and body["type"] == "Warning"
+              - set(severity_text, "INFO") where severity_text == "" and IsMap(body) and body["type"] == "Normal"
+              # structured JSON string bodies (direct OTLP logs)
+              - set(cache, ParseJSON(body)) where severity_text == "" and IsString(body) and IsMatch(body, "^\\s*\\{")
+              - set(severity_text, ConvertCase(cache["level"], "upper")) where severity_text == "" and IsString(cache["level"])
+              - set(severity_text, ConvertCase(cache["severity"], "upper")) where severity_text == "" and IsString(cache["severity"])
+              - set(severity_text, "TRACE") where severity_text == "" and cache["level"] == 10
+              - set(severity_text, "DEBUG") where severity_text == "" and cache["level"] == 20
+              - set(severity_text, "INFO") where severity_text == "" and cache["level"] == 30
+              - set(severity_text, "WARN") where severity_text == "" and cache["level"] == 40
+              - set(severity_text, "ERROR") where severity_text == "" and cache["level"] == 50
+              - set(severity_text, "FATAL") where severity_text == "" and cache["level"] == 60
+              # normalize synonyms
+              - set(severity_text, "WARN") where severity_text == "WARNING"
+              - set(severity_text, "ERROR") where severity_text == "ERR"
+              - set(severity_text, "FATAL") where severity_text == "CRITICAL" or severity_text == "PANIC"
+              # default: everything still unlabelled is INFO
+              - set(severity_text, "INFO") where severity_text == ""
+              # severity_text -> severity_number (only if not already set upstream)
+              - set(severity_number, SEVERITY_NUMBER_TRACE) where severity_number == 0 and severity_text == "TRACE"
+              - set(severity_number, SEVERITY_NUMBER_DEBUG) where severity_number == 0 and severity_text == "DEBUG"
+              - set(severity_number, SEVERITY_NUMBER_INFO) where severity_number == 0 and severity_text == "INFO"
+              - set(severity_number, SEVERITY_NUMBER_WARN) where severity_number == 0 and severity_text == "WARN"
+              - set(severity_number, SEVERITY_NUMBER_ERROR) where severity_number == 0 and severity_text == "ERROR"
+              - set(severity_number, SEVERITY_NUMBER_FATAL) where severity_number == 0 and severity_text == "FATAL"
+
+      # k8s events: promote reason/object fields to attributes for faceting in
+      # the logs UI, and replace the raw event JSON body with the
+      # human-readable message. Must run AFTER transform/severity (severity
+      # reads body["type"] before the body is replaced).
+      transform/k8s-events:
+        error_mode: ignore
+        log_statements:
+          - context: log
+            statements:
+              - set(attributes["event.type"], body["type"]) where IsMap(body) and body["type"] != nil
+              - set(attributes["event.reason"], body["reason"]) where IsMap(body) and body["reason"] != nil
+              - set(attributes["k8s.object.kind"], body["regarding"]["kind"]) where IsMap(body) and body["regarding"] != nil
+              - set(attributes["k8s.object.name"], body["regarding"]["name"]) where IsMap(body) and body["regarding"] != nil
+              - set(attributes["k8s.namespace.name"], body["regarding"]["namespace"]) where IsMap(body) and body["regarding"] != nil
+              - set(attributes["event.count"], body["deprecatedCount"]) where IsMap(body) and body["deprecatedCount"] != nil
+              - set(body, body["note"]) where IsMap(body) and body["note"] != nil
+
       transform/service_name_fallback:
         error_mode: ignore
         trace_statements:
@@ -865,7 +1080,7 @@ spec:
           exporters: [otlphttp/b14]
         logs:
           receivers: [otlp]
-          processors: [memory_limiter, resource/env, batch]
+          processors: [memory_limiter, resource/env, transform/severity, batch]
           exporters: [otlphttp/b14]
         logs/k8s-events:
           receivers: [k8sobjects]
@@ -874,6 +1089,8 @@ spec:
             - resource/k8s-events
             - resourcedetection/eks
             - resource/env
+            - transform/severity
+            - transform/k8s-events
             - batch
           exporters: [otlphttp/b14]
         logs/k8s-cluster:
@@ -883,6 +1100,7 @@ spec:
             - resource/k8s
             - resourcedetection/eks
             - resource/env
+            - transform/severity
             - batch
           exporters: [otlphttp/b14]
         metrics:
