@@ -37,7 +37,7 @@ detects the native SDK and delegates to it, and both layers report under one
 | Export pipeline | Native | Flutter forwards spans, logs, and metrics over the bridge. Same-process, one exporter for both layers; different-process, one per process |
 | Breadcrumbs, user and session attributes | Shared | Set on either side, visible to both |
 | Native Android telemetry | `scout-android` | Screens, taps, HTTP, JVM and NDK crashes, ANR, jank, vitals. See [Android](./android.md) |
-| Native iOS telemetry | Bridge engine | Screens, KSCrash native crashes, app hangs, HTTP, jank, vitals. Taps, startup tracking, and MetricKit are off in bridge mode |
+| Native iOS telemetry | Bridge engine | Screens, KSCrash native crashes, app hangs, MetricKit diagnostics, HTTP, jank, vitals. Taps and startup tracking are off in bridge mode |
 | Flutter telemetry | `scout_flutter` | Screens, taps, HTTP, errors, and jank from the Flutter layer, forwarded to the native side. See [Flutter](./flutter.md) |
 | Crash de-duplication | Native | In hybrid mode `scout_flutter` drains and discards its own crash files, so a crash is reported once |
 
@@ -341,16 +341,14 @@ func presentFlutter() {
 
 :::note What bridge mode leaves out on iOS
 The engine `scout_flutter` starts for you covers sessions, screen views,
-KSCrash native crashes, app hangs, HTTP, jank, and vitals on the native side.
-Three things are off in bridge mode:
+KSCrash native crashes, app hangs, MetricKit `MXCrashDiagnostic` /
+`MXHangDiagnostic` diagnostics, HTTP, jank, and vitals on the native side.
+Two things are off in bridge mode:
 
 - Tap tracking (`enableTapTracking` defaults to `false`).
 - Startup and cold-start tracking (`enableStartupTracking` defaults to `false`).
-- MetricKit diagnostics. `Scout.startBridge` does not subscribe
-  `MetricKitSubscriber`, so `MXCrashDiagnostic` and `MXHangDiagnostic` reports
-  never arrive. KSCrash still captures native crashes in-process.
 
-To get all three, call `Scout.start(...)` yourself in
+To get both, call `Scout.start(...)` yourself in
 `application(_:didFinishLaunchingWithOptions:)` **before** `flutterEngine.run()`,
 using the same `serviceName` and `endpoint` as the Flutter config. The engine is
 a first-wins singleton: whichever of `Scout.start` and the plugin's
@@ -385,7 +383,7 @@ Calling `Scout.start` after Flutter has started has no effect. See
 | **`main()` throws on startup** before any telemetry appears | `ScoutFlutter.initialize` reaches the native side over a platform channel, which needs the binding | Call `WidgetsFlutterBinding.ensureInitialized()` as the first line of `main()`. |
 | **Flutter data lands but under a different `session.id`** than native (not unified) | Different-process only: `role` was set to `ScoutRole.OWNER`, so the `:flutter` process skipped the cross-process lookup and minted its own session | Leave `role` at its `ScoutRole.AUTO` default. Same-process is unaffected. |
 | **Native screens/events don't appear on Android** | The native SDK was never initialized | Call `Scout.initialize` in `Application.onCreate`. |
-| **No native taps, cold-start spans, or MetricKit reports on iOS** | Bridge mode leaves tap tracking, startup tracking, and the MetricKit subscriber off | Call `Scout.start(...)` in `application(_:didFinishLaunchingWithOptions:)` before `flutterEngine.run()`. Screens, KSCrash crashes, and hangs are already covered without it. |
+| **No native taps or cold-start spans on iOS** | Bridge mode leaves tap tracking and startup tracking off | Call `Scout.start(...)` in `application(_:didFinishLaunchingWithOptions:)` before `flutterEngine.run()`. Screens, KSCrash crashes, hangs, and MetricKit diagnostics are already covered without it. |
 
 ## FAQ
 
