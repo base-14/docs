@@ -285,15 +285,11 @@ at-most-once delivery).
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `offlineBufferEnabled` | `Bool` | `false` | Master toggle. Persist failed batches and replay them on the next launch. |
-| `offlineMaxTraceItems` | `Int` | `0` | Accepted, not yet enforced. |
-| `offlineMaxMetricItems` | `Int` | `0` | Accepted, not yet enforced. |
-| `offlineMaxLogItems` | `Int` | `0` | Accepted, not yet enforced. |
-| `maxOfflineStorageMb` | `Int` | `5` | Accepted, not yet enforced. |
+| `maxOfflineStorageMb` | `Int` | `5` | Cap on the on-disk offline buffer. Once it is exceeded, the oldest persisted batches are pruned first (FIFO). Only active when `offlineBufferEnabled` is on. |
 
-The four cap parameters are part of the config surface but nothing reads
-them yet. When `offlineBufferEnabled` is on, the persisted queue is
-bounded by `maxQueueSize` and `maxExportBatchSize` — the same limits the
-in-memory path uses. Size the buffer with those.
+When `offlineBufferEnabled` is on, the persisted queue is also bounded by
+`maxQueueSize` and `maxExportBatchSize` — the same limits the in-memory
+path uses.
 
 ### Diagnostics
 

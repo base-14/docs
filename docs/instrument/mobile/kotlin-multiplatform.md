@@ -52,9 +52,8 @@ capabilities** documented for each platform, driven from common code:
   set: Activity/Compose screens, taps, JVM + NDK crashes,
   `ApplicationExitInfo`, ANR, jank, startup, lifecycle, HTTP.
 - **iOS** — the [scout-ios](/instrument/mobile/ios) set: screens, taps,
-  KSCrash native crashes, app hangs, jank, startup, lifecycle, HTTP. One
-  exception: MetricKit is not subscribed on the KMP path (see the
-  [FAQ](#faq)).
+  KSCrash native crashes, app hangs, jank, startup, lifecycle, HTTP, and
+  MetricKit `MXCrashDiagnostic` / `MXHangDiagnostic` diagnostics.
 
 Every signal flows through the shared `scout-core` engine — the same
 sessions, sampling, batching, and OTLP export on both platforms. Each
@@ -271,11 +270,11 @@ instrumentation defaults to **on**; metric collection defaults to
 ### Offline buffer
 
 Disabled by default (strict at-most-once). `offlineBufferEnabled`
-(`false`) is the master toggle. The cap fields `offlineMaxTraceItems` /
-`offlineMaxMetricItems` / `offlineMaxLogItems` (`0`) and
-`maxOfflineStorageMb` (`5`) are part of the config surface but nothing
-reads them yet — when the buffer is on, the persisted queue is bounded
-by `maxQueueSize` and `maxExportBatchSize` instead.
+(`false`) is the master toggle. When the buffer is on,
+`maxOfflineStorageMb` (`5`) caps the on-disk buffer — once the cap is
+exceeded the oldest persisted batches are pruned first (FIFO) — and the
+persisted queue is additionally bounded by `maxQueueSize` and
+`maxExportBatchSize`.
 
 ### Diagnostics
 
@@ -371,7 +370,6 @@ status to the platform console.
 | Crashes not appearing | They drain on the *next* launch on both platforms. Relaunch, then check the collector. |
 | Telemetry hard to distinguish from native SDK data | KMP exports carry a `scout.kmp.version` resource attribute — filter on it. |
 | No telemetry at all | Set `debugLogging = true` to print export attempts and their HTTP status, then confirm the endpoint is reachable from the device. Remember the default `sessionSampleRate` is **1%**. |
-| No MetricKit diagnostics on iOS | Expected. The KMP path does not install the MetricKit subscriber — see the FAQ below. |
 
 ## Performance considerations
 
@@ -409,11 +407,10 @@ transitively at the versions listed under
 
 No. `scout-kmp` calls the Kotlin engine (`ScoutEngine`) directly rather
 than the Swift `Scout.start(...)` entry point. KSCrash still installs,
-and ANR detection still runs — but from the Kotlin watchdog, gated by
-`enableAnrTracking`, instead of the Swift `AppHangWatchdog`. The
-practical difference is that **MetricKit is not subscribed on the KMP
-path**, so Apple's asynchronous `MXCrashDiagnostic` / `MXHangDiagnostic`
-payloads are not collected. Everything else in the
+ANR detection still runs — from the Kotlin watchdog, gated by
+`enableAnrTracking`, instead of the Swift `AppHangWatchdog` — and the
+engine subscribes to MetricKit, so Apple's asynchronous
+`MXCrashDiagnostic` / `MXHangDiagnostic` payloads are collected. The full
 [iOS](/instrument/mobile/ios) capability table applies.
 
 **How do I track screens in a Compose Multiplatform app?**
