@@ -88,6 +88,12 @@ Scout Console roles are integrated with your monitoring dashboards:
 **RBAC Note:** Only users with the **Admin** role can manage other users. This
 permission is automatically granted to all Admins through the RBAC system.
 
+> **Note**: If your organization provisions users from Microsoft Entra ID, you
+> do not invite them manually. See
+> [Provision Users from Microsoft Entra ID](./provision-users-entra-scim.md)
+> for the setup steps, and skip **Inviting New Users** below. The rest of this
+> section still applies for viewing users and assigning their roles.
+
 ### Viewing Users
 
 1. Click **Users** in the sidebar
@@ -558,6 +564,8 @@ view monitoring data without making changes
   dashboards
 - [GitOps for Dashboards and Alerts](./dashboards-and-alerts.md) - Use Grizzly to
   manage dashboards and alerts
+- [Provision Users from Microsoft Entra ID](./provision-users-entra-scim.md) -
+  Sync users automatically from your directory
 
 ## Appendix: Quick Reference
 
