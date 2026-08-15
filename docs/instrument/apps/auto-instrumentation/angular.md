@@ -1397,9 +1397,9 @@ without locking you into a single vendor's agent.
   Scout React SDK.
 - [Next.js instrumentation](./nextjs.md) - server and client tracing for a
   full-stack React framework.
-- [Next.js full-stack example](https://github.com/base-14/examples/tree/main/nodejs/nextjs-fullstack-otel)
-  - closest runnable sibling to this guide: browser, server, and database in one
-  trace across all three signals.
+- [Next.js full-stack instrumentation](./nextjs-fullstack.md) - browser and
+  server in one trace across all three signals, with browser OTLP routed
+  through a same-origin API route instead of collector CORS.
 - [Express instrumentation](./express.md) - the API tier that receives the
   propagated trace context.
 - [Node.js instrumentation](./nodejs.md) - the Node SDK behind the backend in

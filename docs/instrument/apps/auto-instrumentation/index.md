@@ -64,6 +64,7 @@ your collector is working first, try the
 | tRPC              | [tRPC](./trpc)                   | Procedures, Prisma queries, PostgreSQL            |
 | NestJS            | [NestJS](./nestjs)               | Controllers, services, guards, interceptors       |
 | Next.js           | [Next.js](./nextjs)              | SSR, API routes, middleware, React components     |
+| Next.js (full-stack) | [Next.js Full-Stack](./nextjs-fullstack) | Browser + server traces, error boundaries, Web Vitals, OTLP proxy route |
 | Node.js (generic) | [Node.js](./nodejs)              | HTTP, filesystem, child processes                 |
 | Vercel AI SDK     | [Vercel AI SDK](./vercel-ai-sdk) | LLM calls, AI pipelines, token/cost tracking      |
 
