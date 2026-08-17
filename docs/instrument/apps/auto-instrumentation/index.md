@@ -108,11 +108,12 @@ your collector is working first, try the
 
 ### PHP
 
-| Framework       | Guide                | What's Instrumented                              |
-| --------------- | -------------------- | ------------------------------------------------ |
-| Laravel         | [Laravel](./laravel) | HTTP requests, Eloquent, queues, caching         |
-| Slim 4 / Slim 3 | [Slim](./slim)       | HTTP requests, MongoDB, metrics, log correlation |
-| Symfony         | [Symfony](./symfony) | HTTP requests, Doctrine ORM, HTTP client, logs   |
+| Framework       | Guide                    | What's Instrumented                                             |
+| --------------- | ------------------------ | --------------------------------------------------------------- |
+| Laravel         | [Laravel](./laravel)     | HTTP requests, Eloquent, queues, caching                        |
+| Slim 4 / Slim 3 | [Slim](./slim)           | HTTP requests, MongoDB, metrics, log correlation                |
+| Symfony         | [Symfony](./symfony)     | HTTP requests, Doctrine ORM, HTTP client, logs                  |
+| WordPress       | [WordPress](./wordpress) | HTTP requests, WP lifecycle, template selection, mysqli queries |
 
 ### .NET
 

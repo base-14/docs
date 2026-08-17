@@ -1551,8 +1551,9 @@ unified dashboard.
 ## Related Guides
 
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
-  up collector for local development
+  up collector for local development.
 - [PHP Custom Instrumentation](../custom-instrumentation/php.md) - Manual spans
-  and advanced patterns
+  and advanced patterns.
+- [WordPress](./wordpress.md) - self-hosted WordPress on Apache or PHP-FPM.
 - [All framework guides](/instrument/apps/auto-instrumentation/) -
-  Auto-instrumentation overview for every language
+  Auto-instrumentation overview for every language.

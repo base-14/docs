@@ -1588,3 +1588,13 @@ from a unified dashboard.
 - [Symfony Documentation](https://symfony.com/doc/current/index.html)
 - [Doctrine ORM Documentation](https://www.doctrine-project.org/projects/orm.html)
 - [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/)
+
+## Related Guides
+
+- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
+  up collector for local development.
+- [PHP Custom Instrumentation](../custom-instrumentation/php.md) - Manual spans
+  and advanced patterns.
+- [WordPress](./wordpress.md) - self-hosted WordPress on Apache or PHP-FPM.
+- [All framework guides](/instrument/apps/auto-instrumentation/) -
+  Auto-instrumentation overview for every language.
