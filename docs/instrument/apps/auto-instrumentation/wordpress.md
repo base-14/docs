@@ -27,16 +27,20 @@ keywords:
     wordpress sre monitoring,
     base14 scout,
   ]
-head:
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does this work on WordPress.com or managed hosting?","acceptedAnswer":{"@type":"Answer","text":"Only if the host lets you install a PECL extension and add a file to PHP's conf.d directory. The PECL opentelemetry extension provides the hook mechanism the instrumentation packages attach to, and auto_prepend_file loads them before WordPress boots. Managed hosting with a fixed PHP extension set allows neither. A VM, a container image you build, or a bare metal LAMP server all work."}},{"@type":"Question","name":"Do I need to modify my theme or install a plugin?","acceptedAnswer":{"@type":"Answer","text":"No. Nothing is installed into WordPress and no application code changes. The Composer packages live in a directory outside the docroot, and a php.ini drop-in points auto_prepend_file at their autoloader so the SDK is running before WordPress starts. Themes, plugins, and core files are untouched."}},{"@type":"Question","name":"Why do I get no database spans?","acceptedAnswer":{"@type":"Answer","text":"The open-telemetry/opentelemetry-auto-mysqli package is missing, or mysqli is listed in OTEL_PHP_DISABLED_INSTRUMENTATIONS. WordPress core reaches the database through mysqli, and that package produces the mysqli_query and mysqli_real_connect spans. A PDO instrumentation package does not cover it. Seeing wpdb.* spans without mysqli_* spans points to one of those two causes."}},{"@type":"Question","name":"Does it work with PHP-FPM?","acceptedAnswer":{"@type":"Answer","text":"Yes. Apache with mod_php and PHP-FPM behind nginx produce the same spans. The one thing to check on FPM is that the pool does not clear the worker environment, because the SDK is configured entirely through OTEL_* environment variables. The official wordpress:*-fpm image already ships clear_env = no, so on that image there is normally nothing to change."}},{"@type":"Question","name":"How many spans does one page load produce?","acceptedAnswer":{"@type":"Answer","text":"On a default site with three posts and no plugins, between 22 and 86 spans per request depending on the path: 22 for the login form, 86 for a single post. Span count tracks query count, because each query produces a wpdb.query span and a mysqli_query child. The first front-end request against a brand new site costs about 34 spans more than the steady state, because the theme writes options and posts the database does not have yet; that is paid once per site. These numbers come from a site with no plugins, so yours will be higher."}},{"@type":"Question","name":"What happens on a WordPress core update?","acceptedAnswer":{"@type":"Answer","text":"Nothing, if the Composer packages are outside the docroot. A core update rewrites /var/www/html, and so does the official image's entrypoint, so anything installed there gets overwritten. Install to /opt/otel and point auto_prepend_file there instead; no WordPress update touches it. The php.ini drop-in is safe either way."}},{"@type":"Question","name":"Can I tell which plugin is slow?","acceptedAnswer":{"@type":"Answer","text":"Not from auto-instrumentation alone. No span name or instrumentation scope identifies a plugin, so plugin work is not separated from core work. Every query a request issued is still recorded with its SQL text on the wpdb.query and mysqli_query spans, which is often enough to recognise the source. To attribute time directly, wrap the plugin's hooks in manual spans."}},{"@type":"Question","name":"How much overhead does OpenTelemetry add to WordPress?","acceptedAnswer":{"@type":"Answer","text":"On a small default site, instrumentation roughly doubles the median request, in the range 1.7x to 2.3x, and adds roughly 8 to 12 MiB to the WordPress container at six prefork workers. The ratio is more useful than a millisecond figure, since the base is small on a bare site and the absolute cost moves with host load. That is a bare site with no plugins, so your numbers will be higher."}},{"@type":"Question","name":"Which WordPress versions are supported?","acceptedAnswer":{"@type":"Answer","text":"WordPress 6.0 and later, on PHP 8.2 or later. The floor is set by PHP: the mysqli package requires PHP 8.2, and 6.0 is the earliest WordPress release compatible with it. Nothing checks the WordPress version at install time, so an upgrade that breaks the instrumentation shows up as missing spans rather than a failed install. Check that spans still arrive after a major upgrade."}}]}
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"HowTo","name":"Instrument self-hosted WordPress with OpenTelemetry","step":[{"@type":"HowToStep","name":"Install the PECL opentelemetry extension","text":"Install the opentelemetry extension with pecl on the host or in the container image that runs PHP, and enable it. It provides the hook mechanism the auto-instrumentation packages attach to. Without it loaded, the packages install and run but produce no spans."},{"@type":"HowToStep","name":"Install the Composer packages outside the WordPress docroot","text":"Install open-telemetry/sdk, open-telemetry/exporter-otlp, open-telemetry/opentelemetry-auto-wordpress, open-telemetry/opentelemetry-auto-mysqli, and a PSR-18 HTTP client into a directory outside /var/www/html, such as /opt/otel. Allow the tbachert/spi and php-http/discovery Composer plugins. Where Composer runs without the extension present, pass --ignore-platform-req=ext-opentelemetry."},{"@type":"HowToStep","name":"Point auto_prepend_file at the vendor autoloader","text":"Add a php.ini drop-in to the conf.d directory of the SAPI that serves traffic, containing extension=opentelemetry.so and auto_prepend_file=/opt/otel/vendor/autoload.php. WordPress has no bootstrap file that survives a core update, so the prepend directive attaches the instrumentation instead."},{"@type":"HowToStep","name":"Configure the SDK with OTEL_* environment variables","text":"Set OTEL_SERVICE_NAME, OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_EXPORTER_OTLP_PROTOCOL, the exporter variables, and OTEL_PHP_AUTOLOAD_ENABLED=true. Set both deployment.environment and lowercase environment in OTEL_RESOURCE_ATTRIBUTES. On PHP-FPM, confirm the pool does not clear the worker environment."},{"@type":"HowToStep","name":"Verify the extension and the prepend for the serving SAPI","text":"Run php -m | grep opentelemetry to confirm the extension is loaded, and php -i | grep auto_prepend_file to confirm the autoloader is prepended. The CLI reads a different ini set than the SAPI that serves traffic, so check the serving SAPI too: php-fpm8.4 -i on PHP-FPM, or a temporary phpinfo() page under Apache with mod_php. Then request a page and confirm spans reach the collector."}]}
 ---
+
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does this work on WordPress.com or managed hosting?","acceptedAnswer":{"@type":"Answer","text":"Only if the host lets you install a PECL extension and add a file to PHP's conf.d directory. The PECL opentelemetry extension provides the hook mechanism the instrumentation packages attach to, and auto_prepend_file loads them before WordPress boots. Managed hosting with a fixed PHP extension set allows neither. A VM, a container image you build, or a bare metal LAMP server all work."}},{"@type":"Question","name":"Do I need to modify my theme or install a plugin?","acceptedAnswer":{"@type":"Answer","text":"No. Nothing is installed into WordPress and no application code changes. The Composer packages live in a directory outside the docroot, and a php.ini drop-in points auto_prepend_file at their autoloader so the SDK is running before WordPress starts. Themes, plugins, and core files are untouched."}},{"@type":"Question","name":"Why do I get no database spans?","acceptedAnswer":{"@type":"Answer","text":"The open-telemetry/opentelemetry-auto-mysqli package is missing, or mysqli is listed in OTEL_PHP_DISABLED_INSTRUMENTATIONS. WordPress core reaches the database through mysqli, and that package produces the mysqli_query and mysqli_real_connect spans. A PDO instrumentation package does not cover it. Seeing wpdb.* spans without mysqli_* spans points to one of those two causes."}},{"@type":"Question","name":"Does it work with PHP-FPM?","acceptedAnswer":{"@type":"Answer","text":"Yes. Apache with mod_php and PHP-FPM behind nginx produce the same spans. The one thing to check on FPM is that the pool does not clear the worker environment, because the SDK is configured entirely through OTEL_* environment variables. The official wordpress:*-fpm image already ships clear_env = no, so on that image there is normally nothing to change."}},{"@type":"Question","name":"How many spans does one page load produce?","acceptedAnswer":{"@type":"Answer","text":"On a default site with three posts and no plugins, between 22 and 86 spans per request depending on the path: 22 for the login form, 86 for a single post. Span count tracks query count, because each query produces a wpdb.query span and a mysqli_query child. The first front-end request against a brand new site costs about 34 spans more than the steady state, because the theme writes options and posts the database does not have yet; that is paid once per site. These counts come from a site with no plugins, so a real site runs higher."}},{"@type":"Question","name":"What happens on a WordPress core update?","acceptedAnswer":{"@type":"Answer","text":"Nothing, if the Composer packages are outside the docroot. A core update rewrites /var/www/html, and so does the official image's entrypoint, so anything installed there gets overwritten. Install to /opt/otel and point auto_prepend_file there instead; no WordPress update touches it. The php.ini drop-in is safe either way."}},{"@type":"Question","name":"Can I tell which plugin is slow?","acceptedAnswer":{"@type":"Answer","text":"Not from auto-instrumentation alone. No span name or instrumentation scope identifies a plugin, so plugin work is not separated from core work. Every query a request issued is still recorded with its SQL text on the wpdb.query and mysqli_query spans, which is often enough to recognise the source. To attribute time directly, wrap the plugin's hooks in manual spans."}},{"@type":"Question","name":"How much overhead does OpenTelemetry add to WordPress?","acceptedAnswer":{"@type":"Answer","text":"On a small default site, instrumentation roughly doubles the median request, in the range 1.7x to 2.3x, and adds roughly 8 to 12 MiB to the WordPress container at six prefork workers. The ratio is more useful than a millisecond figure, since the base is small on a bare site and the absolute cost moves with host load. These figures come from a site with no plugins, so a real site runs higher."}},{"@type":"Question","name":"Which WordPress versions are supported?","acceptedAnswer":{"@type":"Answer","text":"WordPress 6.0 and later, on PHP 8.2 or later. The floor is set by PHP: the mysqli package requires PHP 8.2, and 6.0 is the earliest WordPress release compatible with it. Nothing checks the WordPress version at install time, so an upgrade that breaks the instrumentation shows up as missing spans rather than a failed install. Check that spans still arrive after a major upgrade."}}]})}
+  </script>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"HowTo","name":"Instrument self-hosted WordPress with OpenTelemetry","step":[{"@type":"HowToStep","name":"Install the PECL opentelemetry extension","text":"Install the opentelemetry extension with pecl on the host or in the container image that runs PHP, and enable it. It provides the hook mechanism the auto-instrumentation packages attach to. Without it loaded, the packages install and run but produce no spans."},{"@type":"HowToStep","name":"Install the Composer packages outside the WordPress docroot","text":"Install open-telemetry/sdk, open-telemetry/exporter-otlp, open-telemetry/opentelemetry-auto-wordpress, open-telemetry/opentelemetry-auto-mysqli, and a PSR-18 HTTP client into a directory outside /var/www/html, such as /opt/otel. Allow the tbachert/spi and php-http/discovery Composer plugins. Where Composer runs without the extension present, pass --ignore-platform-req=ext-opentelemetry."},{"@type":"HowToStep","name":"Point auto_prepend_file at the vendor autoloader","text":"Add a php.ini drop-in to the conf.d directory of the SAPI that serves traffic, containing extension=opentelemetry.so and auto_prepend_file=/opt/otel/vendor/autoload.php. WordPress has no bootstrap file that survives a core update, so the prepend directive attaches the instrumentation instead."},{"@type":"HowToStep","name":"Configure the SDK with OTEL_* environment variables","text":"Set OTEL_SERVICE_NAME, OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_EXPORTER_OTLP_PROTOCOL, the exporter variables, and OTEL_PHP_AUTOLOAD_ENABLED=true. Set both deployment.environment and lowercase environment in OTEL_RESOURCE_ATTRIBUTES. On PHP-FPM, confirm the pool does not clear the worker environment."},{"@type":"HowToStep","name":"Verify the extension and the prepend for the serving SAPI","text":"Run php -m | grep opentelemetry to confirm the extension is loaded, and php -i | grep auto_prepend_file to confirm the autoloader is prepended. The CLI reads a different ini set than the SAPI that serves traffic, so check the serving SAPI too: php-fpm8.4 -i on PHP-FPM, or a temporary phpinfo() page under Apache with mod_php. Then request a page and confirm spans reach the collector."}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
 
 ```mdx-code-block
 import Tabs from '@theme/Tabs';
@@ -129,11 +133,13 @@ Before starting, ensure you have:
 | WordPress | 6.0 | 7.x |
 | PHP | 8.2 | 8.4 |
 | MariaDB | 10.11 | 11.4 |
+| MySQL | 8.0 | 8.4 |
 | PECL `opentelemetry` | No constraint declared | 1.2.1 |
 
 `opentelemetry-auto-mysqli` declares `php: ^8.2`, and 6.0 is the earliest
-WordPress release compatible with PHP 8.2. The MariaDB floor is WordPress's own
-recommendation. Nothing checks the WordPress version at install time, so an
+WordPress release compatible with PHP 8.2. The database floors are WordPress's
+own recommendations. Either engine works and the instrumentation behaves the
+same on both. Nothing checks the WordPress version at install time, so an
 upgrade that breaks the instrumentation shows up as missing spans rather than a
 failed install.
 
@@ -164,12 +170,14 @@ holds the short name each package registers, which is what
 | `mysqli_query` | CLIENT | `mysqli` | `code.function.name`, `db.namespace`, `db.operation.name`, `db.query.text`, `db.system.name`, `server.address`, `server.port` |
 
 Each list holds the keys a span can carry rather than the keys it always
-carries. `http.response.status_code` is the main one to be careful with. In our
-captures the 404 response carried it and every 200 response did not, and we
-have not tested enough non-200 statuses to say where the boundary actually
-falls. Either way it is not on every root span, so an alert or dashboard that
-expects it on every request will silently drop most of your traffic. Filter on
-whether the key is present rather than on its value.
+carries. `http.response.status_code` is the one to watch: it is not on every
+root span. Filter on whether the key is present rather than on its value, and
+do not build alerts or dashboards that assume every request carries it.
+
+`db.system.name` reads `mysql` on every span that carries it, MariaDB included.
+The `mysqli` instrumentation takes the value from the driver rather than from
+the server it connected to, so it does not tell the two engines apart. Filter
+on `mysql` even when the server is MariaDB.
 
 The instrumentation does not cover:
 
@@ -240,9 +248,10 @@ Both entries under `allow-plugins` are required. `tbachert/spi` registers the
 auto-instrumentation hooks and `php-http/discovery` wires the HTTP client, and
 Composer will not run either plugin unless it is allowed.
 
-The `"php": "^8.4"` constraint matches the images this builds on. Lower it to
-`^8.2` if you are installing on an 8.2 or 8.3 host, or Composer will refuse the
-install.
+Set the `php` constraint to the version that serves traffic. `^8.4` here
+matches the images this builds on; on an 8.2 or 8.3 runtime, lower it to
+`^8.2`. A mismatch returns HTTP 500 on every request, covered in
+[Troubleshooting](#troubleshooting).
 
 ```mdx-code-block
 <Tabs>
@@ -250,8 +259,9 @@ install.
 ```
 
 Build the extension into an image derived from the official WordPress image.
-Composer runs in a separate stage where the extension is not present, so its
-platform requirement is skipped there and satisfied at runtime.
+Composer runs in a separate stage where the extension is not present, so that
+extension requirement is skipped there and satisfied at runtime. The `php`
+version constraint is handled separately, as described above.
 
 ```dockerfile title="Dockerfile" showLineNumbers
 # syntax=docker/dockerfile:1
@@ -289,7 +299,7 @@ COPY config/apache-wordpress.conf /etc/apache2/conf-enabled/wordpress.conf
 
 Install the vendor directory at `/opt/otel/vendor`, not under `/var/www/html`.
 The official image's entrypoint and any WordPress core update both rewrite the
-docroot, so anything you put there will eventually be replaced.
+docroot, which removes files placed there.
 
 Apache also needs `AllowOverride`. Debian's default config ignores the
 `.htaccess` file WordPress writes its rewrite rules into, so without it every
@@ -522,11 +532,15 @@ too loads it twice and PHP logs a "module already loaded" warning at startup.
 
 `auto_prepend_file` holds a single path, and the last drop-in to set it wins.
 Some WordPress security plugins use it as well, Wordfence Extended Protection
-among them, so check the current value before writing the drop-in:
+among them, so check the current value before writing the drop-in. Read it from
+the SAPI that serves traffic, since a plugin sets the directive there and not
+on the CLI:
 
 ```bash
-php -i | grep auto_prepend_file
+php-fpm8.4 -i | grep auto_prepend_file
 ```
+
+Under Apache with `mod_php`, read the same value from a `phpinfo()` page.
 
 If a path is already set, chain it rather than replacing it: point
 `auto_prepend_file` at a file of your own that `require`s the existing path and
@@ -790,8 +804,8 @@ and no plugins produces:
 | REST posts collection | 17 | 20 | 45 |
 | Login form | 7 | 10 | 22 |
 
-That is a bare site with no plugins, so your numbers will be higher. Four ways
-to bring the count down:
+Those counts come from a site with no plugins, so a real site runs higher. Four
+ways to bring the count down:
 
 **1. Turn off one of the two instrumentations.** Every `wpdb.query` span has
 exactly one `mysqli_query` child and both carry `db.query.text`, so the pair
@@ -1076,12 +1090,17 @@ file has to carry it.
 **Symptom.** `php -m` lists `opentelemetry` and the collector receives nothing.
 
 **Check.** Read the prepend directive and the autoload flag for the SAPI that
-serves traffic, not only for the CLI:
+serves traffic. `php -i` reports the CLI, which loads a different ini set, so
+run the binary for the serving SAPI instead:
 
 ```bash
-php -i | grep auto_prepend_file
-php -i | grep OTEL_PHP_AUTOLOAD_ENABLED
+# PHP-FPM
+php-fpm8.4 -i | grep auto_prepend_file
+php-fpm8.4 -i | grep OTEL_PHP_AUTOLOAD_ENABLED
 ```
+
+Apache with `mod_php` has no such binary. Request a temporary `phpinfo()` page
+over HTTP and read the same two values from it, then delete the page.
 
 **Fix.** An empty `auto_prepend_file` means the ini drop-in landed in the wrong
 `conf.d` directory. Debian and Ubuntu keep one per SAPI, so a file written to
@@ -1116,7 +1135,7 @@ docroot, `/opt/otel` in this guide, and point the ini drop-in there.
 Composer, which is often not the machine that will run PHP.
 
 **Fix.** Skip the platform requirement where Composer runs and satisfy it at
-runtime. That is what the build stage does:
+runtime. The build stage does this:
 
 ```dockerfile title="Dockerfile" showLineNumbers
 RUN composer install \
@@ -1126,6 +1145,32 @@ RUN composer install \
       --ignore-platform-req=ext-opentelemetry \
       --ignore-platform-req=ext-mysqli
 ```
+
+### Every request returns HTTP 500 once the prepend is in place
+
+**Symptom.** Every request returns HTTP 500, `/wp-admin` included, and the body
+reads `Composer detected issues in your platform`. No spans arrive. The browser
+names the required PHP version but not the one you are running; the web
+server's error log carries both.
+
+**Why.** The `php` constraint in `composer.json` is higher than the PHP serving
+traffic. Composer records that constraint in
+`vendor/composer/platform_check.php` and the autoloader executes it, so
+`auto_prepend_file` trips the check before WordPress gets control. Installing
+in a separate build stage defers the failure to runtime rather than preventing
+it, because Composer resolved against that stage's PHP.
+
+**Check.** Read the constraint, the serving version, and the generated check:
+
+```bash
+grep '"php"' /opt/otel/composer.json
+php -v
+cat /opt/otel/vendor/composer/platform_check.php
+```
+
+**Fix.** Lower the `php` constraint to match the serving runtime and reinstall.
+To leave `composer.json` untouched, pass `--ignore-platform-req=php` where
+Composer runs; the generated check then omits the version test entirely.
 
 ### No database spans
 
@@ -1276,7 +1321,7 @@ Span count tracks query count, because each query produces a `wpdb.query` span
 and a `mysqli_query` child. The first front-end request against a brand new
 site costs about 34 spans more than the steady state, because the theme writes
 options and posts the database does not have yet; that is paid once per site.
-These numbers come from a site with no plugins, so yours will be higher.
+These counts come from a site with no plugins, so a real site runs higher.
 
 ### What happens on a WordPress core update?
 
@@ -1301,7 +1346,7 @@ On a small default site, instrumentation roughly doubles the median request, in
 the range 1.7x to 2.3x, and adds roughly 8 to 12 MiB to the WordPress container
 at six prefork workers. The ratio is more useful than a millisecond figure,
 since the base is small on a bare site and the absolute cost moves with host
-load. That is a bare site with no plugins, so your numbers will be higher.
+load. These figures come from a site with no plugins, so a real site runs higher.
 
 ### Which WordPress versions are supported?
 
