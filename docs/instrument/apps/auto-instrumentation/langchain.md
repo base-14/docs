@@ -69,6 +69,14 @@ metrics, and content capture off by default.
 
 :::
 
+:::note Running this in production
+
+Storing and querying these traces at production volume is what base14 Scout
+does.
+[Check out Scout LLM Observability](https://base14.io/scout/llm-observability).
+
+:::
+
 ## LangChain vs LangGraph
 
 LangChain 1.x agents built with `create_agent` are **LangGraph graphs under

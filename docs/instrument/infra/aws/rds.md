@@ -30,6 +30,13 @@ keywords:
 
 <!-- markdownlint-enable MD013 MD011 -->
 
+:::note Running this in production
+
+pgX adds query, lock, and connection analysis on top of these metrics.
+[Check out base14 pgX](https://base14.io/scout/pgx).
+
+:::
+
 ## Overview
 
 This guide covers monitoring AWS RDS PostgreSQL instances using
@@ -431,10 +438,6 @@ storage below 20% free, and read/write latency spikes.
   PostgreSQL monitoring with the OTel receiver
 - [PostgreSQL Advanced Monitoring](../../component/postgres-advanced.md) -
   Query statistics, per-table I/O, replication details
-- [pgX Deep PostgreSQL Analysis](https://base14.io/scout/pgx) - Correlate
-  query performance with application traces
 - [ALB Monitoring](./elb.md) - Monitor AWS Application Load Balancers
 - [ElastiCache Monitoring](./elasticache.md) - Monitor Redis and Memcached
   on AWS
-- [AWS ECS/Fargate Setup](../../collector-setup/ecs-setup.md) - Deploy the
-  Collector on AWS ECS

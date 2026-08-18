@@ -83,6 +83,13 @@ created manually. If you are starting a new project, use Slim 4.
 
 :::
 
+:::note Running this in production
+
+Storing and querying this data at production volume is what base14 Scout does.
+[Check out Scout APM](https://base14.io/scout/apm).
+
+:::
+
 ## Prerequisites
 
 ### Compatibility Matrix

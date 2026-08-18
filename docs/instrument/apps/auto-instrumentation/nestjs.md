@@ -53,6 +53,13 @@ keywords:
 
 # NestJS
 
+:::note Running this in production
+
+Storing and querying this data at production volume is what base14 Scout does.
+[Check out Scout APM](https://base14.io/scout/apm).
+
+:::
+
 ## Overview
 
 Implement OpenTelemetry instrumentation for NestJS applications to enable
@@ -1451,11 +1458,3 @@ Complete working example:
 - [Hono Instrumentation](./hono.md) - Lightweight Node.js web framework
 - [BullMQ Instrumentation](./bullmq.md) - Trace the background jobs NestJS
   enqueues
-- [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)
-  \- Manual spans and advanced patterns
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
-  up the collector for local development
-- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
-  Production collector deployment
-- [All framework guides](/instrument/apps/auto-instrumentation/) -
-  Auto-instrumentation overview for every language

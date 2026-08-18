@@ -84,6 +84,14 @@ costs, and routing decisions at every node and conditional edge.
 > [LLM Observability guide](../../../guides/ai-observability/llm-observability.md).
 > This guide focuses specifically on LangGraph integration patterns.
 
+:::note Running this in production
+
+Storing and querying these traces at production volume is what base14 Scout
+does.
+[Check out Scout LLM Observability](https://base14.io/scout/llm-observability).
+
+:::
+
 ## Who This Guide Is For
 
 This documentation is designed for:

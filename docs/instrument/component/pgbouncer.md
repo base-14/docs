@@ -33,6 +33,13 @@ in collector-contrib, so the exporter is part of the pipeline. This guide
 configures the exporter and the receiver, sets up admin-console access, and
 ships metrics to Scout.
 
+:::note Running this in production
+
+pgX shows the queries holding the connections these pool metrics count.
+[Check out base14 pgX](https://base14.io/scout/pgx).
+
+:::
+
 ## Prerequisites
 
 | Requirement            | Minimum | Recommended |
@@ -453,8 +460,6 @@ version, not the exporter.
   the Collector locally.
 - [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md) -
   Production deployment.
-- [Creating Alerts](../../guides/creating-alerts-with-logx.md) - Alert on
-  PgBouncer metrics.
 
 ## What's Next?
 

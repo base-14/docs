@@ -37,6 +37,13 @@ traces, metrics, and logs using the PHP OpenTelemetry SDK. This guide covers
 manual instrumentation for any PHP application, including custom frameworks,
 legacy codebases, and popular frameworks like Symfony, WordPress, and others.
 
+:::note Running this in production
+
+Storing and querying this data at production volume is what base14 Scout does.
+[Check out Scout APM](https://base14.io/scout/apm).
+
+:::
+
 ## Overview
 
 This guide demonstrates how to:

@@ -28,6 +28,13 @@ app exported to any OTLP-compatible collector.
 This guide walks you through adding the `scout_flutter` SDK, initializing it
 in your app, and verifying that spans reach your collector.
 
+:::note Running this in production
+
+Storing and querying these sessions at production volume is what base14 Scout
+does. [Check out Scout RUM](https://base14.io/scout/rum).
+
+:::
+
 ## Time to Complete
 
 15-20 minutes

@@ -20,6 +20,13 @@ keywords:
 This guide provides instructions for setting up **custom instrumentation** for
 JavaScript browser applications using the OpenTelemetry JavaScript SDK.
 
+:::note Running this in production
+
+Storing and querying these sessions at production volume is what base14 Scout
+does. [Check out Scout RUM](https://base14.io/scout/rum).
+
+:::
+
 ## Overview
 
 This guide demonstrates how to:

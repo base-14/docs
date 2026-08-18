@@ -14,6 +14,13 @@ keywords:
   ]
 ---
 
+:::note Running this in production
+
+pgX is the PostgreSQL monitoring app in base14 Scout.
+[Check out base14 pgX](https://base14.io/scout/pgx).
+
+:::
+
 ## Problem Statement
 
 pgX collects 60+ PostgreSQL metrics covering tables, indexes, replication,

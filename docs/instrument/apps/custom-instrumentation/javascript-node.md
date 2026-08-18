@@ -31,6 +31,13 @@ keywords:
 Implement OpenTelemetry custom instrumentation for Node.js applications to
 collect logs, metrics, and traces using the Node.js OTel SDK.
 
+:::note Running this in production
+
+Storing and querying this data at production volume is what base14 Scout does.
+[Check out Scout APM](https://base14.io/scout/apm).
+
+:::
+
 ## Overview
 
 This guide demonstrates how to:
@@ -389,11 +396,3 @@ router.get('/ping', async (req, res) => {
   Auto-instrumentation for Fastify applications
 - [Hono Auto-Instrumentation](../auto-instrumentation/hono.md) -
   Auto-instrumentation for Hono applications
-- [NestJS Auto-Instrumentation](../auto-instrumentation/nestjs.md) -
-  Auto-instrumentation for NestJS applications
-- [Next.js Auto-Instrumentation](../auto-instrumentation/nextjs.md) -
-  Auto-instrumentation for Next.js applications
-- [Elysia Auto-Instrumentation](../auto-instrumentation/elysia.md) -
-  Auto-instrumentation for Elysia (Bun) applications
-- [tRPC Auto-Instrumentation](../auto-instrumentation/trpc.md) -
-  Auto-instrumentation for tRPC APIs

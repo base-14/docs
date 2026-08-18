@@ -17,6 +17,13 @@ pgX provides a streamlined workflow for creating alerts based on the panels
 in the app. This guide walks you through exporting an alert query from a pgX
 panel and setting it up in Grafana's alerting system.
 
+:::note Running this in production
+
+pgX is the PostgreSQL monitoring app in base14 Scout.
+[Check out base14 pgX](https://base14.io/scout/pgx).
+
+:::
+
 ## Time to Complete
 
 15-20 minutes

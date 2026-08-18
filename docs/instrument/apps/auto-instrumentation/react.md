@@ -56,6 +56,13 @@ for the full reference including native crash capture, ANR detection,
 session-context persistence, and Expo integration.
 :::
 
+:::note Running this in production
+
+Storing and querying these sessions at production volume is what base14 Scout
+does. [Check out Scout RUM](https://base14.io/scout/rum).
+
+:::
+
 ## What you get
 
 | Capability | Signal | How it's captured |

@@ -77,6 +77,13 @@ exporter to point at your Scout collector with no additional code changes.
 official OpenTelemetry documentation. For complete Ruby language information,
 please consult the [official OpenTelemetry Ruby documentation](https://opentelemetry.io/docs/languages/ruby/instrumentation).
 
+:::note Running this in production
+
+Storing and querying this data at production volume is what base14 Scout does.
+[Check out Scout APM](https://base14.io/scout/apm).
+
+:::
+
 ## Who This Guide Is For
 
 This documentation is designed for:

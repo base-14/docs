@@ -31,6 +31,13 @@ Axum, Actix-web, Rocket, and custom frameworks.
 > OpenTelemetry documentation. For complete information, please consult the
 > [official OpenTelemetry Rust documentation](https://opentelemetry.io/docs/languages/rust/).
 
+:::note Running this in production
+
+Storing and querying this data at production volume is what base14 Scout does.
+[Check out Scout APM](https://base14.io/scout/apm).
+
+:::
+
 ## Overview
 
 This guide demonstrates how to:
@@ -1105,9 +1112,8 @@ pub async fn transfer_funds(
 
 - [Rust LLM Observability][rust-llm] - GenAI semantic conventions,
   token/cost tracking, multi-provider LLM instrumentation for Rust AI apps
-
-[rust-llm]: ../../../../guides/ai-observability/rust-llm-observability
-
 - [Axum Auto-Instrumentation Guide](../auto-instrumentation/axum.md)
 - [Creating Alerts with LogX](../../../guides/creating-alerts-with-logx.md)
 - [Create Your First Dashboard](../../../guides/create-your-first-dashboard.md)
+
+[rust-llm]: ../../../../guides/ai-observability/rust-llm-observability

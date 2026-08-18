@@ -24,6 +24,13 @@ This document provides a complete reference of all pgX configuration options.
 
 ---
 
+:::note Running this in production
+
+pgX is the PostgreSQL monitoring app in base14 Scout.
+[Check out base14 pgX](https://base14.io/scout/pgx).
+
+:::
+
 ## Accessing Configuration
 
 1. Navigate to **Administration** → **Plugins** in Grafana

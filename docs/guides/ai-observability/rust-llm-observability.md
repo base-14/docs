@@ -77,6 +77,14 @@ with token and cost tracking per provider and model.
 > without AI, see the
 > [Axum guide](../../instrument/apps/auto-instrumentation/axum.md).
 
+:::note Running this in production
+
+Storing and querying these traces at production volume is what base14 Scout
+does.
+[Check out Scout LLM Observability](https://base14.io/scout/llm-observability).
+
+:::
+
 ## Who This Guide Is For
 
 This documentation is designed for:
@@ -2220,7 +2228,3 @@ src/
   - Manual OpenTelemetry SDK for Rust
 - [Vercel AI SDK](../../instrument/apps/auto-instrumentation/vercel-ai-sdk.md) —
   TypeScript AI pipeline monitoring
-- [LangGraph](../../instrument/apps/auto-instrumentation/langgraph.md) - Python
-  agent orchestration monitoring
-- [Docker Compose Setup](../../instrument/collector-setup/docker-compose-example.md)
-  - Collector deployment

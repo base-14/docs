@@ -29,6 +29,13 @@ Flutter for some screens. To instrument one, initialize the native SDK and
 detects the native SDK and delegates to it, and both layers report under one
 `session.id`.
 
+:::note Running this in production
+
+Storing and querying these sessions at production volume is what base14 Scout
+does. [Check out Scout RUM](https://base14.io/scout/rum).
+
+:::
+
 ## What You Get
 
 | Capability | Owner | Notes |

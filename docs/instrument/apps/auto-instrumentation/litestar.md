@@ -91,6 +91,13 @@ base14 Scout via OTLP with no changes to your route handlers.
 
 :::
 
+:::note Running this in production
+
+Storing and querying this data at production volume is what base14 Scout does.
+[Check out Scout APM](https://base14.io/scout/apm).
+
+:::
+
 ## Who This Guide Is For
 
 This documentation is designed for:
@@ -1472,5 +1479,3 @@ app = Litestar(
   Auto-instrumentation overview for every language
 - [Docker Compose Collector Setup](../../collector-setup/docker-compose-example.md)
   - local OTel collector for development.
-- [Kubernetes Helm Collector Setup](../../collector-setup/kubernetes-helm-setup.md)
-  - production collector deployment.

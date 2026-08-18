@@ -81,6 +81,13 @@ your task code.
 > information, please consult the
 > [official OpenTelemetry Python documentation](https://opentelemetry.io/docs/languages/python/).
 
+:::note Running this in production
+
+Storing and querying this data at production volume is what base14 Scout does.
+[Check out Scout APM](https://base14.io/scout/apm).
+
+:::
+
 ## Who This Guide Is For
 
 This documentation is designed for:

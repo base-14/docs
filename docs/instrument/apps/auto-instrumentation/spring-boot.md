@@ -95,6 +95,13 @@ automatic instrumentation.
 
 :::
 
+:::note Running this in production
+
+Storing and querying this data at production volume is what base14 Scout does.
+[Check out Scout APM](https://base14.io/scout/apm).
+
+:::
+
 ## Overview
 
 This guide demonstrates how to:
@@ -1961,11 +1968,5 @@ The example demonstrates:
   and advanced patterns
 - [Spring AI LLM Observability][spring-ai] - Spring AI with three-layer OTel
   instrumentation
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
-  up the collector for local development
-- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
-  Production collector deployment
-- [All framework guides](/instrument/apps/auto-instrumentation/) -
-  Auto-instrumentation overview for every language
 
 [spring-ai]: ../../../guides/ai-observability/spring-ai-llm-observability.md

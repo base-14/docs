@@ -41,6 +41,13 @@ metrics, and logs to a Scout collector. No manual `Scout.track(...)`
 calls anywhere in your app — every tap, navigation, HTTP request,
 error, crash, scroll, and frame metric is gathered automatically.
 
+:::note Running this in production
+
+Storing and querying these sessions at production volume is what base14 Scout
+does. [Check out Scout RUM](https://base14.io/scout/rum).
+
+:::
+
 ## What You Get
 
 | Capability | Signal Shape | Mechanism |

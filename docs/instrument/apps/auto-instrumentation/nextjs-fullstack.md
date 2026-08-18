@@ -50,6 +50,13 @@ import TabItem from '@theme/TabItem';
 
 # Next.js (Full-Stack)
 
+:::note Running this in production
+
+Storing and querying this data at production volume is what base14 Scout does.
+[Check out Scout APM](https://base14.io/scout/apm).
+
+:::
+
 ## Introduction
 
 Instrument a Next.js App Router application with OpenTelemetry on both sides of
@@ -1523,5 +1530,3 @@ correlates them for
   side of this guide.
 - [Custom JavaScript browser instrumentation](../custom-instrumentation/javascript-browser.md):
   manual browser spans and metrics beyond the auto-instrumentations.
-- [Docker Compose collector setup](../../collector-setup/docker-compose-example.md):
-  the collector this app exports to.

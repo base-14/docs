@@ -46,6 +46,13 @@ keywords:
 > (`Microsoft.DBforPostgreSQL/flexibleServers`) is the only supported
 > shape.
 
+:::note Running this in production
+
+pgX adds query, lock, and connection analysis on top of these metrics.
+[Check out base14 pgX](https://base14.io/scout/pgx).
+
+:::
+
 ## Overview
 
 Azure Database for PostgreSQL Flexible Server is a managed PaaS
@@ -832,15 +839,10 @@ capture every statement (high volume; combine with sampling).
 
 ## Related Guides
 
-### Same surface, different paths
-
 - [Self-hosted PostgreSQL](../../component/postgres.md) - the
   `postgresqlreceiver` reference for the in-database scrape. This
   guide layers Azure-specific deltas (firewall, `azure_pg_admin`,
   `pg_stat_statements` via Server Parameters, TLS-required) on it.
-
-### Shared collector + Scout wiring
-
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
   the runtime that hosts both receivers in this guide.
 - [Kubernetes / Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
@@ -848,26 +850,5 @@ capture every statement (high volume; combine with sampling).
 - [Scout exporter wiring](../../collector-setup/scout-exporter.md) - the
   `oauth2client` extension + `otlp_http/b14` exporter block shared by
   all Azure guides.
-
-### Apps-side instrumentation
-
 - [FastAPI + Postgres](../../apps/auto-instrumentation/fast-api.md) -
   Python web app connecting to Flex Server over `psycopg`.
-- [Express + Postgres](../../apps/auto-instrumentation/express.md) -
-  Node.js web app connecting to Flex Server.
-- [Spring Boot](../../apps/auto-instrumentation/spring-boot.md) - JVM
-  apps connecting to Flex Server over JDBC.
-
-### Adjacent Azure surfaces
-
-- [Azure App Service](./app-service.md) - common host for web apps
-  that connect to Flex Server.
-- [Azure Cache for Redis](./cache-for-redis.md) - caching layer
-  typically sat in front of PostgreSQL.
-- [Azure Service Bus](./service-bus.md) - eventing fabric that often
-  integrates with database-change events.
-- [Azure Key Vault](./key-vault.md) - secrets store for the
-  monitoring user's password.
-- [Azure SQL Database](./sql-database.md) - managed SQL Server on
-  Azure; the typical alternative when the workload needs T-SQL rather
-  than PostgreSQL.

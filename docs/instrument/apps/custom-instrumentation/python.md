@@ -35,6 +35,13 @@ collect logs, metrics, and traces using the Python OTel SDK.
 > OpenTelemetry documentation. For complete information, please consult the
 > [official OpenTelemetry documentation](https://opentelemetry.io/docs/languages/python/).
 
+:::note Running this in production
+
+Storing and querying this data at production volume is what base14 Scout does.
+[Check out Scout APM](https://base14.io/scout/apm).
+
+:::
+
 ## Overview
 
 This guide demonstrates how to:
@@ -399,7 +406,3 @@ def traced_function():
   Auto-instrumentation for Django applications
 - [Flask Auto-Instrumentation](../auto-instrumentation/flask.md) -
   Auto-instrumentation for Flask applications
-- [Litestar Auto-Instrumentation](../auto-instrumentation/litestar.md) -
-  Auto-instrumentation for async Litestar applications
-- [Celery Auto-Instrumentation](../auto-instrumentation/celery.md) -
-  Auto-instrumentation for Celery task queues

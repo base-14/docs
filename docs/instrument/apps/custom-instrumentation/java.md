@@ -38,6 +38,13 @@ Quarkus, servlets, and custom frameworks.
 > OpenTelemetry documentation. For complete information, please consult the
 > [official OpenTelemetry Java documentation](https://opentelemetry.io/docs/languages/java/).
 
+:::note Running this in production
+
+Storing and querying this data at production volume is what base14 Scout does.
+[Check out Scout APM](https://base14.io/scout/apm).
+
+:::
+
 ## Overview
 
 This guide demonstrates how to:
@@ -1018,9 +1025,3 @@ public class TraceContextExtractor {
   tracing for Kotlin Ktor applications
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
   up Scout Collector for local development
-- [Creating Alerts](../../../guides/creating-alerts-with-logx.md) - Set up
-  alerts for your telemetry data
-- [Spring AI LLM Observability][spring-ai] - Spring AI with
-  three-layer OTel instrumentation
-
-[spring-ai]: ../../../guides/ai-observability/spring-ai-llm-observability.md

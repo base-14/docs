@@ -42,6 +42,13 @@ sets up a read-only monitoring user, and ships metrics to base14 Scout.
 > replication details, see
 > [PostgreSQL Advanced Monitoring](./postgres-advanced.md).
 
+:::note Running this in production
+
+pgX adds query, lock, and connection analysis on top of these metrics.
+[Check out base14 pgX](https://base14.io/scout/pgx).
+
+:::
+
 ## Prerequisites
 
 | Requirement            | Minimum | Recommended |
@@ -392,7 +399,6 @@ replica connects.
 - [Docker Compose Setup](../collector-setup/docker-compose-example.md) -
   Run the Collector locally.
 - [MySQL Monitoring](./mysql.md) - A common companion relational database.
-- [MongoDB Monitoring](./mongodb.md) - Alternative database monitoring.
 
 ## What's Next?
 

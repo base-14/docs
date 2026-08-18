@@ -44,6 +44,13 @@ frozen frame, and startup is gathered automatically — no manual
 `Scout.track(...)` calls anywhere in your app. HTTP tracking is the one
 opt-in (add one OkHttp interceptor — see below).
 
+:::note Running this in production
+
+Storing and querying these sessions at production volume is what base14 Scout
+does. [Check out Scout RUM](https://base14.io/scout/rum).
+
+:::
+
 ## What You Get
 
 | Capability | Signal | Mechanism |

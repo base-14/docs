@@ -63,6 +63,14 @@ run spent time and where it failed.
 
 :::
 
+:::note Running this in production
+
+Storing and querying these traces at production volume is what base14 Scout
+does.
+[Check out Scout LLM Observability](https://base14.io/scout/llm-observability).
+
+:::
+
 ## AI Agent Observability Overview
 
 This guide shows you how to:

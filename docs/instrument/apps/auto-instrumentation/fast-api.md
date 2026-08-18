@@ -79,6 +79,13 @@ base14 Scout with no changes to your route handlers.
 
 :::
 
+:::note Running this in production
+
+Storing and querying this data at production volume is what base14 Scout does.
+[Check out Scout APM](https://base14.io/scout/apm).
+
+:::
+
 ## Overview
 
 This guide demonstrates how to:
@@ -2006,5 +2013,3 @@ all your endpoints.
   spans and advanced patterns
 - [All framework guides](/instrument/apps/auto-instrumentation/) -
   Auto-instrumentation overview for every language
-- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
-  Production deployment guide

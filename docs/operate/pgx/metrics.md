@@ -26,6 +26,13 @@ Below is the complete reference of all metrics you can collect and use.
 
 ---
 
+:::note Running this in production
+
+pgX is the PostgreSQL monitoring app in base14 Scout.
+[Check out base14 pgX](https://base14.io/scout/pgx).
+
+:::
+
 ## Table of Contents
 
 1. [Service Health & Connection](#1-service-health--connection)

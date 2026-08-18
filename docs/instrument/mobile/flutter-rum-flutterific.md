@@ -47,6 +47,13 @@ If you prefer lower-level control with the `opentelemetry` Dart SDK, see the
 [Flutter OpenTelemetry guide](./flutter.md).
 :::
 
+:::note Running this in production
+
+Storing and querying these sessions at production volume is what base14 Scout
+does. [Check out Scout RUM](https://base14.io/scout/rum).
+
+:::
+
 ## Architecture
 
 ![Flutter RUM Architecture](/img/docs/flutter-rum-architecture.png)

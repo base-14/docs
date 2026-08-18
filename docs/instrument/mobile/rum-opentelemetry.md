@@ -38,6 +38,13 @@ the corresponding view populates automatically.
 
 ---
 
+:::note Running this in production
+
+Storing and querying these sessions at production volume is what base14 Scout
+does. [Check out Scout RUM](https://base14.io/scout/rum).
+
+:::
+
 ## Transport
 
 | Setting | Value |

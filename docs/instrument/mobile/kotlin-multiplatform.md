@@ -43,6 +43,13 @@ to thread through. HTTP on Android is the one exception: it needs an
 OkHttp interceptor registered in `androidMain` (see
 [HTTP tracking](#http-tracking-on-android)).
 
+:::note Running this in production
+
+Storing and querying these sessions at production volume is what base14 Scout
+does. [Check out Scout RUM](https://base14.io/scout/rum).
+
+:::
+
 ## What You Get
 
 `scout-kmp` delegates to the platform SDKs, so you get the **same

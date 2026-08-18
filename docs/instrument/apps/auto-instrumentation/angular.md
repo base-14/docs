@@ -50,6 +50,13 @@ import TabItem from '@theme/TabItem';
 
 # Angular
 
+:::note Running this in production
+
+Storing and querying these sessions at production volume is what base14 Scout
+does. [Check out Scout RUM](https://base14.io/scout/rum).
+
+:::
+
 ## Introduction
 
 Implement OpenTelemetry instrumentation for Angular applications to bring real
@@ -1404,5 +1411,3 @@ without locking you into a single vendor's agent.
   propagated trace context.
 - [Node.js instrumentation](./nodejs.md) - the Node SDK behind the backend in
   this guide.
-- [Docker Compose collector setup](../../collector-setup/docker-compose-example.md)
-  - the collector the browser exports to.

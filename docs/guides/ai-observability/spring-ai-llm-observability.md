@@ -92,6 +92,14 @@ covers Spring Boot 4.0.3 + Spring AI 2.0 with OpenAI, Anthropic, and Ollama.
 
 :::
 
+:::note Running this in production
+
+Storing and querying these traces at production volume is what base14 Scout
+does.
+[Check out Scout LLM Observability](https://base14.io/scout/llm-observability).
+
+:::
+
 ## Who This Guide Is For
 
 This documentation is designed for:
@@ -3066,4 +3074,3 @@ and `memory_limiter`.
 - [Spring Boot Auto-Instrumentation](../../instrument/apps/auto-instrumentation/spring-boot.md)
   - zero-code OpenTelemetry for Spring Boot web applications
 - [Docker Compose Setup](../../instrument/collector-setup/docker-compose-example.md)
-  - Collector deployment and configuration

@@ -86,6 +86,14 @@ cost tracking.
 > This guide focuses specifically on Vercel AI SDK integration patterns with
 > TypeScript and Bun.
 
+:::note Running this in production
+
+Storing and querying these traces at production volume is what base14 Scout
+does.
+[Check out Scout LLM Observability](https://base14.io/scout/llm-observability).
+
+:::
+
 ## Who This Guide Is For
 
 This documentation is designed for:

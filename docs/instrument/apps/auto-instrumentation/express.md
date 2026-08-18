@@ -79,6 +79,13 @@ entry point - this single step auto-instruments Express routes, MongoDB
 
 :::
 
+:::note Running this in production
+
+Storing and querying this data at production volume is what base14 Scout does.
+[Check out Scout APM](https://base14.io/scout/apm).
+
+:::
+
 ## Overview
 
 This guide demonstrates how to:
@@ -2053,13 +2060,3 @@ calls in real time.
 - [Fastify Instrumentation](./fastify.md) - High-performance Node.js web
   framework
 - [Hono Instrumentation](./hono.md) - Lightweight, edge-first Node.js framework
-- [BullMQ Instrumentation](./bullmq.md) - Trace background jobs enqueued from
-  Express
-- [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)
-  \- Manual spans and advanced patterns
-- [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
-  up the collector for local development
-- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
-  Production collector deployment
-- [All framework guides](/instrument/apps/auto-instrumentation/) -
-  Auto-instrumentation overview for every language

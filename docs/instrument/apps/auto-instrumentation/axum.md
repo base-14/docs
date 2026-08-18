@@ -75,6 +75,13 @@ via the OpenTelemetry Collector.
 > please consult the
 > [official OpenTelemetry Rust documentation](https://opentelemetry.io/docs/languages/rust/).
 
+:::note Running this in production
+
+Storing and querying this data at production volume is what base14 Scout does.
+[Check out Scout APM](https://base14.io/scout/apm).
+
+:::
+
 ## Who This Guide Is For
 
 This documentation is designed for:
@@ -1668,12 +1675,11 @@ This complete example is available in our
 
 - [Rust LLM Observability][rust-llm] - GenAI semantic conventions,
   token/cost tracking, multi-provider LLM with fallback for Rust AI apps
-
-[rust-llm]: ../../../../guides/ai-observability/rust-llm-observability
-
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
   up collector for local development
 - [Rust Custom Instrumentation](../custom-instrumentation/rust.md) - Manual
   spans and advanced patterns
 - [All framework guides](/instrument/apps/auto-instrumentation/) -
   Auto-instrumentation overview for every language
+
+[rust-llm]: ../../../../guides/ai-observability/rust-llm-observability

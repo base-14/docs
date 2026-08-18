@@ -29,6 +29,13 @@ stats - and exposes them in Prometheus format. This guide deploys pgdashex,
 configures the OTel Collector to scrape its metrics, and ships them to
 base14 Scout.
 
+:::note Running this in production
+
+pgdashex metrics are read by pgX, the PostgreSQL monitoring app in base14
+Scout. [Check out base14 pgX](https://base14.io/scout/pgx).
+
+:::
+
 ## Prerequisites
 
 | Requirement            | Minimum | Recommended |

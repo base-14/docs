@@ -21,6 +21,13 @@ pgX is a powerful PostgreSQL monitoring and optimization Grafana app built into
 Base14 Scout. It provides deep visibility into every aspect of your PostgreSQL
 clusters.
 
+:::note Running this in production
+
+pgX is the PostgreSQL monitoring app in base14 Scout.
+[Check out base14 pgX](https://base14.io/scout/pgx).
+
+:::
+
 ## What is pgX?
 
 pgX gives you complete visibility into your PostgreSQL infrastructure:

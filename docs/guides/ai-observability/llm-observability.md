@@ -64,6 +64,14 @@ LLM completion, with token tracking and cost attribution per provider and model.
 
 :::
 
+:::note Running this in production
+
+Storing and querying these traces at production volume is what base14 Scout
+does.
+[Check out Scout LLM Observability](https://base14.io/scout/llm-observability).
+
+:::
+
 ## LLM Observability Overview
 
 This guide demonstrates how to:
@@ -1702,5 +1710,6 @@ ai-sales-intelligence/
 [py-custom]: ../../instrument/apps/custom-instrumentation/python.md
 [fastapi-auto]: ../../instrument/apps/auto-instrumentation/fast-api.md
 [docker-setup]: ../../instrument/collector-setup/docker-compose-example.md
-[k8s-setup]: ../../instrument/collector-setup/kubernetes-helm-setup.md
 [scout-exporter]: ../../instrument/collector-setup/scout-exporter.md
+
+[k8s-setup]: ../../instrument/collector-setup/kubernetes-helm-setup.md

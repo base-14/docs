@@ -52,6 +52,13 @@ keywords:
 
 <!-- markdownlint-enable MD013 MD011 -->
 
+:::note Running this in production
+
+Storing and querying this data at production volume is what base14 Scout does.
+[Check out Scout APM](https://base14.io/scout/apm).
+
+:::
+
 ## Introduction
 
 Django is a high-level Python web framework that encourages rapid development
@@ -2405,7 +2412,3 @@ from a single pane.
   \- Manual spans and advanced patterns
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
   up the collector for local development
-- [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
-  Production collector deployment
-- [All framework guides](/instrument/apps/auto-instrumentation/) -
-  Auto-instrumentation overview for every language

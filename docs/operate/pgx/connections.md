@@ -25,6 +25,13 @@ optimize connection utilization.
 
 ---
 
+:::note Running this in production
+
+pgX is the PostgreSQL monitoring app in base14 Scout.
+[Check out base14 pgX](https://base14.io/scout/pgx).
+
+:::
+
 ## Sections
 
 The Connections tab is organized into four sections:

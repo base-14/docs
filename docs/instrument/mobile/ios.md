@@ -43,6 +43,13 @@ That's the only code you write. The SDK is a thin Swift layer
 the instrumentation — you import `ScoutKit` and call the `Scout` type it
 declares.
 
+:::note Running this in production
+
+Storing and querying these sessions at production volume is what base14 Scout
+does. [Check out Scout RUM](https://base14.io/scout/rum).
+
+:::
+
 ## What You Get
 
 | Capability | Signal | Mechanism |
