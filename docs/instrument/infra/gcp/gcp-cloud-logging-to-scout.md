@@ -17,25 +17,37 @@ keywords:
   - google cloud pubsub receiver
   - opentelemetry gcp logs
   - cloud logging opentelemetry
-head:
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I send Google Cloud Logging logs to OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Route logs from Cloud Logging into a Pub/Sub topic using a Log Router sink, then consume the topic with the OpenTelemetry googlecloudpubsub receiver in your Scout collector."}},{"@type":"Question","name":"How does the collector authenticate to Pub/Sub?","acceptedAnswer":{"@type":"Answer","text":"The collector uses Google Application Default Credentials. Set the GOOGLE_APPLICATION_CREDENTIALS environment variable to the path of a service account key file, or use GKE Workload Identity to avoid managing key files."}},{"@type":"Question","name":"Can I stream logs from multiple GCP projects into one Scout collector?","acceptedAnswer":{"@type":"Answer","text":"Yes. Create the service account in the collector's project, grant it Pub/Sub Subscriber on the subscription in the logs project, and point the receiver at the cross-project subscription."}},{"@type":"Question","name":"What encoding should I use for the googlecloudpubsub receiver?","acceptedAnswer":{"@type":"Answer","text":"For collector versions below 0.132, use the built-in cloud_logging encoding. For 0.132 and above, use the googlecloudlogentry_encoding extension, which also parses structured attributes on 0.142+."}},{"@type":"Question","name":"Why are my Cloud Logging logs not appearing in Scout?","acceptedAnswer":{"@type":"Answer","text":"Check in order: messages exist in the Pub/Sub subscription, the collector has valid GCP credentials, collector logs show no permission errors, and the receiver is referenced in a logs pipeline."}}]}
 ---
+
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I send Google Cloud Logging logs to OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Route logs from Cloud Logging into a Pub/Sub topic using a Log Router sink, then consume the topic with the OpenTelemetry googlecloudpubsub receiver in your Scout collector."}},{"@type":"Question","name":"How does the collector authenticate to Pub/Sub?","acceptedAnswer":{"@type":"Answer","text":"The collector uses Google Application Default Credentials. Set the GOOGLE_APPLICATION_CREDENTIALS environment variable to the path of a service account key file, or use GKE Workload Identity to avoid managing key files."}},{"@type":"Question","name":"Can I stream logs from multiple GCP projects into one Scout collector?","acceptedAnswer":{"@type":"Answer","text":"Yes. Create the service account in the collector's project, grant it Pub/Sub Subscriber on the subscription in the logs project, and point the receiver at the cross-project subscription."}},{"@type":"Question","name":"What encoding should I use for the googlecloudpubsub receiver?","acceptedAnswer":{"@type":"Answer","text":"For collector versions below 0.132, use the built-in cloud_logging encoding. For 0.132 and above, use the googlecloudlogentry_encoding extension, which also parses structured attributes on 0.142+."}},{"@type":"Question","name":"Why are my Cloud Logging logs not appearing in Scout?","acceptedAnswer":{"@type":"Answer","text":"Check in order: messages exist in the Pub/Sub subscription, the collector has valid GCP credentials, collector logs show no permission errors, and the receiver is referenced in a logs pipeline."}}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
 
 This guide shows you how to stream logs from
 **Google Cloud Logging** into your Scout collector using a
 Pub/Sub subscription and the OpenTelemetry
 `googlecloudpubsub` receiver.
 
-The same pattern works for **any** Cloud Logging log
-source — you just change one filter. Throughout this guide
+The same pattern works for any Cloud Logging log
+source: change the inclusion filter. Throughout this guide
 we use **Load Balancer access logs** as the worked example.
+
+:::note Running this in production
+
+Storing and querying these logs at production volume is what base14 Scout
+does. [Check out Scout Logs](https://base14.io/scout/logs).
+
+:::
 
 ## How it works
 
-Cloud Logging doesn't push to OpenTelemetry directly.
+Cloud Logging does not push to OpenTelemetry directly.
 Instead you route the logs you care about into a Pub/Sub
 topic with a **Log Router sink**, and your Scout collector
 consumes that topic:
@@ -85,7 +97,7 @@ at the end.
 
 ---
 
-## Step 1 — Decide what to export, and make sure it's being logged
+## Step 1 — Decide what to export, and confirm it is being logged
 
 A Log Router sink selects logs with an **inclusion filter**
 based on `resource.type`. For the Load Balancer example,
@@ -120,8 +132,8 @@ regional LB.
 activity, and expand **Resource type** in the
 **Log fields** panel — it lists every resource type that
 has actually produced logs. Use that value as your filter.
-(For other log sources, just pick the appropriate
-`resource.type` the same way.)
+(Pick the `resource.type` for any other log source
+the same way.)
 :::
 
 ---
@@ -441,7 +453,7 @@ collector project's pool:
 
 ## Troubleshooting
 
-**`http_load_balancer` (or your resource type) doesn't
+**`http_load_balancer` (or your resource type) does not
 appear in Logs Explorer.**
 The resource-type picker only lists types that have logged
 something in the time window. Either no logs have been
@@ -457,7 +469,7 @@ pipeline is loaded but never consumes. Also confirm the
 receiver's `subscription:` path is correct.
 
 **`PermissionDenied` on the subscription.** The Subscriber
-grant (Step 4b) hasn't propagated yet (allow a few
+grant (Step 4b) has not propagated yet (allow a few
 minutes), or was granted in the wrong project for
 cross-project setups.
 
@@ -466,8 +478,8 @@ cross-project setups.
 a missing file. On GKE, this means the Workload Identity
 binding or ServiceAccount annotation is missing.
 
-**Backlog never drains.** The collector isn't consuming —
-almost always auth (above) or a missing pipeline. A
-draining backlog is the success signal: acking is how
-Pub/Sub confirms delivery; the data has gone to Scout,
-not been lost.
+**Backlog never drains.** The collector is not consuming.
+This is almost always auth (above) or a missing pipeline.
+A draining backlog means the path works: acking is how
+Pub/Sub confirms delivery, and the data has gone to Scout
+rather than being lost.

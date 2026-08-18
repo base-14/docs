@@ -16,12 +16,17 @@ keywords:
   - memorystore redis metrics
   - gcp managed services observability
   - opentelemetry gcp metrics
-head:
-  - - script
-    - type: application/ld+json
-    - |
-      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I send GCP managed service metrics to OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Use the OpenTelemetry googlecloudmonitoring receiver. It polls the Cloud Monitoring API on an interval and needs only the roles/monitoring.viewer IAM role — no Pub/Sub topic, subscription, or Log Router sink."}},{"@type":"Question","name":"Do GCP metrics need Pub/Sub like Cloud Logging logs do?","acceptedAnswer":{"@type":"Answer","text":"No. Logs are pushed through a Log Router sink into Pub/Sub, but metrics are pulled directly from the Cloud Monitoring API by the collector. There is no sink, topic, subscription, or publisher IAM binding to create."}},{"@type":"Question","name":"How does the collector authenticate to Cloud Monitoring?","acceptedAnswer":{"@type":"Answer","text":"Through Application Default Credentials. On GKE, use Workload Identity so no key file is needed. Elsewhere, set GOOGLE_APPLICATION_CREDENTIALS to a service account key file."}},{"@type":"Question","name":"Can I collect a whole GCP service without listing every metric?","acceptedAnswer":{"@type":"Answer","text":"Yes. Use metric_descriptor_filter with a starts_with expression on metric.type, for example metric.type = starts_with(\"cloudsql.googleapis.com/\"), instead of naming each metric individually."}},{"@type":"Question","name":"Why did all my GCP metrics stop arriving after adding one metric?","acceptedAnswer":{"@type":"Answer","text":"A GAUGE-kind DISTRIBUTION metric can produce an invalid data point that fails the whole scrape batch, dropping every metric from that receiver instance. Remove the distribution-valued metric and the rest resume."}}]}
 ---
+
+<!-- markdownlint-disable MD013 MD011 MD033 -->
+
+<head>
+  <script type="application/ld+json">
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I send GCP managed service metrics to OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Use the OpenTelemetry googlecloudmonitoring receiver. It polls the Cloud Monitoring API on an interval and needs only the roles/monitoring.viewer IAM role — no Pub/Sub topic, subscription, or Log Router sink."}},{"@type":"Question","name":"Do GCP metrics need Pub/Sub like Cloud Logging logs do?","acceptedAnswer":{"@type":"Answer","text":"No. Logs are pushed through a Log Router sink into Pub/Sub, but metrics are pulled directly from the Cloud Monitoring API by the collector. There is no sink, topic, subscription, or publisher IAM binding to create."}},{"@type":"Question","name":"How does the collector authenticate to Cloud Monitoring?","acceptedAnswer":{"@type":"Answer","text":"Through Application Default Credentials. On GKE, use Workload Identity so no key file is needed. Elsewhere, set GOOGLE_APPLICATION_CREDENTIALS to a service account key file."}},{"@type":"Question","name":"Can I collect a whole GCP service without listing every metric?","acceptedAnswer":{"@type":"Answer","text":"Yes. Use metric_descriptor_filter with a starts_with expression on metric.type, for example metric.type = starts_with(\"cloudsql.googleapis.com/\"), instead of naming each metric individually."}},{"@type":"Question","name":"Why did all my GCP metrics stop arriving after adding one metric?","acceptedAnswer":{"@type":"Answer","text":"A GAUGE-kind DISTRIBUTION metric can produce an invalid data point that fails the whole scrape batch, dropping every metric from that receiver instance. Remove the distribution-valued metric and the rest resume."}}]})}
+  </script>
+</head>
+
+<!-- markdownlint-enable MD013 MD011 -->
 
 This guide shows you how to collect metrics for **GCP managed
 services** — Cloud SQL, Memorystore, Pub/Sub, Cloud Run, BigQuery,
@@ -30,6 +35,13 @@ Compute Engine — into Scout using the OpenTelemetry
 
 If you also want GCP **logs**, that is a separate mechanism:
 see [GCP Cloud Logging](./gcp-cloud-logging-to-scout.md).
+
+:::note Running this in production
+
+Storing and querying these metrics at production volume is what base14 Scout
+does. [Check out Scout Metrics](https://base14.io/scout/metrics).
+
+:::
 
 ## How it works
 
@@ -50,9 +62,9 @@ interval — nothing is pushed to it:
       Scout
 ```
 
-This is much less setup than the logs path. Because it is a pull, there
-is **no** Log Router sink, Pub/Sub topic, subscription, or publisher IAM
-binding to create — just one IAM role and a list of metrics.
+Because it is a pull, there is no Log Router sink, Pub/Sub topic,
+subscription, or publisher IAM binding to create. The setup is one IAM
+role and a list of metrics.
 
 :::note
 Metrics are pulled on a schedule, not streamed. If the collector is down
@@ -332,17 +344,16 @@ straightforward. Distributions need care:
 :::warning One bad metric can drop all of them
 A `GAUGE`-kind `DISTRIBUTION` can yield an invalid data point that fails
 the **entire scrape batch** — dropping every metric from that receiver
-instance, not just the offending one. The symptom is confusing: metrics
-that worked yesterday all vanish after one new entry was added.
+instance, not just the offending one. Metrics that worked yesterday all
+vanish after one new entry is added.
 
 If metrics disappear after a config change, remove the
-distribution-valued metric you just added and confirm the rest return.
+distribution-valued metric you added and confirm the rest return.
 Latency metrics (`*_latencies`, `*_times`) are the usual culprits.
 :::
 
-Most managed-service metrics are scalars, so this rarely bites — but it
-is worth checking a metric's value type in Metrics Explorer before
-adding it.
+Most managed-service metrics are scalars. Check a metric's value type in
+Metrics Explorer before adding it.
 
 ---
 
@@ -374,8 +385,8 @@ instead.
 For Cloud SQL, this receiver gives you host-level metrics — CPU, memory,
 disk, quota. It cannot see inside the database. For query, table, lock,
 and connection detail, point
-[pgx](../../../operate/pgx/overview.md) at the instance as well. The two
-overlap very little.
+[base14 pgX](../../../operate/pgx/overview.md) at the instance as well.
+The two overlap very little.
 :::
 
 ---
