@@ -68,7 +68,7 @@ import Head from "@docusaurus/Head";
   </script>
 </Head>
 
-# How to Evaluate an Observability Platform
+# How to evaluate an observability platform (without getting locked in)
 
 > **TL;DR:** Most observability evaluations focus on features and
 > dashboards. The decisions that actually matter are pricing model,
@@ -149,7 +149,7 @@ pricing incentivizes teams to strip context from logs and traces to
 save money, which makes debugging harder. Per-seat pricing creates
 access tiers where junior engineers can't view dashboards during
 incidents. Per-host pricing punishes auto-scaling and
-[Kubernetes workloads](https://docs.base14.io/blog/kubernetes-observability-cost) in
+[Kubernetes workloads](/kubernetes-observability-cost) in
 particular.
 
 **What to evaluate:** Calculate your cost at current scale and at
@@ -340,7 +340,7 @@ lake with one query surface (SQL, not a proprietary DSL).
   across 50+ providers. Token tracking, cost attribution, prompt
   performance, and multi-agent workflow tracing in the same data
   lake as your infrastructure signals. See
-  [why a separate LLM tool doubles your spend](https://docs.base14.io/blog/llm-observability-cost).
+  [why a separate LLM tool doubles your spend](/llm-observability-cost).
 - **AI-assisted operations**: Scout MCP gives AI agents direct
   access to your observability data via the Model Context Protocol.
   Scout CLI for config validation, gap discovery, and
@@ -626,6 +626,6 @@ platform. No migration required.
 - [New Relic alternative: observability without the seat tax](/new-relic-alternative)
 - [CloudWatch alternative: unified observability beyond AWS](/cloudwatch-alternative)
 - [Observability cost optimization: why the pricing model matters more than your data volume](/observability-cost-optimization)
-- [Why Kubernetes breaks your observability bill](https://docs.base14.io/blog/kubernetes-observability-cost)
-- [Why a separate LLM tool doubles your observability spend](https://docs.base14.io/blog/llm-observability-cost)
+- [Why Kubernetes breaks your observability bill](/kubernetes-observability-cost)
+- [Why a separate LLM tool doubles your observability spend](/llm-observability-cost)
 - [The problem with observability theatre](/blog/observability-theatre)

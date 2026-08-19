@@ -1,6 +1,6 @@
 ---
 title: "LLM observability cost: why a separate monitoring tool doubles your spend"
-description: "LLM observability cost breakdown: running Langfuse or Helicone alongside Datadog adds $15K-36K/month. See why unified platforms cut that in half."
+description: "LLM observability cost breakdown: Datadog plus a standalone LLM tool runs $15K-36K+/month. A unified OpenTelemetry platform covers both for about $5,375."
 ---
 
 import Head from "@docusaurus/Head";
@@ -20,7 +20,7 @@ import Head from "@docusaurus/Head";
           name: "How much does LLM observability cost with separate tools?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Running a standalone LLM monitoring tool like Langfuse or Helicone alongside an infrastructure platform like Datadog typically costs $15K-40K per month combined. The infrastructure platform alone accounts for the majority of that spend, and the LLM tool adds an additional monthly cost on top.",
+            text: "Running a standalone LLM monitoring tool like Langfuse or Helicone alongside an infrastructure platform like Datadog typically costs $15K-36K per month or more, combined. The infrastructure platform alone accounts for the majority of that spend, and the LLM tool adds an additional monthly cost on top.",
           },
         },
         {
@@ -52,12 +52,12 @@ import Head from "@docusaurus/Head";
   </script>
 </Head>
 
-# LLM Observability Cost: Why a Separate Monitoring Tool Doubles Your Spend
+# LLM observability cost: why a separate monitoring tool doubles your spend
 
 > **TL;DR:** Running a standalone LLM monitoring tool alongside your
 > infrastructure platform creates two bills, two dashboards, and zero
-> correlation between them. Most production LLM incidents trace back to
-> infrastructure issues that a separate tool can't see. Unified platforms
+> correlation between them. Production LLM incidents routinely trace back
+> to infrastructure issues that a separate tool can't see. Unified platforms
 > with signal-based pricing eliminate the operational tax and cut
 > monitoring costs by more than half.
 
@@ -88,7 +88,7 @@ The LLM observability market has split into two camps, and most teams end up pay
 
 **Standalone LLM tools** like Langfuse, LangSmith, Helicone, and Arize handle prompt tracing,
 token tracking, and evaluation frameworks. They're genuinely useful for early experimentation.
-Langfuse alone has 19K+ GitHub stars, which reflects real demand for LLM visibility.
+Their adoption reflects real demand for LLM visibility.
 
 **Infrastructure platforms** like Datadog, New Relic, and Grafana have bolted on LLM monitoring
 modules. The data model is the core issue: LLM telemetry lands in a separate query surface
@@ -187,7 +187,7 @@ works out to roughly $5,375 per month - infrastructure and LLM monitoring includ
 | Cross-stack correlation              | Manual                  | Automatic              |
 
 The cost difference matters, but the operational difference matters more. When your LLM incident
-is caused by an infrastructure issue - and most of them are - you need both data sets in the
+is caused by an infrastructure issue - as many are - you need both data sets in the
 same query surface. Paying for two tools that can't correlate their data is paying twice for
 incomplete visibility.
 
@@ -323,6 +323,33 @@ telemetry and infrastructure telemetry in the same data lake, on the same bill.
 **Ready to consolidate your AI and infrastructure monitoring?**
 [Book a 15-minute demo](https://base14.io/contact) and see what unified LLM observability
 looks like at your scale.
+
+## FAQ
+
+### How much does LLM observability cost with separate tools?
+
+Running a standalone LLM monitoring tool like Langfuse or Helicone alongside an infrastructure
+platform like Datadog typically costs $15K-36K per month or more, combined. The infrastructure
+platform alone accounts for the majority of that spend, and the LLM tool adds an additional
+monthly cost on top.
+
+### Can you monitor LLM workloads without a separate tool?
+
+Yes. OpenTelemetry GenAI semantic conventions allow LLM telemetry to flow through the same
+pipeline as infrastructure metrics, logs, and traces. Unified observability platforms like
+base14 Scout include LLM monitoring natively with no add-on cost.
+
+### What is the main problem with running separate LLM and infrastructure monitoring?
+
+Two dashboards, two billing models, and zero correlation between them. When an LLM incident is
+caused by infrastructure issues like memory pressure or network latency, you cannot trace across
+the boundary without manual investigation across tools.
+
+### How does signal-based pricing reduce LLM observability cost?
+
+Signal-based pricing charges per event regardless of payload size. LLM telemetry is
+high-cardinality by nature, with prompt content, token counts, and model metadata. On GB-based
+platforms this rich metadata inflates your bill. Signal-based pricing keeps costs predictable.
 
 ---
 

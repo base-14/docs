@@ -28,7 +28,7 @@ import Head from "@docusaurus/Head";
           name: "How much does monitoring a 50-node Kubernetes cluster cost on Datadog vs signal-based pricing?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "A 50-node K8s cluster on Datadog with infrastructure monitoring, APM, and logging typically costs $12,000-15,000/month at published rates. The same cluster on base14 Scout with signal-based pricing ($250/month platform fee + $0.10/M metrics + $0.25/M logs and traces) runs approximately $3,200-4,500/month depending on telemetry volume.",
+            text: "A 50-node K8s cluster on Datadog with infrastructure monitoring, APM, and logging costs $10,400-11,400/month at published rates, rising to $13,000-18,000 with rich labels, longer retention, or additional modules. The same cluster on base14 Scout with signal-based pricing ($250/month platform fee + $0.10/M metrics + $0.25/M logs and traces) runs $1,550-3,350/month depending on telemetry volume.",
           },
         },
         {
@@ -56,10 +56,11 @@ import Head from "@docusaurus/Head";
 
 > **TL;DR:** Kubernetes telemetry is structurally expensive on
 > per-host and GB-based platforms. A 50-node cluster on Datadog runs
-> $12,000-15,000/month at published pricing. The same cluster on
-> base14 Scout with signal-based pricing ($250/month platform fee +
-> $0.10/M metrics + $0.25/M logs & traces) costs roughly
-> $3,200-4,500/month. The difference comes from how each model
+> $10,400-11,400/month at published pricing, and $13,000-18,000 once
+> you add rich labels, longer retention, or extra modules. The same
+> cluster on base14 Scout with signal-based pricing ($250/month
+> platform fee + $0.10/M metrics + $0.25/M logs & traces) costs
+> $1,550-3,350/month. The difference comes from how each model
 > handles cardinality, and Kubernetes generates a lot of it.
 
 Your Kubernetes observability bill doesn't scale with your workload.
@@ -223,11 +224,11 @@ dimensions. For a 50-node K8s cluster:
 | Container monitoring add-on | varies | +$1,000-2,000 |
 | **Estimated total** | | **$10,425-$11,425** |
 
-*Pricing as of April 2026. Based on publicly listed annual billing
+_Pricing as of April 2026. Based on publicly listed annual billing
 rates. Custom metrics count depends on integrations and labels
 enabled. Verify at
 [datadoghq.com/pricing](https://www.datadoghq.com/pricing/).
-Actual costs vary by contract.*
+Actual costs vary by contract._
 
 And this is conservative. Teams that keep rich Kubernetes labels on
 their custom metrics, retain logs beyond 15 days, or run
@@ -251,9 +252,9 @@ data ingest does:
 | Data ingest (beyond 100GB free) | $0.40/GB | $3,600 |
 | **Estimated total** | | **$5,492** |
 
-*Assumes 5 Full Platform + 3 Core users, ~300 GB/month total
+_Assumes 5 Full Platform + 3 Core users, ~300 GB/month total
 ingest beyond the free tier. Verify at
-[newrelic.com/pricing](https://newrelic.com/pricing).*
+[newrelic.com/pricing](https://newrelic.com/pricing)._
 
 New Relic's per-seat model means cost scales with team size, not
 cluster size. Small teams with large clusters may pay less than
@@ -290,7 +291,7 @@ punish it.
 
 | | Datadog | New Relic | base14 Scout |
 | :--- | :--- | :--- | :--- |
-| 50-node K8s cluster | $10,000-15,000/mo | $5,000-7,000/mo | $1,550-3,350/mo |
+| 50-node K8s cluster | $10,400-11,400/mo | $5,000-7,000/mo | $1,550-3,350/mo |
 | Pricing scales with | Hosts + GB + metrics | Seats + GB | Signals only |
 | Custom metrics penalty | $1/100 beyond included | Included in GB | No penalty |
 | Trace sampling needed | Often, to control cost | Often, to control ingest | No, zero-sampling friendly architecture |
@@ -298,9 +299,9 @@ punish it.
 | Default retention | 15 days (logs) | 8-30 days | 30 days |
 | Team access | Unlimited seats | Per-seat pricing | Unlimited seats |
 
-*All estimates assume published pricing, annual billing, 50-node
+_All estimates assume published pricing, annual billing, 50-node
 K8s cluster with moderate microservices workload. Actual costs vary
-by contract, volume commitments, and feature usage.*
+by contract, volume commitments, and feature usage._
 
 ## The hidden cost: what you lose to save money
 
@@ -398,6 +399,42 @@ across ephemeral infrastructure. That's not a bug; it's how
 container orchestration works. The question is whether your
 observability pricing model treats that reality as a feature or a
 penalty.
+
+## FAQ
+
+### Why is Kubernetes monitoring so expensive on Datadog?
+
+Kubernetes generates high-cardinality telemetry through unique pod
+names, container IDs, and label combinations. Datadog charges per
+host ($15-27/month for infrastructure, $31/month for APM) plus
+custom metrics at $1 per 100, which compounds quickly in dynamic
+K8s clusters where pods and labels multiply constantly.
+
+### How much does monitoring a 50-node Kubernetes cluster cost on Datadog vs signal-based pricing?
+
+A 50-node K8s cluster on Datadog with infrastructure monitoring,
+APM, and logging costs $10,400-11,400/month at published rates,
+rising to $13,000-18,000 with rich labels, longer retention, or
+additional modules. The same cluster on base14 Scout with
+signal-based pricing ($250/month platform fee + $0.10/M metrics +
+$0.25/M logs and traces) runs $1,550-3,350/month depending on
+telemetry volume.
+
+### What is signal-based pricing for observability?
+
+Signal-based pricing charges per data point (metric sample, log
+line, or trace span) regardless of size or cardinality. This means
+rich Kubernetes labels, full stack traces, and custom annotations
+don't inflate costs, unlike GB-based or per-host models where
+metadata size directly affects your bill.
+
+### How does Kubernetes cardinality affect observability costs?
+
+Every Kubernetes pod gets a unique name with a random hash.
+Multiply by namespaces, deployments, labels, and annotations, and a
+50-node cluster can generate hundreds of thousands of unique time
+series. On platforms that charge per custom metric or per GB, this
+cardinality explosion drives costs up without adding workload.
 
 ---
 
