@@ -1093,10 +1093,20 @@ client-side telemetry to source from.
 
 For browser instrumentation - document load timing, `fetch`/XHR spans from
 Client Components, click and submit interactions, React error boundary
-crashes, and Core Web Vitals - see
-[Next.js Full-Stack Instrumentation](./nextjs-fullstack.md). That guide is
-backed by a runnable browser-and-server example, and routes browser OTLP
-through a same-origin API route so the collector needs no CORS configuration.
+crashes, and Core Web Vitals - you have two options.
+
+`@base-14/scout-react` handles this without manual span setup. Call
+`Scout.initialize()` once from a Client Component and it emits spans for
+clicks, route changes, `fetch`/XHR, errors, and Core Web Vitals. See the
+[React guide](./react.md).
+
+[Next.js Full-Stack Instrumentation](./nextjs-fullstack.md) is the manual
+path. That guide is backed by a runnable browser-and-server example, and
+routes browser OTLP through a same-origin API route so the collector needs no
+CORS configuration.
+
+Once browser spans are arriving, you can query them by session, screen, and
+error in [Scout's RUM views](../../../operate/rum/getting-started.md).
 
 Browser spans propagate the `traceparent` header on outbound `fetch` calls to
 your API routes, so a single trace can span "button click in the browser ->
@@ -1427,9 +1437,13 @@ Components, document load, clicks, and App Router navigation - install
 `@opentelemetry/sdk-trace-web` and `@opentelemetry/auto-instrumentations-web`,
 then mount the setup from a Client Component in `app/layout.tsx` so it starts
 on hydration. Use `NEXT_PUBLIC_` env vars for the collector endpoint so they
-reach the browser bundle. The full setup, including browser error capture and
-Core Web Vitals, is in
+reach the browser bundle. The full manual setup, including browser error
+capture and Core Web Vitals, is in
 [Next.js Full-Stack Instrumentation](./nextjs-fullstack.md).
+
+To skip the manual wiring, `@base-14/scout-react` covers the same browser
+signals from a single `Scout.initialize()` call. See the
+[React guide](./react.md).
 
 ### Can I use it with Next.js middleware?
 

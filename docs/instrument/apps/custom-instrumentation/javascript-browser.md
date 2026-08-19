@@ -1,16 +1,20 @@
 ---
-title: Browser JavaScript OpenTelemetry Instrumentation - Manual Tracing Guide
+title: OpenTelemetry JavaScript Browser Instrumentation - Manual Tracing Guide
 sidebar_label: Browser JavaScript
 sidebar_position: 0
 description:
-  Custom instrumentation for browser JavaScript with OpenTelemetry. Manual
-  tracing, metrics, logs for web applications with browser OTel SDK.
+  OpenTelemetry JavaScript browser instrumentation for web applications.
+  Manual tracing, metrics, and logs with the browser OTel SDK, exported to
+  base14 Scout.
 keywords:
   [
+    opentelemetry javascript,
+    opentelemetry browser instrumentation,
+    opentelemetry browser,
     browser monitoring,
     javascript instrumentation,
     frontend monitoring,
-    opentelemetry browser,
+    browser rum,
     web application monitoring,
   ]
 ---
@@ -19,6 +23,20 @@ keywords:
 
 This guide provides instructions for setting up **custom instrumentation** for
 JavaScript browser applications using the OpenTelemetry JavaScript SDK.
+
+:::tip Building with React or Next.js?
+
+You do not need manual instrumentation. `@base-14/scout-react` ships
+zero-config browser RUM that captures clicks, route changes, fetch and XHR
+calls, errors, Core Web Vitals, and long tasks with a single
+`Scout.initialize()` call. See the
+[React guide](../auto-instrumentation/react.md) or the
+[Next.js guide](../auto-instrumentation/nextjs.md).
+
+Use this guide for vanilla JavaScript, or when you need control over exactly
+which spans are produced.
+
+:::
 
 :::note Running this in production
 
@@ -213,6 +231,8 @@ receivers:
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
   up collector for local development
 - [React Auto-Instrumentation](../auto-instrumentation/react.md) -
-  Auto-instrumentation for React applications
+  Zero-config browser RUM for React applications
+- [Scout RUM](../../../operate/rum/getting-started.md) - Query sessions,
+  errors, and screen performance once telemetry is flowing
 - [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
   Production deployment

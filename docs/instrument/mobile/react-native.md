@@ -1,12 +1,12 @@
 ---
-title: React Native + React Web Instrumentation - Mobile + Browser RUM
+title: React Native OpenTelemetry Instrumentation - Mobile RUM and Crash Reporting
 sidebar_label: React Native
 sidebar_position: 26
 description:
-  Auto-instrument React Native (iOS + Android) and React (browser) apps with
-  the `@base-14/scout-react` SDK. Captures taps, navigation, errors, native
-  crashes, HTTP, scroll, web vitals — exports OpenTelemetry traces, metrics,
-  and logs to a Scout collector.
+  Auto-instrument React Native apps on iOS and Android with the
+  `@base-14/scout-react` SDK. Captures taps, navigation, errors, native
+  crashes, ANR, and HTTP as OpenTelemetry traces, metrics, and logs
+  exported to a Scout collector.
 keywords:
   [
     react native opentelemetry,
@@ -14,7 +14,8 @@ keywords:
     react native crash reporting,
     react native distributed tracing,
     react native mobile observability,
-    react web vitals,
+    react native anr detection,
+    react native session tracking,
     expo opentelemetry,
     kscrash react native,
     metrickit react native,
@@ -840,6 +841,10 @@ versions.
   to receive OTLP-HTTP on `:4318`
 - Look at [Flutter mobile instrumentation](/instrument/mobile/flutter)
   for the Dart equivalent
+- Read the [React web guide](/instrument/apps/auto-instrumentation/react/)
+  if you are instrumenting a browser app with the same SDK
+- [Query your RUM data in Scout](/operate/rum/getting-started/) once
+  sessions, crashes, and screen performance are flowing
 
 ## References
 

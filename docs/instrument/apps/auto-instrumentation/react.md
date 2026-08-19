@@ -288,6 +288,8 @@ only the entry import (`@base-14/scout-react` vs
 - [React Native + React Web instrumentation reference](../../mobile/react-native.md)
 - [Custom JavaScript browser instrumentation](../custom-instrumentation/javascript-browser.md)
   for manual span / metric / log emission
+- [Query your RUM data in Scout](../../../operate/rum/getting-started.md) once
+  sessions, errors, and Core Web Vitals are flowing
 
 ## References
 
