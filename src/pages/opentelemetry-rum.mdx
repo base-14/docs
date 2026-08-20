@@ -1,5 +1,5 @@
 ---
-title: "OpenTelemetry RUM: Real User Monitoring Without a Vendor SDK"
+title: "OpenTelemetry RUM: real user monitoring without a vendor SDK"
 description: "OpenTelemetry RUM for web and mobile. Export browser and app telemetry as OTLP instead of a proprietary agent, and query it beside backend traces."
 ---
 
@@ -52,7 +52,7 @@ import Head from "@docusaurus/Head";
           name: "How much does OpenTelemetry RUM cost with signal-based pricing?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "RUM telemetry is billed as ordinary signals rather than per session or per user. Under base14 Scout's pricing that is a $250/month platform fee plus $0.10 per million metrics and $0.25 per million logs and traces, with unlimited users. Cost tracks the volume of telemetry produced, so a session on a busy screen costs more than a quiet one, and adding engineers to the account costs nothing.",
+            text: "RUM telemetry is billed as ordinary signals rather than per session or per user. Under base14 Scout's pricing that is a $250/month platform fee plus $0.10 per million metrics and $0.25 per million logs and traces, with no per-seat charges. Cost tracks the volume of telemetry produced, so a session on a busy screen costs more than a quiet one. The Startup tier includes up to 50 authorized users and Enterprise raises the limit.",
           },
         },
         {
@@ -97,10 +97,10 @@ are running two SDKs, paying two vendors, and reconciling two datasets that
 disagree.
 
 That is why RUM instrumentation tends to outlive the decision that
-introduced it. The cost of changing it is not the license fee. It is the
-release cycle.
+introduced it. The cost of changing it is the release cycle, not the
+license fee.
 
-## What OpenTelemetry RUM actually means
+## What OpenTelemetry RUM means
 
 It means the SDK produces OpenTelemetry signals, not a vendor payload:
 
@@ -111,12 +111,12 @@ It means the SDK produces OpenTelemetry signals, not a vendor payload:
   died.
 - A `fetch` call is an `http.request` span that propagates `traceparent`.
 
-That last one is the part that matters most and gets the least attention.
-Because the browser span carries W3C trace context, the click that started a
-request and the backend work it caused end up in the same trace. Not two
-dashboards correlated by timestamp. One trace.
+The last one carries the most weight. Because the browser span carries W3C
+trace context, the click that started a request and the backend work it
+caused end up in the same trace, rather than in two dashboards lined up by
+timestamp.
 
-And because the wire format is OTLP, the receiving end is your choice.
+Because the wire format is OTLP, the receiving end is your choice.
 
 ## What the SDKs capture
 
@@ -140,7 +140,7 @@ Delivery is built for real networks: batched export, exponential backoff
 with jitter, an on-disk buffer that survives being offline, and a forced
 flush when the app goes to the background.
 
-## Two things worth knowing before you commit
+## Two limitations to check before you commit
 
 **Session replay is not there.** Neither SDK captures it, and neither
 captures profiling. If replay is on your requirements list, this is the
@@ -153,21 +153,20 @@ crash, error, and ANR telemetry bypasses the session sample rate. So
 crash-free rate and error counts stay accurate even at 1%. You lose routine
 session detail, not failure visibility.
 
-We say this plainly because the alternative is you discovering it in week
-three of an evaluation.
+Both are worth confirming before you start an evaluation.
 
 ## How the pricing model differs
 
 Most RUM is billed per session, sometimes per user, usually with session
-replay as a separate line. That model has a specific failure mode: your
-monitoring bill scales with your product's success. A traffic spike is a
-good day for the business and a surprise invoice for the platform team.
+replay as a separate line. That model ties your monitoring bill to your
+product's success, so a traffic spike lands as an unplanned invoice for the
+platform team.
 
 Signal-based pricing bills RUM as what it is, telemetry. base14 Scout
 charges a $250/month platform fee plus $0.10 per million metrics and $0.25
 per million logs and traces. Spans from a browser cost the same as spans
-from a backend service, users are unlimited, and there is no separate RUM
-tier to buy.
+from a backend service, there is no per-seat charge, and there is no
+separate RUM tier to buy.
 
 The practical difference is which lever you pull when the bill grows. Under
 per-session pricing you reduce the number of sessions you observe. Under
@@ -230,10 +229,10 @@ requirement, Scout RUM is not a fit today.
 
 RUM telemetry is billed as ordinary signals rather than per session or per
 user. Under base14 Scout's pricing that is a $250/month platform fee plus
-$0.10 per million metrics and $0.25 per million logs and traces, with
-unlimited users. Cost tracks the volume of telemetry produced, so a session
-on a busy screen costs more than a quiet one, and adding engineers to the
-account costs nothing.
+$0.10 per million metrics and $0.25 per million logs and traces, with no
+per-seat charges. Cost tracks the volume of telemetry produced, so a session
+on a busy screen costs more than a quiet one. The Startup tier includes up
+to 50 authorized users and Enterprise raises the limit.
 
 ### Does RUM session sampling cause you to miss crashes?
 

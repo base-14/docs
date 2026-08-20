@@ -28,7 +28,7 @@ import Head from "@docusaurus/Head";
           name: "Does reducing observability costs mean losing visibility?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "With the usual approaches (sampling, filtering, shorter retention), yes. But signal-based pricing with a zero-sampling friendly architecture and 30-day retention gives you more visibility at lower cost. The goal shifts from send less data to pick the right pricing model.",
+            text: "With the usual approaches (sampling, filtering, shorter retention), yes. But signal-based pricing with a zero-sampling friendly architecture and 30-day retention gives you more visibility at lower cost. The goal shifts from \"send less data\" to \"pick the right pricing model.\"",
           },
         },
         {
@@ -44,12 +44,12 @@ import Head from "@docusaurus/Head";
           name: "Is it worth migrating if we've already optimized our current setup?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Ask whether you've optimized within a broken model. If your team spends real hours on cost management (tuning logs, managing sampling, building filtering pipelines), that time is a cost migration removes.",
+            text: "Ask whether you've optimized within a broken model. If your team spends real hours on cost management (tuning logs, managing sampling, building filtering pipelines), that time is a cost migration removes. Run the Step 1 audit to find out.",
           },
         },
         {
           "@type": "Question",
-          name: "Can we migrate incrementally or is it all-or-nothing?",
+          name: "Can we migrate incrementally, or is it all-or-nothing?",
           acceptedAnswer: {
             "@type": "Answer",
             text: "Go incremental. OTel-based platforms support dual-shipping during evaluation, so you can move one service at a time and compare results before committing fully. A 50-host environment typically reaches full parallel operation in about a week. At 200 hosts, plan for 2-3 weeks.",
@@ -60,7 +60,7 @@ import Head from "@docusaurus/Head";
           name: "What is signal-based pricing for observability?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "You pay per event (log line, trace span, metric data point), not per byte. Adding rich context like stack traces doesn't raise the bill. base14 Scout: $250/month platform fee + $0.10 per million metrics + $0.25 per million logs and traces. Unlimited seats and 30-day default retention included.",
+            text: "You pay per event (log line, trace span, metric data point), not per byte. Adding rich context like stack traces doesn't raise the bill. base14 Scout: $250/month platform fee + $0.10 per million metrics + $0.25 per million logs and traces. No per-seat charges, and 30-day default retention included. The Startup tier covers up to 50 authorized users; Enterprise raises the limit.",
           },
         },
         {
@@ -76,7 +76,7 @@ import Head from "@docusaurus/Head";
   </script>
 </Head>
 
-# Observability Cost Optimization: Beyond Volume Discounts
+# Observability cost optimization: beyond volume discounts
 
 > **TL;DR:** Cost is the #1 observability tool selection criterion
 > for the third year running (65% of teams). But the biggest lever
@@ -86,8 +86,8 @@ import Head from "@docusaurus/Head";
 > $0.10/M metrics + $0.25/M logs & traces) removes those constraints.
 > A 100-host K8s team paying ~$36,270/month on GB-based pricing
 > with full indexing drops to ~$5,375/month, with a zero-sampling
-> friendly architecture, 30-day default retention, and unlimited
-> seats.
+> friendly architecture, 30-day default retention, and no
+> per-seat charges.
 
 A platform engineering team spent weeks building a custom pipeline to
 filter debug logs before they hit their observability vendor. The
@@ -100,20 +100,18 @@ customer credits and the executive review - exceeded their entire
 quarterly savings.
 
 This is the paradox at the center of observability cost optimization.
-Teams spend more time managing observability costs than actually using
+Teams spend more time managing observability costs than using
 observability. And the strategies they reach for first, filtering,
 sampling, and cutting retention, often make incidents more expensive
 to resolve.
 
-Here's what most guides won't tell you: the biggest cost lever isn't
-your data volume. It's your pricing model.
+The biggest cost lever is the pricing model, not the data volume.
 
-If you're paying per gigabyte, every stack trace, every metadata
-attribute, every detailed log line carries a tax. You end up
-incentivized to send less data. That's the opposite of what
-observability is supposed to do.
+If you pay per gigabyte, every stack trace, metadata attribute, and
+detailed log line adds to the bill, so the incentive is to send less
+of exactly the data that makes debugging fast.
 
-This article breaks down where observability dollars actually go, why
+This article breaks down where observability dollars go, why
 conventional optimization advice is incomplete, and what changes when
 you stop paying for bytes and start paying for signals.
 
@@ -132,8 +130,8 @@ money. But only 14% call their consolidation efforts "very
 successful."
 
 Meanwhile, 84% are pursuing or considering tool consolidation
-(LogicMonitor 2026 Outlook, 100 VP+ IT decision-makers). The intent is
-there. The execution isn't.
+(LogicMonitor 2026 Outlook, 100 VP+ IT decision-makers). The intent
+is widespread; the execution is not.
 
 Where does the money go? For most teams working on observability cost
 optimization, the breakdown looks like this:
@@ -145,10 +143,9 @@ optimization, the breakdown looks like this:
 | Metrics and custom dashboards | 10-15%         | Cardinality charges, per-metric pricing     |
 | Additional seats and features | 5-10%          | Per-user pricing, feature gating            |
 
-The pattern is clear. Most observability spend goes to
-[log management](https://base14.io/scout/logs). And most of that cost
-isn't driven by how much you log. It's driven by how you're charged
-for it.
+Most observability spend goes to
+[log management](https://base14.io/scout/logs), and how you are
+charged for it drives that cost more than how much you log.
 
 ## Why observability costs spiral: the four cost traps
 
@@ -171,9 +168,9 @@ that makes observability valuable.**
 ### The sampling compromise
 
 Every article about reducing observability costs recommends
-sampling as a primary strategy. "Sample 10% of your traces and
-you'll cut costs by 90%." The math is clean, but the logic is
-dangerous.
+sampling as a primary strategy: sample 10% of your traces and cut
+costs by 90%. The arithmetic holds. The assumption behind it does
+not.
 
 Consider what 10% sampling means during a P1. Your payment service
 handles 100 million transactions per day, and a rare race condition
@@ -181,8 +178,8 @@ hits 0.1% of requests - 100,000 affected transactions, plenty to
 trigger alerts.
 
 But with 10% sampling, you've kept traces for only 10,000 of those
-transactions. The specific trace showing two database writes colliding
-at the wrong millisecond? No guarantee it survived.
+transactions. There is no guarantee the one showing two database
+writes colliding at the wrong millisecond is among them.
 
 Teams hit this regularly. With aggressive sampling on
 [distributed traces](https://base14.io/scout/traces), the root
@@ -196,9 +193,8 @@ fragmented tools. Factor in customer credits, the executive
 review, and engineering overtime, and a single P1 with missing
 traces can cost more than a month of observability spend.
 
-Sampling isn't cost optimization. It's a bet that you won't need the
-data you threw away. And the payout when you lose that bet is
-measured in shifts, not hours.
+Sampling is a bet that you will not need the data you discarded.
+When that bet loses, the cost is measured in shifts, not hours.
 
 ### The retention squeeze
 
@@ -218,15 +214,15 @@ invoice - the engineering time spent managing observability costs:
 
 - Constant log-level tuning to stay under ingestion limits -
   not a one-time fix, but an ongoing negotiation every time a
-  service ships new telemetry
+  service ships new telemetry.
 - Pipeline maintenance: adjusting filters, reviewing budget
   dashboards, second-guessing what to keep and what to drop.
   The problem isn't that the pipeline took weeks to build. It's
-  that it never stops demanding attention
+  that it never stops demanding attention.
 - Cardinality firefighting when a new tag dimension blows up
-  your metric count mid-quarter
+  your metric count mid-quarter.
 - Access debates: which teams get full dashboards, who gets
-  read-only, who gets nothing
+  read-only, who gets nothing.
 
 This tax is real overhead. For mid-size teams, it consumes 2-4
 days per month of a platform engineer's time - roughly 10% of
@@ -237,15 +233,15 @@ needs to account for this hidden spend.
 ## The conventional playbook (and why it's incomplete)
 
 Search for "reduce observability costs" and you'll find the same
-playbook everywhere. It's not wrong. It's just not enough.
+playbook everywhere. The advice is sound as far as it goes.
 
 ### Filter at the source
 
 The standard advice: move log levels from DEBUG to INFO. Cut the noise
 before ingestion. This can trim log volume by 70-80%.
 
-Works well for genuinely noisy services. But the debug data you
-filtered? That's often what you need most during an incident.
+Works well for genuinely noisy services, though the debug data you
+filtered out is often what you need most during an incident.
 
 ### Reduce cardinality
 
@@ -284,8 +280,8 @@ And that's where real observability cost optimization starts.
 ### What signal-based pricing means
 
 Signal-based pricing charges per event, not per byte. A 200-byte log
-entry and a 20KB entry with full stack trace cost the same. Five spans
-or 500 spans? Same price.
+entry and a 20KB entry with full stack trace cost the same, and a span
+carrying five attributes costs the same as one carrying fifty.
 
 This flips the incentive. Instead of stripping context to save money,
 you add as much as your engineers need. Rich telemetry that makes
@@ -298,8 +294,7 @@ decision: should this service log at INFO or DEBUG, should the
 request body go into traces, is this metric dimension worth the
 cardinality charge?
 
-These aren't engineering questions - they're accounting questions
-wearing engineering clothes.
+Those are billing decisions dressed up as engineering ones.
 
 With signal-based pricing, they disappear. You can send
 everything, include full context, and add custom attributes
@@ -335,7 +330,7 @@ Most teams don't index everything. Indexing 30% of logs and spans
 brings this down to ~$15,400/month - but 70% of your logs and
 traces become unsearchable during incidents.
 
-_Pricing as of March 2026. Published list rates at
+_Pricing as of August 2026. Published list rates at
 [datadoghq.com/pricing](https://www.datadoghq.com/pricing/),
 annual billing. Even after negotiated contracts, the structural
 gap remains._
@@ -355,10 +350,10 @@ With signal-based pricing, you pay per signal regardless of size.
 On Scout, every telemetry signal is metered - including
 infrastructure metrics that GB-based vendors bundle into host fees.
 
-- **Logs**: 430 GB/day at ~1.3 KB avg = ~333M/day = ~10B/month
+- **Logs**: 430 GB/day at ~1.3 KB avg = ~333M/day = ~10B/month.
 - **Metrics**: ~1,185 time series/host at blended 60s/30s scrape
-  = ~7.5B data points/month
-- **Traces**: 7.5B trace spans/month
+  = ~7.5B data points/month.
+- **Traces**: 7.5B trace spans/month.
 
 | Line item                                                                | Calculation       | Monthly cost      |
 | :----------------------------------------------------------------------- | :---------------- | :---------------- |
@@ -367,7 +362,7 @@ infrastructure metrics that GB-based vendors bundle into host fees.
 | Logs                                                                     | 10,000M × $0.25/M | $2,500            |
 | Traces                                                                   | 7,500M × $0.25/M  | $1,875            |
 | All features ([APM](https://base14.io/scout/apm), logs, traces, metrics) |                   | Included          |
-| Unlimited seats (20 engineers)                                           |                   | Included          |
+| No per-seat charge (20 engineers)                                        |                   | Included          |
 | 30-day full-resolution retention                                         |                   | Included          |
 | **Total**                                                                |                   | **~$5,375/month** |
 
@@ -408,13 +403,11 @@ most competitors offer.
 Extended retention is available at minimal extra cost. No tiered
 storage. No cold archives.
 
-This matters because shortened retention creates hidden costs. Teams
-can't look back more than 15 days. Slow-burn issues go undiagnosed.
-
-Performance baselines become guesswork. Capacity planning suffers.
-
-These aren't theoretical. They lead to over-provisioning, reactive
-firefighting, and - ironically - higher infrastructure costs.
+Shortened retention creates hidden costs. Teams cannot look back
+more than 15 days, slow-burn issues go undiagnosed, performance
+baselines become guesswork, and capacity planning suffers. The
+result is over-provisioning, reactive firefighting, and higher
+infrastructure costs.
 
 ### Purpose-built storage
 
@@ -422,8 +415,8 @@ Scout's zero-sampling friendly architecture uses purpose-built
 storage designed for
 [observability workloads](/blog/observability-theatre). The
 principle is simple: design storage for the query pattern, not the
-other way around. This is what makes keeping everything affordable
-— no cost penalty forcing you to sample.
+other way around. This is what makes keeping everything affordable, with no cost
+penalty that forces you to sample.
 
 ### Unified platform eliminates tool sprawl
 
@@ -431,13 +424,13 @@ Running separate tools for logs, metrics, traces, and APM creates
 compounding costs:
 
 - **Licensing overlap**: You're paying 3-4 vendors for features that
-  overlap significantly
+  overlap significantly.
 - **Integration maintenance**: Custom pipelines connecting tools
-  require ongoing engineering
+  require ongoing engineering.
 - **Training costs**: Each tool has its own query language, UI patterns,
-  and alert configuration
+  and alert configuration.
 - **Context-switching during incidents**: Engineers jump between 3-4
-  tabs, correlating timestamps manually
+  tabs, correlating timestamps manually.
 
 The consolidation math is straightforward. When teams run separate
 tools for APM, log management, metrics, and incident management,
@@ -453,7 +446,7 @@ but rather a natural consequence of running fragmented tools.
 Observability cost optimization isn't purely technical. Some of the
 biggest cost drivers are organizational.
 
-### Unlimited seats: no per-user pricing
+### No per-user pricing
 
 When platforms charge per seat, organizations limit access -
 senior engineers get full dashboards, junior developers request
@@ -468,10 +461,10 @@ Knowledge concentrates in a few individuals, increasing
 [bus factor](/blog/reducing-bus-factor-in-observability)
 and slowing incident response.
 
-Unlimited seats change the dynamic. When everyone can explore
-production telemetry, debugging gets faster and bottlenecks shrink.
-Per-seat charges seem small in isolation, but the organizational
-friction of gating access is not.
+Dropping the per-seat axis changes the dynamic. When everyone can
+explore production telemetry, debugging gets faster and bottlenecks
+shrink. Per-seat charges seem small in isolation, but the
+organizational friction of gating access is not.
 
 ### The support gap nobody budgets for
 
@@ -482,16 +475,15 @@ thresholds, and dashboards nobody looks at.
 base14's [SRE partnership](https://base14.io/services) works
 differently. Every customer gets assisted onboarding, fortnightly
 reliability reviews, and 24/7 support with sub-15-minute response
-times. Not a ticket queue. A working relationship with someone who
-knows your stack.
-
-This is included - not an upsell. Compare that to hiring a dedicated
-SRE ($180,000+/year) or paying for consulting ($250-400/hour).
+times, from someone who knows your stack. It is included for every
+customer rather than sold as an upgrade. Compare that to hiring a
+dedicated SRE ($180,000+/year) or paying for consulting
+($250-400/hour).
 
 ### OpenTelemetry: cost insurance for the future
 
-Vendor lock-in is a cost multiplier you don't feel until you try
-to leave. Proprietary agents, custom SDKs, and non-standard data
+Vendor lock-in costs nothing until you try to leave. Proprietary
+agents, custom SDKs, and non-standard data
 formats each make switching harder, keeping teams on expensive
 platforms long after they've outgrown them.
 
@@ -502,8 +494,8 @@ making your telemetry pipeline portable. You're building on a
 by design, which means you can evaluate alternatives without
 touching application code.
 
-That portability is the ultimate cost lever - permanent
-negotiating power over every vendor you'll ever work with.
+That portability is the cost lever that lasts. It keeps every
+vendor conversation open.
 
 base14 Scout is built on OpenTelemetry - no proprietary agents, no
 custom SDKs. Your code works with any OTel-compatible backend, and
@@ -520,11 +512,11 @@ Start simple: what do you pay each vendor monthly? Then add the hidden
 costs:
 
 - Engineering hours spent on cost optimization activities (pipeline
-  building, log level tuning, cardinality management)
+  building, log level tuning, cardinality management).
 - Time spent during incidents that extended investigation beyond what
-  full-data access would require
-- Productivity loss from limited seat access
-- Opportunity cost of features gated behind higher tiers
+  full-data access would require.
+- Productivity loss from limited seat access.
+- Opportunity cost of features gated behind higher tiers.
 
 Most teams find that hidden costs add significantly on top of direct
 licensing fees.
@@ -562,10 +554,10 @@ If the audit points to a pricing model problem, the migration path
 matters. Look for platforms that let you adopt step by step:
 
 1. [Deploy OTel collectors](/blog/production-ready-otel-collector)
-   alongside existing agents
-2. Dual-ship telemetry to both platforms during evaluation
-3. Compare investigation workflows, query performance, and total cost
-4. Migrate service by service, not all at once
+   alongside existing agents.
+2. Dual-ship telemetry to both platforms during evaluation.
+3. Compare investigation workflows, query performance, and total cost.
+4. Migrate service by service, not all at once.
 
 For a 50-host environment, expect about a week from first
 collector to full parallel operation. At 200 hosts, 2-3 weeks -
@@ -574,7 +566,7 @@ parity take longer at scale.
 
 With [OpenTelemetry-native platforms](https://base14.io/scout), you
 don't re-instrument anything. Point your OTel collectors at the new
-backend. Data flows.
+backend and the data flows.
 
 ## Observability cost optimization at a glance
 
@@ -584,14 +576,15 @@ backend. Data flows.
 | Reduce cardinality       | Lowers metric costs                            | Loses per-user drill-down            |
 | Shorten retention        | Saves storage costs                            | Blinds you to slow-burn issues       |
 | Consolidate tools        | Cuts overlapping licenses                      | Migration effort required            |
-| **Switch pricing model** | **Up to ~$370K/year savings (see math above)** | **None: keep all data, all access**  |
+| **Switch pricing model** | **Up to ~$370K/year savings (see math above)** | **Migration effort, but no data or access trade-off** |
 
 ## FAQ
 
 ### How much can teams realistically save on observability costs?
 
 It depends on your current stack and how much you index. A
-100-host K8s team on full-indexing list pricing saves ~$370K/year
+100-host Kubernetes team on full-indexing list pricing saves
+~$370K/year
 moving to signal-based pricing. With negotiated discounts and
 partial indexing the gap narrows, but the structural savings from
 eliminating per-host fees, dual-cost logging, and per-metric
@@ -600,10 +593,10 @@ charges remain.
 ### Does reducing observability costs mean losing visibility?
 
 With the usual approaches (sampling, filtering, shorter retention),
-yes. That's the tradeoff. But signal-based pricing with a
-zero-sampling friendly architecture and 30-day retention gives you
-more visibility at lower cost. The goal
-shifts from "send less data" to "pick the right pricing model."
+yes. But signal-based pricing with a zero-sampling friendly
+architecture and 30-day retention gives you more visibility at lower
+cost. The goal shifts from "send less data" to "pick the right pricing
+model."
 
 ### How does signal-based pricing handle large log lines or traces?
 
@@ -631,8 +624,9 @@ plan for 2-3 weeks.
 You pay per event (log line, trace span, metric data point), not per
 byte. Adding rich context like stack traces doesn't raise the bill.
 base14 Scout: $250/month platform fee + $0.10 per million metrics +
-$0.25 per million logs and traces. Unlimited seats and 30-day
-default retention included.
+$0.25 per million logs and traces. No per-seat charges, and 30-day
+default retention included. The Startup tier covers up to 50
+authorized users; Enterprise raises the limit.
 
 ### How do I calculate my observability TCO?
 
@@ -643,7 +637,7 @@ Add extra incident time from sampled or expired data. Add lost
 output from limited seat access. Most teams find hidden costs add
 significantly on top of direct fees.
 
-## The pricing model is the optimization
+## Pricing model is the biggest cost lever
 
 Every conventional guide teaches you to work around your pricing
 model - filter harder, sample more aggressively, retain less data,
@@ -653,18 +647,19 @@ and ask you to absorb its costs.
 The alternative is simpler: fix the incentive structure itself.
 
 Signal-based pricing, zero-sampling friendly architecture, 30-day
-default retention, and unlimited seats aren't premium features
-behind an enterprise paywall. They're what happens when the pricing
-model stops fighting what observability is supposed to do.
+default retention, and access that isn't metered per seat aren't
+premium features behind an enterprise paywall. They're what happens
+when the pricing model stops fighting what observability is
+supposed to do.
 
 Three things worth remembering:
 
 1. If your team spends engineering time on observability cost
-   management, the pricing model is the problem
+   management, the pricing model is the problem.
 2. The total cost of observability includes the hidden tax of sampling,
-   short retention, and limited access; not just the invoice
-3. OpenTelemetry-native platforms give you permanent negotiating power,
-   the ability to switch without re-instrumenting
+   short retention, and limited access; not just the invoice.
+3. OpenTelemetry-native instrumentation lets you switch platforms
+   without re-instrumenting, which is what keeps a renewal negotiable.
 
 **Ready to see what your observability costs look like on signal-based
 pricing?** [Book a demo](https://base14.io/contact) and bring your

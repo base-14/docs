@@ -44,7 +44,7 @@ import Head from "@docusaurus/Head";
           name: "How do I compare observability pricing across vendors?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Normalize to a common scenario: pick your actual host count, daily log volume, trace span count, metric data points, and team size. Calculate each vendor's cost for that exact profile. Include hidden costs like per-seat charges, indexing fees, and retention upgrades. base14 Scout uses signal-based pricing: $250/month platform fee + $0.10/M metrics + $0.25/M logs and traces, with unlimited users.",
+            text: "Normalize to a common scenario: pick your actual host count, daily log volume, trace span count, metric data points, and team size. Calculate each vendor's cost for that exact profile. Include hidden costs like per-seat charges, indexing fees, and retention upgrades. base14 Scout uses signal-based pricing: $250/month platform fee + $0.10/M metrics + $0.25/M logs and traces, and no per-seat charges. The Startup tier includes up to 50 authorized users; Enterprise raises the limit.",
           },
         },
         {
@@ -60,7 +60,7 @@ import Head from "@docusaurus/Head";
           name: "How do I estimate my signal volume for pricing comparisons?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Logs: divide daily GB by average log line size (typically 1.0-2.0 KB) to get signals per day, multiply by 30. Traces: your indexed span count maps 1:1 to signals. Metrics: count time series and multiply by data points per month based on scrape interval (43,200 for 1/min, 86,400 for 1/30s).",
+            text: "Logs: divide daily GB by average log line size (typically 1.0-2.0 KB) to get signals per day, then multiply by 30. Traces: your indexed span count maps 1:1 to signals. Metrics: count time series and multiply by data points per month based on scrape interval (43,200 for 1/min, 86,400 for 1/30s).",
           },
         },
       ],
@@ -71,7 +71,7 @@ import Head from "@docusaurus/Head";
 # How to evaluate an observability platform (without getting locked in)
 
 > **TL;DR:** Most observability evaluations focus on features and
-> dashboards. The decisions that actually matter are pricing model,
+> dashboards. The decisions that matter are pricing model,
 > data retention, sampling policy, and vendor lock-in. This guide
 > provides a weighted evaluation framework, a vendor comparison
 > across five platforms, and a structured one-week proof of concept
@@ -90,11 +90,11 @@ instrumentation was locked to a single vendor, and switching would
 require re-instrumenting 80+ services. They were stuck, paying
 more every quarter for a decision that felt right at the time.
 
-The problem wasn't the platform. It was the evaluation criteria.
-They optimized for features instead of structure, and the
+The problem was the evaluation criteria, not the platform. They
+optimized for features instead of structure, and the
 structural decisions are the ones that compound over time.
 
-This guide covers what actually matters when you evaluate
+This guide covers what matters when you evaluate
 observability tools, how to weight each criterion for your team,
 and how to run a proof of concept that answers the right questions
 before you commit.
@@ -117,11 +117,11 @@ production is whether you can afford to keep all your data, whether
 every engineer can access the tools, and whether you can leave if
 the vendor stops earning your business.
 
-**Evaluating on features answers the question "which tool looks
-best today?"** The better question is "which tool will cost the
-least to operate and the least to leave in two years?"
+Feature comparisons answer which tool looks best today. The
+question worth answering is which tool costs the least to operate,
+and the least to leave, in two years.
 
-## The seven criteria that actually matter
+## Seven criteria for evaluating an observability platform
 
 Not all evaluation criteria carry equal weight. Pricing model and
 vendor lock-in are structural decisions that determine your cost
@@ -163,7 +163,7 @@ guide.
 
 ### 2. Vendor lock-in (weight: 20%)
 
-Lock-in is a cost multiplier you don't feel until renewal. If
+Lock-in costs nothing until renewal. If
 switching vendors requires re-instrumenting every service, you
 have no leverage when prices increase.
 
@@ -177,9 +177,8 @@ have no leverage when prices increase.
   standard (SQL, PromQL)?
 - Can you run two backends simultaneously during evaluation?
 
-OpenTelemetry-native platforms give you permanent portability.
-Your instrumentation is an investment that works with any
-OTel-compatible backend. Proprietary instrumentation is a cost
+OpenTelemetry-native platforms keep your instrumentation
+portable. It works with any OTel-compatible backend. Proprietary instrumentation is a cost
 that compounds every month you stay.
 
 ### 3. Data retention (weight: 15%)
@@ -233,8 +232,9 @@ separate UIs?
 
 ### 6. Support model (weight: 10%)
 
-The gap between "submit a ticket" and "talk to someone who knows
-your stack" is measured in incident resolution time.
+Support quality shows up in incident resolution time. Filing a
+ticket and waiting is slower than talking to someone who already
+knows your stack.
 
 **What to evaluate:** What's the response time SLA? Is support
 tiered by plan, or does every customer get the same level? Does
@@ -295,7 +295,7 @@ they mean in dollars for a concrete scenario.
 | Grafana Cloud | Log volume ($0.50/GB) + metric active series + trace volume                                                        | Varies widely by usage           |
 | base14 Scout  | $250 platform + 7,500M metrics ($750) + 10,000M logs ($2,500) + 7,500M traces ($1,875)                             | ~$5,375 (all signals, all users) |
 
-_Pricing as of March 2026. Published list rates. Negotiated
+_Pricing as of August 2026. Published list rates. Negotiated
 discounts lower totals but don't change billing structures. See
 each alternative page for detailed calculation methodology._
 
@@ -317,7 +317,7 @@ cost trajectories that diverge further as you scale.
 ## What base14 Scout covers
 
 The comparison table above shows where Scout sits on the structural
-criteria. Here's what the platform actually includes, since most
+criteria. Here's what the platform includes, since most
 evaluation guides skip this part and leave you checking feature
 pages.
 
@@ -340,7 +340,7 @@ lake with one query surface (SQL, not a proprietary DSL).
   across 50+ providers. Token tracking, cost attribution, prompt
   performance, and multi-agent workflow tracing in the same data
   lake as your infrastructure signals. See
-  [why a separate LLM tool doubles your spend](/llm-observability-cost).
+  [why a separate LLM tool adds a second bill](/llm-observability-cost).
 - **AI-assisted operations**: Scout MCP gives AI agents direct
   access to your observability data via the Model Context Protocol.
   Scout CLI for config validation, gap discovery, and
@@ -349,7 +349,7 @@ lake with one query surface (SQL, not a proprietary DSL).
   with full OpenTelemetry correlation from client to backend.
 
 All features are included at every tier. No feature gating, no
-add-on pricing for LLM observability or APM. Unlimited users.
+add-on pricing for LLM observability or APM. No per-seat charges.
 SRE partnership with fortnightly reliability reviews and 24/7
 support included for every customer.
 
@@ -365,15 +365,15 @@ evaluation. They typically cap ingestion at 100GB/month, limit
 retention to 7-15 days, restrict users to 1-5 seats, and disable
 features like distributed tracing or custom dashboards.
 
-Evaluating on a free tier is like test-driving a car in a parking
-lot. You learn where the buttons are, but nothing about how it
-handles at highway speed.
+A free tier shows you the interface. It tells you nothing about
+query speed, cost, or retention at production volume, which is
+where the decision is made.
 
 ### The feature checklist trap
 
 A spreadsheet with 50 feature rows and checkmarks across five
 vendors tells you very little about which platform your team will
-actually use during incidents. The features that matter most
+use during incidents. The features that matter most
 (query speed under load, correlation across signal types, alert
 routing during P1s) don't show up in a checklist.
 
@@ -386,8 +386,8 @@ experience will involve real data with messy cardinality,
 dashboards you build yourself, and incidents that don't follow
 the demo script.
 
-**The antidote to all three traps is the same: run a proof of
-concept on your actual workload.**
+All three of these traps have the same fix: run a proof of
+concept on your actual workload.
 
 ### The sunk cost trap
 
@@ -486,10 +486,10 @@ after your PoC.
 | Compliance and deployment           | 5%       | \_\_\_   | \_\_\_   | \_\_\_   |
 | **Weighted total**                  | **100%** | \_\_\_   | \_\_\_   | \_\_\_   |
 
-The scorecard isn't the decision. It's a tool for structuring the
-conversation with your team and ensuring the evaluation covers the
-dimensions that matter long-term, not just the ones that impress
-during a demo.
+The scorecard does not make the decision for you. It structures
+the conversation with your team and keeps the evaluation on the
+dimensions that matter long-term, not the ones that impress during
+a demo.
 
 ## FAQ
 
@@ -523,8 +523,9 @@ log volume, trace span count, metric data points, and team size.
 Calculate each vendor's cost for that exact profile. Include hidden
 costs like per-seat charges, indexing fees, and retention upgrades.
 base14 Scout uses signal-based pricing: $250/month platform fee +
-$0.10/M metrics + $0.25/M logs and traces, unlimited users
-included.
+$0.10/M metrics + $0.25/M logs and traces, and no per-seat
+charges. The Startup tier includes up to 50 authorized users;
+Enterprise raises the limit.
 
 ### What does OpenTelemetry-native mean for vendor evaluation?
 
@@ -559,14 +560,14 @@ and multiply by data points per month based on scrape interval
   context-switching during incidents. The unified signals criterion
   helps you evaluate whether a single platform can replace your
   current stack.
-- **Your team is growing past 30 engineers.** This is the
-  inflection point where per-seat pricing starts hurting, access
-  gaps become visible during incidents, and the cost of the wrong
-  decision multiplies.
+- **Your team is approaching 60 engineers.** This is where
+  per-seat pricing starts to hurt, access gaps become visible
+  during incidents, and the cost of the wrong decision
+  multiplies.
 
 ### Skip this guide if
 
-- **You're a solo developer or team of under 5.** Free tiers from
+- **You're a solo developer or team of under 10.** Free tiers from
   New Relic, Grafana Cloud, or CloudWatch are genuinely useful at
   small scale, and the structural concerns in this guide don't
   apply until you're dealing with real team coordination and cost
@@ -595,7 +596,7 @@ decisions align with how they operate. The shift from fragmented
 tools to [unified observability](/blog/unified-observability)
 changes how teams work, not just what they pay.
 
-## The evaluation that pays for itself
+## Why a structured evaluation is worth the time
 
 The difference between a good observability evaluation and a bad
 one shows up over years, not weeks. Teams that evaluate on pricing
@@ -627,5 +628,5 @@ platform. No migration required.
 - [CloudWatch alternative: unified observability beyond AWS](/cloudwatch-alternative)
 - [Observability cost optimization: why the pricing model matters more than your data volume](/observability-cost-optimization)
 - [Why Kubernetes breaks your observability bill](/kubernetes-observability-cost)
-- [Why a separate LLM tool doubles your observability spend](/llm-observability-cost)
+- [Why two monitoring stacks cost more than one platform](/llm-observability-cost)
 - [The problem with observability theatre](/blog/observability-theatre)

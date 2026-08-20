@@ -1,6 +1,6 @@
 ---
 title: "Observability for growing engineering teams (20 to 200 engineers)"
-description: "Observability for growing teams breaks at 20, 60, and 200 engineers. Unlimited users, 30-day retention, signal-based pricing keep it working as you scale."
+description: "Observability for growing teams breaks at 20, 60, and 200 engineers. No per-seat pricing, 30-day retention, and signal-based cost keep it working as you scale."
 ---
 
 import Head from "@docusaurus/Head";
@@ -8,7 +8,7 @@ import Head from "@docusaurus/Head";
 <Head>
   <meta
     name="keywords"
-    content="observability for growing teams, monitoring for scaling teams, observability for engineering teams, observability at 50 engineers, observability platform for mid-market, unlimited users observability, observability per-seat pricing"
+    content="observability for growing teams, monitoring for scaling teams, observability for engineering teams, observability at 50 engineers, observability platform for mid-market, no per-seat observability pricing, observability per-seat pricing"
   />
   <script type="application/ld+json">
     {JSON.stringify({
@@ -28,7 +28,7 @@ import Head from "@docusaurus/Head";
           name: "Why does per-seat pricing become a problem at scale?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Per-seat pricing forces teams to gate access to observability tools. At $349 per user per month for full platform access, a 100-engineer team faces a $35,000 monthly seat cost before any data. Teams respond by restricting access, which means junior engineers debug with screen shares and incidents take longer to resolve.",
+            text: "Per-seat pricing forces teams to gate access to observability tools. On New Relic Full Platform at $349 per user per month, giving all 100 engineers full access costs $34,900 a month in seats before any data. Teams respond by restricting access, so junior engineers debug with screen shares and incidents take longer to resolve.",
           },
         },
         {
@@ -36,7 +36,7 @@ import Head from "@docusaurus/Head";
           name: "What does base14 Scout cost for a 60-engineer team?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Scout uses signal-based pricing: $250/month platform fee plus $0.10/M metrics and $0.25/M logs and traces. A 60-engineer team running 50 hosts of infrastructure with moderate telemetry typically pays around $2,500-$4,000/month total. Unlimited users are included at every team size.",
+            text: "Scout uses signal-based pricing: $250/month platform fee plus $0.10/M metrics and $0.25/M logs and traces. A 60-engineer team running 50 hosts of infrastructure with moderate telemetry typically pays around $2,500-$4,000/month total. Users are not a billing axis: Startup includes up to 50 authorized users, and Enterprise raises the limit.",
           },
         },
         {
@@ -44,7 +44,7 @@ import Head from "@docusaurus/Head";
           name: "Can every engineer have access to observability data?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "With base14 Scout, yes. Unlimited users are included at every team size. Every engineer, SRE, support engineer, and product manager can query telemetry directly. This removes the coordination overhead during incidents and lets juniors develop debugging intuition on quiet days.",
+            text: "With base14 Scout, yes. Scout does not charge per user, so access is not rationed by license cost. Startup includes up to 50 authorized users and Enterprise raises the limit. Every engineer, SRE, support engineer, and product manager can query telemetry directly. This removes the coordination overhead during incidents and lets juniors develop debugging intuition on quiet days.",
           },
         },
         {
@@ -52,7 +52,7 @@ import Head from "@docusaurus/Head";
           name: "How should observability change as a team grows from 20 to 200 engineers?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "The tools should not change; the access model should. Small teams need fast setup and unified signals. Growing teams need unlimited users and predictable cost scaling. Large teams need compliance readiness and consistent retention. Signal-based pricing, unified observability, and unlimited access keep the same platform working across all three stages.",
+            text: "The tools should not change; the access model should. Small teams need fast setup and unified signals. Growing teams need broad access without per-seat fees, and predictable cost scaling. Large teams need compliance readiness and consistent retention. Signal-based pricing, unified observability, and access that is not metered per seat keep the same platform working across all three stages.",
           },
         },
         {
@@ -60,7 +60,7 @@ import Head from "@docusaurus/Head";
           name: "What is the cost difference between per-seat and signal-based pricing?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "At 100 engineers, per-seat pricing (New Relic Full Platform at $349/user) costs approximately $11,700/month even with an optimized license mix restricting 45 engineers to dashboard-only access. Signal-based pricing (base14 Scout) has zero per-seat cost - the same 100 engineers access the platform for the same price as 20 engineers.",
+            text: "At 100 engineers, a New Relic license mix of 30 Full Platform ($349/user), 25 Core ($49/user), and 45 dashboard-only users costs about $11,700 a month in seats. Full Platform for all 100 costs $34,900. Signal-based pricing (base14 Scout) has zero per-seat cost - the same 100 engineers access the platform for the same price as 20 engineers.",
           },
         },
       ],
@@ -75,9 +75,9 @@ import Head from "@docusaurus/Head";
 > (per-seat pricing forces access tiers), and 200 engineers (tribal
 > knowledge fragments). The fix isn't a new tool for each stage -
 > it's a pricing model and access structure that doesn't punish
-> team growth. base14 Scout provides unlimited users, signal-based
-> pricing, and 30-day retention so the same platform works at every
-> stage of growth.
+> team growth. base14 Scout does not charge per seat, and pairs
+> signal-based pricing with 30-day retention so the same platform
+> works at every stage of growth.
 
 At 20 engineers, everyone knows which service is theirs. The
 on-call rotation is manageable, the alert volume is manageable,
@@ -99,8 +99,8 @@ with how observability platforms price access and data. The
 platforms that work for 20 engineers stop working as you grow,
 and the ones that work for 200 were not affordable at 20.
 
-This page covers how observability for growing teams actually
-breaks, what changes at each stage, and how to pick a platform
+This page covers how observability breaks for growing teams,
+what changes at each stage, and how to pick a platform
 whose structural decisions scale with your team.
 
 ## The three inflection points
@@ -123,22 +123,24 @@ older services, and nobody has time to tune alerts carefully.
 The on-call engineer starts ignoring alerts because most are
 false positives.
 
-This isn't a pricing problem yet. It's a signal-to-noise problem.
-Teams that hit this wall respond in one of two ways: they stop
-trusting alerts (dangerous), or they consolidate into a platform
+At this stage the problem is signal-to-noise, not pricing. Teams
+that hit this wall respond in one of two ways: they stop
+trusting alerts, which is the dangerous option, or they
+consolidate into a platform
 where alerts can be defined centrally with SLO thresholds.
 
-### 60 engineers: the per-seat trap
+### 60 engineers: per-seat costs
 
 This is where observability for growing teams most commonly
 breaks. At 60 engineers, you're evaluating whether everyone
-actually needs full access to the observability platform.
+needs full access to the observability platform.
 
-On platforms with per-seat pricing, the math is punishing. New
-Relic's Full Platform tier at $349 per user per month means 60
-engineers with full access costs $20,940/month in seat licenses
-alone - before any data ingestion. Most teams respond by creating
-license tiers: SREs and on-call engineers get Full Platform,
+On platforms with per-seat pricing, cost scales directly with
+headcount. New Relic's Full Platform tier at $349 per user per
+month means 60 engineers with full access costs $20,940/month in
+seat licenses alone, before any data ingestion. Most teams
+respond by creating license tiers: SREs and on-call engineers
+get Full Platform,
 backend engineers get Core access, and frontend, QA, and support
 engineers get Basic (dashboard-only) access.
 
@@ -149,9 +151,9 @@ traces, and the junior engineer on Basic can't access APM.
 When incidents cross team boundaries (and most do), someone with
 Full Platform access has to screen-share their dashboard.
 
-**Running into the per-seat trap at your current scale?**
+**Seeing seat costs shape access at your scale?**
 [Book a 15-minute demo](https://base14.io/contact) and we'll
-model your team size against unlimited-user pricing.
+model your team size against signal-based pricing.
 
 ### 200 engineers: tribal knowledge and compliance
 
@@ -171,7 +173,7 @@ platform's retention policy, data export capabilities, and
 compliance certifications were decisions made years earlier by
 someone evaluating tools for a much smaller team.
 
-## What actually changes at each stage
+## What changes at each stage
 
 The tools don't change as much as you might think. A good
 observability platform works at 20 engineers and at 200. What
@@ -184,13 +186,13 @@ changes is the access model and cost structure.
 | Data retention need | 7-15 days                | 30 days (trend analysis) | 30-90 days (compliance)    |
 | Incident complexity | Single team              | Cross-team               | Multi-domain specialists   |
 | Tool count          | 1-2                      | 3-5 (fragmenting)        | 5+ (consolidation project) |
-| Cost scaling        | Linear                   | Non-linear (seats)       | Room to renegotiate        |
+| Cost scaling        | Linear                   | Non-linear (seats)       | Negotiated enterprise rate |
 
 The mistake most teams make is assuming they need a different
-tool at each stage. What they actually need is a tool whose
+tool at each stage. What they need is a tool whose
 pricing and access model stay predictable as the team grows.
 
-It's the structural decisions that compound, not the feature list.
+Structural decisions compound over time. Feature lists do not.
 
 ## What a growing team needs from observability
 
@@ -198,28 +200,27 @@ Here's what to prioritize when evaluating observability for
 growing teams, ordered by how much each factor affects your
 trajectory.
 
-### Unlimited users (cost axis that doesn't scale with headcount)
+### No per-seat pricing
 
 This is the single biggest decision. Per-seat pricing forces you
 to create license tiers, which creates access gaps, which slows
-incident response. Platforms with unlimited users remove this
-axis entirely - your 30th engineer and your 200th engineer cost
-the same.
+incident response. Platforms that don't bill per seat remove this
+axis entirely - headcount stops being a line item on the bill.
 
 When every person on the team can explore telemetry directly, a
 few things change:
 
 - Juniors develop debugging intuition on quiet days, not just
-  during incidents
+  during incidents.
 - Support engineers answer customer questions without waiting on
-  engineering
+  engineering.
 - Product managers investigate adoption patterns without filing
-  tickets
-- Incident responders don't screen-share dashboards over Zoom
+  tickets.
+- Incident responders don't screen-share dashboards over Zoom.
 
-That's the practical difference unlimited access makes.
+Removing the license gate is what makes each of these possible.
 
-### Signal-based pricing (cost axis that scales with workload)
+### Signal-based pricing
 
 Growing teams generate more telemetry as they add services. The
 question is whether that growth is linear and predictable, or
@@ -247,7 +248,7 @@ retention. Growing teams that need to investigate slow-burn
 issues end up paying the upgrade regardless - pick a platform
 where 30 days is included by default.
 
-### Unified signals (not four tools duct-taped together)
+### Unified signals in one platform
 
 At 20 engineers, separate tools for logs, metrics, traces, and
 APM is manageable. At 200, it creates licensing overlap,
@@ -257,16 +258,16 @@ The consolidation project that hits most teams around 100
 engineers is expensive and disruptive. Picking a unified platform
 early avoids the forced migration later.
 
-### OpenTelemetry-native (portability as cost insurance)
+### OpenTelemetry-native instrumentation
 
 At 200 engineers, you'll evaluate switching vendors at least
 once. If your instrumentation is proprietary, switching requires
 re-instrumenting every service - a project most teams can't
 justify even when the current vendor is charging too much.
 
-OpenTelemetry-native platforms give you permanent negotiating
-power. Your instrumentation is portable, so switching is a
-collector configuration change, not a re-instrumentation project.
+OpenTelemetry-native platforms keep that leverage available. Your
+instrumentation is portable, so switching is a collector
+configuration change, not a re-instrumentation project.
 
 ### Compliance readiness (SOC 2, ISO 27001, BYOC)
 
@@ -281,7 +282,7 @@ data residency requirements arrive. Platforms that offer BYOC as
 an enterprise tier let you meet compliance without sacrificing
 observability capabilities.
 
-### SRE partnership (not a ticket queue)
+### SRE partnership instead of tiered support
 
 At every stage from 20 to 200, teams benefit from hands-on
 observability expertise. Most platforms provide tiered support:
@@ -298,18 +299,20 @@ that would otherwise mean funding a senior SRE headcount.
 
 ## The cost of per-seat pricing as your team grows
 
-Here's the math that catches growing teams off guard.
+Seat costs at each team size, compared with signal-based pricing:
 
 | Team size     | New Relic (Full Platform) | base14 Scout            |
 | :------------ | :------------------------ | :---------------------- |
-| 20 engineers  | $6,980/month in seats     | $0 (unlimited included) |
-| 60 engineers  | $20,940/month in seats    | $0 (unlimited included) |
-| 100 engineers | $34,900/month in seats    | $0 (unlimited included) |
-| 200 engineers | $69,800/month in seats    | $0 (unlimited included) |
+| 20 engineers  | $6,980/month in seats     | $0 (no per-seat charge) |
+| 60 engineers  | $20,940/month in seats    | $0 (no per-seat charge) |
+| 100 engineers | $34,900/month in seats    | $0 (no per-seat charge) |
+| 200 engineers | $69,800/month in seats    | $0 (no per-seat charge) |
 
 _Assumes Full Platform access for all engineers at $349/user/month.
 Most teams use optimized license mixes (Full + Core + Basic) to
-reduce seat costs, but this creates access gaps._
+reduce seat costs, but this creates access gaps. Scout has no
+per-seat charge at any team size; the Startup tier covers up to 50
+authorized users, and Enterprise raises the limit._
 
 Even with an optimized license mix (e.g., 30% Full Platform, 25%
 Core, 45% Basic for a 100-engineer team), seat licenses still
@@ -321,8 +324,8 @@ distributed tracing, or infrastructure monitoring. See our
 detailed comparison.
 
 Signal-based pricing removes the seat axis entirely. You pay for
-telemetry events, not for the people who look at them. Growing
-the team from 20 to 200 engineers has zero impact on the bill.
+telemetry events, not for the people who look at them. Adding
+engineers does not add a seat charge at any team size.
 
 ## What base14 Scout provides for growing teams
 
@@ -331,8 +334,9 @@ All signals flow into a single data lake with one query surface
 (standard SQL, not a proprietary DSL). Here's what matters for
 teams scaling from 20 to 200 engineers.
 
-- **Unlimited users included at every team size.** No per-seat
-  fees, no license tiers, no access gates during incidents.
+- **No per-seat charges at any team size.** Adding an engineer
+  never changes your bill. The Startup tier includes up to 50
+  authorized users; Enterprise raises the limit.
 - **Signal-based pricing.** $250/month platform fee +
   $0.10/M metrics + $0.25/M logs and traces. See the
   [full pricing breakdown](https://base14.io/pricing).
@@ -361,7 +365,7 @@ guide.
 - **Engineering teams between 20 and 200 engineers** evaluating
   their first serious observability platform or planning to
   consolidate existing tools.
-- **Teams hitting the per-seat trap** - if license costs are
+- **Teams gating access on license cost** - if seat pricing is
   forcing you to create access tiers, the pricing model is
   working against you.
 - **Teams adopting OpenTelemetry** - Scout is OTel-native, so
@@ -395,9 +399,9 @@ guide.
 These quotes reflect what happens after teams evaluate on the
 criteria that matter for growing teams and switch to a platform
 whose pricing and access model align with how engineering teams
-actually operate. The shift from fragmented tools with license
-gates to unified observability with unlimited access changes how
-teams work, not just what they pay.
+operate. The shift from fragmented tools with license
+gates to unified observability without per-seat charges changes
+how teams work, not just what they pay.
 
 ## FAQ
 
@@ -412,53 +416,55 @@ inflection is a pricing and access problem, not a tooling problem.
 ### Why does per-seat pricing become a problem at scale?
 
 Per-seat pricing forces teams to gate access to observability
-tools. At $349 per user per month for full platform access, a
-100-engineer team faces a $35,000 monthly seat cost before any
-data. Teams respond by restricting access, which means junior
-engineers debug with screen shares and incidents take longer to
-resolve.
+tools. On New Relic Full Platform at $349 per user per month,
+giving all 100 engineers full access costs $34,900 a month in
+seats before any data. Teams respond by restricting access, so
+junior engineers debug with screen shares and incidents take
+longer to resolve.
 
 ### What does base14 Scout cost for a 60-engineer team?
 
 Scout uses signal-based pricing: $250/month platform fee plus
 $0.10/M metrics and $0.25/M logs and traces. A 60-engineer team
 running 50 hosts of infrastructure with moderate telemetry
-typically pays around $2,500-$4,000/month total. Unlimited users
-are included at every team size.
+typically pays around $2,500-$4,000/month total. Users are not a
+billing axis: Startup includes up to 50 authorized users, and
+Enterprise raises the limit.
 
 ### Can every engineer have access to observability data?
 
-With base14 Scout, yes. Unlimited users are included at every
-team size. Every engineer, SRE, support engineer, and product
-manager can query telemetry directly. This removes the
-coordination overhead during incidents and lets juniors develop
-debugging intuition on quiet days.
+With base14 Scout, yes. Scout does not charge per user, so access
+is not rationed by license cost. Startup includes up to 50
+authorized users and Enterprise raises the limit. Every engineer,
+SRE, support engineer, and product manager can query telemetry
+directly. This removes the coordination overhead during incidents
+and lets juniors develop debugging intuition on quiet days.
 
 ### How should observability change as a team grows from 20 to 200 engineers?
 
 The tools should not change; the access model should. Small
 teams need fast setup and unified signals. Growing teams need
-unlimited users and predictable cost scaling. Large teams need
-compliance readiness and consistent retention. Signal-based
-pricing, unified observability, and unlimited access keep the
-same platform working across all three stages.
+broad access without per-seat fees, and predictable cost scaling.
+Large teams need compliance readiness and consistent retention.
+Signal-based pricing, unified observability, and access that is
+not metered per seat keep the same platform working across all
+three stages.
 
 ### What is the cost difference between per-seat and signal-based pricing?
 
-At 100 engineers, per-seat pricing (New Relic Full Platform at
-$349/user) costs approximately $11,700/month even with an
-optimized license mix restricting 45 engineers to dashboard-only
-access. Signal-based pricing (base14 Scout) has zero per-seat
+At 100 engineers, a New Relic license mix of 30 Full Platform
+($349/user), 25 Core ($49/user), and 45 dashboard-only users
+costs about $11,700 a month in seats. Full Platform for all 100
+costs $34,900. Signal-based pricing (base14 Scout) has zero per-seat
 cost - the same 100 engineers access the platform for the same
 price as 20 engineers.
 
-## The pricing model is the real decision
+## Pricing model matters more than features
 
 Most observability evaluations focus on features, dashboards, and
 integrations. These matter, but they aren't what breaks as your
-team grows. What breaks is the pricing model and access structure.
-
-That's the decision that compounds.
+team grows. What breaks is the pricing model and access structure,
+and that is the decision that compounds.
 
 Teams that pick observability tools on feature checklists often
 find themselves re-evaluating eighteen months later when the
@@ -467,7 +473,7 @@ fragments at 100+ engineers. Teams that pick based on pricing
 model and access model end up making a decision that still makes
 sense at 2x and 10x scale.
 
-**Ready to see unlimited-user observability at your team size?**
+**Ready to see observability without a seat tax at your team size?**
 [Book a one-week PoC](https://base14.io/contact) with base14
 Scout. We build custom dashboards on your actual services, and
 your whole team evaluates on real traffic from day one.
