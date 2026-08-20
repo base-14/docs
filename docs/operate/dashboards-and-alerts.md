@@ -1,40 +1,34 @@
 ---
 date: 2025-11-19
-title: Scout Dashboards and Alerts as Code with Grizzly
+title: Scout Dashboards and Alerts as Code with Grizzly (Archived)
 description:
-  Manage Grafana dashboards and alerts as code using Grizzly. Automate
-  deployment, version control, and CI/CD integration for observability configs.
+  Grizzly is archived and no longer maintained. Use gcx to manage Scout
+  dashboards and folders as code. This page is kept for teams still running
+  Grizzly.
 keywords:
   [
     grafana dashboards,
     grafana alerts,
     dashboards as code,
     grizzly grafana,
+    grizzly archived,
     observability automation,
   ]
 ---
 
-# Leveraging Grizzly with Base14 Scout Observability Platform
+# Grizzly with base14 Scout
 
-Effectively manage Grafana resources using `Grizzly`, a powerful command-line
-tool that leverages the Grafana API. Since base14 Scout platform is fully
-compatible with the Grafana API, Grizzly integrates seamlessly, allowing you to
-define and deploy your observability configurations as code.
+:::warning[Grizzly is archived. Use gcx.]
 
-## Why Grizzly?
+Use [Dashboards as Code with gcx](./dashboards-as-code-gcx.md) instead.
 
-Grizzly provides a declarative approach to managing Grafana resources. Instead
-of manually configuring dashboards, alerts, and other elements through the
-Grafana UI, you define them in human-readable YAML files. This offers several
-advantages:
+Grizzly is frozen at v0.7.1 (January 2025). The repo is archived at
+[grafana-cold-storage/grizzly](https://github.com/grafana-cold-storage/grizzly).
 
-- **Version Control:** Store your entire observability setup in Git, enabling
-  collaboration, tracking changes, and easy rollbacks.
-- **Automation:** Integrate Grizzly into your CI/CD pipelines for automated
-  deployment of your Grafana configurations.
-- **Reproducibility:** Ensure consistent environments across different stages
-  (development, staging, production).
-- **Efficiency:** Define and deploy multiple resources quickly and consistently.
+:::
+
+Grizzly (`grr`) applies Grafana resources from YAML over the Grafana API, which
+Scout serves. This page documents the setup for teams still running it.
 
 ## Getting Started with Grizzly
 
@@ -108,12 +102,12 @@ Grizzly supports the following resources:
 - AlertNotificationTemplate
 
 For more details, see the
-[Grizzly documentation](https://grafana.github.io/grizzly/grafana/).
+[archived Grizzly documentation](https://github.com/grafana-cold-storage/grizzly/tree/main/docs).
 
 ## Applying Your Configurations with Grizzly
 
 Once you have defined your resources in YAML files, you can use Grizzly to apply
-them to your Scout Grafana instance.
+them to your Scout instance.
 
 ### Applying All Resources in a Directory
 
@@ -148,14 +142,14 @@ grr diff -f dashboards/application-metrics.yaml
 ```
 
 This will show you a detailed comparison of the local file and the corresponding
-resource in your Scout Grafana instance.
+resource in your Scout instance.
 
 ## Working with Jsonnet (Brief Overview)
 
 Jsonnet is a data templating language that can be used to generate Grafana JSON,
 which Grizzly can then manage. Jsonnet offers more advanced features like
-variables, functions, and imports, making it powerful for creating complex and
-reusable dashboard definitions.
+variables, functions, and imports for complex and reusable dashboard
+definitions.
 
 While YAML is generally easier to read and write for simple configurations,
 Jsonnet can be beneficial for:
@@ -227,10 +221,10 @@ jobs:
       - uses: actions/checkout@v3
       - name: Set up Grizzly
         run: |
-          curl -L https://github.com/grafana/grizzly/releases/latest/download/\
-grizzly_linux_amd64 -o grizzly
-          chmod +x grizzly
-          sudo mv grizzly /usr/local/bin/
+          curl -L https://github.com/grafana-cold-storage/grizzly/releases/\
+download/v0.7.1/grr-linux-amd64 -o grr
+          chmod +x grr
+          sudo mv grr /usr/local/bin/
 
       - name: Configure Grizzly
         run: |
@@ -251,14 +245,13 @@ grizzly_linux_amd64 -o grizzly
   security. You'll need to define these secrets in your repository settings.
 - Finally, we apply all the Grafana resources defined in the repository.
 
-## Conclusion
+## Migrating off Grizzly
 
-Grizzly provides a powerful and efficient way to manage your Grafana resources
-on the Scout Observability Platform. By defining your configurations as code in
-YAML (or using Jsonnet for more advanced scenarios), you can streamline your
-observability workflows, improve consistency, and integrate seamlessly with your
-existing development practices. Start leveraging Grizzly today to take full
-control of your Grafana environment on Scout!
+Grizzly still works, but it stops here. No new features, no fixes. Move to
+[Dashboards as Code with gcx](./dashboards-as-code-gcx.md).
+
+The manifests differ, so it is not a rename. If you are migrating a large
+Grizzly repository, [contact the base14 team](mailto:support@base14.io).
 
 ## Related Guides
 

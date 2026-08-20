@@ -562,8 +562,8 @@ view monitoring data without making changes
   monitoring alerts
 - [Create Dashboards](../guides/create-your-first-dashboard.md) - Build custom
   dashboards
-- [GitOps for Dashboards and Alerts](./dashboards-and-alerts.md) - Use Grizzly to
-  manage dashboards and alerts
+- [Dashboards as Code](./dashboards-as-code-gcx.md) - Use gcx to manage
+  dashboards and folders from Git
 - [Provision Users from Microsoft Entra ID](./provision-users-entra-scim.md) -
   Sync users automatically from your directory
 
