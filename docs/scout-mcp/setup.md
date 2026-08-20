@@ -116,7 +116,7 @@ Once connected, ask your coding agent a simple question:
 The assistant should use Scout's MCP tools to query your observability data and
 return a list of services.
 
-If you run into issues, reach out to base14 support via Slack.
+If you run into issues, [contact the base14 team](mailto:support@base14.io).
 
 ## Finding Your Scout URL
 
@@ -140,5 +140,5 @@ And the full MCP endpoint:
 https://acme.api.as1-scout.base14.io/mcp/v1
 ```
 
-Check with your team or base14 support if you are unsure about your organization
-name or region.
+If you are unsure about your organization name or region, check with your team
+or [contact the base14 team](mailto:support@base14.io).

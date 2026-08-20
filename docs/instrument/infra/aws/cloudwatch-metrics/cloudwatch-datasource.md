@@ -24,7 +24,7 @@ keywords:
 
 <head>
   <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is the CloudWatch datasource in base14 Scout?","acceptedAnswer":{"@type":"Answer","text":"base14 Scout can query the AWS CloudWatch API directly through a CloudWatch datasource, so you can chart AWS metrics without ingesting or storing them in Scout. base14 enables the datasource for your tenant."}},{"@type":"Question","name":"Is CloudWatch data stored in Scout when I use the datasource?","acceptedAnswer":{"@type":"Answer","text":"No. This is query federation, not ingestion. Nothing is written to the Scout data lake. Each dashboard load queries CloudWatch live, so the data is bound by CloudWatch retention and cannot be joined with your OTLP telemetry in Scout."}},{"@type":"Question","name":"How do I enable the CloudWatch datasource in Scout?","acceptedAnswer":{"@type":"Answer","text":"Scout provisions datasources centrally, so ask base14 to enable the CloudWatch datasource for your tenant. base14 either grants you permission to add it under Connections, or configures it on your behalf using AWS credentials you supply."}},{"@type":"Question","name":"When should I use the CloudWatch datasource instead of ingesting metrics?","acceptedAnswer":{"@type":"Answer","text":"Use it when you only need to visualize CloudWatch and do not need the data stored, retained, or correlated with OTLP telemetry in Scout. It is the fastest path to standing up CloudWatch dashboards. For durable storage and correlation, ingest with a push or pull approach instead."}}]})}
+    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is the CloudWatch datasource in base14 Scout?","acceptedAnswer":{"@type":"Answer","text":"base14 Scout can query the AWS CloudWatch API directly through a CloudWatch datasource, so you can chart AWS metrics without ingesting or storing them in Scout. base14 enables the datasource for your tenant."}},{"@type":"Question","name":"Is CloudWatch data stored in Scout when I use the datasource?","acceptedAnswer":{"@type":"Answer","text":"No. This is query federation, not ingestion. Nothing is written to the Scout data lake. Each dashboard load queries CloudWatch live, so the data is bound by CloudWatch retention and cannot be joined with your OTLP telemetry in Scout."}},{"@type":"Question","name":"How do I enable the CloudWatch datasource in Scout?","acceptedAnswer":{"@type":"Answer","text":"Scout provisions datasources centrally. To enable the CloudWatch datasource, contact the base14 team at support@base14.io."}},{"@type":"Question","name":"When should I use the CloudWatch datasource instead of ingesting metrics?","acceptedAnswer":{"@type":"Answer","text":"Use it when you only need to visualize CloudWatch and do not need the data stored, retained, or correlated with OTLP telemetry in Scout. It is the fastest path to standing up CloudWatch dashboards. For durable storage and correlation, ingest with a push or pull approach instead."}}]})}
   </script>
 </head>
 
@@ -44,9 +44,8 @@ approaches, see the [AWS CloudWatch overview](./overview.md).
 
 :::info Provisioned by base14
 
-Scout provisions datasources centrally - users do not add arbitrary
-datasources. Ask base14 to enable the CloudWatch datasource for your tenant
-before following the configuration steps below.
+Scout provisions datasources centrally. To enable the CloudWatch datasource,
+[contact the base14 team](mailto:support@base14.io).
 
 :::
 
@@ -81,12 +80,10 @@ data with a [push](./cloudwatch-firehose-receiver.md) or
 - AWS credentials with CloudWatch read access (see Step 2).
 - The AWS region where your metrics live.
 
-## Step 1: Ask base14 to enable the CloudWatch datasource
+## Step 1: Enable the CloudWatch datasource
 
-Because Scout manages datasources centrally, contact base14 to enable the
-CloudWatch datasource for your tenant. base14 will either grant your users
-permission to add it under **Connections > Data sources**, or configure it on
-your behalf using AWS credentials you provide.
+To enable the CloudWatch datasource in Scout,
+[contact the base14 team](mailto:support@base14.io).
 
 ## Step 2: Grant CloudWatch read permissions
 
@@ -170,8 +167,7 @@ panel that uses this datasource queries CloudWatch when the dashboard loads.
 
 **Cause**: the datasource is not enabled for your tenant.
 
-**Fix**: contact base14 to enable it (Step 1). Users cannot add arbitrary
-datasources to a Scout tenant.
+**Fix**: [contact the base14 team](mailto:support@base14.io) (Step 1).
 
 ### Save & test fails
 
@@ -217,9 +213,8 @@ CloudWatch retention and cannot be joined with your OTLP telemetry in Scout.
 
 **How do I enable the CloudWatch datasource in Scout?**
 
-Scout provisions datasources centrally, so ask base14 to enable the CloudWatch
-datasource for your tenant. base14 either grants you permission to add it under
-Connections, or configures it on your behalf using AWS credentials you supply.
+Scout provisions datasources centrally. To enable the CloudWatch datasource,
+[contact the base14 team](mailto:support@base14.io).
 
 **When should I use the CloudWatch datasource instead of ingesting metrics?**
 

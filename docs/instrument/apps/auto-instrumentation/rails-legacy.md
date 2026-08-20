@@ -808,7 +808,8 @@ end
   [Report issues](https://github.com/open-telemetry/opentelemetry-ruby/issues)
 - **Ruby Upgrade Guides**:
   [Rails upgrade guides](https://guides.rubyonrails.org/upgrading_ruby_on_rails.html)
-- **Scout Community**: Contact support for legacy version assistance
+- **base14 Scout**: For help with legacy versions,
+  [contact the base14 team](mailto:support@base14.io)
 
 ### Common Questions
 

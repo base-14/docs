@@ -49,7 +49,7 @@ They are unavailable on the free tier of Microsoft Entra ID.
 - **Complete user records.** Every user you intend to sync must have a first
   name, last name, and email address populated in Entra ID. Users missing any
   of these are rejected.
-- **Your connection details from base14.** Contact base14 support to request
+- **Your connection details from base14.** Contact base14 Support to request
   them. They are listed in [Step 2](#step-2-connect-to-base14).
 
 ## Step 1: Create the Application
@@ -249,8 +249,8 @@ immediately and see any per-user error.
 
 ## Getting Help
 
-If provisioning still fails after working through the steps above, contact
-base14 support with:
+If provisioning still fails after working through the steps above,
+[contact the base14 team](mailto:support@base14.io) with:
 
 - The error text from **Provisioning logs** in the Entra admin center.
 - The user principal name of an affected user.

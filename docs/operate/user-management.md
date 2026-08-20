@@ -468,8 +468,8 @@ view monitoring data without making changes
 
 **Solution:**
 
-1. Reach out to base14 support at [support@base14.io](mailto:support@base14.io)
-   on the assignment of **Admin** Role
+1. To request the **Admin** role,
+   [contact the base14 team](mailto:support@base14.io)
 
 #### Problem: User says they cannot edit dashboards
 
@@ -497,7 +497,8 @@ view monitoring data without making changes
 1. Have user log out and back in (permissions may not have refreshed)
 2. Check user status is "Active" not "Pending" or "Disabled"
 3. Verify RBAC permissions by checking what menus are visible
-4. Contact support if issue persists after logout/login
+4. If the issue persists after logout/login,
+   [contact the base14 team](mailto:support@base14.io)
 
 ### Other Common Issues
 
@@ -532,12 +533,12 @@ view monitoring data without making changes
 
 **For Technical Issues:**
 
-- Email: [support@base14.io](mailto:support@base14.io)
+- [Contact the base14 team](mailto:support@base14.io)
 - Include: Your organization name, screenshot of issue, steps to reproduce
 
 **For Account, RBAC, or Access Questions:**
 
-- Email: [support@base14.io](mailto:support@base14.io)
+- [Contact the base14 team](mailto:support@base14.io)
 - Include: Organization name, affected user's email, current and desired roles
 
 **Documentation:**

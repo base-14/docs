@@ -87,8 +87,8 @@ Let's setup **Scout in less than 5 minutes**. We will follow the steps below:
    and visualization capabilities to help you understand your data better. Scout
    comes with a variety of dashboards and visualizations to help you get started
    quickly. You can also create custom dashboards to suit your needs.
-7. **Feedback and Support**: If you encounter any issues or have questions,
-   reach out to the Scout support team for assistance.
+7. **Feedback and Support**: If you run into issues or have questions,
+   [contact the base14 team](mailto:support@base14.io).
 
 ## Related Guides
 
