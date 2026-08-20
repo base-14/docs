@@ -1,4 +1,4 @@
-.PHONY: install start dev build serve clean typecheck lint test check help \
+.PHONY: install start dev build serve clean typecheck lint content test check help \
 	seo-audit-frontmatter seo-audit-headings seo-audit-links seo-audit-all seo-analyze-gsc
 
 # Default target
@@ -12,6 +12,7 @@ help:
 	@echo "  clean      - Clear Docusaurus cache"
 	@echo "  typecheck  - Run TypeScript type checking"
 	@echo "  lint       - Run markdown linting"
+	@echo "  content    - Check FAQ schema sync and marketing facts"
 	@echo "  test       - Run tests"
 	@echo "  check      - Run all checks (typecheck, lint, build)"
 	@echo ""
@@ -45,10 +46,13 @@ typecheck:
 lint:
 	npm run markdownlint
 
+content:
+	npm run check:content
+
 test:
 	npm test
 
-check: typecheck lint build
+check: typecheck lint content build
 
 # SEO audit targets
 seo-audit-frontmatter:

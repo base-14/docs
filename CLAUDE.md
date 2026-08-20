@@ -5,7 +5,8 @@
 ```bash
 npm run start        # Dev server
 npm run build        # Production build
-npm run check        # Typecheck + markdownlint + build (full CI check)
+npm run check        # Typecheck + markdownlint + content checks + build
+npm run check:content # FAQ schema sync + fact consistency on src/pages
 npm run markdownlint # Lint markdown with auto-fix
 ```
 
@@ -17,6 +18,21 @@ npm run markdownlint # Lint markdown with auto-fix
 - `src/css/` — Custom styles
 - `static/` — Static assets (images, robots.txt)
 - `build/` — Generated output (gitignored, do NOT edit)
+
+## Content Checks
+
+`npm run check:content` runs two scripts:
+
+- `scripts/check-faq-schema.mjs` — every FAQPage JSON-LD question and answer
+  must match the visible text on the page. Enforced for `src/pages/`, reported
+  as warnings elsewhere (`--strict` enforces everywhere).
+- `scripts/check-facts.mjs` — checks `src/pages/*.mdx` against
+  `src/data/marketing-facts.json`: scenario totals add up and appear on the
+  pages that cite them, shared rates agree across pages, forbidden claims stay
+  out, pricing footnotes carry the canonical date, titles stay sentence case.
+
+When a vendor changes a price, edit `marketing-facts.json` first and let the
+checker point at the pages that need updating.
 
 ## Doc Sections
 

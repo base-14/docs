@@ -1,0 +1,215 @@
+{
+  "$comment": "Canonical numbers for the comparison and cost pages. Change a value here, run npm run check:content, and fix whatever it reports. See scripts/check-facts.mjs.",
+
+  "pricingAsOf": "August 2026",
+
+  "scope": ["src/pages/*.mdx"],
+
+  "rates": {
+    "scout": {
+      "platformFee": 250,
+      "metricsPerMillion": 0.1,
+      "logsPerMillion": 0.25,
+      "tracesPerMillion": 0.25,
+      "startupAuthorizedUsers": 50,
+      "defaultRetentionDays": 30
+    },
+    "newRelic": {
+      "fullPlatformPerUser": 349,
+      "corePerUser": 49,
+      "dataIngestPerGb": 0.4,
+      "dataPlusPerGb": 0.6,
+      "freeIngestGb": 100,
+      "defaultRetentionDays": 8
+    },
+    "datadog": {
+      "infraPerHost": 23,
+      "apmPerHost": 31,
+      "logIngestPerGb": 0.1,
+      "indexedPerMillion": 1.7,
+      "includedSpansPerHostMillions": 1,
+      "defaultRetentionDays": 15
+    },
+    "cloudwatch": {
+      "logIngestPerGb": 0.5,
+      "storagePerCompressedGb": 0.03,
+      "queryPerGbScanned": 0.005,
+      "customMetricFirstTier": 0.3,
+      "customMetricFirstTierCount": 10000,
+      "customMetricNextTier": 0.1,
+      "xrayPerMillionTraces": 5.0,
+      "dashboardEach": 3.0
+    }
+  },
+
+  "scenarios": [
+    {
+      "id": "scout-25b",
+      "description": "100 hosts, 25B signals/month. The shared scenario on the New Relic, Datadog, evaluation and LLM pages.",
+      "components": [
+        { "label": "platform fee", "amount": 250 },
+        { "label": "metrics", "millions": 7500, "rate": 0.1 },
+        { "label": "logs", "millions": 10000, "rate": 0.25 },
+        { "label": "traces", "millions": 7500, "rate": 0.25 }
+      ],
+      "monthly": 5375,
+      "annual": 64500,
+      "annualFiles": ["src/pages/new-relic-alternative.mdx"],
+      "files": [
+        "src/pages/evaluate-observability-platform.mdx",
+        "src/pages/new-relic-alternative.mdx",
+        "src/pages/llm-observability-cost.mdx",
+        "src/pages/observability-cost-optimization.mdx"
+      ]
+    },
+    {
+      "id": "scout-17-5b",
+      "description": "70 hosts across AWS and GCP, 17.5B signals/month. CloudWatch comparison.",
+      "components": [
+        { "label": "platform fee", "amount": 250 },
+        { "label": "metrics", "millions": 5250, "rate": 0.1 },
+        { "label": "logs", "millions": 7000, "rate": 0.25 },
+        { "label": "traces", "millions": 5250, "rate": 0.25 }
+      ],
+      "monthly": 3838,
+      "annual": 46056,
+      "files": ["src/pages/cloudwatch-alternative.mdx"]
+    },
+    {
+      "id": "scout-k8s-50node",
+      "description": "50-node Kubernetes cluster, moderate microservices workload.",
+      "components": [
+        { "label": "platform fee", "amount": 250 },
+        { "label": "metrics", "millions": 500, "rate": 0.1 },
+        { "label": "logs", "millions": 3000, "rate": 0.25 },
+        { "label": "traces", "millions": 2000, "rate": 0.25 }
+      ],
+      "monthly": 1550,
+      "files": ["src/pages/kubernetes-observability-cost.mdx"]
+    },
+    {
+      "id": "newrelic-100-engineers",
+      "description": "100 engineers on a 30 Full Platform / 25 Core / 45 Basic mix, 18,975 GB ingest.",
+      "components": [
+        { "label": "full platform seats", "units": 30, "rate": 349 },
+        { "label": "core seats", "units": 25, "rate": 49 },
+        { "label": "data ingest beyond free tier", "units": 18875, "rate": 0.4 }
+      ],
+      "monthly": 19245,
+      "annual": 230940,
+      "files": ["src/pages/new-relic-alternative.mdx"]
+    },
+    {
+      "id": "cloudwatch-70-host",
+      "description": "AWS portion of a 70-host multi-cloud stack, 6 months of log accumulation.",
+      "components": [
+        { "label": "log ingestion", "units": 5400, "rate": 0.5 },
+        { "label": "log storage, compressed", "units": 5400, "rate": 0.03 },
+        { "label": "log queries", "units": 6000, "rate": 0.005 },
+        { "label": "custom metrics", "units": 5000, "rate": 0.3 },
+        { "label": "x-ray traces", "millions": 250, "rate": 5.0 },
+        { "label": "dashboards", "units": 30, "rate": 3.0 },
+        { "label": "alarms", "amount": 54 }
+      ],
+      "monthly": 5786,
+      "annual": 69432,
+      "files": ["src/pages/cloudwatch-alternative.mdx"]
+    },
+    {
+      "id": "datadog-100-host",
+      "description": "100 Kubernetes hosts with full log and span indexing.",
+      "components": [
+        { "label": "infrastructure", "units": 100, "rate": 23 },
+        { "label": "apm", "units": 100, "rate": 31 },
+        { "label": "indexed span overage", "millions": 7400, "rate": 1.7 },
+        { "label": "log ingestion", "units": 12900, "rate": 0.1 },
+        { "label": "log indexing", "millions": 10000, "rate": 1.7 }
+      ],
+      "monthly": 36270,
+      "files": [
+        "src/pages/observability-cost-optimization.mdx",
+        "src/pages/evaluate-observability-platform.mdx"
+      ]
+    }
+  ],
+
+  "consistency": [
+    {
+      "label": "New Relic per-user rates",
+      "pattern": "\\$(\\d+)(?:\\.\\d+)?/user",
+      "allowed": [349, 49, 99],
+      "note": "Full Platform is $349, Core $49, Standard additional users $99."
+    },
+    {
+      "label": "Scout metrics rate",
+      "pattern": "\\$(\\d+\\.\\d+)/M metrics",
+      "allowed": [0.1]
+    },
+    {
+      "label": "Scout logs and traces rate",
+      "pattern": "\\$(\\d+\\.\\d+)/M logs",
+      "allowed": [0.25]
+    },
+    {
+      "label": "Scout platform fee",
+      "pattern": "\\$(\\d+)/month platform fee",
+      "allowed": [250]
+    },
+    {
+      "label": "Startup authorized user cap",
+      "pattern": "up to (\\d+) authorized users",
+      "allowed": [50]
+    },
+    {
+      "label": "Datadog per-host rates",
+      "pattern": "\\$(\\d+)/host",
+      "allowed": [23, 31],
+      "note": "Infrastructure Pro is $23/host, APM Pro $31/host, both annual billing."
+    },
+    {
+      "label": "Datadog custom metric rate",
+      "pattern": "\\$1 per (\\d+) custom metrics",
+      "allowed": [100]
+    }
+  ],
+
+  "forbidden": [
+    {
+      "pattern": "unlimited users?",
+      "reason": "Scout has no per-seat charge, but the Startup tier caps authorized users at 50. Say 'no per-seat charges' and name the cap."
+    },
+    {
+      "pattern": "(doesn't|does not) cover (frontend )?RUM",
+      "reason": "Scout RUM ships for web and mobile. The real gap is session replay and profiling."
+    },
+    {
+      "pattern": "no (frontend |browser |mobile )?(RUM|real.user monitoring)",
+      "reason": "Scout RUM ships for web and mobile. The real gap is session replay and profiling."
+    },
+    {
+      "pattern": "permanent (negotiating power|portability)",
+      "reason": "Overclaim. Say what portability does: instrumentation works with any OTel-compatible backend."
+    },
+    {
+      "pattern": "[\\u2013\\u2014]",
+      "reason": "House style is hyphens. No en or em dashes in prose."
+    },
+    {
+      "pattern": "Risk: None",
+      "reason": "Switching platforms carries migration effort. Name it."
+    }
+  ],
+
+  "requiredCasing": {
+    "pattern": "^(?:title: \"|# )(.+?)\"?$",
+    "note": "Frontmatter titles and H1s use sentence case across the marketing pages.",
+    "titleCaseThreshold": 0.6,
+    "alwaysCapitalized": [
+      "AWS", "APM", "AI", "ANR", "ANRs", "Azure", "BYOC", "CloudWatch", "CNCF",
+      "Core", "CPU", "Datadog", "GB", "GCP", "Grafana", "I", "IAM", "ISO", "K8s",
+      "Kubernetes", "LLM", "MTTR", "New", "NRQL", "OTLP", "OTel", "OpenTelemetry",
+      "PoC", "RUM", "Relic", "SDK", "SDKs", "SLA", "SOC", "SQL", "SRE", "SREs",
+      "Scout", "TCO", "TL;DR", "Web", "X-Ray", "base14"
+    ]
+  }
+}
