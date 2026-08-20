@@ -220,7 +220,7 @@ receivers:
             - "https://example.com"
 ```
 
-> View these traces in Scout Grafana dashboards.
+> View these traces in Scout dashboards.
 
 ## References
 

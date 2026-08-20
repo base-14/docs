@@ -299,7 +299,7 @@ aws lambda update-function-code \
 Invoke your Lambda function to generate traces. You can use the AWS CLI,
 AWS Console, or any trigger configured for your function.
 
-View traces in Scout Grafana dashboard
+View traces in Scout dashboard
 
 ### Resource Attributes
 

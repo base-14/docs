@@ -154,7 +154,7 @@ config :logger, :default_formatter,
 
 > View these traces in base14 Scout observability backend.
 
-That's it! Head over to Scout Grafana to visualize the traces.
+That's it! Head over to Scout to visualize the traces.
 
 ## References
 

@@ -152,7 +152,7 @@ docker run -d \
 </Tabs>
 ```
 
-That's it! Navigate to Scout Grafana dashboards to visualize the data.
+That's it! Navigate to Scout dashboards to visualize the data.
 
 ## Related Guides
 
