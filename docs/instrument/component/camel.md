@@ -377,22 +377,21 @@ hot processor inside it. Check `camel.threadpool.task.queue.size` against
 
 ## FAQ
 
-**Why do I need the JMX Scraper instead of a Camel receiver?**
+### Why do I need the JMX Scraper instead of a Camel receiver?
 
 There is no native Camel receiver and Camel exposes no Prometheus or OTLP
 endpoint. Camel publishes its statistics as `org.apache.camel:*` JMX
 MBeans (via `camel-management`). The OpenTelemetry JMX Scraper reads those
 MBeans and translates them to OTLP, which it pushes to the Collector.
 
-**Does this work with Apache Camel in Kubernetes?**
+### Does this work with Apache Camel in Kubernetes?
 
 Yes. Run the scraper as a sidecar in the same pod as the Camel
 application, with `OTEL_JMX_SERVICE_URL` pointing at `localhost:1099` (or
 the pod's JMX RMI port), and send OTLP to your Collector service. Front
 JMX with authentication on a shared network.
 
-**Why are there context, route, and processor versions of the same
-metric?**
+### Why are there context, route, and processor versions of the same metric?
 
 They are the same exchange instruments at three granularities. The
 `camel.context.*` series is the whole-integration roll-up (one series),
@@ -400,7 +399,7 @@ They are the same exchange instruments at three granularities. The
 Alert on the context series and drill into route then processor to
 localize a failure or latency regression.
 
-**Why is per-request latency not a single number?**
+### Why is per-request latency not a single number?
 
 Camel reports processing duration as aggregates - mean, max, min, sum, and
 last - on the exchange MBeans, not a histogram. Use
@@ -409,7 +408,7 @@ integration, and the per-route / per-processor equivalents to find where
 the time goes. Span-level timing for individual exchanges lives in your
 trace path, not in these metrics.
 
-**Which scraper version do I need?**
+### Which scraper version do I need?
 
 `1.55.0-alpha` or newer. That release introduced the `camel` target
 (`jmx/rules/camel.yaml`); earlier scrapers have no Camel rule set and emit

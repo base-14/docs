@@ -20,16 +20,6 @@ keywords:
   ]
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is the CloudWatch datasource in base14 Scout?","acceptedAnswer":{"@type":"Answer","text":"base14 Scout can query the AWS CloudWatch API directly through a CloudWatch datasource, so you can chart AWS metrics without ingesting or storing them in Scout. base14 enables the datasource for your tenant."}},{"@type":"Question","name":"Is CloudWatch data stored in Scout when I use the datasource?","acceptedAnswer":{"@type":"Answer","text":"No. This is query federation, not ingestion. Nothing is written to the Scout data lake. Each dashboard load queries CloudWatch live, so the data is bound by CloudWatch retention and cannot be joined with your OTLP telemetry in Scout."}},{"@type":"Question","name":"How do I enable the CloudWatch datasource in Scout?","acceptedAnswer":{"@type":"Answer","text":"Scout provisions datasources centrally. To enable the CloudWatch datasource, contact the base14 team at support@base14.io."}},{"@type":"Question","name":"When should I use the CloudWatch datasource instead of ingesting metrics?","acceptedAnswer":{"@type":"Answer","text":"Use it when you only need to visualize CloudWatch and do not need the data stored, retained, or correlated with OTLP telemetry in Scout. It is the fastest path to standing up CloudWatch dashboards. For durable storage and correlation, ingest with a push or pull approach instead."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 ## Overview
 
 base14 Scout can query AWS CloudWatch directly through a **CloudWatch
@@ -199,24 +189,24 @@ heavy or always-on dashboards, ingesting the metrics with a
 
 ## FAQ
 
-**What is the CloudWatch datasource in base14 Scout?**
+### What is the CloudWatch datasource in base14 Scout?
 
 base14 Scout can query the AWS CloudWatch API directly through a CloudWatch
 datasource, so you can chart AWS metrics without ingesting or storing them in
 Scout. base14 enables the datasource for your tenant.
 
-**Is CloudWatch data stored in Scout when I use the datasource?**
+### Is CloudWatch data stored in Scout when I use the datasource?
 
 No. This is query federation, not ingestion. Nothing is written to the Scout
 data lake. Each dashboard load queries CloudWatch live, so the data is bound by
 CloudWatch retention and cannot be joined with your OTLP telemetry in Scout.
 
-**How do I enable the CloudWatch datasource in Scout?**
+### How do I enable the CloudWatch datasource in Scout?
 
 Scout provisions datasources centrally. To enable the CloudWatch datasource,
 [contact the base14 team](mailto:support@base14.io).
 
-**When should I use the CloudWatch datasource instead of ingesting metrics?**
+### When should I use the CloudWatch datasource instead of ingesting metrics?
 
 Use it when you only need to visualize CloudWatch and do not need the data
 stored, retained, or correlated with OTLP telemetry in Scout. It is the

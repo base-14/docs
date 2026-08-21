@@ -10,62 +10,6 @@ import Head from "@docusaurus/Head";
     name="keywords"
     content="observability platform comparison, evaluate observability tools, how to choose observability platform, observability tool evaluation, observability platform checklist, observability vendor comparison"
   />
-  <script type="application/ld+json">
-    {JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      mainEntity: [
-        {
-          "@type": "Question",
-          name: "What is the most important factor when evaluating observability platforms?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "The pricing model. It determines your cost trajectory at 2x scale. Per-host and per-GB pricing penalize growth and rich telemetry. Per-seat pricing gates access during incidents. Signal-based pricing (per event, regardless of size) removes these constraints.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "How long should an observability platform evaluation take?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Plan for 4-6 weeks total: 1 week for a proof of concept on 3-5 services with real traffic, 2-3 weeks running both platforms in parallel, and 1-2 weeks for dashboard recreation and alert parity. The instrumentation is the easy part; rebuilding operational workflows takes longer.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Should I evaluate observability tools using a free tier?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Free tiers are useful for initial exploration but misleading for evaluation. They typically cap data volume, limit retention to 7-15 days, restrict user access, and disable features you need in production. Evaluate on a realistic subset of your actual workload instead.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "How do I compare observability pricing across vendors?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Normalize to a common scenario: pick your actual host count, daily log volume, trace span count, metric data points, and team size. Calculate each vendor's cost for that exact profile. Include hidden costs like per-seat charges, indexing fees, and retention upgrades. base14 Scout uses signal-based pricing: $250/month platform fee + $0.10/M metrics + $0.25/M logs and traces, and no per-seat charges. The Startup tier includes up to 50 authorized users; Enterprise raises the limit.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "What does OpenTelemetry-native mean for vendor evaluation?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "An OpenTelemetry-native platform uses OTel as its primary data ingestion path, not as an afterthought alongside proprietary agents. This matters because your instrumentation becomes portable. If you ever need to switch vendors, you change collector configuration, not application code.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "How do I estimate my signal volume for pricing comparisons?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Logs: divide daily GB by average log line size (typically 1.0-2.0 KB) to get signals per day, then multiply by 30. Traces: your indexed span count maps 1:1 to signals. Metrics: count time series and multiply by data points per month based on scrape interval (43,200 for 1/min, 86,400 for 1/30s).",
-          },
-        },
-      ],
-    })}
-  </script>
 </Head>
 
 # How to evaluate an observability platform (without getting locked in)

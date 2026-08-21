@@ -340,14 +340,14 @@ Diagnostic `etcd_mvcc_db_total_size_in_use_in_bytes` indicates fragmentation.
 
 ## FAQ
 
-**Does this work with etcd running in Kubernetes?**
+### Does this work with etcd running in Kubernetes?
 
 Yes. Set `targets` to the etcd pod or service DNS (for example
 `etcd-0.etcd.kube-system.svc.cluster.local:2379`). For managed Kubernetes
 (EKS, GKE, AKS), the control-plane etcd may not be directly accessible -
 check your provider's documentation.
 
-**How do I monitor an etcd cluster?**
+### How do I monitor an etcd cluster?
 
 Add all member endpoints to the scrape config:
 
@@ -369,21 +369,21 @@ Each member is scraped on its in-network client port - `2379`, the
 `etcd_network_known_peers` and `etcd_server_has_leader` per member to
 confirm the cluster sees quorum.
 
-**Why does `etcd_server_proposals_pending` stay above zero?**
+### Why does `etcd_server_proposals_pending` stay above zero?
 
 A small number of pending proposals is normal under write load. Sustained
 high values mean the cluster cannot commit proposals fast enough - check disk
 latency (`etcd_disk_wal_fsync_duration_seconds`) and the
 `etcd_server_slow_apply_total` counter.
 
-**What is the difference between `db_total_size` and `db_total_size_in_use`?**
+### What is the difference between `db_total_size` and `db_total_size_in_use`?
 
 `etcd_mvcc_db_total_size_in_bytes` includes space freed by compaction but not
 yet reclaimed (fragmentation). `etcd_mvcc_db_total_size_in_use_in_bytes`
 reflects actual data. A large gap between the two indicates fragmentation -
 run `etcdctl defrag` to reclaim space.
 
-**Which metrics can I drop to reduce volume?**
+### Which metrics can I drop to reduce volume?
 
 The `etcd_debugging_*` namespace (30 series) plus the Go runtime, process,
 and gRPC-proxy families are Diagnostic - drop them with

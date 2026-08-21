@@ -295,14 +295,14 @@ is reaching the cache.
 
 ## FAQ
 
-**Does this work with Memcached running in Kubernetes?**
+### Does this work with Memcached running in Kubernetes?
 
 Yes. Set `endpoint` to the Memcached service DNS
 (e.g., `memcached.default.svc.cluster.local:11211`) and ensure the
 Collector pod can reach port 11211. The Collector can run as a sidecar
 or a DaemonSet.
 
-**How do I monitor multiple Memcached instances?**
+### How do I monitor multiple Memcached instances?
 
 Add multiple receiver blocks with distinct names:
 
@@ -319,13 +319,13 @@ receivers:
 Then include both in the pipeline:
 `receivers: [memcached/primary, memcached/replica]`.
 
-**Why is `transport: tcp` required?**
+### Why is `transport: tcp` required?
 
 The Memcached receiver defaults to an empty transport value, which
 causes a startup error. This is a known quirk - always set
 `transport: tcp` explicitly in the config.
 
-**Can I monitor Memcached with SASL authentication?**
+### Can I monitor Memcached with SASL authentication?
 
 The OTel Memcached receiver does not support SASL authentication. If
 your Memcached instance requires SASL, run the Collector on a host with

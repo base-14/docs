@@ -42,16 +42,6 @@ keywords:
   ]
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Do I need to manually instrument Django views with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"No. Django auto-instrumentation automatically traces all views, both function-based and class-based, when you call DjangoInstrumentor().instrument(). No decorators or manual span creation required for basic request/response tracing."}},{"@type":"Question","name":"Can I use OpenTelemetry with Django REST Framework?","acceptedAnswer":{"@type":"Answer","text":"Yes. Django REST Framework views and viewsets are automatically instrumented through Django's middleware. Each API endpoint creates a span with the HTTP method and path."}},{"@type":"Question","name":"How do I detect N+1 queries in Django with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Check span attributes for db.query_count. High counts of more than 10 queries per request often indicate N+1 issues. base14 Scout visualizes these patterns in the span hierarchy."}},{"@type":"Question","name":"Does OpenTelemetry tracing work with Celery background tasks in Django?","acceptedAnswer":{"@type":"Answer","text":"Yes. Install opentelemetry-instrumentation-celery and instrument in your Celery worker initialization. Trace context automatically propagates from Django views to Celery tasks, creating distributed traces."}},{"@type":"Question","name":"What is the performance overhead of OpenTelemetry tracing in Django?","acceptedAnswer":{"@type":"Answer","text":"With 10% sampling, overhead is typically less than 1% for latency and about 8% for memory. Without sampling, expect roughly 6% latency increase and 30% memory increase."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 :::note Running this in production
 
 Storing and querying this data at production volume is what base14 Scout does.
@@ -2086,13 +2076,13 @@ OTEL_SDK_DISABLED=true python manage.py test
 
 ## FAQ
 
-### 1. Do I need to manually instrument Django views?
+### Do I need to manually instrument Django views with OpenTelemetry?
 
 **No.** Django's auto-instrumentation automatically traces all views (function-based
 and class-based) when you call `DjangoInstrumentor().instrument()`. No decorators
 or manual span creation required for basic request/response tracing.
 
-### 2. How do I trace Django management commands?
+### How do I trace Django management commands?
 
 Use custom spans in your management command's `handle()` method:
 
@@ -2108,46 +2098,47 @@ class Command(BaseCommand):
             pass
 ```
 
-### 3. Can I use OpenTelemetry with Django REST Framework?
+### Can I use OpenTelemetry with Django REST Framework?
 
 **Yes.** Django REST Framework views and viewsets are automatically instrumented
 through Django's middleware. Each API endpoint creates a span with the HTTP
 method and path (e.g., `GET /api/orders/`).
 
-### 4. How do I detect N+1 queries in Django with OpenTelemetry tracing?
+### How do I detect N+1 queries in Django with OpenTelemetry tracing?
 
 Check span attributes for `db.query_count`. High counts (>10 queries per request)
 often indicate N+1 issues. Use the custom decorator shown in the
 "Custom Instrumentation" section to automatically flag potential N+1 patterns.
 
-### 5. Does tracing work with Celery background tasks?
+### Does OpenTelemetry tracing work with Celery background tasks in Django?
 
 **Yes.** Install `opentelemetry-instrumentation-celery` and instrument in your
 Celery worker initialization. Trace context automatically propagates from Django
 views to Celery tasks, creating a distributed trace across synchronous and
 asynchronous operations.
 
-### 6. How do I mask PII data in traces?
+### How do I mask PII data in traces?
 
 Implement a custom `SpanProcessor` (see "Security Considerations" section) that
 filters sensitive data patterns (emails, phone numbers, SSNs) from span names
 and attributes before export.
 
-### 7. Can I trace async Django views (ASGI)?
+### Can I trace async Django views (ASGI)?
 
 **Yes.** OpenTelemetry supports ASGI applications. Initialize tracing in your
 `asgi.py` file before creating the ASGI application, and async views will be
 traced automatically.
 
-### 8. What is the performance overhead of OpenTelemetry tracing in Django?
+### What is the performance overhead of OpenTelemetry tracing in Django?
 
 With 10% sampling, overhead is typically &lt;1% for latency and ~8% for memory.
 Without sampling (100% tracing), expect ~6% latency increase and ~30% memory
 increase. See "Performance Considerations" for detailed metrics.
 
-### 9. How do I send traces to Base14 Scout?
+### How do I send traces to Base14 Scout?
 
-Configure the OTLP exporter endpoint and authentication:
+Point the OTLP exporter at your Scout endpoint on port 4317 and pass your
+API key as a bearer token in the headers:
 
 ```python
 OTLPSpanExporter(
@@ -2156,18 +2147,18 @@ OTLPSpanExporter(
 )
 ```
 
-### 10. Can I trace template rendering?
+### Can I trace template rendering?
 
 **Yes.** Template rendering is automatically traced when using `render()` or
 `TemplateResponse`. Each template creates a child span showing rendering time.
 
-### 11. How do I trace multiple databases?
+### How do I trace multiple databases?
 
 Django's database instrumentation traces all configured databases automatically.
 Span attributes include `db.namespace` to differentiate between databases (with
 the `database` semconv opt-in set; older builds emit the deprecated `db.name`).
 
-### 12. Can I disable tracing for specific views?
+### Can I disable tracing for specific views?
 
 Use the `excluded_urls` parameter in `DjangoInstrumentor().instrument()`:
 

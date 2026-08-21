@@ -468,7 +468,7 @@ redeploy), `jvm.buffer.memory.used` (direct-buffer growth), and
 
 ## FAQ
 
-**Does this work with Tomcat running in Kubernetes?**
+### Does this work with Tomcat running in Kubernetes?
 
 Yes. Run the JMX Scraper as a sidecar in the same pod and set
 `OTEL_JMX_SERVICE_URL` to
@@ -476,21 +476,21 @@ Yes. Run the JMX Scraper as a sidecar in the same pod and set
 containers share the pod network. No firewall rules are needed for
 intra-pod communication. The Collector receives OTLP from the scraper.
 
-**Can I use this with embedded Tomcat (Spring Boot)?**
+### Can I use this with embedded Tomcat (Spring Boot)?
 
 Yes. Spring Boot's embedded Tomcat registers MBeans under the `Tomcat:`
 domain instead of `Catalina:`. The scraper's `tomcat` target system
 handles both. Enable JMX remote access on the app with the same
 `-Dcom.sun.management.jmxremote.*` flags.
 
-**What happened to the OTel Collector JMX receiver?**
+### What happened to the OTel Collector JMX receiver?
 
 The Collector's `jmxreceiver` was deprecated in January 2026. It needed
 a JRE inside the Collector container and ran a Java subprocess
 internally. The standalone JMX Scraper replaces it - the same metric
 definitions, a cleaner operational model.
 
-**How do I monitor multiple Tomcat instances?**
+### How do I monitor multiple Tomcat instances?
 
 Run one JMX Scraper per Tomcat instance, each with a different
 `OTEL_JMX_SERVICE_URL`. All scrapers export to the same Collector:
@@ -509,7 +509,7 @@ jmx-scraper-replica:
     OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
 ```
 
-**Why is there no `up` metric?**
+### Why is there no `up` metric?
 
 JMX exposes no liveness gauge. Use `jvm.memory.used` as the
 process-alive anchor - if it stops reporting, the scraper has lost its

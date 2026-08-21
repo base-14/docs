@@ -42,16 +42,6 @@ keywords:
   ]
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Do I need to manually instrument Flask routes with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"No. Flask auto-instrumentation automatically traces all routes when you call FlaskInstrumentor().instrument_app(app). No decorators or manual span creation required."}},{"@type":"Question","name":"How do I trace SQLAlchemy queries in a Flask app with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Install opentelemetry-instrumentation-sqlalchemy and instrument the engine after db.init_app(app) using SQLAlchemyInstrumentor().instrument(engine=db.engine). All queries are automatically traced."}},{"@type":"Question","name":"Does OpenTelemetry tracing work with Flask application factory pattern?","acceptedAnswer":{"@type":"Answer","text":"Yes. Initialize tracing inside your create_app() function after creating the app instance but before returning it. base14 Scout will receive traces from all factory-created app instances."}},{"@type":"Question","name":"Can I exclude specific Flask routes from OpenTelemetry tracing?","acceptedAnswer":{"@type":"Answer","text":"Yes. Use the excluded_urls parameter: FlaskInstrumentor().instrument_app(app, excluded_urls='health,metrics') to skip health checks and other high-frequency endpoints."}},{"@type":"Question","name":"What is the performance overhead of OpenTelemetry tracing in Flask?","acceptedAnswer":{"@type":"Answer","text":"With 10% sampling, overhead is typically less than 1% for latency and about 8% for memory. Without sampling at 100% tracing, expect roughly 12% latency increase."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 :::note Running this in production
 
 Storing and querying this data at production volume is what base14 Scout does.
@@ -1846,22 +1836,22 @@ class TestingConfig(Config):
 
 ## FAQ
 
-### 1. Do I need to manually instrument Flask routes?
+### Do I need to manually instrument Flask routes with OpenTelemetry?
 
 **No.** Flask's auto-instrumentation automatically traces all routes when you
 call `FlaskInstrumentor().instrument_app(app)`. No decorators required.
 
-### 2. How do I trace Flask blueprints?
+### How do I trace Flask blueprints?
 
 Blueprints are automatically instrumented when registered before calling
 `instrument_app()`. Ensure blueprints are registered first, then instrument.
 
-### 3. Can I use OpenTelemetry with Flask-RESTful?
+### Can I use OpenTelemetry with Flask-RESTful?
 
 **Yes.** Flask-RESTful resources are automatically instrumented through Flask's
 route system. Each resource method creates a span.
 
-### 4. How do I trace SQLAlchemy queries in a Flask app with OpenTelemetry?
+### How do I trace SQLAlchemy queries in a Flask app with OpenTelemetry?
 
 Install `opentelemetry-instrumentation-sqlalchemy` and instrument the engine
 after `db.init_app(app)`:
@@ -1871,18 +1861,18 @@ from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 SQLAlchemyInstrumentor().instrument(engine=db.engine)
 ```
 
-### 5. Does tracing work with Flask application factory?
+### Does OpenTelemetry tracing work with the Flask application factory?
 
 **Yes.** Initialize tracing inside your `create_app()` function after creating
 the app instance but before returning it.
 
-### 6. How do I trace Celery tasks from Flask?
+### How do I trace Celery tasks from Flask?
 
 Install `opentelemetry-instrumentation-celery` and initialize in the worker
 process using `@worker_process_init` signal. Trace context automatically
 propagates from Flask to Celery.
 
-### 7. Can I exclude specific routes from tracing?
+### Can I exclude specific Flask routes from OpenTelemetry tracing?
 
 **Yes.** Use the `excluded_urls` parameter:
 
@@ -1890,14 +1880,15 @@ propagates from Flask to Celery.
 FlaskInstrumentor().instrument_app(app, excluded_urls="health,metrics")
 ```
 
-### 8. What is the performance overhead of OpenTelemetry tracing in Flask?
+### What is the performance overhead of OpenTelemetry tracing in Flask?
 
 With 10% sampling, overhead is typically &lt;1% for latency and ~8% for memory.
 Without sampling (100% tracing), expect ~12% latency increase.
 
-### 9. How do I send traces to Base14 Scout?
+### How do I send traces to Base14 Scout?
 
-Configure the OTLP exporter with Scout endpoint and API key:
+Point the OTLP exporter at your Scout endpoint on port 4317 and pass your
+API key as a bearer token in the headers:
 
 ```python
 OTLPSpanExporter(
@@ -1906,17 +1897,17 @@ OTLPSpanExporter(
 )
 ```
 
-### 10. Can I trace template rendering?
+### Can I trace template rendering?
 
 **Yes.** Jinja2 template rendering is automatically traced when using
 `render_template()`. Each template creates a child span.
 
-### 11. How do I trace before/after request hooks?
+### How do I trace before/after request hooks?
 
 Flask hooks are automatically traced. Add custom attributes in hooks using
 `trace.get_current_span()`.
 
-### 12. Does tracing work with gevent workers?
+### Does tracing work with gevent workers?
 
 **Yes.** OpenTelemetry works with gevent and eventlet WSGI workers. Context
 propagation is maintained across greenlets.

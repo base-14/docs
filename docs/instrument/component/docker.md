@@ -394,27 +394,27 @@ not expect the v1-only series to appear.
 
 ## FAQ
 
-**Does this work in Kubernetes?**
+### Does this work in Kubernetes?
 
 Prefer the `kubeletstats` receiver or cAdvisor for per-container metrics
 in Kubernetes. The `docker_stats` receiver targets the Docker daemon
 socket on a host, and on a containerd-based cluster there is no Docker
 socket to read.
 
-**How do I monitor multiple Docker hosts?**
+### How do I monitor multiple Docker hosts?
 
 Run one Collector per Docker host, each with a `docker_stats` receiver
 pointed at that host's local socket. The `container.hostname` resource
 attribute distinguishes the source host in Scout.
 
-**Why is there no `up` metric?**
+### Why is there no `up` metric?
 
 The receiver reads the Docker Engine API, not a scrape endpoint, so there
 is no scrape `up` series. A stopped container disappears from the output.
 Read liveness from `container.uptime` (a drop toward 0 is an unplanned
 restart) and `container.restarts` (a rising count is a crash loop).
 
-**Is mounting the Docker socket a security risk?**
+### Is mounting the Docker socket a security risk?
 
 Yes - read access to `/var/run/docker.sock` is equivalent to root on the
 host. Mount it read-only (`:ro`), exclude the Collector's own image to

@@ -19,19 +19,6 @@ keywords:
   ]
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What PHP version is required for OpenTelemetry manual instrumentation?","acceptedAnswer":{"@type":"Answer","text":"PHP 8.0 or later is required. Install the OpenTelemetry SDK and OTLP exporter via Composer."}},{"@type":"Question","name":"How do I create custom spans in PHP with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Use the Tracer's spanBuilder method to create a span, call startSpan(), perform your operation, and always call end() in a finally block to ensure the span is closed."}},{"@type":"Question","name":"How do I propagate trace context across PHP services?","acceptedAnswer":{"@type":"Answer","text":"Use TraceContextPropagator to inject trace context into outgoing HTTP request headers and extract context from incoming request headers to maintain distributed traces."}},{"@type":"Question","name":"Does OpenTelemetry PHP work with Symfony and WordPress?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry PHP manual instrumentation works with any PHP framework including Symfony, WordPress, and plain PHP applications."}},{"@type":"Question","name":"Should I use SimpleSpanProcessor or BatchSpanProcessor?","acceptedAnswer":{"@type":"Answer","text":"Use BatchSpanProcessor in production for better performance as it batches span exports. Use SimpleSpanProcessor in development for immediate export and debugging."}}]})}
-  </script>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"HowTo","name":"How to manually instrument PHP with OpenTelemetry","step":[{"@type":"HowToStep","name":"Install OpenTelemetry packages","text":"Install open-telemetry/sdk, open-telemetry/exporter-otlp, and guzzlehttp/guzzle via Composer."},{"@type":"HowToStep","name":"Initialize the TracerProvider","text":"Create a TracerProvider with a span processor and exporter, register it globally, and obtain a tracer for your application."},{"@type":"HowToStep","name":"Create and manage custom spans","text":"Use spanBuilder to create spans, activate them for context propagation, add attributes and events, record exceptions, and always end spans in a finally block."},{"@type":"HowToStep","name":"Implement metrics collection","text":"Create a MeterProvider, use counters for cumulative values, histograms for distributions, and UpDownCounters for values that increase or decrease."},{"@type":"HowToStep","name":"Configure context propagation","text":"Use TraceContextPropagator to inject trace context into outgoing HTTP headers and extract context from incoming requests for distributed tracing."}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 Implement OpenTelemetry custom instrumentation for PHP applications to collect
 traces, metrics, and logs using the PHP OpenTelemetry SDK. This guide covers
 manual instrumentation for any PHP application, including custom frameworks,
@@ -709,6 +696,38 @@ Once your spans are exported, you can
 [visualize PHP traces in Scout](https://base14.io/scout/traces) - inspect
 request waterfalls, identify slow operations, and correlate traces with
 logs and metrics.
+
+## FAQ
+
+### What PHP version is required for OpenTelemetry manual instrumentation?
+
+PHP 8.1 or later for current SDK releases. Install the OpenTelemetry SDK and
+the OTLP exporter with Composer. Manual instrumentation needs no PECL
+extension, unlike auto-instrumentation.
+
+### How do I create custom spans in PHP with OpenTelemetry?
+
+Build the span with the tracer's `spanBuilder` method, call `startSpan()`,
+run your operation, and always call `end()` in a `finally` block so the
+span closes when the operation throws.
+
+### How do I propagate trace context across PHP services?
+
+Use `TraceContextPropagator` to inject trace context into outgoing HTTP
+request headers and to extract it from incoming request headers. Without
+both halves the trace breaks at the service boundary.
+
+### Does OpenTelemetry PHP work with Symfony and WordPress?
+
+Yes. Manual instrumentation works with any PHP framework, including
+Symfony, WordPress, and plain PHP, because it depends only on the SDK
+rather than on framework hooks.
+
+### Should I use SimpleSpanProcessor or BatchSpanProcessor?
+
+Use `BatchSpanProcessor` in production. It groups spans and exports them in
+the background, so the request path does less work. `SimpleSpanProcessor`
+exports each span immediately, which is useful while debugging locally.
 
 ## References
 

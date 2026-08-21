@@ -20,16 +20,6 @@ keywords:
   - cockroachdb telemetry collection
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Which port and path does CockroachDB use for metrics?","acceptedAnswer":{"@type":"Answer","text":"Each node serves Prometheus-format metrics on its HTTP port 8080. CockroachDB exposes both /_status/vars and a newer /metrics; this guide uses /_status/vars, so set metrics_path to /_status/vars in the scrape job (the receiver would otherwise default to /metrics). No SQL login is involved - the endpoint is HTTP, not the SQL wire protocol."}},{"@type":"Question","name":"What does liveness_livenodes report in CockroachDB?","acceptedAnswer":{"@type":"Answer","text":"The number of nodes the cluster currently considers live. In a healthy cluster it equals the total node count; a drop signals a node the cluster can no longer reach. PostgreSQL has no analogue - this is a distributed-cluster signal."}},{"@type":"Question","name":"Why monitor clock_offset_meannanos in CockroachDB?","acceptedAnswer":{"@type":"Answer","text":"CockroachDB relies on loosely-synchronized clocks. If a node's offset against a majority of its peers exceeds about 80% of the cluster max-offset (about 400ms at the 500ms default), the node removes itself to preserve consistency. Tracking this metric warns you before that happens."}},{"@type":"Question","name":"Do I need a monitoring user like the PostgreSQL pg_monitor role?","acceptedAnswer":{"@type":"Answer","text":"No. Unlike the PostgreSQL receiver, CockroachDB's Prometheus endpoint is plain HTTP and needs no SQL credentials. Access setup is exposing the HTTP port (8080) to the Collector, not creating a monitoring role."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 # CockroachDB
 
 CockroachDB is distributed, PostgreSQL-wire-compatible SQL, so if you already
@@ -364,7 +354,7 @@ re-replicating.
 
 ## FAQ
 
-**Which port and path does CockroachDB use for metrics?**
+### Which port and path does CockroachDB use for metrics?
 
 Each node serves Prometheus-format metrics on its HTTP port `8080`. CockroachDB
 exposes both `/_status/vars` and a newer `/metrics`; this guide uses
@@ -372,27 +362,27 @@ exposes both `/_status/vars` and a newer `/metrics`; this guide uses
 receiver would otherwise default to `/metrics`). No SQL login is involved - the
 endpoint is HTTP, not the SQL wire protocol.
 
-**Do I need a monitoring user like the PostgreSQL `pg_monitor` role?**
+### Do I need a monitoring user like the PostgreSQL `pg_monitor` role?
 
 No. Unlike the PostgreSQL receiver, which connects over the SQL wire protocol
 with a `pg_monitor`-role account, CockroachDB's Prometheus endpoint is plain
 HTTP and needs no SQL credentials. Access setup is exposing the HTTP port
 (`8080`) to the Collector.
 
-**How do I monitor all the nodes in a cluster?**
+### How do I monitor all the nodes in a cluster?
 
 Add every node's `host:8080` to the scrape job's `static_configs.targets`.
 Each node serves only its own series, tagged with `node_id`, so scraping each
 node is what makes the per-node liveness and range tiers work. Do not scrape a
 single load-balanced endpoint - you would lose per-node visibility.
 
-**What does `liveness_livenodes` report?**
+### What does `liveness_livenodes` report in CockroachDB?
 
 The number of nodes the cluster currently considers live. In a healthy cluster
 it equals the total node count; a drop signals a node the cluster can no longer
 reach. PostgreSQL has no analogue - this is a distributed-cluster signal.
 
-**Why monitor `clock_offset_meannanos`?**
+### Why monitor `clock_offset_meannanos` in CockroachDB?
 
 CockroachDB relies on loosely-synchronized clocks. If a node's offset against
 a majority of its peers exceeds ~80% of the cluster max-offset (≈400ms at the

@@ -20,16 +20,6 @@ keywords:
   ]
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is the awsfirehosereceiver?","acceptedAnswer":{"@type":"Answer","text":"The awsfirehosereceiver is an OpenTelemetry Collector Contrib receiver that accepts records pushed by Amazon Data Firehose over an HTTP endpoint. With record_type set to cwmetrics it decodes CloudWatch Metric Stream JSON directly into OTel metrics, so no S3 bucket or Lambda function is needed."}},{"@type":"Question","name":"Do I need a public endpoint for Firehose HTTP delivery?","acceptedAnswer":{"@type":"Answer","text":"Yes. Amazon Data Firehose HTTP endpoint delivery requires a publicly reachable HTTPS endpoint with a valid, CA-signed certificate. Terminate TLS on the Collector directly or behind a load balancer with an ACM certificate. Firehose will not deliver to a self-signed certificate."}},{"@type":"Question","name":"What output format should the CloudWatch Metric Stream use?","acceptedAnswer":{"@type":"Answer","text":"Use JSON output format with record_type: cwmetrics on the receiver. If you set the Metric Stream output format to OpenTelemetry 1.0.0 instead, set record_type: otlp_v1 so the receiver decodes the OTLP payload."}},{"@type":"Question","name":"How is this different from the Firehose to S3 to Lambda approach?","acceptedAnswer":{"@type":"Answer","text":"This approach delivers straight from Firehose to the Collector's receiver, with no S3 bucket and no Lambda code to maintain, and lower latency. The trade-off is that the Collector must expose an inbound HTTPS endpoint that Firehose can reach, whereas the S3 and Lambda path needs no inbound endpoint."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 ## Overview
 
 This guide streams AWS CloudWatch metrics directly into the OpenTelemetry
@@ -254,27 +244,27 @@ the receiver. The receiver validates the `X-Amz-Firehose-Access-Key` header.
 
 ## FAQ
 
-**What is the `awsfirehosereceiver`?**
+### What is the `awsfirehosereceiver`?
 
 The `awsfirehosereceiver` is an OpenTelemetry Collector Contrib receiver that
 accepts records pushed by Amazon Data Firehose over an HTTP endpoint. With
 `record_type` set to `cwmetrics` it decodes CloudWatch Metric Stream JSON
 directly into OTel metrics, so no S3 bucket or Lambda function is needed.
 
-**Do I need a public endpoint for Firehose HTTP delivery?**
+### Do I need a public endpoint for Firehose HTTP delivery?
 
 Yes. Amazon Data Firehose HTTP endpoint delivery requires a publicly reachable
 HTTPS endpoint with a valid, CA-signed certificate. Terminate TLS on the
 Collector directly or behind a load balancer with an ACM certificate. Firehose
 will not deliver to a self-signed certificate.
 
-**What output format should the CloudWatch Metric Stream use?**
+### What output format should the CloudWatch Metric Stream use?
 
 Use `JSON` output format with `record_type: cwmetrics` on the receiver. If you
 set the Metric Stream output format to `OpenTelemetry 1.0.0` instead, set
 `record_type: otlp_v1` so the receiver decodes the OTLP payload.
 
-**How is this different from the Firehose to S3 to Lambda approach?**
+### How is this different from the Firehose to S3 to Lambda approach?
 
 This approach delivers straight from Firehose to the Collector's receiver, with
 no S3 bucket and no Lambda code to maintain, and lower latency. The trade-off

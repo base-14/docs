@@ -444,22 +444,22 @@ status to Logcat.
 
 ## FAQ
 
-**Does scout-android require the NDK in my app?**
+### Does scout-android require the NDK in my app?
 
 No. The native crash handler ships prebuilt for all four ABIs inside
 the artifact.
 
-**Will init block app startup?**
+### Will init block app startup?
 
 `Scout.initialize` does its work inline but is lightweight; call it in
 `Application.onCreate()`. Instrumentation runs on background threads.
 
-**Can I add custom spans, metrics, or logs?**
+### Can I add custom spans, metrics, or logs?
 
 Yes — `recordSpan`, `emitGauge`, and `log*` are the manual entry
 points. They go through the same sampling / export pipeline.
 
-**Does it work with Java-only apps?**
+### Does it work with Java-only apps?
 
 Yes — every method is `@JvmStatic`; call `Scout.initialize(this, config)`
 from Java the same way.

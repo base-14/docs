@@ -20,16 +20,6 @@ keywords:
   - postgresql telemetry collection
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does PostgreSQL OpenTelemetry monitoring work in Kubernetes?","acceptedAnswer":{"@type":"Answer","text":"Yes. Set the endpoint to the PostgreSQL service DNS (e.g., postgresql.default.svc.cluster.local:5432) and inject credentials via a Kubernetes secret. The OpenTelemetry Collector can run as a sidecar or DaemonSet."}},{"@type":"Question","name":"What permissions does the PostgreSQL monitoring user need?","acceptedAnswer":{"@type":"Answer","text":"The pg_monitor role is sufficient. It grants read access to the statistics views the receiver queries, and no write permissions are needed."}},{"@type":"Question","name":"How do I monitor multiple PostgreSQL instances with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Add multiple PostgreSQL receiver blocks with distinct names (e.g., postgresql/primary and postgresql/replica) in the OpenTelemetry Collector config, then include both in the metrics pipeline."}},{"@type":"Question","name":"What is the difference between Basic and Advanced PostgreSQL monitoring?","acceptedAnswer":{"@type":"Answer","text":"This guide uses the OpenTelemetry PostgreSQL receiver for core database metrics. The Advanced guide adds deeper query-level statistics, per-table I/O, and detailed replication monitoring."}},{"@type":"Question","name":"Why are the WAL metrics not showing up?","acceptedAnswer":{"@type":"Answer","text":"postgresql.wal.age and postgresql.wal.lag only emit once replication is configured. On a single-node server with no standby or replication slot they stay silent even when enabled. Keep them enabled and they surface once a replica connects."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 # PostgreSQL Basic
 
 The OpenTelemetry Collector's PostgreSQL receiver collects 23 metrics from
@@ -337,19 +327,19 @@ do not emit.
 
 ## FAQ
 
-**Does this work with PostgreSQL running in Kubernetes?**
+### Does this work with PostgreSQL running in Kubernetes?
 
 Yes. Set `endpoint` to the PostgreSQL service DNS
 (e.g., `postgresql.default.svc.cluster.local:5432`) and inject the
 credentials via a Kubernetes secret. The Collector can run as a sidecar or
 DaemonSet.
 
-**What permissions does the monitoring account need?**
+### What permissions does the monitoring account need?
 
 The `pg_monitor` role. It grants read access to the
 `pg_stat_*` views the receiver queries. No write access is required.
 
-**How do I monitor multiple PostgreSQL instances?**
+### How do I monitor multiple PostgreSQL instances with OpenTelemetry?
 
 Add multiple receiver blocks with distinct names, then include both in the
 pipeline:
@@ -373,13 +363,13 @@ service:
       receivers: [postgresql/primary, postgresql/replica]
 ```
 
-**What is the difference between Basic and Advanced monitoring?**
+### What is the difference between Basic and Advanced PostgreSQL monitoring?
 
 This guide uses the OTel PostgreSQL receiver for core database metrics. The
 [Advanced guide](./postgres-advanced.md) adds deeper query-level
 statistics, per-table I/O, and detailed replication monitoring.
 
-**Why are the WAL metrics not showing up?**
+### Why are the WAL metrics not showing up?
 
 `postgresql.wal.age` and `postgresql.wal.lag` only emit once replication is
 configured. On a single-node server with no standby or replication slot

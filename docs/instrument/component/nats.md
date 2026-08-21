@@ -339,14 +339,14 @@ per-connection `gnatsd_connz_pending_bytes` to find the offending client.
 
 ## FAQ
 
-**Does this work with NATS running in Kubernetes?**
+### Does this work with NATS running in Kubernetes?
 
 Yes. Run the `prometheus-nats-exporter` as a sidecar in the NATS pod, pointing
 at `http://localhost:8222`. Set the Collector's `targets` to the exporter's
 service DNS (e.g., `nats-exporter.default.svc.cluster.local:7777`). The
 Collector can run as a sidecar or a DaemonSet.
 
-**How do I monitor a NATS cluster?**
+### How do I monitor a NATS cluster?
 
 Each NATS node needs its own exporter sidecar. Add all exporter endpoints to
 the scrape config:
@@ -366,13 +366,13 @@ receivers:
 
 Each node is scraped independently and identified by its `instance` label.
 
-**Why does the exporter use `gnatsd_` as the metric prefix?**
+### Why does the exporter use `gnatsd_` as the metric prefix?
 
 It is a legacy naming convention from when the NATS server binary was called
 `gnatsd`. The exporter keeps the prefix so existing dashboards and alerting
 rules keep working.
 
-**Can I monitor NATS without the exporter sidecar?**
+### Can I monitor NATS without the exporter sidecar?
 
 No. The native NATS monitoring endpoints (`/varz`, `/connz`, `/routez`, `/jsz`)
 return JSON, which the `prometheus` receiver cannot parse. The

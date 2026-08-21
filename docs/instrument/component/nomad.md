@@ -365,14 +365,14 @@ client and allocation families.
 
 ## FAQ
 
-**Does this work with Nomad running in Kubernetes?**
+### Does this work with Nomad running in Kubernetes?
 
 Yes. Set `targets` to the Nomad service DNS
 (e.g., `nomad-server.nomad.svc.cluster.local:4646`) and ensure
 `prometheus_metrics = true` is set in the Nomad Helm chart values under
 `server.extraConfig`. The Collector can run as a sidecar or DaemonSet.
 
-**How do I monitor a multi-node Nomad cluster?**
+### How do I monitor a multi-node Nomad cluster?
 
 Each Nomad server exposes its own metrics endpoint. Add all server
 endpoints to the scrape config:
@@ -396,7 +396,7 @@ receivers:
 Each server is scraped independently and identified by its `instance`
 label.
 
-**Why are client metrics missing?**
+### Why are client metrics missing?
 
 A Nomad server does not emit client or allocation metrics. Allocation
 resource usage, task-driver stats, and node-level metrics come only from
@@ -404,7 +404,7 @@ Nomad client agents. Add client agent endpoints (also on port `4646`) to
 your scrape targets alongside the servers, and enable
 `publish_allocation_metrics` and `publish_node_metrics` on those agents.
 
-**How does this relate to Consul and Vault monitoring?**
+### How does this relate to Consul and Vault monitoring?
 
 Nomad, Consul, and Vault form the HashiCorp stack and are often deployed
 together. Each exposes Prometheus metrics via the same `/v1/metrics`

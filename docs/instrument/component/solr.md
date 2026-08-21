@@ -354,14 +354,14 @@ core is loaded.
 
 ## FAQ
 
-**Does this work with Solr running in Kubernetes?**
+### Does this work with Solr running in Kubernetes?
 
 Yes. Set `targets` to the Solr pod or service DNS
 (e.g., `solr-0.solr.default.svc.cluster.local:8983`) and keep the
 `metrics_path` and `params` overrides. The Collector can run as a
 sidecar or a DaemonSet.
 
-**How do I monitor a SolrCloud cluster?**
+### How do I monitor a SolrCloud cluster?
 
 Add every node endpoint to the scrape config. Each node is scraped
 independently and identified by its `instance` label:
@@ -382,7 +382,7 @@ receivers:
                 - solr-3:8983
 ```
 
-**What is the difference between `node` and `core` metrics?**
+### What is the difference between `node` and `core` metrics?
 
 Node metrics (`solr_node_*`) cover the whole instance - aggregate
 request counts, latency, and executor pools. Core metrics
@@ -390,7 +390,7 @@ request counts, latency, and executor pools. Core metrics
 caches, index size, and update-handler stats. Core metrics only appear
 once a core is loaded.
 
-**Why are `overseer` and replication metrics empty?**
+### Why are `overseer` and replication metrics empty?
 
 Overseer metrics only appear in SolrCloud mode on the elected overseer
 node, so a standalone instance does not emit them. The
@@ -398,7 +398,7 @@ node, so a standalone instance does not emit them. The
 (for example `solr_core_replication_is_enabled`) until replication is
 actually set up.
 
-**Why is the cache hit ratio not a single metric?**
+### Why is the cache hit ratio not a single metric?
 
 Solr exposes the inputs, not the ratio. Derive it as
 `solr_core_indexsearcher_cache_ops_total{...hits}` over

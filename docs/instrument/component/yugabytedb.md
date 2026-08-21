@@ -20,16 +20,6 @@ keywords:
   - yugabytedb telemetry collection
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Which ports and path does YugabyteDB use for metrics?","acceptedAnswer":{"@type":"Answer","text":"Each node serves Prometheus-format metrics at /prometheus-metrics on four ports: 7000 (yb-master), 9000 (yb-tserver), 13000 (YSQL, Postgres-wire), and 12000 (YCQL, Cassandra-wire). The Collector's prometheus receiver runs one scrape job per endpoint type across all nodes. No SQL login is involved - the endpoints are HTTP, not the SQL wire protocol."}},{"@type":"Question","name":"What does num_tablet_servers_live report in YugabyteDB?","acceptedAnswer":{"@type":"Answer","text":"The number of tablet servers the master currently considers live. In a healthy cluster it equals the node count; a drop signals a tablet server that is down or partitioned. Single-node PostgreSQL has no analogue - this is a distributed-cluster signal."}},{"@type":"Question","name":"Why monitor hybrid_clock_skew in YugabyteDB?","acceptedAnswer":{"@type":"Answer","text":"YugabyteDB tolerates clock skew up to hybrid_clock_error (the max_clock_skew_usec setting, 500ms by default). Beyond that bound, reads restart and a node can stall, so tracking hybrid_clock_skew against hybrid_clock_error warns you before consistency is at risk. It is the signature distributed-SQL health signal with no single-node PostgreSQL equivalent."}},{"@type":"Question","name":"Do I need a monitoring user like the PostgreSQL pg_monitor role?","acceptedAnswer":{"@type":"Answer","text":"No. Unlike the PostgreSQL receiver, YugabyteDB's Prometheus endpoints are plain HTTP and need no SQL credentials. Access setup is exposing the four HTTP ports (7000, 9000, 13000, 12000) to the Collector, not creating a monitoring role."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 # YugabyteDB
 
 YugabyteDB is distributed SQL whose YSQL API speaks the PostgreSQL wire
@@ -431,7 +421,7 @@ shows the file count driving it.
 
 ## FAQ
 
-**Which ports and path does YugabyteDB use for metrics?**
+### Which ports and path does YugabyteDB use for metrics?
 
 Each node serves Prometheus-format metrics at `/prometheus-metrics` on four
 ports: `7000` (yb-master), `9000` (yb-tserver), `13000` (YSQL, Postgres-wire),
@@ -439,14 +429,14 @@ and `12000` (YCQL, Cassandra-wire). The `prometheus` receiver runs one scrape
 job per endpoint type across all nodes. No SQL login is involved - the
 endpoints are HTTP, not the SQL wire protocol.
 
-**Do I need a monitoring user like the PostgreSQL `pg_monitor` role?**
+### Do I need a monitoring user like the PostgreSQL `pg_monitor` role?
 
 No. Unlike the PostgreSQL receiver, which connects over the SQL wire protocol
 with a `pg_monitor`-role account, YugabyteDB's Prometheus endpoints are plain
 HTTP and need no SQL credentials. Access setup is exposing the four HTTP ports
 to the Collector.
 
-**How do I monitor all the nodes in a cluster?**
+### How do I monitor all the nodes in a cluster?
 
 Add every node's `host:port` to each job's `static_configs.targets`. Each node
 serves only its own series, tagged with `exported_instance`, so scraping each
@@ -454,14 +444,14 @@ node is what makes the per-node liveness, clock-skew, and replication tiers
 work. Do not scrape a single load-balanced endpoint - you would lose per-node
 visibility.
 
-**What does `num_tablet_servers_live` report?**
+### What does `num_tablet_servers_live` report in YugabyteDB?
 
 The number of tablet servers the master currently considers live. In a healthy
 cluster it equals the node count; a drop signals a tablet server the cluster can
 no longer reach. Single-node PostgreSQL has no analogue - this is a
 distributed-cluster signal.
 
-**Why monitor `hybrid_clock_skew`?**
+### Why monitor `hybrid_clock_skew` in YugabyteDB?
 
 YugabyteDB tolerates clock skew up to `hybrid_clock_error` (the
 `max_clock_skew_usec` setting, 500ms by default). Beyond that bound, reads
@@ -470,7 +460,7 @@ restart and a node can stall, so tracking `hybrid_clock_skew` against
 signature distributed-SQL health signal with no single-node PostgreSQL
 equivalent.
 
-**Does YugabyteDB also expose Cassandra-wire (YCQL) metrics?**
+### Does YugabyteDB also expose Cassandra-wire (YCQL) metrics?
 
 Yes. The YCQL API on port `12000` exposes parallel
 `handler_latency_yb_cqlserver_SQLProcessor_*` per-statement counters. The

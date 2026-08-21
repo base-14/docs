@@ -394,7 +394,7 @@ families populate only once a bucket exists and takes operations.
 
 ## FAQ
 
-**Does this work with Couchbase running in Kubernetes?**
+### Does this work with Couchbase running in Kubernetes?
 
 Yes. Set `targets` to the Couchbase service DNS endpoint (for example
 `couchbase.default.svc.cluster.local:8091`) and inject the monitoring
@@ -402,12 +402,12 @@ credentials via a Kubernetes secret. With the Couchbase Autonomous Operator,
 each pod exposes `/metrics` on 8091 - add all pod addresses to the scrape
 config or use Prometheus service discovery.
 
-**What permissions does the monitoring account need?**
+### What permissions does the monitoring account need?
 
 The `external_stats_reader` role only - it is read-only and grants no write
 or data access. Admin credentials also work for quick testing.
 
-**Does this work with Couchbase Community Edition?**
+### Does this work with Couchbase Community Edition?
 
 Yes. Community Edition 7.0+ exposes the same `/metrics` endpoint with the
 same `cm_*` / `kv_*` / `sys_*` / `sysproc_*` surface. The query (`n1ql_*`),
@@ -415,14 +415,14 @@ index (`index_*`), and search service families appear on either edition when
 those services run; the analytics (`cbas_*`) and eventing (`eventing_*`)
 families are Enterprise Edition only.
 
-**Why do I only see `cm_*` and `sys_*` metrics?**
+### Why do I only see `cm_*` and `sys_*` metrics?
 
 There is no bucket with traffic yet. The data-service (`kv_*`) families
 populate only once a bucket exists and takes operations. The cluster-manager
 (`cm_*`) and host (`sys_*`) families are available immediately after the
 cluster is initialized.
 
-**The Collector logs a `different value but same timestamp` warning. Is that a problem?**
+### Is the `different value but same timestamp` warning a problem?
 
 No. Couchbase exposes a small number of duplicate samples (same name and
 labels, two values) per scrape. The `prometheus` receiver keeps the first

@@ -374,13 +374,13 @@ is not active, so the per-digest signals stay empty.
 
 ## FAQ
 
-**Does this work with MySQL running in Kubernetes?**
+### Does this work with MySQL running in Kubernetes?
 
 Yes. Set `endpoint` to the MySQL service DNS
 (e.g., `mysql.default.svc.cluster.local:3306`) and inject credentials
 via a Kubernetes secret. The Collector can run as a sidecar or DaemonSet.
 
-**How do I monitor multiple MySQL instances?**
+### How do I monitor multiple MySQL instances?
 
 Add multiple receiver blocks with distinct names:
 
@@ -399,19 +399,19 @@ receivers:
 Then include both in the pipeline:
 `receivers: [mysql/primary, mysql/replica]`.
 
-**What permissions does the monitoring account need?**
+### What permissions does the monitoring account need?
 
 `PROCESS`, `REPLICATION CLIENT`, and `SELECT` on `performance_schema`.
 No write access is required - the Collector only reads metrics, it does
 not modify MySQL data.
 
-**Why are replication metrics showing zero?**
+### Why are replication metrics showing zero?
 
 `mysql.replica.time_behind_source` and `mysql.replica.sql_delay` require
 MySQL to be configured as a replica. On a standalone instance or a
 primary, they report nothing - this is expected behavior.
 
-**Why is there no single query-latency metric?**
+### Why is there no single query-latency metric?
 
 The `mysqlreceiver` does not expose one aggregate latency gauge. Latency
 detail is per statement digest via `mysql.statement_event.wait.time`,

@@ -289,14 +289,14 @@ stay at 0 until the matching traffic occurs. This is expected, not a fault.
 
 ## FAQ
 
-**Does this work with CouchDB running in Kubernetes?**
+### Does this work with CouchDB running in Kubernetes?
 
 Yes. Set `endpoint` to the CouchDB service DNS
 (e.g., `http://couchdb.default.svc.cluster.local:5984`) and inject
 credentials via a Kubernetes secret. The Collector can run as a sidecar or
 DaemonSet.
 
-**How do I monitor a CouchDB cluster?**
+### How do I monitor a CouchDB cluster?
 
 Each CouchDB node exposes its own `/_node/_local/_stats` endpoint. Add a
 separate receiver block per node:
@@ -316,13 +316,13 @@ receivers:
 Then include both in the pipeline:
 `receivers: [couchdb/node1, couchdb/node2]`.
 
-**What permissions does the monitoring account need?**
+### What permissions does the monitoring account need?
 
 Read access to `/_node/_local/_stats`. No write access is required - the
 Collector only reads metrics and never modifies CouchDB data. An admin
 account works, but a dedicated read-only user is cleaner.
 
-**Why do the view and bulk metrics read zero?**
+### Why do the view and bulk metrics read zero?
 
 `couchdb.httpd.views` counts MapReduce view queries and
 `couchdb.httpd.bulk_requests` counts `_bulk_docs` requests. Each stays at 0

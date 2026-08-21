@@ -31,19 +31,6 @@ keywords:
   ]
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I add OpenTelemetry tracing to a tRPC application?","acceptedAnswer":{"@type":"Answer","text":"Create a tracing.ts file that initializes the OpenTelemetry NodeSDK with getNodeAutoInstrumentations() and PrismaInstrumentation, then preload it via node --require ./dist/tracing.js before your server starts."}},{"@type":"Question","name":"Does OpenTelemetry automatically trace Prisma queries in tRPC?","acceptedAnswer":{"@type":"Answer","text":"Yes. Register PrismaInstrumentation from @prisma/instrumentation in your NodeSDK instrumentations array. All Prisma queries including findMany, create, update, and delete generate spans with query details automatically."}},{"@type":"Question","name":"How does distributed tracing work across tRPC microservices?","acceptedAnswer":{"@type":"Answer","text":"Node.js fetch() is auto-instrumented by OpenTelemetry HTTP instrumentation. When one service calls another via fetch, W3C traceparent headers propagate automatically, linking spans across services into a single trace."}},{"@type":"Question","name":"What is the performance overhead of OpenTelemetry on tRPC?","acceptedAnswer":{"@type":"Answer","text":"Typical overhead is 0.5-2ms per request, 2-5% CPU increase, and 15-30MB additional memory. Using BatchSpanProcessor and excluding health check endpoints keeps impact minimal."}},{"@type":"Question","name":"Can I use tRPC createCallerFactory with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Yes. The createCallerFactory pattern works seamlessly because HTTP instrumentation creates the parent span, and Prisma instrumentation traces database calls within the caller. The full call chain is captured automatically."}}]})}
-  </script>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"HowTo","name":"Add OpenTelemetry to tRPC","step":[{"@type":"HowToStep","name":"Install packages","text":"Install @opentelemetry/sdk-node, auto-instrumentations-node, OTLP exporters, and @prisma/instrumentation"},{"@type":"HowToStep","name":"Create tracing.ts","text":"Initialize NodeSDK with PrismaInstrumentation and getNodeAutoInstrumentations()"},{"@type":"HowToStep","name":"Configure Pino logger","text":"Add a mixin that injects trace_id and span_id from the active span context"},{"@type":"HowToStep","name":"Set environment variables","text":"Set OTEL_SERVICE_NAME, OTEL_EXPORTER_OTLP_ENDPOINT, and resource attributes"},{"@type":"HowToStep","name":"Run with preload","text":"Start with node --require ./dist/tracing.js ./dist/server.js to ensure SDK initializes before application code"}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 ```mdx-code-block
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -1560,6 +1547,37 @@ requestDuration.record(performance.now() - start, {
   "http.status_code": statusCode,
 });
 ```
+
+### How do I add OpenTelemetry tracing to a tRPC application?
+
+Create a `tracing.ts` file that initializes the OpenTelemetry `NodeSDK` with
+`getNodeAutoInstrumentations()` and `PrismaInstrumentation`, then preload it
+via `node --require ./dist/tracing.js` before your server starts.
+
+### Does OpenTelemetry automatically trace Prisma queries in tRPC?
+
+Yes. Register `PrismaInstrumentation` from `@prisma/instrumentation` in your
+`NodeSDK` instrumentations array. Prisma queries such as `findMany`, `create`,
+`update`, and `delete` then generate spans carrying the query details.
+
+### How does distributed tracing work across tRPC microservices?
+
+Node.js `fetch()` is auto-instrumented by OpenTelemetry HTTP
+instrumentation. When one service calls another via `fetch`, W3C
+`traceparent` headers
+propagate automatically, linking spans across services into a single trace.
+
+### What is the performance overhead of OpenTelemetry on tRPC?
+
+Typical overhead is 0.5-2ms per request, a 2-5% CPU increase, and 15-30MB of
+additional memory. `BatchSpanProcessor` and excluding health check endpoints
+keep it at the lower end of that range.
+
+### Can I use tRPC createCallerFactory with OpenTelemetry?
+
+Yes. HTTP instrumentation creates the parent span and Prisma instrumentation
+traces the database calls made inside the caller, so the whole chain shows up
+without extra wiring.
 
 ## What's Next?
 

@@ -393,28 +393,28 @@ metrics disabled), or Vault is sealed (a sealed Vault returns `503`).
 
 ## FAQ
 
-**Does this work with Vault running in Kubernetes?**
+### Does this work with Vault running in Kubernetes?
 
 Yes. Set `targets` to the active-service DNS
 (e.g., `vault-active.vault.svc.cluster.local:8200`) so the scrape always
 hits the leader, and inject `VAULT_TOKEN` from a Kubernetes secret. The
 Collector can run as a sidecar or a Deployment.
 
-**How do I monitor a Vault HA cluster?**
+### How do I monitor a Vault HA cluster?
 
 Only the active node serves metrics at `/v1/sys/metrics`, so point the
 Collector at the active service endpoint and use `vault_core_active`
 (`1` = leader) to confirm which node it is. For Vault Enterprise with
 performance standbys, each standby can optionally expose its own metrics.
 
-**Why do additional metrics appear after enabling secrets engines?**
+### Why do additional metrics appear after enabling secrets engines?
 
 Vault generates metrics dynamically per active secrets engine, auth
 method, and audit device. A production instance with multiple backends
 emits more series - notably the per-mount `vault_route_*` family, which
 carries the mount path - than a fresh dev server.
 
-**What does `vault_barrier_estimated_encryptions` indicate?**
+### What does `vault_barrier_estimated_encryptions` indicate?
 
 It tracks the estimated number of barrier encryption operations since
 the last rekey. Watch it for compliance requirements that mandate

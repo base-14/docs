@@ -19,16 +19,6 @@ keywords:
   - kubernetes observability
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why one Collector per node instead of one for the cluster?","acceptedAnswer":{"@type":"Answer","text":"The kubelet only reports containers running on its own node. A DaemonSet gives each Collector a local kubelet to scrape, which spreads the load and avoids cross-node network hops. A single Collector would have to reach every node's kubelet and would miss nodes it cannot route to."}},{"@type":"Question","name":"What is the difference between the kubeletstats receiver and the metrics-server?","acceptedAnswer":{"@type":"Answer","text":"The metrics-server aggregates a small CPU/memory set for the Horizontal Pod Autoscaler. The kubeletstats receiver reads the full kubelet Summary API - network, filesystem, working set, RSS, utilization - and ships it as OpenTelemetry metrics for long-term storage and querying."}},{"@type":"Question","name":"Why are volume metrics missing from the kubeletstats receiver?","acceptedAnswer":{"@type":"Answer","text":"k8s.volume.available and k8s.volume.capacity emit only for PVC-backed volumes. Pods using emptyDir or no volumes produce no volume metrics - this is expected."}},{"@type":"Question","name":"Does k8s.pod.cpu.utilization exist?","acceptedAnswer":{"@type":"Answer","text":"No. The receiver reports k8s.pod.cpu.usage (instantaneous usage) and k8s.pod.cpu_limit_utilization / k8s.pod.cpu_request_utilization (usage relative to the configured limit or request). There is no plain cpu.utilization metric."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 # Kubelet Stats
 
 The OpenTelemetry Collector's `kubeletstats` receiver scrapes the
@@ -300,7 +290,7 @@ metrics need the workload to declare resource limits/requests.
 
 ## FAQ
 
-**Why one Collector per node instead of one for the cluster?**
+### Why one Collector per node instead of one for the cluster?
 
 The kubelet only reports containers running on its own node. A
 DaemonSet gives each Collector a local kubelet to scrape, which spreads
@@ -308,7 +298,7 @@ the load and avoids cross-node network hops. A single Collector would
 have to reach every node's kubelet and would miss nodes it cannot
 route to.
 
-**What is the difference between this and the metrics-server?**
+### What is the difference between kubeletstats and the metrics-server?
 
 The metrics-server aggregates a small CPU/memory set for the
 Horizontal Pod Autoscaler. The `kubeletstats` receiver reads the full
@@ -316,13 +306,13 @@ kubelet Summary API - network, filesystem, working set, RSS,
 utilization - and ships it as OpenTelemetry metrics for long-term
 storage and querying.
 
-**Why are volume metrics missing?**
+### Why are volume metrics missing from the kubeletstats receiver?
 
 `k8s.volume.available` and `k8s.volume.capacity` emit only for
 PVC-backed volumes. Pods using `emptyDir` or no volumes produce no
 volume metrics - this is expected.
 
-**Does `k8s.pod.cpu.utilization` exist?**
+### Does `k8s.pod.cpu.utilization` exist?
 
 No. The receiver reports `k8s.pod.cpu.usage` (instantaneous usage) and
 `k8s.pod.cpu_limit_utilization` / `k8s.pod.cpu_request_utilization`

@@ -18,16 +18,6 @@ keywords:
   ]
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is CloudWatch Metrics Stream and how does it work with base14 Scout?","acceptedAnswer":{"@type":"Answer","text":"Amazon CloudWatch Metric Streams push metrics continuously through Amazon Data Firehose. In this setup Firehose writes batches to S3, an S3-triggered Lambda converts each batch to OTLP and forwards it to base14 Scout. End-to-end latency is typically three to five minutes, faster than polling the CloudWatch APIs."}},{"@type":"Question","name":"How do I set up CloudWatch Metrics Stream for base14 Scout?","acceptedAnswer":{"@type":"Answer","text":"Create an S3 bucket, set up an Amazon Data Firehose stream with Direct PUT as input and S3 as output, configure a CloudWatch Metric Stream to send metrics through Firehose, then add a Lambda that converts the S3 objects to OTLP and forwards them to base14 Scout."}},{"@type":"Question","name":"Is CloudWatch Metrics Stream faster than polling CloudWatch APIs?","acceptedAnswer":{"@type":"Answer","text":"Yes. Metric Streams deliver to Firehose in two to three minutes. With the S3 and Lambda forwarding hop, end-to-end delivery to Scout is typically three to five minutes, still faster than the five or more minutes typical of API polling."}},{"@type":"Question","name":"Can I filter which AWS metrics are streamed via CloudWatch Metrics Stream?","acceptedAnswer":{"@type":"Answer","text":"Yes. When creating the Metric Stream you can select specific namespaces such as AWS/EC2 or AWS/RDS instead of all namespaces, which reduces cost and data volume."}},{"@type":"Question","name":"What AWS infrastructure do I need for CloudWatch Metrics Stream?","acceptedAnswer":{"@type":"Answer","text":"You need an S3 bucket, an Amazon Data Firehose stream configured with Direct PUT, a CloudWatch Metric Stream that routes metrics through Firehose to S3, and a Lambda function that forwards the metrics to base14 Scout over OTLP."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 Using Amazon CloudWatch Metric Streams and Amazon Data Firehose (formerly
 Kinesis Data Firehose), you can get CloudWatch metrics into base14 Scout with
 low latency. Firehose buffers the stream in S3, and a Lambda function converts
@@ -451,34 +441,34 @@ Confirm metrics are flowing at each hop:
 
 ## FAQ
 
-**What is CloudWatch Metrics Stream and how does it work with base14 Scout?**
+### What is CloudWatch Metrics Stream and how does it work with base14 Scout?
 
 Amazon CloudWatch Metric Streams push metrics continuously through Amazon Data
 Firehose. In this setup Firehose writes batches to S3, an S3-triggered Lambda
 converts each batch to OTLP and forwards it to base14 Scout. End-to-end latency
 is typically three to five minutes, faster than polling the CloudWatch APIs.
 
-**How do I set up CloudWatch Metrics Stream for base14 Scout?**
+### How do I set up CloudWatch Metrics Stream for base14 Scout?
 
 Create an S3 bucket, set up an Amazon Data Firehose stream with Direct PUT as
 input and S3 as output, configure a CloudWatch Metric Stream to send metrics
 through Firehose, then add a Lambda that converts the S3 objects to OTLP and
 forwards them to base14 Scout.
 
-**Is CloudWatch Metrics Stream faster than polling CloudWatch APIs?**
+### Is CloudWatch Metrics Stream faster than polling CloudWatch APIs?
 
 Yes. Metric Streams deliver to Firehose in two to three minutes. With the S3
 and Lambda forwarding hop, end-to-end delivery to Scout is typically three to
 five minutes, still faster than the five or more minutes typical of API
 polling.
 
-**Can I filter which AWS metrics are streamed via CloudWatch Metrics Stream?**
+### Can I filter which AWS metrics are streamed via CloudWatch Metrics Stream?
 
 Yes. When creating the Metric Stream you can select specific namespaces such as
 AWS/EC2 or AWS/RDS instead of all namespaces, which reduces cost and data
 volume.
 
-**What AWS infrastructure do I need for CloudWatch Metrics Stream?**
+### What AWS infrastructure do I need for CloudWatch Metrics Stream?
 
 You need an S3 bucket, an Amazon Data Firehose stream configured with Direct
 PUT, a CloudWatch Metric Stream that routes metrics through Firehose to S3, and

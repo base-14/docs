@@ -19,16 +19,6 @@ keywords:
   - ksm telemetry
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Which port does kube-state-metrics use for metrics?","acceptedAnswer":{"@type":"Answer","text":"KSM serves Prometheus metrics and /livez on the main port 8080, and its own self-telemetry plus /readyz on port 8081. Scrape port 8080 for the kube object-state series."}},{"@type":"Question","name":"What does kube_pod_status_phase report?","acceptedAnswer":{"@type":"Answer","text":"One time series per pod per phase. The pod's current phase reads 1 and the other phases read 0, so summing across the Running phase gives the count of running pods in a namespace."}},{"@type":"Question","name":"How do I monitor a Job's success with kube-state-metrics?","acceptedAnswer":{"@type":"Answer","text":"kube_job_status_succeeded reaches 1 when a Job's pod completes successfully. Pair it with kube_job_status_failed to alert on Jobs that exhaust their backoff limit."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 # kube-state-metrics
 
 kube-state-metrics (KSM) listens on port 8080 and serves Prometheus-format
@@ -190,19 +180,19 @@ empty.
 
 ## FAQ
 
-**Which port does KSM use for metrics?**
+### Which port does kube-state-metrics use for metrics?
 
 KSM serves Prometheus metrics and `/livez` on the main port 8080, and its
 own self-telemetry plus `/readyz` on port 8081. Scrape port 8080 for the
 `kube_*` object-state series.
 
-**What does `kube_pod_status_phase` report?**
+### What does `kube_pod_status_phase` report?
 
 One time series per pod per phase. The pod's current phase reads 1 and the
 other phases read 0, so summing across `phase="Running"` gives the count of
 running pods in a namespace.
 
-**How do I monitor a Job's success?**
+### How do I monitor a Job's success with kube-state-metrics?
 
 `kube_job_status_succeeded` reaches 1 when a Job's pod completes
 successfully. Pair it with `kube_job_status_failed` to alert on Jobs that

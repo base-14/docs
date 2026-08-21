@@ -478,7 +478,7 @@ register once a web application with active sessions is deployed.
 
 ## FAQ
 
-**Why do I need the JMX Scraper instead of a Jetty receiver?**
+### Why do I need the JMX Scraper instead of a Jetty receiver?
 
 Jetty has no native metrics endpoint and the Collector has no Jetty
 receiver. Jetty publishes its statistics as JMX MBeans, and the
@@ -486,21 +486,21 @@ OpenTelemetry JMX Scraper reads them over JMX/RMI, maps them to OTel
 metrics with the `jvm,jetty` target rules, and pushes OTLP to the
 Collector.
 
-**Does this work with embedded Jetty (Spring Boot / Dropwizard)?**
+### Does this work with embedded Jetty (Spring Boot / Dropwizard)?
 
 Yes. Spring Boot and Dropwizard embed Jetty and register its MBeans when
 JMX is enabled (`spring.jmx.enabled=true` on Spring Boot). Add the same
 `-Dcom.sun.management.jmxremote.*` flags to the application JVM and point
 the scraper at it.
 
-**Why is there no request-rate or latency metric?**
+### Why is there no request-rate or latency metric?
 
 The scraper's `jetty` target exposes no request counter, so throughput
 and per-request timing are not in this metric surface. Use
 `jetty.thread.busy.count` as a work proxy; per-request timing lives in
 your access logs or trace path.
 
-**How do I monitor multiple Jetty instances?**
+### How do I monitor multiple Jetty instances?
 
 Run one JMX Scraper per instance, each with a different
 `OTEL_JMX_SERVICE_URL`, all exporting to the same Collector:
@@ -519,7 +519,7 @@ jmx-scraper-replica:
     OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
 ```
 
-**Does this work with Jetty in Kubernetes?**
+### Does this work with Jetty in Kubernetes?
 
 Yes. Run the JMX Scraper as a sidecar in the same pod and set
 `OTEL_JMX_SERVICE_URL` to

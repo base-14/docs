@@ -40,16 +40,6 @@ keywords:
   ]
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does OpenTelemetry work with all Go web frameworks?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry supports Echo, Fiber, Chi, Gin, and standard net/http through various instrumentation packages. base14 Scout works with all of them."}},{"@type":"Question","name":"What is the performance impact of OpenTelemetry on Go applications?","acceptedAnswer":{"@type":"Answer","text":"Minimal: approximately 0.1-0.5ms added latency, 1-3% CPU increase, and 5-15MB additional memory. Go's efficient goroutines make OpenTelemetry very lightweight."}},{"@type":"Question","name":"Can I trace GORM and sqlx database queries with OpenTelemetry in Go?","acceptedAnswer":{"@type":"Answer","text":"Yes, use otelgorm for GORM and otelsql for sqlx and database/sql. All SQL queries are automatically traced with parameters sanitized for security."}},{"@type":"Question","name":"How do I propagate OpenTelemetry trace context across goroutines in Go?","acceptedAnswer":{"@type":"Answer","text":"Pass the context to goroutines using go func(ctx context.Context) { ... }(ctx) to maintain the trace hierarchy across concurrent operations."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 # Go
 
 :::note Running this in production
@@ -1323,7 +1313,7 @@ db.SelectContext(ctx, &users,
 Yes, OpenTelemetry supports Echo, Fiber, Chi, Gin, and standard `net/http`
 through various instrumentation packages.
 
-### What's the performance impact on Go applications?
+### What is the performance impact of OpenTelemetry on Go applications?
 
 Minimal: +0.1-0.5ms latency, +1-3% CPU, +5-15MB memory. Go's efficient
 goroutines make OpenTelemetry very lightweight.
@@ -1357,6 +1347,12 @@ Context and Baggage.
 
 Traces show request flow through your app. Metrics aggregate performance data.
 Both are supported by OpenTelemetry.
+
+### Can I trace GORM and sqlx database queries with OpenTelemetry in Go?
+
+Yes. Use `otelgorm` for GORM and `otelsql` for sqlx and `database/sql`. Each
+query becomes a span with the SQL recorded on it. Set `DisableQuery: true` in
+`otelsql.SpanOptions` to keep the query text out of spans.
 
 ## What's Next?
 

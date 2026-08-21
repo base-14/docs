@@ -18,16 +18,6 @@ keywords:
   ]
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I monitor AWS ALB with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Use CloudWatch Metrics Stream to collect Application Load Balancer metrics with 3-5 minute end-to-end latency, then send them to an OpenTelemetry Collector and base14 Scout for visualization and alerting."}},{"@type":"Question","name":"What ALB metrics does CloudWatch Metrics Stream provide?","acceptedAnswer":{"@type":"Answer","text":"CloudWatch Metrics Stream delivers all AWS/ApplicationELB metrics including request counts, response times, HTTP status codes, target health, connection counts, and more."}},{"@type":"Question","name":"How do I collect AWS ALB access logs with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Configure a Lambda function triggered by S3 events to process ALB access logs. The Lambda reads log files from S3 and forwards them to your OpenTelemetry Collector endpoint."}},{"@type":"Question","name":"Should I use CloudWatch Metrics Stream or Prometheus for ALB monitoring?","acceptedAnswer":{"@type":"Answer","text":"CloudWatch Metrics Stream is recommended. It offers faster delivery (3-5 min end-to-end vs 5+ min latency), lower cost with no dedicated exporters needed, and automatic metric discovery for AWS services."}},{"@type":"Question","name":"How do I filter ALB metrics in CloudWatch Metrics Stream?","acceptedAnswer":{"@type":"Answer","text":"Select specific namespaces when configuring the Metrics Stream and choose only AWS/ApplicationELB to collect only ALB metrics, reducing costs and data volume in base14 Scout."}},{"@type":"Question","name":"How do I set up alerts for AWS ALB?","acceptedAnswer":{"@type":"Answer","text":"Route AWS/ApplicationELB metrics through CloudWatch Metrics Stream to base14 Scout, then alert on sustained HTTPCode_ELB_5XX_Count, HTTPCode_Target_5XX_Count above 1% of requests, TargetResponseTime p99 above 1 second, UnHealthyHostCount above zero, and rising RejectedConnectionCount or TargetConnectionErrorCount."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 ## Overview
 
 This guide covers collecting Application Load Balancer metrics (request counts,
@@ -508,36 +498,36 @@ to debug the 5xx spikes the metrics surface.
 
 ## FAQ
 
-**How do I monitor AWS ALB with OpenTelemetry?**
+### How do I monitor AWS ALB with OpenTelemetry?
 
 Use CloudWatch Metrics Stream to collect AWS/ApplicationELB metrics with 3-5
 minute end-to-end latency, then forward them through an OpenTelemetry Collector
 to base14 Scout for visualization and alerting.
 
-**What ALB metrics does CloudWatch Metrics Stream provide?**
+### What ALB metrics does CloudWatch Metrics Stream provide?
 
 All AWS/ApplicationELB metrics - request counts, target response times, HTTP
 status codes (ELB and target), healthy/unhealthy host counts, connection
 counts, and consumed LCUs.
 
-**How do I collect AWS ALB access logs with OpenTelemetry?**
+### How do I collect AWS ALB access logs with OpenTelemetry?
 
 Enable access logging on the load balancer, then trigger a Lambda on S3
 object-create events. The Lambda reads each gzipped log file, converts entries
 to OTLP, and forwards them to your Collector endpoint.
 
-**Should I use CloudWatch Metrics Stream or Prometheus for ALB monitoring?**
+### Should I use CloudWatch Metrics Stream or Prometheus for ALB monitoring?
 
 CloudWatch Metrics Stream is recommended: faster delivery (3-5 min end-to-end
 vs 5+ min), no dedicated exporter to run, and automatic metric discovery for
 AWS services.
 
-**How do I filter ALB metrics in CloudWatch Metrics Stream?**
+### How do I filter ALB metrics in CloudWatch Metrics Stream?
 
 When configuring the stream, select specific namespaces and choose only
 `AWS/ApplicationELB`. This keeps costs and data volume down in Scout.
 
-**How do I set up alerts for AWS ALB?**
+### How do I set up alerts for AWS ALB?
 
 Route AWS/ApplicationELB metrics through CloudWatch Metrics Stream to Scout,
 then alert on sustained `HTTPCode_ELB_5XX_Count`, `HTTPCode_Target_5XX_Count`

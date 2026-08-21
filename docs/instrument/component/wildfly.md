@@ -470,26 +470,26 @@ the pool), `jvm.memory.used_after_last_gc` (heap retained after GC), and
 
 ## FAQ
 
-**Does this work with JBoss EAP?**
+### Does this work with JBoss EAP?
 
 Yes. JBoss EAP is based on WildFly and uses the same management interface
 and JMX URL scheme. Use `service:jmx:remote+http://<eap-host>:9990` with a
 management user created via `add-user.sh`.
 
-**Can I use standard JMX RMI instead of `remote+http`?**
+### Can I use standard JMX RMI instead of `remote+http`?
 
 No. WildFly removed standard JMX/RMI access. All remote JMX goes through
 the management interface using the `remote+http` protocol, which requires
 `jboss-client.jar` on the connecting client's classpath.
 
-**Does this work with WildFly in Kubernetes?**
+### Does this work with WildFly in Kubernetes?
 
 Yes. Run the JMX Scraper as a sidecar container in the same pod and set
 `OTEL_JMX_SERVICE_URL` to `service:jmx:remote+http://localhost:9990`. The
 sidecar needs `jboss-client.jar` on its classpath - use the multi-stage
 Dockerfile shown above.
 
-**How do I get session metrics?**
+### How do I get session metrics?
 
 Deploy a web application (`.war`) that creates HTTP sessions. The
 `wildfly.session.*` metrics live on the Undertow deployment MBean, which
@@ -498,7 +498,7 @@ WildFly install without applications produces Undertow, datasource, and
 transaction metrics but no session metrics. Restart the scraper after
 deploying so it picks up the new MBean.
 
-**Why is `wildfly.session.active.limit` missing?**
+### Why is `wildfly.session.active.limit` missing?
 
 It maps to Undertow's `maxActiveSessions`, which defaults to `-1`
 (unlimited). The scraper drops negative values, so the metric only emits

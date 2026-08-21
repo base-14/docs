@@ -18,16 +18,6 @@ keywords:
   - opentelemetry gcp metrics
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I send GCP managed service metrics to OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Use the OpenTelemetry googlecloudmonitoring receiver. It polls the Cloud Monitoring API on an interval and needs only the roles/monitoring.viewer IAM role — no Pub/Sub topic, subscription, or Log Router sink."}},{"@type":"Question","name":"Do GCP metrics need Pub/Sub like Cloud Logging logs do?","acceptedAnswer":{"@type":"Answer","text":"No. Logs are pushed through a Log Router sink into Pub/Sub, but metrics are pulled directly from the Cloud Monitoring API by the collector. There is no sink, topic, subscription, or publisher IAM binding to create."}},{"@type":"Question","name":"How does the collector authenticate to Cloud Monitoring?","acceptedAnswer":{"@type":"Answer","text":"Through Application Default Credentials. On GKE, use Workload Identity so no key file is needed. Elsewhere, set GOOGLE_APPLICATION_CREDENTIALS to a service account key file."}},{"@type":"Question","name":"Can I collect a whole GCP service without listing every metric?","acceptedAnswer":{"@type":"Answer","text":"Yes. Use metric_descriptor_filter with a starts_with expression on metric.type, for example metric.type = starts_with(\"cloudsql.googleapis.com/\"), instead of naming each metric individually."}},{"@type":"Question","name":"Why did all my GCP metrics stop arriving after adding one metric?","acceptedAnswer":{"@type":"Answer","text":"A GAUGE-kind DISTRIBUTION metric can produce an invalid data point that fails the whole scrape batch, dropping every metric from that receiver instance. Remove the distribution-valued metric and the rest resume."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 This guide shows you how to collect metrics for **GCP managed
 services** — Cloud SQL, Memorystore, Pub/Sub, Cloud Run, BigQuery,
 Compute Engine — into Scout using the OpenTelemetry
@@ -419,3 +409,36 @@ polls independently. Run this receiver on a single-replica Deployment.
 **The receiver is configured but nothing happens.**
 Confirm it is referenced in a **pipeline**. A receiver that no pipeline
 lists is loaded but never runs.
+
+## FAQ
+
+### How do I send GCP managed service metrics to OpenTelemetry?
+
+Use the `googlecloudmonitoring` receiver. It polls the Cloud Monitoring
+API on an interval and needs only the `roles/monitoring.viewer` IAM role.
+No Pub/Sub topic, subscription, or Log Router sink is involved.
+
+### Do GCP metrics need Pub/Sub like Cloud Logging logs do?
+
+No. Logs are pushed through a Log Router sink into Pub/Sub, but metrics
+are pulled straight from the Cloud Monitoring API by the collector. There
+is no sink, topic, subscription, or publisher IAM binding to create.
+
+### How does the collector authenticate to Cloud Monitoring?
+
+Through Application Default Credentials. On GKE, use Workload Identity so
+no key file is needed. Elsewhere, set `GOOGLE_APPLICATION_CREDENTIALS` to
+a service account key file.
+
+### Can I collect a whole GCP service without listing every metric?
+
+Yes. Use `metric_descriptor_filter` with a `starts_with` expression on
+`metric.type`, for example
+`metric.type = starts_with("cloudsql.googleapis.com/")`, instead of naming
+each metric individually.
+
+### Why did all my GCP metrics stop arriving after adding one metric?
+
+A GAUGE-kind DISTRIBUTION metric can produce an invalid data point that
+fails the whole scrape batch, dropping every metric from that receiver
+instance. Remove the distribution-valued metric and the rest resume.

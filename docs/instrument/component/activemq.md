@@ -472,19 +472,19 @@ means producers are being throttled by flow control.
 
 ## FAQ
 
-**Does this work with ActiveMQ Artemis?**
+### Does this work with ActiveMQ Artemis?
 
 No. Artemis uses different MBeans under `org.apache.activemq.artemis`.
 The JMX Scraper's `activemq` target is for ActiveMQ Classic only.
 Artemis needs custom scraper rules via `OTEL_JMX_CUSTOM_CONFIG`.
 
-**Can I monitor both queues and topics?**
+### Can I monitor both queues and topics?
 
 Yes. Queues and topics are both MBeans under
 `org.apache.activemq:type=Broker`. The scraper collects from all
 destinations by default - no extra configuration needed.
 
-**Does this work with ActiveMQ running in Kubernetes?**
+### Does this work with ActiveMQ running in Kubernetes?
 
 Yes. Run the JMX Scraper as a sidecar in the same pod and set
 `OTEL_JMX_SERVICE_URL` to
@@ -492,7 +492,7 @@ Yes. Run the JMX Scraper as a sidecar in the same pod and set
 containers share the pod network. No firewall rules are needed for
 intra-pod traffic.
 
-**How do I monitor multiple ActiveMQ brokers?**
+### How do I monitor multiple ActiveMQ brokers?
 
 Run one JMX Scraper per broker, each with a different
 `OTEL_JMX_SERVICE_URL`, all exporting to the same Collector:
@@ -511,7 +511,7 @@ jmx-scraper-replica:
     OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
 ```
 
-**Why is there no `up` metric for the broker?**
+### Why is there no `up` metric for the broker?
 
 JMX exposes no synthetic `up` series. Use `jvm.memory.used` as the
 process-alive anchor - if it stops reporting, the broker JVM or the

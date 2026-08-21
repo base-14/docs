@@ -554,27 +554,27 @@ load behind slow indexing).
 
 ## FAQ
 
-**Does this work with Elasticsearch running in Kubernetes?**
+### Does this work with Elasticsearch running in Kubernetes?
 
 Yes. Set `endpoint` to the Elasticsearch service DNS
 (e.g. `http://elasticsearch.default.svc.cluster.local:9200`) and inject
 credentials through a Kubernetes secret. The Collector can run as a
 sidecar or a Deployment.
 
-**How do I monitor a multi-node Elasticsearch cluster?**
+### How do I monitor a multi-node Elasticsearch cluster?
 
 Set `nodes: ["_all"]`. The receiver queries the cluster stats APIs
 through a single endpoint and returns per-node series for the whole
 cluster, so one receiver pointing at any node covers every node. You do
 not run one receiver per node.
 
-**Does this work with Elasticsearch 9.x?**
+### Does this work with Elasticsearch 9.x?
 
 Yes. The `elasticsearchreceiver` supports Elasticsearch 7.9 and later,
 including 8.x and 9.x. No collector version is specific to 9.x - run a
 current OTel Collector Contrib build.
 
-**What about OpenSearch - does the same receiver work?**
+### What about OpenSearch - does the same receiver work?
 
 No. OpenSearch diverged from Elasticsearch and returns different stats
 API responses, so the `elasticsearchreceiver` does not support it. OTel
@@ -582,7 +582,7 @@ Collector Contrib does not ship an OpenSearch metrics receiver - collect
 OpenSearch metrics through its own Prometheus plugin or monitoring APIs
 instead.
 
-**Can I limit which indices are monitored?**
+### Can I limit which indices are monitored?
 
 Yes. Change `indices: ["_all"]` to a specific list, for example
 `indices: ["my-index-*", "logs-*"]`. This scopes which indices emit

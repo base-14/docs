@@ -378,20 +378,20 @@ lock contention that shows up as CPU at high concurrency.
 
 ## FAQ
 
-**Why do I need a separate exporter?**
+### Why do I need a separate exporter?
 
 Varnish stores statistics in shared memory (VSM), not over HTTP. The
 `prometheus_varnish_exporter` reads VSM counters and translates them to
 Prometheus format. Varnish has no built-in Prometheus or OpenTelemetry
 endpoint.
 
-**Does this work in Kubernetes?**
+### Does this work in Kubernetes?
 
 Yes. Run the exporter as a sidecar container in the same pod as Varnish,
 sharing an `emptyDir` volume at `/var/lib/varnish`. The Collector
 scrapes the exporter sidecar.
 
-**How do I monitor multiple Varnish instances?**
+### How do I monitor multiple Varnish instances?
 
 Deploy an exporter sidecar per Varnish instance, each on a different
 port, and add all of them to the scrape targets:
@@ -410,7 +410,7 @@ receivers:
 
 Each instance is identified by its `instance` label.
 
-**What does `varnish_main_cache_hit` vs `varnish_main_cache_hitpass` mean?**
+### What does `varnish_main_cache_hit` vs `varnish_main_cache_hitpass` mean?
 
 `cache_hit` is a normal cache hit - the response was served from cache.
 `cache_hitpass` means Varnish remembered that a previous request for this
@@ -418,7 +418,7 @@ object was uncacheable, so it passed directly to the backend without a
 cache lookup. Monitor `cache_hit / (cache_hit + cache_miss)` for overall
 efficiency.
 
-**Why is request latency missing from the metrics?**
+### Why is request latency missing from the metrics?
 
 `varnishstat` exposes counters and gauges only, so per-request timing is
 not in this metric surface. It lives in the Varnish log (VSL) / access

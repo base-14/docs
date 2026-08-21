@@ -315,14 +315,14 @@ used memory). `redis.memory.peak` shows the high-water mark.
 
 ## FAQ
 
-**Does this work with Redis running in Kubernetes?**
+### Does this work with Redis running in Kubernetes?
 
 Yes. Set `endpoint` to the Redis service DNS
 (e.g., `redis.default.svc.cluster.local:6379`) and inject the password
 via a Kubernetes secret. The Collector can run as a sidecar or
 DaemonSet.
 
-**How do I monitor multiple Redis instances?**
+### How do I monitor multiple Redis instances?
 
 Add multiple receiver blocks with distinct names:
 
@@ -337,19 +337,19 @@ receivers:
 Then include both in the pipeline:
 `receivers: [redis/primary, redis/replica]`.
 
-**What about Redis Cluster mode?**
+### What about Redis Cluster mode?
 
 Each Redis Cluster node must be monitored individually. Add a separate
 receiver block for each node endpoint. The Collector connects to each
 node's standard Redis port, not the cluster bus port.
 
-**Why are replication metrics showing zero?**
+### Why are replication metrics showing zero?
 
 `redis.slaves.connected` and `redis.replication.offset` require
 replication to be configured. On a standalone instance with no replicas,
 these report zero - this is expected.
 
-**Why is `redis.maxmemory` not showing up?**
+### Why is `redis.maxmemory` not showing up?
 
 It is default-off in the receiver. Enable it under `metrics:` (as in the
 config above) so the memory-saturation alert has a denominator.

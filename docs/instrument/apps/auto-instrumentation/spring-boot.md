@@ -33,19 +33,6 @@ keywords:
   ]
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Should I use the Java Agent, OpenTelemetry SDK Integration, or Spring Boot 4.0 Native?","acceptedAnswer":{"@type":"Answer","text":"Use the Java Agent for quick start and legacy apps with zero code changes. Use OpenTelemetry SDK Integration for production with full API access and GraalVM support. Consider Spring Boot 4.0 Native after it reaches GA."}},{"@type":"Question","name":"What is the minimum Spring Boot version required for OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Spring Boot 2.7.0 is the minimum version, but Spring Boot 3.0+ is recommended for the best compatibility and features."}},{"@type":"Question","name":"Does OpenTelemetry work with Java 25?","acceptedAnswer":{"@type":"Answer","text":"Java 25 support is experimental. There are known ByteBuddy compatibility issues. For production deployments, Java 21 LTS is recommended."}},{"@type":"Question","name":"How much performance overhead does OpenTelemetry add?","acceptedAnswer":{"@type":"Answer","text":"Typical overhead is 1-5ms per request, 2-5% CPU usage, and 50-200MB memory. Impact varies based on instrumentation scope and collector network latency."}},{"@type":"Question","name":"Can I use multiple instrumentation approaches together?","acceptedAnswer":{"@type":"Answer","text":"No, you should use only one approach. They provide overlapping functionality and using multiple approaches will cause conflicts."}},{"@type":"Question","name":"Does the Java Agent work with GraalVM native-image?","acceptedAnswer":{"@type":"Answer","text":"No, the Java Agent has poor support for GraalVM native-image due to bytecode manipulation incompatibilities. Use the OpenTelemetry SDK Integration or Spring Boot 4.0 Native starter instead."}},{"@type":"Question","name":"Can I use OpenTelemetry with Spring WebFlux?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry fully supports reactive Spring WebFlux applications with automatic context propagation across reactive operators."}},{"@type":"Question","name":"Why are my database queries not appearing in traces?","acceptedAnswer":{"@type":"Answer","text":"Enable JDBC instrumentation with otel.instrumentation.jdbc.enabled=true and verify DataSource is created after OpenTelemetry initialization."}}]})}
-  </script>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"HowTo","name":"How to instrument Spring Boot with OpenTelemetry","step":[{"@type":"HowToStep","name":"Choose your instrumentation approach","text":"Select between Java Agent (zero code changes), OpenTelemetry SDK Integration (full API access with Spring config), or Spring Boot 4.0 Native starter based on your requirements."},{"@type":"HowToStep","name":"Add dependencies","text":"Add opentelemetry-spring-boot-starter and micrometer-registry-otlp to your pom.xml or build.gradle with the OpenTelemetry Instrumentation BOM."},{"@type":"HowToStep","name":"Configure OpenTelemetry","text":"Set management.otlp.tracing.endpoint in application.properties or application.yml, configure service name, and set resource attributes for your environment."},{"@type":"HowToStep","name":"Run and verify instrumentation","text":"Start the application with mvn spring-boot:run or as a JAR, set OTEL_SERVICE_NAME and OTEL_EXPORTER_OTLP_ENDPOINT, and verify traces appear in base14 Scout."}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 # Spring Boot
 
 Spring Boot is one of the most widely adopted Java frameworks for building
@@ -1712,8 +1699,7 @@ otel.instrumentation.annotations.enabled=false
 
 ### Choosing Between Approaches
 
-**Q: Should I use the Java Agent, OpenTelemetry SDK Integration, or Spring Boot
-4.0 Native?**
+### Should I use the Java Agent, SDK integration, or Spring Boot 4.0 native?
 
 For most cases:
 
@@ -1727,8 +1713,7 @@ For most cases:
 See the [Choosing Your Approach](#choosing-your-approach) section for detailed
 comparison and decision guide.
 
-**Q: What's the difference between Java Agent and OpenTelemetry SDK
-Integration?**
+### What is the difference between the Java Agent and the OpenTelemetry SDK?
 
 **Java Agent**:
 
@@ -1746,7 +1731,7 @@ Integration?**
 - Full OpenTelemetry API for custom instrumentation
 - Better for GraalVM native-image
 
-**Q: Can I migrate from Java Agent to OpenTelemetry SDK Integration later?**
+### Can I migrate from Java Agent to OpenTelemetry SDK Integration later?
 
 Yes! Start with the Java Agent for zero-code setup, then migrate to the
 OpenTelemetry SDK Integration when you need:
@@ -1759,14 +1744,13 @@ OpenTelemetry SDK Integration when you need:
 The migration just requires adding dependencies and removing the `-javaagent`
 flag.
 
-**Q: Will the OpenTelemetry SDK integration continue to be supported after
-Spring Boot 4.0?**
+### Is the OpenTelemetry SDK integration supported after Spring Boot 4.0?
 
 Yes. The OpenTelemetry SDK integration is independently maintained and will
 continue to support current and future Spring Boot versions. It provides more
 flexibility and direct OpenTelemetry API access compared to the native starter.
 
-**Q: Can I use multiple instrumentation approaches together?**
+### Can I use multiple instrumentation approaches together?
 
 No, you should use only one approach. They provide overlapping functionality and
 using multiple approaches will cause conflicts:
@@ -1775,7 +1759,7 @@ using multiple approaches will cause conflicts:
 - Don't use OpenTelemetry SDK Integration + Spring Boot 4.0 Native together
 - Choose one based on your needs (see decision guide)
 
-**Q: Does the Java Agent work with GraalVM native-image?**
+### Does the Java Agent work with GraalVM native-image?
 
 No, the Java Agent has poor support for GraalVM native-image compilation due to
 bytecode manipulation incompatibilities. If you need native-image, use the
@@ -1783,13 +1767,13 @@ OpenTelemetry SDK Integration or Spring Boot 4.0 Native starter instead.
 
 ### General Questions
 
-**Q: What is the minimum Spring Boot version required for OpenTelemetry?**
+### What is the minimum Spring Boot version required for OpenTelemetry?
 
 Spring Boot 2.7.0 is the minimum version, but Spring Boot 3.0+ is recommended
 for the best compatibility and features. The OpenTelemetry Spring Boot starter
 fully supports Spring Boot 3.x with native GraalVM support.
 
-**Q: Does OpenTelemetry work with Java 25?**
+### Does OpenTelemetry work with Java 25?
 
 Java 25 support is experimental as of September 2025. There are known ByteBuddy
 compatibility issues causing Unsafe deprecation warnings. For production
@@ -1797,8 +1781,7 @@ deployments, we recommend Java 21 LTS. Monitor the
 [OpenTelemetry Java releases](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases)
 for stable Java 25 support.
 
-**Q: What's the difference between OpenTelemetry and JFR (Java Flight
-Recorder)?**
+### What is the difference between OpenTelemetry and Java Flight Recorder?
 
 OpenTelemetry focuses on distributed tracing across microservices with
 standardized telemetry, while JFR provides deep JVM-level profiling. Java 25's
@@ -1806,12 +1789,12 @@ JEP 520 adds method tracing to JFR, which can complement OpenTelemetry. You can
 use both: JFR for low-level JVM metrics and OpenTelemetry for distributed
 traces.
 
-**Q: How much performance overhead does OpenTelemetry add?**
+### How much performance overhead does OpenTelemetry add?
 
 Typical overhead is 1-5ms per request, 2-5% CPU usage, and 50-200MB memory.
 Impact varies based on instrumentation scope and collector network latency.
 
-**Q: Can I use OpenTelemetry with Spring Boot 2.x?**
+### Can I use OpenTelemetry with Spring Boot 2.x?
 
 Yes, but you need older dependency versions. Use
 `opentelemetry-spring-boot-starter` version 1.x for Spring Boot 2.7-2.x. Spring
@@ -1819,16 +1802,17 @@ Boot 3.x is recommended for the latest features and better performance.
 
 ### Configuration Questions
 
-**Q: How do I prevent specific endpoints from being traced?**
+### How do I prevent specific endpoints from being traced?
 
-Configure endpoint exclusions:
+Set `otel.instrumentation.common.default-enabled` exclusions, or list the
+paths to skip in `management.tracing` properties:
 
 ```properties showLineNumbers
 # Exclude health check and metrics endpoints
 otel.instrumentation.spring-webmvc.exclude-patterns=/actuator/**,/health,/metrics
 ```
 
-**Q: Can I send traces to multiple backends?**
+### Can I send traces to multiple backends?
 
 Yes, configure multiple exporters programmatically:
 
@@ -1841,30 +1825,30 @@ SpanExporter compositeExporter = SpanExporter.composite(
 
 ### Troubleshooting Questions
 
-**Q: Why are my database queries not appearing in traces?**
+### Why are my database queries not appearing in traces?
 
 Enable JDBC instrumentation: `otel.instrumentation.jdbc.enabled=true` and verify
 DataSource is created after OpenTelemetry initialization.
 
-**Q: Why duplicate spans for the same operation?**
+### Why duplicate spans for the same operation?
 
 Multiple instrumentation libraries may overlap. Disable manual instrumentation
 (remove `@WithSpan` annotations) where auto-instrumentation already exists.
 
 ### Spring-Specific Questions
 
-**Q: How does OpenTelemetry work with Spring Cloud?**
+### How does OpenTelemetry work with Spring Cloud?
 
 OpenTelemetry integrates seamlessly with Spring Cloud components like Feign
 clients, Spring Cloud Gateway, and Sleuth. For Spring Cloud 2021.0.3+,
 OpenTelemetry can replace Sleuth entirely.
 
-**Q: Can I use OpenTelemetry with Spring WebFlux?**
+### Can I use OpenTelemetry with Spring WebFlux?
 
 Yes, OpenTelemetry fully supports reactive Spring WebFlux applications with
 automatic context propagation across reactive operators.
 
-**Q: How do I instrument multi-tenant Spring Boot applications?**
+### How do I instrument multi-tenant Spring Boot applications?
 
 Add tenant information as span attributes:
 

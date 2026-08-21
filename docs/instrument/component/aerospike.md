@@ -310,13 +310,13 @@ in the receiver config if you do not use them.
 
 ## FAQ
 
-**Does this work with Aerospike running in Kubernetes?**
+### Does this work with Aerospike running in Kubernetes?
 
 Yes. Set `endpoint` to the Aerospike service DNS
 (e.g., `aerospike.default.svc.cluster.local:3000`). The Collector can run as
 a sidecar or DaemonSet.
 
-**How do I monitor an Aerospike cluster?**
+### How do I monitor an Aerospike cluster?
 
 Set `collect_cluster_metrics: true` and point the receiver at any seed node;
 it discovers the peer nodes and collects from the cluster. For explicit
@@ -330,13 +330,13 @@ receivers:
     endpoint: aerospike-2:3000
 ```
 
-**Does this work with both Community and Enterprise Edition?**
+### Does this work with both Community and Enterprise Edition?
 
 Yes. Community Edition needs no authentication. Enterprise Edition requires
 `username` and `password` in the receiver config. The same metrics are
 collected from both editions.
 
-**Why are the namespace memory and disk metrics not showing up?**
+### Why are the namespace memory and disk metrics not showing up?
 
 On Aerospike 8.x the receiver cannot read the namespace-scoped capacity
 stats and they stay silent; node memory (`aerospike.node.memory.free`) still

@@ -710,14 +710,14 @@ Collector's own logs through a `filter/logs` processor that drops
 
 ## FAQ
 
-**Does this work with SNMPv3?**
+### Does this work with SNMPv3?
 
 Yes. Set `version: v3` and provide `user`, `security_level`,
 `auth_type`, `auth_password`, `privacy_type`, and `privacy_password`
 as appropriate. Prefer `authPriv` with SHA-256 and AES-256 on
 production gear.
 
-**How do I monitor many similar devices without repeating YAML?**
+### How do I monitor many similar devices without repeating YAML?
 
 `snmpreceiver` does not have a native templating feature, but the
 Collector config can be rendered from a template (Jinja, envsubst,
@@ -725,15 +725,14 @@ Helm). Generate one `snmp/<device>` block per target and share the
 metric definitions via YAML anchors, or manage the config as code
 and let the generator emit identical metric blocks.
 
-**Can I receive SNMP traps with this receiver?**
+### Can I receive SNMP traps with this receiver?
 
 No. `snmpreceiver` is poll-only, and the Collector has no SNMP-trap
 receiver (the request to add one was declined). To capture traps,
 forward them into the Collector as logs via `snmptrapd` + a file or
 syslog receiver.
 
-**What's the difference between using `scalar_oid` vs `oid` under
-`resource_attributes`?**
+### `scalar_oid` or `oid` under `resource_attributes`: which one?
 
 `scalar_oid` fetches a single value (must end in `.0`) and stamps
 every metric from this receiver with it — use it for device-wide
@@ -741,14 +740,14 @@ attributes like `device.id` from `sysName`. `oid` points to a
 column and produces per-index resources — use it for things that
 vary per row like interface names.
 
-**Why is `device.kind` set by a processor and not the receiver?**
+### Why is `device.kind` set by a processor and not the receiver?
 
 `snmpreceiver` can only attach values it fetches over SNMP. Static
 labels like `device.kind=network` don't exist on the device, so we
 add them with a `resource` processor scoped to each device
 pipeline. This keeps each pipeline self-contained.
 
-**Can I map string values (DisplayString) to numeric metrics?**
+### Can I map string values (DisplayString) to numeric metrics?
 
 No. A numeric metric needs a numeric SNMP type (Integer, Counter*,
 Gauge32, TimeTicks); `snmpreceiver` can read a DisplayString only as a
@@ -757,7 +756,7 @@ DisplayString like UCD `laLoad` (`"0.21"`), switch to the
 integer-scaled sibling OID (`laLoadInt`, ×100) and document the scaling
 in the metric description.
 
-**Does polling add significant load on devices?**
+### Does polling add significant load on devices?
 
 A 30-second `collection_interval` against a dozen scalar OIDs and
 a single interface table is negligible for modern network gear.

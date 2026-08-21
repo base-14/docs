@@ -10,46 +10,6 @@ import Head from "@docusaurus/Head";
     name="keywords"
     content="kubernetes observability cost, kubernetes monitoring pricing, k8s observability, datadog kubernetes cost, signal-based pricing"
   />
-  <script type="application/ld+json">
-    {JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      mainEntity: [
-        {
-          "@type": "Question",
-          name: "Why is Kubernetes monitoring so expensive on Datadog?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Kubernetes generates high-cardinality telemetry through unique pod names, container IDs, and label combinations. Datadog charges per host ($15-27/month for infrastructure, $31/month for APM) plus custom metrics at $1 per 100, which compounds quickly in dynamic K8s clusters where pods and labels multiply constantly.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "How much does monitoring a 50-node Kubernetes cluster cost on Datadog vs signal-based pricing?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "A 50-node K8s cluster on Datadog with infrastructure monitoring, APM, and logging costs $10,400-11,400/month at published rates, rising to $13,000-18,000 with rich labels, longer retention, or additional modules. The same cluster on base14 Scout with signal-based pricing ($250/month platform fee + $0.10/M metrics + $0.25/M logs and traces) runs $1,550-3,350/month depending on telemetry volume.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "What is signal-based pricing for observability?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Signal-based pricing charges per data point (metric sample, log line, or trace span) regardless of size or cardinality. This means rich Kubernetes labels, full stack traces, and custom annotations don't inflate costs, unlike GB-based or per-host models where metadata size directly affects your bill.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "How does Kubernetes cardinality affect observability costs?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Every Kubernetes pod gets a unique name with a random hash. Multiply by namespaces, deployments, labels, and annotations, and a 50-node cluster can generate hundreds of thousands of unique time series. On platforms that charge per custom metric or per GB, this cardinality explosion drives costs up without adding workload.",
-          },
-        },
-      ],
-    })}
-  </script>
 </Head>
 
 # Kubernetes observability cost: why K8s breaks your Datadog bill

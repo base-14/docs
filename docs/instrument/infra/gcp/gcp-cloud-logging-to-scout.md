@@ -19,16 +19,6 @@ keywords:
   - cloud logging opentelemetry
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I send Google Cloud Logging logs to OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Route logs from Cloud Logging into a Pub/Sub topic using a Log Router sink, then consume the topic with the OpenTelemetry googlecloudpubsub receiver in your Scout collector."}},{"@type":"Question","name":"How does the collector authenticate to Pub/Sub?","acceptedAnswer":{"@type":"Answer","text":"The collector uses Google Application Default Credentials. Set the GOOGLE_APPLICATION_CREDENTIALS environment variable to the path of a service account key file, or use GKE Workload Identity to avoid managing key files."}},{"@type":"Question","name":"Can I stream logs from multiple GCP projects into one Scout collector?","acceptedAnswer":{"@type":"Answer","text":"Yes. Create the service account in the collector's project, grant it Pub/Sub Subscriber on the subscription in the logs project, and point the receiver at the cross-project subscription."}},{"@type":"Question","name":"What encoding should I use for the googlecloudpubsub receiver?","acceptedAnswer":{"@type":"Answer","text":"For collector versions below 0.132, use the built-in cloud_logging encoding. For 0.132 and above, use the googlecloudlogentry_encoding extension, which also parses structured attributes on 0.142+."}},{"@type":"Question","name":"Why are my Cloud Logging logs not appearing in Scout?","acceptedAnswer":{"@type":"Answer","text":"Check in order: messages exist in the Pub/Sub subscription, the collector has valid GCP credentials, collector logs show no permission errors, and the receiver is referenced in a logs pipeline."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 This guide shows you how to stream logs from
 **Google Cloud Logging** into your Scout collector using a
 Pub/Sub subscription and the OpenTelemetry
@@ -332,16 +322,18 @@ Logging entries:
 | Collector version | Encoding | Notes |
 |---|---|---|
 | **below 0.132** | `encoding: cloud_logging` | Built-in. No extension needed. |
-| **0.132 and above** | `googlecloudlogentry_encoding` extension | The built-in `cloud_logging` was removed at 0.132. |
-| **0.142 and above** | `googlecloudlogentry_encoding` extension | Also parses Application LB logs into structured `gcp.load_balancing.*` attributes. |
+| **0.132 to 0.147** | `googlecloudlogentry_encoding` extension | The built-in `cloud_logging` was removed at 0.132. |
+| **0.142 and above** | same extension | Also parses Application LB logs into structured `gcp.load_balancing.*` attributes. |
+| **0.148 and above** | `google_cloud_logentry_encoding` extension | The type was renamed at 0.148. The old name was unavailable on 0.148 to 0.150 and came back at 0.151 as a deprecated alias. |
 
-If your collector version is above 0.132, here is how you
-add the extension:
+If your collector version is above 0.132, here is how you add the extension.
+The examples use the current `google_cloud_logentry_encoding` type; on 0.132
+to 0.147 use `googlecloudlogentry_encoding` instead.
 
 ```yaml showLineNumbers title="cloud-logging-config.yaml"
 extensions:
   # ...existing extensions...
-  googlecloudlogentry_encoding:
+  google_cloud_logentry_encoding:
     handle_json_payload_as: "json"
     handle_proto_payload_as: "json"
 
@@ -349,10 +341,10 @@ receivers:
   googlecloudpubsub/cloud_logging:
     project: ${env:GCP_PROJECT_ID}
     subscription: projects/${env:GCP_PROJECT_ID}/subscriptions/scout-logs-sub
-    encoding: googlecloudlogentry_encoding
+    encoding: google_cloud_logentry_encoding
 
 service:
-  extensions: [googlecloudlogentry_encoding]
+  extensions: [google_cloud_logentry_encoding]
   pipelines:
     logs/cloud_logging:
       receivers: [googlecloudpubsub/cloud_logging]
@@ -483,3 +475,37 @@ This is almost always auth (above) or a missing pipeline.
 A draining backlog means the path works: acking is how
 Pub/Sub confirms delivery, and the data has gone to Scout
 rather than being lost.
+
+## FAQ
+
+### How do I send Google Cloud Logging logs to OpenTelemetry?
+
+Route the logs into a Pub/Sub topic with a Log Router sink, then consume
+that topic with the `googlecloudpubsub` receiver in your Scout collector.
+There is no direct pull API for Cloud Logging.
+
+### How does the collector authenticate to Pub/Sub?
+
+Through Google Application Default Credentials. Set
+`GOOGLE_APPLICATION_CREDENTIALS` to a service account key file, or use GKE
+Workload Identity and skip key files entirely.
+
+### Can I stream logs from multiple GCP projects into one Scout collector?
+
+Yes. Create the service account in the collector's project, grant it
+Pub/Sub Subscriber on the subscription in the logs project, and point the
+receiver at that cross-project subscription.
+
+### What encoding should I use for the googlecloudpubsub receiver?
+
+On collector versions below 0.132, use the built-in `cloud_logging`
+encoding. On 0.132 and above, use the Cloud Logging LogEntry encoding
+extension, which also parses structured attributes from 0.142 onward. The
+extension's type is `google_cloud_logentry_encoding` from 0.148 and
+`googlecloudlogentry_encoding` before that.
+
+### Why are my Cloud Logging logs not appearing in Scout?
+
+Check in order: messages are reaching the Pub/Sub subscription, the
+collector has valid GCP credentials, the collector logs show no permission
+errors, and the receiver is actually referenced in a logs pipeline.

@@ -372,15 +372,14 @@ expected and not a fault.
 
 ## FAQ
 
-**Does this work with Temporal running in Kubernetes?**
+### Does this work with Temporal running in Kubernetes?
 
 Yes. Set `targets` to the Temporal service DNS endpoint per role (e.g.,
 `temporal-frontend.temporal.svc.cluster.local:8000`), and set
 `PROMETHEUS_ENDPOINT` on each Temporal pod's container env. The Collector can
 run as a sidecar or DaemonSet.
 
-**What is the difference between the single-binary and microservices
-deployments?**
+### Single-binary or microservices deployment: what is the difference?
 
 The `auto-setup` image runs all four roles - frontend, history, matching, and
 worker - in one process behind a single `/metrics`, with an `operation` label
@@ -388,7 +387,7 @@ on the metrics. A production deployment splits the roles across processes, each
 with its own `:8000`. The metric names are identical, so you add one scrape job
 per role (see [Configuration](#configuration)).
 
-**Why does persistence matter so much?**
+### Why does persistence matter so much?
 
 Temporal depends heavily on its persistence store. Every workflow state change,
 task, and history event is a persistence operation, so a slow store backs up
@@ -396,14 +395,14 @@ task processing and RPC latency. That makes `persistence_latency`,
 `persistence_requests`, and `persistence_error_with_type` among the first
 signals to check during a Temporal incident.
 
-**What is the difference between the `temporal_*` and the unprefixed metrics?**
+### What is the difference between the `temporal_*` and the unprefixed metrics?
 
 Unprefixed names (`service_*`, `persistence_*`, `task_*`, `cache_*`,
 `history_*`, and the shard / queue families) are the **server** metrics. The
 `temporal_*` names are the **SDK client** metrics from Temporal's internal
 system worker - the same names a user-written worker emits.
 
-**Why are some metrics idle or zero?**
+### Why are some metrics idle or zero?
 
 The workflow-completion, activity-execution, and task-outcome families need real
 workflows running - an SDK worker polling a task queue. Without one, they read

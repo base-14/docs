@@ -20,16 +20,6 @@ keywords:
   - windows web server monitoring
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why are IIS W3C log fields staged under a w3c_ prefix in the OpenTelemetry config?","acceptedAnswer":{"@type":"Answer","text":"Go regex, which the OpenTelemetry filelog regex_parser operator uses, disallows the . character in named capture groups, so capturing directly into keys like http.request.method is not possible. Capture into a w3c_ staging prefix first, then rename to OTel HTTP semantic conventions with a transform processor."}},{"@type":"Question","name":"Why is there an iis. namespace alongside the standard OTel HTTP attributes?","acceptedAnswer":{"@type":"Answer","text":"Three IIS fields - sub-status, win32-status, and time-taken - have no OTel semantic-convention equivalent. They go under an iis. vendor namespace so Scout queries can opt into them without polluting the standard HTTP attribute set."}},{"@type":"Question","name":"Does the OpenTelemetry iisreceiver work for IIS running in Windows Server Containers?","acceptedAnswer":{"@type":"Answer","text":"Yes. Run the OpenTelemetry Collector for Windows alongside IIS in the same container or as a sidecar; the log path and receiver config are unchanged. The collection_interval may need to drop to 10-20s for short-lived containers so the metrics pipeline emits at least one datapoint before the container exits."}},{"@type":"Question","name":"How do I monitor multiple IIS sites on one host with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"The filelog/iis include glob covers every site directory under the IIS log root by default. The log.file.path attribute carries the per-site log path, so site-level filtering in Scout is a query on log.file.path. The iisreceiver reports a single global metric set per IIS instance, not per-site."}},{"@type":"Question","name":"Does the OpenTelemetry iisreceiver work with IIS Express?","acceptedAnswer":{"@type":"Answer","text":"IIS Express does not surface the W3SVC performance counters that iisreceiver reads from, so metrics will be empty. W3C logging still works if IIS Express is configured to write logs; point the filelog/iis include glob at the IIS Express log directory under the user profile."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 # IIS (Windows)
 
 The OpenTelemetry Collector's `iisreceiver` collects 12 metrics from
@@ -365,8 +355,7 @@ request") and no actionable diagnostic in the Application channel.
 
 ## FAQ
 
-**Why are W3C fields staged under a `w3c_` prefix instead of mapped
-directly?**
+### Why are W3C fields staged under a `w3c_` prefix instead of mapped directly?
 
 Go regex (the engine the OTel `regex_parser` operator uses)
 disallows `.` in named capture groups, so capturing directly into
@@ -374,14 +363,14 @@ e.g. `http.request.method` is not possible. The two-stage shape
 (regex into `w3c_*`, transform processor into OTel semconv) is the
 canonical workaround.
 
-**Why is there an `iis.` namespace alongside the OTel attributes?**
+### Why is there an `iis.` namespace alongside the standard OTel attributes?
 
 `sc-substatus`, `sc-win32-status`, and `time-taken` are IIS-specific
 and have no OTel semantic-convention equivalent. They go under an
 `iis.` vendor namespace so Scout queries can opt into them without
 polluting the standard HTTP attribute set.
 
-**Does this work for IIS in Windows Server Containers?**
+### Does the OpenTelemetry iisreceiver work in Windows Server Containers?
 
 Yes. Run the OTel Collector for Windows alongside IIS in the same
 container or as a sidecar; the log path and receiver config above
@@ -389,7 +378,7 @@ are unchanged. The collection_interval may need to drop to 10-20s
 for short-lived containers so the metrics pipeline emits at least
 one datapoint before the container exits.
 
-**How do I monitor multiple IIS sites on one host?**
+### How do I monitor multiple IIS sites on one host with OpenTelemetry?
 
 The `filelog/iis` glob (`C:\inetpub\logs\LogFiles\**\*.log`)
 already covers every site (`W3SVC1`, `W3SVC2`, etc.). The
@@ -398,13 +387,20 @@ site-level filtering in Scout is a query on
 `log.file.path contains 'W3SVC2'`. The `iisreceiver` reports a
 single global metric set per IIS instance, not per-site.
 
-**What about IIS Express?**
+### What about IIS Express?
 
 IIS Express does not surface the W3SVC performance counters that
 `iisreceiver` reads from, so metrics will be empty. W3C logging
 still works if IIS Express is configured to write logs; point the
 `filelog/iis` glob at its log directory
 (typically `%USERPROFILE%\Documents\IISExpress\Logs\`).
+
+### Does the OpenTelemetry iisreceiver work with IIS Express?
+
+IIS Express does not surface the `W3SVC` performance counters that
+`iisreceiver` reads from, so metrics will be empty. W3C logging still works
+if IIS Express is configured to write logs; point the `filelog/iis` include
+glob at the IIS Express log directory under the user profile.
 
 ## What's Next?
 

@@ -368,7 +368,7 @@ and `minio_system_cpu_avg_iowait` for storage-bound CPU.
 
 ## FAQ
 
-**Does this work with MinIO running in Kubernetes?**
+### Does this work with MinIO running in Kubernetes?
 
 Yes. Set `targets` to the MinIO service DNS (for example
 `minio.minio.svc.cluster.local:9000`). For token-gated metrics, store the
@@ -377,7 +377,7 @@ bearer token in a Kubernetes secret and reference it as the scrape
 StatefulSet for tokenless metrics. The Collector can run as a sidecar or a
 Deployment.
 
-**How do I monitor a distributed MinIO cluster?**
+### How do I monitor a distributed MinIO cluster?
 
 Scrape each MinIO node - add every node's `:9000` to the scrape targets.
 The capacity, erasure-set, and per-drive series expand in a distributed
@@ -385,20 +385,20 @@ deployment: `minio_system_drive_*` produces one series per drive and
 `minio_cluster_erasure_set_*` one series per set, so you see per-drive and
 per-set health rather than a single `1`.
 
-**Should I use the v2 or v3 metrics endpoint?**
+### Should I use the v2 or v3 metrics endpoint?
 
 Use v3 (`/minio/metrics/v3`). The `/minio/v2/metrics/{cluster,node,bucket}`
 endpoints are deprecated - still present in the release, but not for new
 deployments.
 
-**Do I need a bearer token, or can I scrape without auth?**
+### Do I need a bearer token, or can I scrape without auth?
 
 Metrics are token-gated by default. Set `MINIO_PROMETHEUS_AUTH_TYPE=public`
 for tokenless scraping (handy on internal networks), or generate a token
 with `mc admin prometheus generate` and supply it as the scrape
 `authorization` credentials.
 
-**Where are per-bucket and replication metrics?**
+### Where are per-bucket and replication metrics?
 
 They are not on the default v3 endpoint. Per-bucket, replication,
 notification, ILM, and resource detail live at dedicated v3 sub-paths (for

@@ -482,7 +482,7 @@ series in `curl -s http://localhost:9404/metrics`.
 
 ## FAQ
 
-**Why use the JMX exporter instead of the OTel JMX receiver?**
+### Why use the JMX exporter instead of the OTel JMX receiver?
 
 The OTel JMX receiver was deprecated in January 2026. It required a JRE
 inside the Collector container and collected only a limited set of
@@ -490,7 +490,7 @@ Cassandra metrics over a remote JMX connection. The Prometheus JMX
 exporter runs inside Cassandra's JVM, needs no external JRE, and exposes
 the full MBean set as Prometheus metrics on a local HTTP endpoint.
 
-**How do I monitor a multi-node Cassandra cluster?**
+### How do I monitor a multi-node Cassandra cluster?
 
 Each Cassandra node runs its own exporter agent. Add all node endpoints
 to the scrape config:
@@ -511,7 +511,7 @@ receivers:
 Each node is scraped independently and identified by its `instance`
 label.
 
-**Does this work with Cassandra running in Kubernetes?**
+### Does this work with Cassandra running in Kubernetes?
 
 Yes. Mount the exporter JAR and `jmx-config.yaml` into the Cassandra pod
 via a ConfigMap or init container, and add the `-javaagent` argument to
@@ -519,7 +519,7 @@ the JVM options. Set `targets` to the pod or service DNS (for example
 `cassandra-0.cassandra.default.svc.cluster.local:9404`). The Collector
 can run as a sidecar or DaemonSet.
 
-**Why is request latency a Summary with a `quantile` label?**
+### Why is request latency a Summary with a `quantile` label?
 
 The exporter rules map each ClientRequest latency percentile MBean
 attribute to a `quantile` label on
@@ -527,7 +527,7 @@ attribute to a `quantile` label on
 `valueFactor`). Read the p99 with
 `cassandra_clientrequest_latency_seconds{scope="Read",quantile="0.99"}`.
 
-**Why do counter metrics have a `_count_total` suffix?**
+### Why do counter metrics have a `_count_total` suffix?
 
 The exporter types request and error counts as Prometheus counters, and
 the COUNTER type adds the `_total` suffix - so a coordinator request

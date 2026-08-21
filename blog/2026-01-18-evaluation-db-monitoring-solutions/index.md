@@ -26,16 +26,6 @@ instrumentation. It was fragmentation.
 
 <!--truncate-->
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why does using multiple monitoring tools increase incident resolution time?","acceptedAnswer":{"@type":"Answer","text":"Using separate tools for database, application, and infrastructure monitoring forces engineers to manually correlate timelines, align identifiers across systems, and context-switch between interfaces before diagnosis can begin. Even straightforward issues take ten or fifteen minutes longer, and complex incidents can add forty minutes or more."}},{"@type":"Question","name":"How should engineering leaders evaluate database monitoring solutions?","acceptedAnswer":{"@type":"Answer","text":"Evaluate based on four criteria: data unification (can database metrics, application traces, and infrastructure signals be queried together?), identifier consistency (do trace IDs propagate from application to database?), workflow integration (can you trace from a slow request to specific queries in one interface?), and knowledge distribution (can any engineer investigate database issues, not just DBAs?)."}},{"@type":"Question","name":"What are the hidden costs of monitoring PostgreSQL separately from applications?","acceptedAnswer":{"@type":"Answer","text":"Hidden costs include extended mean time to resolution, reduced software delivery velocity, knowledge silos where database expertise concentrates in a few individuals, and a dynamic where incident discussions become political rather than technical as application and database teams point fingers at each other."}},{"@type":"Question","name":"How do you reduce PostgreSQL incident response time?","acceptedAnswer":{"@type":"Answer","text":"Place database metrics, application traces, and infrastructure signals on the same timeline with shared identifiers. pgX does this by integrating PostgreSQL diagnostics into the same platform as application traces - engineers trace from a user-facing latency spike to the specific deployment and slow query without switching tools."}},{"@type":"Question","name":"Should you use separate tools for database monitoring and APM?","acceptedAnswer":{"@type":"Answer","text":"Separate tools create friction that slows both incident response and software delivery. When checking database impact requires opening a different tool with different credentials, most teams skip verification entirely and rely on alerts to catch problems after deployment. Unified monitoring lets developers see how code changes affect database behavior in real time."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 ## The Hidden Cost Model of Fragmented Observability
 
 Engineering leaders evaluating PostgreSQL monitoring solutions typically focus

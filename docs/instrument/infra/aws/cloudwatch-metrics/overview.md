@@ -23,16 +23,6 @@ keywords:
   ]
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What are the ways to get AWS CloudWatch metrics into base14 Scout?","acceptedAnswer":{"@type":"Answer","text":"Four. Two push: CloudWatch Metric Streams through Amazon Data Firehose into the OpenTelemetry Collector's awsfirehosereceiver, or the same stream through Firehose to S3 with a Lambda that forwards OTLP. Two pull: the Prometheus CloudWatch exporter scraped by the Collector, or the CloudWatch datasource that queries CloudWatch directly at dashboard render time without ingesting anything."}},{"@type":"Question","name":"Which approach has the lowest latency?","acceptedAnswer":{"@type":"Answer","text":"The push approaches. CloudWatch Metric Streams deliver in 2-3 minutes, so the Firehose-to-Collector path is the lowest-latency option that stores data in Scout. Pulling with the Prometheus exporter adds your scrape interval on top of CloudWatch's own metric-availability delay, so it is typically slower."}},{"@type":"Question","name":"Which approach avoids ingestion and storage cost in Scout?","acceptedAnswer":{"@type":"Answer","text":"The CloudWatch datasource. It queries CloudWatch directly when a dashboard loads, so nothing is ingested or stored in Scout. You pay CloudWatch query API costs instead, and the data is bound by CloudWatch retention rather than kept long-term in Scout."}},{"@type":"Question","name":"Do I need a public OpenTelemetry Collector to receive CloudWatch metrics?","acceptedAnswer":{"@type":"Answer","text":"Only for the Firehose-to-Collector push approach. Amazon Data Firehose HTTP endpoint delivery requires a publicly reachable HTTPS endpoint with a valid certificate. The Firehose-to-S3-to-Lambda path and the Prometheus exporter path do not need an inbound endpoint because the collector or Lambda reaches out to AWS."}},{"@type":"Question","name":"Can I query CloudWatch metrics in Scout without ingesting them?","acceptedAnswer":{"@type":"Answer","text":"Yes. Enable the CloudWatch datasource in Scout and query CloudWatch directly from dashboards. base14 provisions the datasource for your tenant. This is query federation, not ingestion, so the metrics are not stored in Scout and cannot be joined with your OTLP telemetry."}},{"@type":"Question","name":"Push or pull for CloudWatch metrics?","acceptedAnswer":{"@type":"Answer","text":"Push (CloudWatch Metric Streams through Firehose) when you want the lowest latency and durable storage in Scout. Pull (Prometheus exporter) when a Kubernetes-native scrape model and fine-grained metric selection matter more than latency, or when you cannot expose an inbound endpoint. Use the CloudWatch datasource when you only need to visualize CloudWatch and do not need to retain the data in Scout."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 ## Overview
 
 This is the architectural landing page for getting **AWS CloudWatch**

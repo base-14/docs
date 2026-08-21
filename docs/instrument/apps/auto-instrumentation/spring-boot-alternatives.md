@@ -23,16 +23,6 @@ keywords:
   ]
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"When should I use Java Agent vs OpenTelemetry SDK Integration?","acceptedAnswer":{"@type":"Answer","text":"Use Java Agent for zero-code requirement (no dependency changes), legacy apps where code changes are difficult, quick POC or evaluation, and ops-managed instrumentation. Use OpenTelemetry SDK Integration for production deployments, GraalVM native-image, custom instrumentation needs, and Spring Boot configuration patterns."}},{"@type":"Question","name":"Is Spring Boot 4.0 Native Starter ready for production?","acceptedAnswer":{"@type":"Answer","text":"No. Spring Boot 4.0 is currently in preview. Wait for GA release announcement, community adoption and feedback, and stability verification in your environment. Continue using OpenTelemetry SDK Integration for production systems."}},{"@type":"Question","name":"Can I use Java Agent with Spring Boot 4.0?","acceptedAnswer":{"@type":"Answer","text":"Yes. Java Agent works with any Spring Boot version (2.x, 3.x, or 4.x). It is version-agnostic since it uses bytecode instrumentation rather than dependencies."}},{"@type":"Question","name":"Will Java Agent work with GraalVM native-image?","acceptedAnswer":{"@type":"Answer","text":"No. Java Agent relies on bytecode manipulation which does not work well with native compilation. Use OpenTelemetry SDK Integration for GraalVM support."}},{"@type":"Question","name":"Can I use application.yml with Java Agent?","acceptedAnswer":{"@type":"Answer","text":"No. Java Agent only supports environment variables for configuration. You cannot use application.yml or application.properties for OpenTelemetry configuration when using the agent. For Spring Boot configuration support, use OpenTelemetry SDK Integration."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 # Spring Boot Alternatives
 
 This guide covers alternative approaches to Spring Boot OpenTelemetry
@@ -930,6 +920,14 @@ configuration when using the agent.
 
 For Spring Boot configuration support, use [OpenTelemetry SDK
 Integration](./spring-boot.md#configuration).
+
+### When should I use Java Agent vs OpenTelemetry SDK Integration?
+
+Use the Java Agent when you cannot change the application: legacy apps, a
+quick evaluation, or instrumentation managed by the ops team rather than by
+the app's own dependencies. Use the OpenTelemetry SDK integration when you
+build for GraalVM native image, need custom instrumentation, or want the
+setup to follow the app's own Spring Boot configuration.
 
 ## Related Resources
 

@@ -362,20 +362,20 @@ the Kafka cluster version.
 
 ## FAQ
 
-**Does this work with Kafka running in Kubernetes?**
+### Does this work with Kafka running in Kubernetes?
 
 Yes. Set `brokers` to the Kafka service DNS
 (e.g., `kafka-0.kafka.default.svc.cluster.local:9092`). The Collector can
 run as a sidecar or DaemonSet. Inject SASL credentials via a Kubernetes
 secret if authentication is enabled.
 
-**Does this work with KRaft mode (no ZooKeeper)?**
+### Does this work with KRaft mode (no ZooKeeper)?
 
 Yes. The receiver connects directly to Kafka brokers over the client
 protocol and never talks to ZooKeeper. KRaft and ZooKeeper-based clusters
 produce identical metrics.
 
-**How do I filter which topics are monitored?**
+### How do I filter which topics are monitored?
 
 Use the `topic_match` regex in the receiver config. The default
 `^[^_].*$` excludes internal topics (those starting with `_`). To monitor
@@ -387,7 +387,7 @@ receivers:
     topic_match: "^(orders|payments|events)$"
 ```
 
-**Why is consumer lag not showing up?**
+### Why is consumer lag not showing up?
 
 `kafka.consumer_group.lag_sum` and `kafka.consumer_group.lag` are computed
 from committed offsets, so they only emit once a consumer group has
@@ -395,8 +395,7 @@ committed at least one offset. An idle cluster, or one with producers but
 no committing consumers, reports `kafka.brokers` and partition offsets but
 no lag.
 
-**What is the difference between `kafkametricsreceiver` and
-`kafkareceiver`?**
+### What is the difference between `kafkametricsreceiver` and `kafkareceiver`?
 
 The `kafkametricsreceiver` collects metrics **about** the Kafka cluster
 (broker count, consumer lag, partition offsets). The `kafkareceiver`

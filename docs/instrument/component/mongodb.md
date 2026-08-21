@@ -349,13 +349,13 @@ set.
 
 ## FAQ
 
-**Does this work with MongoDB running in Kubernetes?**
+### Does this work with MongoDB running in Kubernetes?
 
 Yes. Set `endpoint` to the MongoDB service DNS
 (e.g., `mongodb.default.svc.cluster.local:27017`) and inject credentials
 via a Kubernetes secret. The Collector can run as a sidecar or DaemonSet.
 
-**How do I monitor a MongoDB replica set?**
+### How do I monitor a MongoDB replica set?
 
 Set `direct_connection: false` and point at the primary. For per-node
 metrics, add a receiver block per member:
@@ -375,12 +375,12 @@ receivers:
 Then include both in the pipeline:
 `receivers: [mongodb/primary, mongodb/secondary]`.
 
-**What permissions does the monitoring account need?**
+### What permissions does the monitoring account need?
 
 The `clusterMonitor` role on the `admin` database, read-only. No write
 access is required - the Collector only reads metrics.
 
-**Why is there no error-rate metric?**
+### Why is there no error-rate metric?
 
 `serverStatus` does not expose a query-error counter, so the receiver
 has no error-rate metric. Operation throughput
@@ -388,7 +388,7 @@ has no error-rate metric. Operation throughput
 (`mongodb.operation.latency.time`) are available, but error detail comes
 from the MongoDB log or the database profiler.
 
-**Why are lock deadlock counts always zero?**
+### Why are lock deadlock counts always zero?
 
 MongoDB uses optimistic concurrency control with WiredTiger, so
 deadlocks are rare under normal workloads. On a standalone the lock

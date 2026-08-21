@@ -20,16 +20,6 @@ keywords:
   - cadvisor telemetry collection
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does this work with cAdvisor running in Kubernetes?","acceptedAnswer":{"@type":"Answer","text":"Yes. cAdvisor is embedded in the kubelet, so you can scrape the kubelet's /metrics/cadvisor endpoint, or run cAdvisor as a DaemonSet so each node's containers are measured by a local instance. The container and machine metric names match either way."}},{"@type":"Question","name":"How do I monitor cAdvisor on multiple hosts?","acceptedAnswer":{"@type":"Answer","text":"Add one scrape target per cAdvisor instance to the prometheus receiver. The receiver attaches an instance label to each series, which distinguishes the hosts in Scout."}},{"@type":"Question","name":"What is the difference between container_memory_usage_bytes and container_memory_working_set_bytes?","acceptedAnswer":{"@type":"Answer","text":"container_memory_usage_bytes includes reclaimable page cache and reads higher. container_memory_working_set_bytes is the non-reclaimable memory the OOM-killer counts, so it is the OOM-risk signal and the better basis for memory alerts."}},{"@type":"Question","name":"Why does cAdvisor need to run privileged?","acceptedAnswer":{"@type":"Answer","text":"cAdvisor reads host cgroup and filesystem statistics directly. It needs --privileged, the /dev/kmsg device, and read-only mounts of /, /sys, /var/lib/docker, /var/run, and /dev/disk to collect per-container resource metrics."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 # cAdvisor
 
 cAdvisor (Container Advisor) exposes Prometheus text at `/metrics` on
@@ -323,28 +313,27 @@ internals.
 
 ## FAQ
 
-**Does this work with cAdvisor running in Kubernetes?**
+### Does this work with cAdvisor running in Kubernetes?
 
 Yes. cAdvisor is embedded in the kubelet, so you can scrape the kubelet's
 `/metrics/cadvisor` endpoint, or run cAdvisor as a DaemonSet so each
 node's containers are measured by a local instance. The container and
 machine metric names match either way.
 
-**How do I monitor cAdvisor on multiple hosts?**
+### How do I monitor cAdvisor on multiple hosts?
 
 Add one scrape target per cAdvisor instance to the `prometheus`
 receiver's `static_configs`. The receiver attaches an `instance` label to
 each series, which distinguishes the hosts in Scout.
 
-**What is the difference between `container_memory_usage_bytes` and
-`container_memory_working_set_bytes`?**
+### `container_memory_usage_bytes` vs `container_memory_working_set_bytes`?
 
 `container_memory_usage_bytes` includes reclaimable page cache and reads
 higher. `container_memory_working_set_bytes` is the non-reclaimable
 memory the OOM-killer counts, so it is the OOM-risk signal and the better
 basis for memory alerts.
 
-**Why does cAdvisor need to run privileged?**
+### Why does cAdvisor need to run privileged?
 
 cAdvisor reads host cgroup and filesystem statistics directly. It needs
 `--privileged`, the `/dev/kmsg` device, and read-only mounts of `/`,

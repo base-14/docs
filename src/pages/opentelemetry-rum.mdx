@@ -10,62 +10,6 @@ import Head from "@docusaurus/Head";
     name="keywords"
     content="opentelemetry rum, real user monitoring opentelemetry, otel rum, opentelemetry browser monitoring, opentelemetry mobile rum, vendor neutral rum, otlp rum, datadog rum alternative"
   />
-  <script type="application/ld+json">
-    {JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      mainEntity: [
-        {
-          "@type": "Question",
-          name: "What is OpenTelemetry RUM?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "OpenTelemetry RUM is real user monitoring where the browser or mobile SDK emits standard OpenTelemetry spans, metrics, and logs over OTLP, rather than a vendor-specific wire format. A click becomes a span, a Core Web Vital becomes a span, a crash becomes a span. Because the output is OTLP, any OpenTelemetry backend can receive it and the same trace context links a browser click to the backend request it triggered.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Can I send OpenTelemetry RUM data to any backend?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Yes. Both base14 SDKs, scout_flutter and @base-14/scout-react, export OTLP. You can point them at a Scout collector, at your own OpenTelemetry Collector, or at another OTLP-compatible backend, and you can fan out to more than one at once by adding exporters to a collector you control. Changing destination is a configuration change, not a reinstrumentation project.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "How is OpenTelemetry RUM different from Datadog RUM or New Relic Browser?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Datadog and New Relic ship their own browser and mobile agents that report to their own backends in their own formats. The instrumentation is tied to the vendor, so moving platforms means replacing the SDK in every app and shipping a new release to every user. With OpenTelemetry RUM the instrumentation is standard and only the export destination changes.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Does base14 Scout RUM support session replay?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "No. Session Replay and Profiling are the two parts of the RUM event set the SDKs do not capture. Everything else is covered, including clicks, navigation, HTTP requests, errors, native crashes, ANRs, Core Web Vitals, long tasks, frozen frames, and scroll depth. If session replay is a requirement, Scout RUM is not a fit today.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "How much does OpenTelemetry RUM cost with signal-based pricing?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "RUM telemetry is billed as ordinary signals rather than per session or per user. Under base14 Scout's pricing that is a $250/month platform fee plus $0.10 per million metrics and $0.25 per million logs and traces, with no per-seat charges. Cost tracks the volume of telemetry produced, so a session on a busy screen costs more than a quiet one. The Startup tier includes up to 50 authorized users and Enterprise raises the limit.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Does RUM session sampling cause you to miss crashes?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "No. The SDK samples sessions and defaults to 1%, but crash, error, and ANR telemetry bypasses the session sample rate. Crash-free rate and total error counts stay accurate at low sample rates. Sampling reduces the volume of routine session detail, not your visibility into failures.",
-          },
-        },
-      ],
-    })}
-  </script>
 </Head>
 
 # OpenTelemetry RUM: real user monitoring without a vendor SDK

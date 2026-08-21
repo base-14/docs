@@ -347,20 +347,20 @@ group is not enabled.
 
 ## FAQ
 
-**What is the difference between Basic and Advanced monitoring?**
+### What is the difference between Basic and Advanced PostgreSQL monitoring?
 
 The [Basic guide](./postgres.md) uses the OTel PostgreSQL receiver for
 core database metrics (34 metrics). This Advanced guide uses pgdashex,
 which collects deeper metrics across 17 groups including query-level
 statistics, per-table I/O, and logical replication.
 
-**Can I run pgdashex alongside the Basic PostgreSQL receiver?**
+### Can I run pgdashex alongside the Basic PostgreSQL receiver?
 
 Yes. They collect different metrics and use different endpoints. The
 Basic receiver connects directly to PostgreSQL, while pgdashex exposes
 a Prometheus endpoint that the Collector scrapes separately.
 
-**How do I monitor multiple PostgreSQL databases?**
+### How do I monitor multiple PostgreSQL databases?
 
 Set `PG_ALL_DBS=true` to monitor all databases in the cluster, or use
 `PG_DATABASES=db1,db2,db3` to monitor specific databases.

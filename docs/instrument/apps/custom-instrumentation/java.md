@@ -19,16 +19,6 @@ keywords:
   ]
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"When should I use custom instrumentation instead of auto-instrumentation in Java?","acceptedAnswer":{"@type":"Answer","text":"Use custom instrumentation to trace business logic, custom frameworks, or operations not covered by auto-instrumentation - such as internal service methods, batch processing, or domain-specific workflows."}},{"@type":"Question","name":"How do I create custom spans in Java with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Get a Tracer from GlobalOpenTelemetry, call tracer.spanBuilder(\"name\").startSpan(), add attributes and events, then call span.end() in a finally block. View spans in base14 Scout."}},{"@type":"Question","name":"What Java versions does OpenTelemetry support?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry supports Java 8 or later, with Java 11+ recommended. It works with Spring, Micronaut, Quarkus, servlets, and custom frameworks."}},{"@type":"Question","name":"How do I propagate trace context across Java microservices?","acceptedAnswer":{"@type":"Answer","text":"OpenTelemetry uses W3C Trace Context headers to propagate context. Inject headers on outbound HTTP calls and extract them on incoming requests to maintain end-to-end trace continuity in base14 Scout."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 Implement OpenTelemetry custom instrumentation for Java applications to collect
 traces, metrics, and logs using the Java OpenTelemetry SDK. This guide covers
 manual instrumentation for any Java application, including Spring, Micronaut,
@@ -1006,6 +996,35 @@ public class TraceContextExtractor {
     }
 }
 ```
+
+## FAQ
+
+### When should I use custom instead of auto-instrumentation in Java?
+
+Use custom instrumentation for business logic, in-house frameworks, and
+operations the agent does not see: internal service methods, batch
+processing, and domain-specific workflows. Auto-instrumentation covers the
+libraries and protocols at the edges of your application.
+
+### How do I create custom spans in Java with OpenTelemetry?
+
+Get a `Tracer` from `GlobalOpenTelemetry`, call
+`tracer.spanBuilder("name").startSpan()`, add attributes and events, then
+call `span.end()` in a `finally` block so the span closes even when the
+operation throws.
+
+### What Java versions does OpenTelemetry support?
+
+Java 8 and later, with Java 11 or newer recommended. The agent and SDK
+work with Spring, Micronaut, Quarkus, plain servlets, and custom
+frameworks.
+
+### How do I propagate trace context across Java microservices?
+
+OpenTelemetry uses W3C Trace Context headers. Inject them on outbound HTTP
+calls and extract them on incoming requests, and the trace stays connected
+end to end in Scout. Auto-instrumented HTTP clients and servers do this
+for you.
 
 ## References
 

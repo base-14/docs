@@ -24,16 +24,6 @@ keywords:
   ]
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I add Real User Monitoring to a React web app with base14 Scout?","acceptedAnswer":{"@type":"Answer","text":"Install @base-14/scout-react, call Scout.initialize() once on app boot from the browser, and wrap your root with ScoutErrorBoundary. Routes, clicks, fetch/XHR, errors, Core Web Vitals, and lifecycle events are then captured automatically and exported as OTLP traces, metrics, and logs to your Scout endpoint."}},{"@type":"Question","name":"What does @base-14/scout-react capture in the browser without manual instrumentation?","acceptedAnswer":{"@type":"Answer","text":"Every click, route navigation, fetch and XHR request, JavaScript error, unhandled rejection, Core Web Vital (LCP/INP/CLS/FCP/TTFB), long task, frozen frame, scroll depth, CSP violation, page lifecycle transition, and frustration signal (rage click / dead click / error click) — all as OTel-shaped spans, metrics, and logs."}},{"@type":"Question","name":"Does scout-react work with React Router / Next.js / Remix / Docusaurus?","acceptedAnswer":{"@type":"Answer","text":"Yes. The route tracker subscribes to the History API which every SPA router uses. For SSR setups (Next.js, Remix, Astro, Docusaurus), initialize Scout inside a useEffect or guard with a typeof window check so it runs only in the browser, never during SSR."}},{"@type":"Question","name":"How do I scrub PII before telemetry leaves the browser?","acceptedAnswer":{"@type":"Answer","text":"Pass a beforeSend callback to Scout.initialize(). It runs on every span, metric, and log before export — return null to drop the event, or mutate the attributes object to redact specific fields (e.g. user.email, query-string tokens)."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 # React (web)
 
 `@base-14/scout-react` ships **zero-config Real User Monitoring** for React
@@ -280,6 +270,38 @@ setup, ANR detection, troubleshooting, FAQ), see the
 The same package and the same APIs apply across React Native and React web —
 only the entry import (`@base-14/scout-react` vs
 `@base-14/scout-react/native`) and the runtime-specific captures differ.
+
+## FAQ
+
+### How do I add Real User Monitoring to a React web app with base14 Scout?
+
+Install `@base-14/scout-react`, call `Scout.initialize()` once on app boot
+from the browser, and wrap your root with `ScoutErrorBoundary`. Routes,
+clicks, fetch and XHR calls, errors, Core Web Vitals, and lifecycle events
+are then captured automatically and exported as OTLP traces, metrics, and
+logs to your Scout endpoint.
+
+### What does scout-react capture without manual instrumentation?
+
+Clicks, route navigations, fetch and XHR requests, JavaScript errors,
+unhandled rejections, Core Web Vitals (LCP, INP, CLS, FCP, TTFB), long
+tasks, frozen frames, scroll depth, CSP violations, page lifecycle
+transitions, and frustration signals such as rage clicks, dead clicks, and
+error clicks. These arrive as OpenTelemetry spans, metrics, and logs.
+
+### Does scout-react work with React Router, Next.js, Remix, or Docusaurus?
+
+Yes. The route tracker subscribes to the History API, which every SPA
+router uses. For SSR setups such as Next.js, Remix, Astro, and Docusaurus,
+initialize Scout inside a `useEffect` or guard it with a `typeof window`
+check so it runs only in the browser, never during SSR.
+
+### How do I scrub PII before telemetry leaves the browser?
+
+Pass a `beforeSend` callback to `Scout.initialize()`. It runs on every
+span, metric, and log before export. Return `null` to drop the event, or
+mutate the attributes object to redact specific fields such as
+`user.email` or query-string tokens.
 
 ## What's next
 

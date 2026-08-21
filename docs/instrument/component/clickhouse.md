@@ -355,7 +355,7 @@ here is a rate-derived mean, not a percentile.
 
 ## FAQ
 
-**Why do the counters have no `_total` suffix?**
+### Why do the counters have no `_total` suffix?
 
 ClickHouse defines the metric names and the `prometheus` receiver passes them
 through verbatim. The `ClickHouseProfileEvents_*` family is typed as
@@ -363,7 +363,7 @@ through verbatim. The `ClickHouseProfileEvents_*` family is typed as
 stay exactly as ClickHouse emits them (`ClickHouseProfileEvents_Query`, not
 `..._Query_total`). Rate them as counters; just use the literal names.
 
-**How do I bound the ~3300-metric volume?**
+### How do I bound the ~3300-metric volume?
 
 Add a `metric_relabel_configs` `keep` block to the scrape config that
 whitelists the Core and Operational names (see
@@ -372,7 +372,7 @@ per-disk `Block*` and per-CPU series are the main cardinality source, so
 dropping the Diagnostic families is where most of the volume reduction comes
 from.
 
-**How do I monitor a multi-node ClickHouse cluster?**
+### How do I monitor a multi-node ClickHouse cluster?
 
 Each node serves its own `:9363/metrics` endpoint. Add one scrape target per
 server:
@@ -392,7 +392,7 @@ receivers:
 
 Each node is scraped independently and identified by its `instance` label.
 
-**Does this work with ClickHouse running in Kubernetes?**
+### Does this work with ClickHouse running in Kubernetes?
 
 Yes. Set `targets` to the pod or service DNS on `:9363`
 (e.g., `clickhouse-0.clickhouse.default.svc.cluster.local:9363`). Mount the
@@ -400,7 +400,7 @@ Yes. Set `targets` to the pod or service DNS on `:9363`
 `/etc/clickhouse-server/config.d/`. The Collector can run as a sidecar or a
 deployment.
 
-**Why is there no query-latency percentile?**
+### Why is there no query-latency percentile?
 
 The `/metrics` endpoint exposes query time only as a cumulative counter
 (`ClickHouseProfileEvents_QueryTimeMicroseconds`), so the latency you get is

@@ -388,7 +388,7 @@ where backends sit.
 
 ## FAQ
 
-**Why do I need a separate exporter?**
+### Why do I need a separate exporter?
 
 PgBouncer exposes its statistics only over its admin console, not over HTTP,
 and there is no `pgbouncerreceiver` in collector-contrib. The
@@ -398,7 +398,7 @@ Prometheus format. The only pure-collector alternative is the
 `sqlqueryreceiver` pointed at the same admin console with hand-mapped `SHOW`
 queries (more config, custom metric names).
 
-**What is the difference between `up` and `pgbouncer_up`?**
+### What is the difference between `up` and `pgbouncer_up`?
 
 There are two liveness signals. `up` comes from the `prometheus` receiver and
 is 1 when the exporter's `/metrics` responded. `pgbouncer_up` comes from the
@@ -406,7 +406,7 @@ exporter and is 1 when it could reach PgBouncer's admin console. Both at 1 is
 healthy; `up == 1` with `pgbouncer_up == 0` means the exporter is running but
 cannot talk to PgBouncer.
 
-**Does this work with PgBouncer in Kubernetes?**
+### Does this work with PgBouncer in Kubernetes?
 
 Yes. Run the `pgbouncer_exporter` as a sidecar in the same pod as PgBouncer,
 with its connection string pointed at the admin console on `localhost:6432`
@@ -414,14 +414,14 @@ since both containers share the pod network. Supply the stats-user credentials
 via a Kubernetes secret. Point the Collector's scrape target at the pod IP or a
 headless service on `:9127`.
 
-**What pool mode should I use, and does it change monitoring?**
+### What pool mode should I use, and does it change monitoring?
 
 The exporter works with all pool modes (`session`, `transaction`, `statement`).
 Pool mode does not change the monitoring interface - the exporter reads the
 admin console regardless - but it changes how to read the server-connection
 counts, because backend reuse differs across the modes.
 
-**How do I monitor multiple databases or PgBouncer instances?**
+### How do I monitor multiple databases or PgBouncer instances?
 
 The `pgbouncer_pools_*` and `pgbouncer_databases_*` families are labeled by
 database and user, so series multiply with `#databases x #users` on one
@@ -441,7 +441,7 @@ receivers:
                 - pgbouncer-exporter-2:9127
 ```
 
-**Why are some `pgbouncer_stats_totals_*` metrics missing?**
+### Why are some `pgbouncer_stats_totals_*` metrics missing?
 
 The `pgbouncer_stats_totals_*` set reflects PgBouncer's `SHOW STATS` columns,
 and the prepared-statement parse / bind counters are newer columns. Older

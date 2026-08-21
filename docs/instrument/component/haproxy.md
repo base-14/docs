@@ -354,14 +354,14 @@ flat for a server that has never been routed to.
 
 ## FAQ
 
-**Does this work with HAProxy running in Kubernetes?**
+### Does this work with HAProxy running in Kubernetes?
 
 Yes. Set `endpoint` to the HAProxy service DNS
 (e.g., `http://haproxy.default.svc.cluster.local:8404/stats`) and expose the
 stats port in the Service definition. The Collector can run as a sidecar or
 DaemonSet.
 
-**How do I monitor multiple HAProxy instances?**
+### How do I monitor multiple HAProxy instances?
 
 Add multiple receiver blocks with distinct names:
 
@@ -376,7 +376,7 @@ receivers:
 Then include both in the pipeline:
 `receivers: [haproxy/primary, haproxy/secondary]`.
 
-**Can I use a Unix socket instead of HTTP?**
+### Can I use a Unix socket instead of HTTP?
 
 Yes. Point the receiver `endpoint` at the stats socket with a `file://` scheme
 (e.g. `file:///var/run/haproxy.ipc`) and expose the socket in HAProxy's
@@ -391,7 +391,7 @@ The HTTP `stats` frontend shown in [Access Setup](#access-setup) is the
 alternative, not a requirement - the receiver reads the same CSV over either
 transport.
 
-**Why are compression metrics showing zero?**
+### Why are compression metrics showing zero?
 
 The `haproxy.compression.*` family requires compression to be enabled in
 HAProxy (`compression algo gzip` in the frontend or backend config). It reports

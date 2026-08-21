@@ -43,16 +43,6 @@ keywords:
   ]
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does Quarkus require manual OpenTelemetry SDK initialization?","acceptedAnswer":{"@type":"Answer","text":"No. Quarkus handles OpenTelemetry initialization automatically through the quarkus-opentelemetry extension. You only need to add the dependency and configure application.properties."}},{"@type":"Question","name":"Can I use Quarkus native images with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Yes, Quarkus fully supports OpenTelemetry in GraalVM native images. The extension handles all reflection configuration and build-time initialization automatically."}},{"@type":"Question","name":"How does Quarkus OpenTelemetry setup differ from Spring Boot?","acceptedAnswer":{"@type":"Answer","text":"Quarkus is simpler. It uses extension-based configuration with zero Java code, while Spring Boot requires programmatic SDK initialization in a @Configuration class."}},{"@type":"Question","name":"How do I add custom spans in Quarkus?","acceptedAnswer":{"@type":"Answer","text":"Use the @WithSpan annotation from OpenTelemetry instrumentation annotations on any method. You can also inject Tracer to create spans manually. View spans in base14 Scout."}},{"@type":"Question","name":"Does Quarkus automatically instrument reactive Mutiny code?","acceptedAnswer":{"@type":"Answer","text":"Yes, Quarkus's reactive Mutiny programming model is automatically instrumented. Context propagation across Uni and Multi chains works out of the box."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 :::note Running this in production
 
 Storing and querying this data at production volume is what base14 Scout does.
@@ -1638,37 +1628,38 @@ Build native image:
 
 ## FAQ
 
-### 1. Does Quarkus require manual OpenTelemetry SDK initialization?
+### Does Quarkus require manual OpenTelemetry SDK initialization?
 
 **No.** Unlike Spring Boot or Express.js, Quarkus handles OpenTelemetry
 initialization automatically through the `quarkus-opentelemetry` extension. You
 only need to add the dependency and configure `application.properties`—no Java
 code required for basic instrumentation.
 
-### 2. Can I use Quarkus native images with OpenTelemetry?
+### Can I use Quarkus native images with OpenTelemetry?
 
 **Yes.** Quarkus fully supports OpenTelemetry in native images compiled with
 GraalVM. The extension handles all necessary reflection configuration and
 build-time initialization automatically. Native images provide subsecond startup
 and minimal memory footprint while maintaining full tracing capabilities.
 
-### 3. How do I instrument reactive code with Mutiny?
+### How do I instrument reactive code with Mutiny?
 
 **Automatically.** Quarkus's reactive programming model (Mutiny) is
 automatically instrumented by the OpenTelemetry extension. Context propagation
 across `Uni` and `Multi` chains works out of the box without manual
 configuration.
 
-### 4. What's the difference between Quarkus and Spring Boot OpenTelemetry setup?
+### What's the difference between Quarkus and Spring Boot OpenTelemetry setup?
 
 **Quarkus is simpler.** Quarkus uses extension-based configuration with zero
 Java code, while Spring Boot requires programmatic SDK initialization in a
 `@Configuration` class. Quarkus also provides built-in dev mode with live reload
 and automatic tracing, whereas Spring Boot requires DevTools or manual restarts.
 
-### 5. How do I add custom spans in Quarkus?
+### How do I add custom spans in Quarkus?
 
-Use the `@WithSpan` annotation from OpenTelemetry instrumentation annotations:
+Annotate the method with `@WithSpan`, and mark any parameters you want
+recorded with `@SpanAttribute`. Quarkus creates and closes the span for you:
 
 ```java
 import io.opentelemetry.instrumentation.annotations.WithSpan;
@@ -1689,9 +1680,10 @@ import io.opentelemetry.api.trace.Tracer;
 private final Tracer tracer = GlobalOpenTelemetry.getTracer("my-service");
 ```
 
-### 6. Can I disable OpenTelemetry in tests?
+### Can I disable OpenTelemetry in tests?
 
-**Yes.** Use Quarkus test profiles:
+Yes. Set `%test.quarkus.otel.sdk.disabled=true` to turn the SDK off for the
+whole test profile:
 
 ```properties title="application.properties" showLineNumbers
 # Disable OpenTelemetry in test profile
@@ -1708,7 +1700,7 @@ public class OrderServiceTest {
 }
 ```
 
-### 7. How do I trace Hibernate queries with Panache?
+### How do I trace Hibernate queries with Panache?
 
 **Automatically.** Enable JDBC telemetry:
 
@@ -1719,13 +1711,13 @@ quarkus.datasource.jdbc.telemetry=true
 All Panache methods (`findAll()`, `find()`, `persist()`, etc.) will
 automatically create child spans with SQL query details.
 
-### 8. What's the performance overhead of tracing in native images?
+### What's the performance overhead of tracing in native images?
 
 **&lt;1% with sampling.** Native images with 10% sampling add approximately 0.1ms
 to p50 latency and 15MB to memory usage. This is significantly lower than JVM
 mode (5-10% overhead) due to build-time optimizations.
 
-### 9. Can I use Quarkus OpenTelemetry with Kafka?
+### Can I use Quarkus OpenTelemetry with Kafka?
 
 **Yes.** Add the Kafka extension and enable messaging instrumentation:
 
@@ -1743,9 +1735,10 @@ quarkus.otel.instrument.messaging=true
 Kafka producers and consumers are automatically traced with message headers for
 context propagation.
 
-### 10. How do I send traces to Base14 Scout?
+### How do I send traces to Base14 Scout?
 
-Configure the OTLP endpoint and authentication:
+Point `quarkus.otel.exporter.otlp.endpoint` at your Scout endpoint on port
+4317 and pass your API key as a bearer token in the OTLP headers:
 
 ```properties title="application.properties" showLineNumbers
 %prod.quarkus.otel.exporter.otlp.endpoint=https://scout.base14.io:4317
@@ -1760,9 +1753,10 @@ export SCOUT_API_KEY=your_api_key
 ./target/quarkus-order-service-1.0.0-runner
 ```
 
-### 11. Can I use OpenTelemetry metrics with Quarkus?
+### Can I use OpenTelemetry metrics with Quarkus?
 
-**Yes.** Quarkus supports OpenTelemetry metrics through the extension:
+Yes. Set `quarkus.otel.metrics.exporter=otlp` and the same extension exports
+metrics alongside traces:
 
 ```properties
 quarkus.otel.metrics.exporter=otlp
@@ -1778,7 +1772,7 @@ for production use:
 </dependency>
 ```
 
-### 12. How do I trace gRPC services in Quarkus?
+### How do I trace gRPC services in Quarkus?
 
 **Automatically.** Add the gRPC extension:
 

@@ -30,16 +30,6 @@ keywords:
   ]
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does OpenTelemetry auto-instrument BullMQ?","acceptedAnswer":{"@type":"Answer","text":"There is no dedicated BullMQ instrumentation in the auto-instrumentations-node bundle. The Redis commands BullMQ issues are traced automatically by instrumentation-ioredis, and you add manual spans plus W3C context propagation for job-level tracing across producer and worker."}},{"@type":"Question","name":"How do I trace a BullMQ job from producer to worker?","acceptedAnswer":{"@type":"Answer","text":"Inject the active trace context into the job data on the producer with propagation.inject, then extract it on the worker with propagation.extract and run the job span inside context.with. This links the enqueue span and the process span into one trace."}},{"@type":"Question","name":"Why do my BullMQ jobs show up as disconnected traces?","acceptedAnswer":{"@type":"Answer","text":"BullMQ does not carry trace context across the Redis boundary on its own. Without injecting context into job data on enqueue and extracting it in the worker, the worker starts a brand-new root span, so the job appears as a separate trace."}},{"@type":"Question","name":"How do I monitor BullMQ queue depth with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Use OpenTelemetry observable gauges that read queue.getWaitingCount(), getActiveCount(), getDelayedCount(), getFailedCount(), and getCompletedCount() on a short interval. These export waiting, active, delayed, failed, and completed job counts per queue."}},{"@type":"Question","name":"How much overhead does OpenTelemetry add to BullMQ workers?","acceptedAnswer":{"@type":"Answer","text":"With the batch span processor, expect roughly 0.5-2ms added per job from span creation and context propagation, low single-digit CPU increase, and 15-35MB extra memory on the worker process. The Redis round trips dominate job latency, not the instrumentation."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 ```mdx-code-block
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';

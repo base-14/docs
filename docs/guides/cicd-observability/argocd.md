@@ -480,7 +480,7 @@ default.
 
 ## FAQ
 
-**Does this work with ArgoCD installed via Helm?**
+### Does this work with ArgoCD installed via Helm?
 
 Yes. Enable metrics services in the Helm values by setting
 `controller.metrics.enabled`, `server.metrics.enabled`, and
@@ -489,7 +489,7 @@ dedicated metrics services with different names than the manifest
 install - see [Access Setup](#access-setup) for the full mapping.
 Verify your service names with `kubectl -n argocd get svc`.
 
-**How do I monitor ArgoCD in a multi-cluster setup?**
+### How do I monitor ArgoCD in a multi-cluster setup?
 
 Each ArgoCD instance manages one or more target clusters. Deploy
 one Collector config per ArgoCD control plane. The
@@ -497,7 +497,7 @@ one Collector config per ArgoCD control plane. The
 the managed cluster, and `argocd_cluster_connection_status` reports
 whether each cluster is reachable.
 
-**Which component exposes sync status metrics?**
+### Which component exposes sync status metrics?
 
 The application controller (port 8082) emits all application state
 metrics. The `argocd_app_info` metric includes `sync_status` and
@@ -510,7 +510,7 @@ argocd_app_info{name="guestbook",sync_status="OutOfSync",health_status="Missing"
 The server (port 8083) only exposes API/gRPC request metrics and
 ArgoCD version info (`argocd_info`).
 
-**Can I use Kubernetes service discovery instead of static targets?**
+### Can I use Kubernetes service discovery instead of static targets?
 
 Yes. See the
 [Kubernetes Service Discovery](#kubernetes-service-discovery)
@@ -518,7 +518,7 @@ section above. This approach uses `kubernetes_sd_configs` with
 `relabel_configs` to match ArgoCD metrics services automatically
 and works with both manifest and Helm installations.
 
-**What is the difference between manifest and Helm service names?**
+### What is the difference between manifest and Helm service names?
 
 The service names for metrics differ between install methods:
 
@@ -532,7 +532,7 @@ The service names for metrics differ between install methods:
 Always verify with `kubectl -n argocd get svc` to confirm the
 service names in your environment.
 
-**How do I monitor ArgoCD with Prometheus?**
+### How do I monitor ArgoCD with Prometheus?
 
 ArgoCD exposes Prometheus-format metrics on dedicated endpoints
 (ports 8082, 8083, 8084) for the application controller, API
@@ -541,7 +541,7 @@ OpenTelemetry Collector's Prometheus receiver or a native
 Prometheus ServiceMonitor. See
 [Configuration](#configuration) for complete scrape configs.
 
-**What metrics does ArgoCD expose?**
+### What metrics does ArgoCD expose?
 
 ArgoCD exposes metrics across five categories:
 `argocd_app_info` (sync and health status per application),
@@ -552,7 +552,7 @@ connectivity), and `grpc_server_handled_total` (API request
 rates). Run `curl http://localhost:8082/metrics` against a
 running instance for the full list.
 
-**What is the default ArgoCD metrics endpoint?**
+### What is the default ArgoCD metrics endpoint?
 
 The application controller exposes metrics at `:8082/metrics`,
 the API server at `:8083/metrics`, and the repo server at

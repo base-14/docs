@@ -299,27 +299,27 @@ report load.
 
 ## FAQ
 
-**Why is there no `up` metric for Apache?**
+### Why is there no `up` metric for Apache?
 
 The `apache` receiver does not emit one. Use `rate(apache.requests)` as
 the liveness proxy - a live request rate means the server is handling
 traffic; a drop to zero while traffic is expected means it is not.
 
-**Do I need to enable any metrics explicitly?**
+### Do I need to enable any metrics explicitly?
 
 No. All 13 `apache` receiver metrics are on by default, so the receiver
 block needs only the `endpoint` and `collection_interval`. To reduce metric
 volume, drop tiers you do not need with a `filter` processor (see
 Configuration).
 
-**Does this work with Apache running in Kubernetes?**
+### Does this work with Apache running in Kubernetes?
 
 Yes. Set `endpoint` to the Apache service DNS
 (e.g., `http://apache.default.svc.cluster.local:80/server-status?auto`)
 and make sure the `<Location>` `Require` allows the Collector pod's
 network. The Collector can run as a sidecar or DaemonSet.
 
-**How do I monitor multiple Apache instances?**
+### How do I monitor multiple Apache instances?
 
 Add multiple receiver blocks with distinct names, then include both in the
 pipeline:
@@ -337,7 +337,7 @@ service:
       receivers: [apache/web1, apache/web2]
 ```
 
-**What is the scoreboard metric?**
+### What is the scoreboard metric?
 
 `apache.scoreboard` reports how many worker slots are in each state -
 open, starting, waiting, reading, sending, keepalive, DNS lookup, closing,

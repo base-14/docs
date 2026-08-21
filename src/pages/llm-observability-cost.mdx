@@ -10,46 +10,6 @@ import Head from "@docusaurus/Head";
     name="keywords"
     content="llm observability cost, llm monitoring platform, langfuse cost, llm observability, ai observability cost, unified llm monitoring, llm monitoring tool"
   />
-  <script type="application/ld+json">
-    {JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      mainEntity: [
-        {
-          "@type": "Question",
-          name: "How much does LLM observability cost with separate tools?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Running a standalone LLM monitoring tool like Langfuse or Helicone alongside an infrastructure platform like Datadog typically costs $15K-36K per month or more, combined. The infrastructure platform alone accounts for the majority of that spend, and the LLM tool adds an additional monthly cost on top.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Can you monitor LLM workloads without a separate tool?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Yes. OpenTelemetry GenAI semantic conventions allow LLM telemetry to flow through the same pipeline as infrastructure metrics, logs, and traces. Unified observability platforms like base14 Scout include LLM monitoring natively with no add-on cost.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "What is the main problem with running separate LLM and infrastructure monitoring?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Running them separately gives you two dashboards, two billing models, and no correlation between them. When an LLM incident is caused by infrastructure issues like memory pressure or network latency, you cannot trace across the boundary without manual investigation across tools.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "How does signal-based pricing reduce LLM observability cost?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Signal-based pricing charges per event regardless of payload size. LLM telemetry is high-cardinality by nature, with prompt content, token counts, and model metadata. On GB-based platforms this rich metadata inflates your bill. Signal-based pricing keeps costs predictable.",
-          },
-        },
-      ],
-    })}
-  </script>
 </Head>
 
 # LLM observability cost: why two monitoring stacks cost more than one

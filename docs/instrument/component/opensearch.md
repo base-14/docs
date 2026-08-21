@@ -434,7 +434,7 @@ on a busy cluster it dominates cardinality.
 
 ## FAQ
 
-**Does this work with OpenSearch running in Kubernetes?**
+### Does this work with OpenSearch running in Kubernetes?
 
 Yes. Set `targets` to the OpenSearch service DNS
 (e.g., `opensearch-cluster.opensearch.svc.cluster.local:9200`). The
@@ -442,7 +442,7 @@ prometheus-exporter plugin must be present in the container image - bake it
 into a custom image or install it via an init container. The Collector can
 run as a sidecar or a DaemonSet.
 
-**How do I monitor an OpenSearch cluster with multiple nodes?**
+### How do I monitor an OpenSearch cluster with multiple nodes?
 
 Add each node endpoint to the scrape config:
 
@@ -472,7 +472,7 @@ the node. For cluster-wide monitoring the `opensearch_indices_*` aggregate
 is usually enough; reach for the per-index family during an incident or a
 capacity review.
 
-**Why do counters show up as gauges?**
+### Why do counters show up as gauges?
 
 This plugin reports its counter-like series as Prometheus gauges, so the
 receiver ingests them as Gauge. Apply `rate()` / delta in the backend to read
@@ -480,7 +480,7 @@ them as rates, and expect a reset to 0 on a node restart. The receiver honors
 the exporter's `# TYPE` line, so any series the exporter does label `counter`
 arrives as a Sum.
 
-**Can I use this instead of the OpenSearch Dashboards monitoring?**
+### Can I use this instead of the OpenSearch Dashboards monitoring?
 
 Yes. The plugin exposes the same underlying cluster and node statistics.
 The OTel Collector approach centralizes those metrics alongside the rest of

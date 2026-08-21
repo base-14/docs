@@ -334,7 +334,7 @@ near zero until data is written.
 
 ## FAQ
 
-**Why use the JMX Scraper instead of the OTel JMX receiver?**
+### Why use the JMX Scraper instead of the OTel JMX receiver?
 
 The JMX Scraper is a standalone process - it connects to the NameNode's
 JMX endpoint over RMI and pushes OTLP, so the Collector needs no JRE
@@ -342,7 +342,7 @@ inside its container. The `hadoop` target ships predefined rules
 (`jmx/rules/hadoop.yaml`) that map `FSNamesystem` MBeans to stable metric
 names, so you do not write pattern rules by hand.
 
-**Does this work with Hadoop running in Kubernetes?**
+### Does this work with Hadoop running in Kubernetes?
 
 Yes. Enable remote JMX on the NameNode pod, then run the scraper as a
 sidecar or a separate Deployment with `OTEL_JMX_SERVICE_URL` pointing at
@@ -350,13 +350,13 @@ the NameNode service DNS
 (e.g., `service:jmx:rmi:///jndi/rmi://namenode.hadoop.svc.cluster.local:1026/jmxrmi`).
 Inject JMX credentials via a Kubernetes secret when auth is enabled.
 
-**Does the scraper collect YARN or ResourceManager metrics?**
+### Does the scraper collect YARN or ResourceManager metrics?
 
 No. The `hadoop` target reads NameNode `FSNamesystem` state only - HDFS
 storage health and namespace scale. YARN / ResourceManager and
 per-DataNode MBeans are out of scope for this target.
 
-**Why is request latency missing from the metrics?**
+### Why is request latency missing from the metrics?
 
 The `hadoop` target exposes `FSNamesystem` gauges and counters, not
 per-request timing. Operation latency lives in the NameNode / DataNode

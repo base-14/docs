@@ -348,14 +348,14 @@ metrics are on by default.)
 
 ## FAQ
 
-**Does this work with Traefik running in Kubernetes?**
+### Does this work with Traefik running in Kubernetes?
 
 Yes. Set `targets` to the Traefik pod or service DNS
 (e.g., `traefik.traefik.svc.cluster.local:8082`). With the Traefik Helm
 chart, set `metrics.prometheus.entryPoint` (and the label options) in
 `values.yaml`. The Collector can run as a sidecar or DaemonSet.
 
-**How do I monitor multiple Traefik instances?**
+### How do I monitor multiple Traefik instances?
 
 Add all Traefik metrics endpoints to the scrape config:
 
@@ -374,7 +374,7 @@ receivers:
 Each instance is scraped independently and identified by its `instance`
 label.
 
-**What is the difference between entrypoint, router, and service metrics?**
+### What is the difference between entrypoint, router, and service metrics?
 
 The same request is counted at three scopes. Entrypoint metrics count all
 traffic arriving at a port (including traffic that matched no router).
@@ -383,7 +383,7 @@ Router metrics break it down by routing rule after rule matching (e.g.
 Entrypoint counts are therefore greater than or equal to router and service
 counts; the gap is unrouted traffic such as edge 404s.
 
-**Why use a separate metrics entrypoint?**
+### Why use a separate metrics entrypoint?
 
 Serving metrics on the same port as production traffic exposes them on your
 public entrypoints. A dedicated metrics entrypoint on a separate port (e.g.

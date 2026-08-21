@@ -20,16 +20,6 @@ keywords:
   - kubernetes observability
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why one Collector for the cluster instead of one per node?","acceptedAnswer":{"@type":"Answer","text":"The k8s_cluster receiver reads from the API server, which holds the state of every object in the cluster. A single Collector sees everything; running one per node would produce duplicate metrics for the same cluster-scope objects."}},{"@type":"Question","name":"What is the difference between the k8s_cluster receiver and the kubeletstats receiver?","acceptedAnswer":{"@type":"Answer","text":"The k8s_cluster receiver reports object state from the API server - replica counts, phases, conditions. The kubeletstats receiver reads each node's kubelet for actual runtime resource usage - CPU, memory, network, filesystem. They are complementary: state versus usage."}},{"@type":"Question","name":"Why is k8s.pod.phase a number?","acceptedAnswer":{"@type":"Answer","text":"The receiver encodes phase as an integer (1=Pending, 2=Running, 3=Succeeded, 4=Failed, 5=Unknown) so it can be stored and queried as a gauge. Map the value back to the phase name when building dashboards."}},{"@type":"Question","name":"Do I need the Kubernetes events stream?","acceptedAnswer":{"@type":"Answer","text":"No. Metrics work on their own. The k8sobjects events-to-logs stream is optional and useful when you want scheduling, scaling, and probe events alongside the state metrics."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 # K8s Cluster
 
 The OpenTelemetry Collector's `k8s_cluster` receiver watches the
@@ -311,27 +301,27 @@ the API server.
 
 ## FAQ
 
-**Why one Collector for the cluster instead of one per node?**
+### Why one Collector for the cluster instead of one per node?
 
 The `k8s_cluster` receiver reads from the API server, which holds the
 state of every object in the cluster. A single Collector sees
 everything; running one per node would produce duplicate metrics for
 the same cluster-scope objects.
 
-**What is the difference between this and the kubeletstats receiver?**
+### What is the difference between k8s_cluster and kubeletstats receivers?
 
 The `k8s_cluster` receiver reports object state from the API server -
 replica counts, phases, conditions. The `kubeletstats` receiver reads
 each node's kubelet for actual runtime resource usage - CPU, memory,
 network, filesystem. They are complementary: state versus usage.
 
-**Why is `k8s.pod.phase` a number?**
+### Why is `k8s.pod.phase` a number?
 
 The receiver encodes phase as an integer (1=Pending, 2=Running,
 3=Succeeded, 4=Failed, 5=Unknown) so it can be stored and queried as a
 gauge. Map the value back to the phase name when building dashboards.
 
-**Do I need the events stream?**
+### Do I need the Kubernetes events stream?
 
 No. Metrics work on their own. The `k8sobjects` events-to-logs stream
 is optional and useful when you want scheduling, scaling, and probe

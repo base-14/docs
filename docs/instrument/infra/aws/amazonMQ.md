@@ -18,16 +18,6 @@ keywords:
   ]
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I monitor AWS Amazon MQ with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Use CloudWatch Metrics Stream for broker metrics like CPU, memory, connection counts, and message counts, and for RabbitMQ add the OpenTelemetry RabbitMQ receiver for node-level internals. Both feed into base14 Scout."}},{"@type":"Question","name":"What Amazon MQ metrics does CloudWatch collect?","acceptedAnswer":{"@type":"Answer","text":"AWS/AmazonMQ metrics include CpuUtilization, HeapUsage for ActiveMQ, RabbitMQMemUsed and RabbitMQDiskFree for RabbitMQ, ConsumerCount, ProducerCount, MessageCount, MessageReadyCount, MessageUnacknowledgedCount, and connection and network metrics."}},{"@type":"Question","name":"Should I use CloudWatch Metrics Stream or Prometheus for Amazon MQ?","acceptedAnswer":{"@type":"Answer","text":"CloudWatch Metrics Stream is recommended. It needs no per-broker exporter, integrates natively with AWS, and delivers metrics in 3-5 minutes end-to-end. Add the RabbitMQ receiver only when you need node-level internals."}},{"@type":"Question","name":"How do I collect Amazon MQ broker logs with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Use the AWS CloudWatch Logs receiver in the OpenTelemetry Collector with your Amazon MQ log group name. Enable general or audit logging on the broker first so the log group has data."}},{"@type":"Question","name":"How do I set up alerts for Amazon MQ?","acceptedAnswer":{"@type":"Answer","text":"Route metrics through CloudWatch Metrics Stream to base14 Scout, then alert on rising MessageReadyCount, ConsumerCount dropping to zero on an active queue, CpuUtilization above 85%, memory or heap above 85%, and StorePercentUsage above 85%."}},{"@type":"Question","name":"Can I monitor both RabbitMQ and ActiveMQ with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Yes. CloudWatch Metrics Stream supports both engines. RabbitMQ additionally supports the OpenTelemetry RabbitMQ receiver for node-level metrics, while ActiveMQ internals come from CloudWatch or JMX."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 ## Overview
 
 This guide covers collecting Amazon MQ broker and queue metrics (connection
@@ -299,38 +289,38 @@ namespace.
 
 ## FAQ
 
-**How do I monitor AWS Amazon MQ with OpenTelemetry?**
+### How do I monitor AWS Amazon MQ with OpenTelemetry?
 
 Use CloudWatch Metrics Stream for broker metrics (CPU, memory, connections,
 message counts) and, for RabbitMQ, add the OTel RabbitMQ receiver for
 node-level internals. Both feed into base14 Scout.
 
-**What Amazon MQ metrics does CloudWatch collect?**
+### What Amazon MQ metrics does CloudWatch collect?
 
 AWS/AmazonMQ metrics including `CpuUtilization`, `HeapUsage` (ActiveMQ),
 `RabbitMQMemUsed` and `RabbitMQDiskFree` (RabbitMQ), `ConsumerCount`,
 `ProducerCount`, `MessageCount`, `MessageReadyCount`, and
 `MessageUnacknowledgedCount`, plus connection and network metrics.
 
-**Should I use CloudWatch Metrics Stream or Prometheus for Amazon MQ?**
+### Should I use CloudWatch Metrics Stream or Prometheus for Amazon MQ?
 
 CloudWatch Metrics Stream is recommended: no per-broker exporter, native AWS
 integration, and 3-5 minute end-to-end delivery. Add the RabbitMQ receiver
 only when you need node-level internals.
 
-**How do I collect Amazon MQ broker logs with OpenTelemetry?**
+### How do I collect Amazon MQ broker logs with OpenTelemetry?
 
 Use the AWS CloudWatch Logs receiver in the Collector with your Amazon MQ log
 group name. Enable general or audit logging on the broker first so the group
 has data.
 
-**How do I set up alerts for Amazon MQ?**
+### How do I set up alerts for Amazon MQ?
 
 Route metrics through CloudWatch Metrics Stream to Scout, then alert on rising
 `MessageReadyCount`, `ConsumerCount` dropping to zero, `CpuUtilization` above
 85%, memory or heap above 85%, and `StorePercentUsage` above 85%.
 
-**Can I monitor both RabbitMQ and ActiveMQ with OpenTelemetry?**
+### Can I monitor both RabbitMQ and ActiveMQ with OpenTelemetry?
 
 Yes. CloudWatch Metrics Stream covers both engines. RabbitMQ additionally
 supports the OTel RabbitMQ receiver for node-level metrics; ActiveMQ internals

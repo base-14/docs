@@ -30,19 +30,6 @@ keywords:
   ]
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does OpenTelemetry work with zoneless Angular?","acceptedAnswer":{"@type":"Answer","text":"Yes. Angular 21 and later are zoneless by default. Register the OpenTelemetry WebTracerProvider with the default StackContextManager by calling provider.register() with no arguments. The browser-to-API trace links through the W3C traceparent header, which is independent of the context manager, so distributed tracing works the same with or without zone.js."}},{"@type":"Question","name":"Do I need zone.js for OpenTelemetry in Angular?","acceptedAnswer":{"@type":"Answer","text":"No. zone.js is optional in modern Angular. You only need the ZoneContextManager (and zone.js) if you want an interaction's asynchronous work nested under the interaction span inside the browser. Distributed tracing to your API and database works without zone.js because it relies on the traceparent header, not the context manager."}},{"@type":"Question","name":"Why is my Angular browser span in a different trace than my API span?","acceptedAnswer":{"@type":"Answer","text":"The traceparent header is not reaching your API. Two causes: the request URL is not listed in propagateTraceHeaderCorsUrls, so OpenTelemetry does not inject the header on cross-origin calls; or your API's CORS policy does not allow the traceparent and tracestate headers, so the browser strips them. Fix both the SDK config and the API CORS allow-list."}},{"@type":"Question","name":"Should I record Core Web Vitals as spans or metrics in Angular?","acceptedAnswer":{"@type":"Answer","text":"Record them as metric histograms. Core Web Vitals are reported as fleet-wide distributions (Google scores at p75), and a Histogram instrument aggregates into buckets so the backend computes p75 and p95 without storing every event. A short-lived span per vital works for debugging one session but does not aggregate into percentiles, so metrics are the better fit for real user monitoring."}},{"@type":"Question","name":"How do I trace Angular route changes?","acceptedAnswer":{"@type":"Answer","text":"The OpenTelemetry web auto-instrumentations cover document load, fetch, XHR, and user interactions, but not Angular's client-side Router. Subscribe to Router.events, filter for NavigationEnd, and emit a span per navigation with the resolved route path as an attribute."}},{"@type":"Question","name":"How do I capture uncaught Angular errors with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Emit them as ERROR logs. Provide a custom Angular ErrorHandler that calls logger.emit with SeverityNumber.ERROR; provideBrowserGlobalErrorListeners() forwards the window error and unhandledrejection events into it, so a plain window.onerror listener misses framework-intercepted errors. For failed HTTP requests, an HttpClient interceptor emits a log that carries the active trace id."}},{"@type":"Question","name":"Why are my Angular browser metrics or logs missing?","acceptedAnswer":{"@type":"Answer","text":"Traces call provider.register(), which sets the global tracer, but metrics and logs have no such sugar. You must call metrics.setGlobalMeterProvider() and logs.setGlobalLoggerProvider() during bootstrap. Without the global set, getMeter() and getLogger() return a No-op implementation and every data point is silently dropped."}},{"@type":"Question","name":"Does Angular HttpClient go through the OpenTelemetry fetch instrumentation?","acceptedAnswer":{"@type":"Answer","text":"Yes. In Angular 22 the fetch backend is the default for HttpClient and withFetch() is deprecated, so HttpClient requests run through fetch() and are captured by instrumentation-fetch, which also injects the traceparent header."}},{"@type":"Question","name":"How do I send Angular browser telemetry to a collector on another origin?","acceptedAnswer":{"@type":"Answer","text":"The browser posts OTLP over HTTP directly from the SPA origin, so the collector's OTLP HTTP receiver must allow that origin via CORS. Add every origin the SPA is served from to the receiver's allowed_origins list."}},{"@type":"Question","name":"Can I use Core Web Vitals with OpenTelemetry in Angular?","acceptedAnswer":{"@type":"Answer","text":"Yes. The web-vitals library reports CLS, INP, LCP, FCP, and TTFB through callbacks. Record each as a Histogram measurement when its callback fires, tagged with the page path and the rating, so page performance aggregates into p75 and p95 alongside your request traces."}}]})}
-  </script>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"HowTo","name":"Instrument an Angular application with OpenTelemetry traces, metrics, and logs","step":[{"@type":"HowToStep","name":"Install packages","text":"Install the OpenTelemetry browser SDK for traces, metrics, and logs, the web auto-instrumentations, the OTLP HTTP exporters, and web-vitals."},{"@type":"HowToStep","name":"Configure collector CORS and pipelines","text":"Enable CORS on the collector's OTLP HTTP receiver for every SPA origin, and add traces, metrics, and logs pipelines."},{"@type":"HowToStep","name":"Bootstrap the SDK","text":"In main.ts before bootstrapApplication, register the WebTracerProvider and call setGlobalMeterProvider and setGlobalLoggerProvider so all three signals are captured from document load onward."},{"@type":"HowToStep","name":"Propagate trace context","text":"Set propagateTraceHeaderCorsUrls to your API origin and allow the traceparent and tracestate headers in the API's CORS policy."},{"@type":"HowToStep","name":"Record vitals and errors","text":"Record Core Web Vitals as metric histograms and emit uncaught errors and failed requests as ERROR logs."},{"@type":"HowToStep","name":"Run and verify","text":"Run the stack, trigger a request, and confirm one trace spans the browser, the API, and the database, with metrics and correlated logs alongside."}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 ```mdx-code-block
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -1285,7 +1272,7 @@ browser strips them). Fix both. If instead you are looking at a lone backend
 `OPTIONS` trace, that is the CORS preflight - preflights cannot carry
 `traceparent`, so the real request is the one that links.
 
-### Should I record Core Web Vitals as spans or metrics?
+### Should I record Core Web Vitals as spans or metrics in Angular?
 
 Record them as metric histograms. Core Web Vitals are fleet-wide distributions
 (Google scores at p75), and a `Histogram` aggregates into buckets so the backend
@@ -1322,7 +1309,7 @@ In `main.ts`, before `bootstrapApplication`, so the document-load span and early
 interactions are captured. Wire router tracing from the root component
 constructor, because the Router is only available through dependency injection.
 
-### Does Angular HttpClient go through the fetch instrumentation?
+### Does Angular HttpClient go through the OpenTelemetry fetch instrumentation?
 
 Yes. In Angular 22, `fetch` is the default `HttpClient` backend and
 `withFetch()` is deprecated, so HttpClient requests run through `fetch()` and are

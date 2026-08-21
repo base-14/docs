@@ -450,19 +450,19 @@ status to the console.
 
 ## FAQ
 
-**What's the difference between `native_crash` and `app_crash`?**
+### What's the difference between `native_crash` and `app_crash`?
 
 iOS emits both for one crash: `native_crash` carries the full KSCrash
 detail (registers, mach exception, symbolicated tree), and `app_crash`
 is the cross-platform crash record (parity with Android). Dedupe in
 dashboards by crash fingerprint if you want a single row.
 
-**Do I need to add ScoutNative separately?**
+### Do I need to add ScoutNative separately?
 
 No — depending on the `Scout` product pulls the `ScoutNative`
 xcframework in transitively.
 
-**Can I add custom spans, metrics, or logs?**
+### Can I add custom spans, metrics, or logs?
 
 Yes — `recordSpan`, `emitGauge`, and `log*` are the manual entry
 points.

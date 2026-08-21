@@ -516,13 +516,13 @@ families show persistence pressure.
 
 ## FAQ
 
-**Does this work with RabbitMQ running in Kubernetes?**
+### Does this work with RabbitMQ running in Kubernetes?
 
 Yes. Set `endpoint` to the RabbitMQ management service DNS (for example
 `http://rabbitmq.default.svc.cluster.local:15672`) and inject credentials
 via a Kubernetes secret. The Collector can run as a sidecar or DaemonSet.
 
-**How do I monitor a RabbitMQ cluster?**
+### How do I monitor a RabbitMQ cluster?
 
 The management API returns cluster-wide data from any node. Point the
 receiver at one node and you get metrics for all nodes. For redundancy,
@@ -540,13 +540,13 @@ receivers:
     password: ${env:RABBITMQ_PASSWORD}
 ```
 
-**What permissions does the monitoring account need?**
+### What permissions does the monitoring account need?
 
 The `monitoring` user tag is required for management API access. No queue
 read/write permissions are needed - the Collector only reads metrics and
 does not modify RabbitMQ data.
 
-**Does this work with both RabbitMQ 3.x and 4.x?**
+### Does this work with both RabbitMQ 3.x and 4.x?
 
 The receiver reads the management HTTP API, which works on both 3.x and
 4.x, but the node-metric set is not identical. RabbitMQ 4.x deprecates
@@ -557,7 +557,7 @@ meaningful from 4.2 onward. The Core and Operational signals in this
 guide still collect on 4.x; for the fullest metric set on 4.x, RabbitMQ
 recommends scraping its Prometheus plugin.
 
-**Why do I only see node metrics and no message metrics?**
+### Why do I only see node metrics and no message metrics?
 
 You have no queues yet. The queue-level metrics (`rabbitmq.message.*`,
 `rabbitmq.consumer.count`) come from `/api/queues` and need at least one

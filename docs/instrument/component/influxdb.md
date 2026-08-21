@@ -320,20 +320,20 @@ offending bucket; `storage_bucket_measurement_num` narrows it to a measurement.
 
 ## FAQ
 
-**Does this work with InfluxDB running in Kubernetes?**
+### Does this work with InfluxDB running in Kubernetes?
 
 Yes. Set `targets` to the InfluxDB service DNS endpoint (for example
 `influxdb.default.svc.cluster.local:8086`). The `/metrics` endpoint is public in
 2.x, so no token is needed. The Collector can run as a sidecar or DaemonSet.
 
-**Does this work with InfluxDB 1.x or 3.x?**
+### Does this work with InfluxDB 1.x or 3.x?
 
 This guide targets InfluxDB 2.x. The `prometheus` receiver will scrape a 1.x or
 3.x (Core / Enterprise) endpoint, but those versions expose different metric
 sets - the names here (`storage_*`, `qc_*`, `http_api_*`) are 2.x-specific.
 Expect different families on 1.x and 3.x.
 
-**Why are the storage metrics reading zero?**
+### Why are the storage metrics reading zero?
 
 The TSM storage-engine families (`storage_cache_*`, `storage_wal_*`,
 `storage_tsm_files_*`, `storage_compactions_*`) and the `qc_*` query-controller
@@ -341,14 +341,14 @@ families warm up under traffic - they populate only after writes, queries, and
 compactions occur. A fresh idle server shows mostly `http_*` / `influxdb_*` /
 `go_*`. Send a write and a query and re-scrape.
 
-**How do I track and stop runaway series cardinality?**
+### How do I track and stop runaway series cardinality?
 
 Watch `storage_bucket_series_num`, the per-bucket series count. A sharp rise
 signals a high-cardinality tag; find the tag with unbounded values and stop
 writing it as a tag. Cardinality drives InfluxDB memory, so this is the metric
 to alert on early.
 
-**What about the OTel InfluxDB receiver?**
+### What about the OTel InfluxDB receiver?
 
 The `influxdbreceiver` in the Collector Contrib receives InfluxDB line-protocol
 writes - it acts as an InfluxDB-compatible write endpoint, not a metrics

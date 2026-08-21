@@ -29,16 +29,6 @@ keywords:
   ]
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why are no traces appearing from my Slim OpenTelemetry setup?","acceptedAnswer":{"@type":"Answer","text":"Check collector logs with docker compose logs otel-collector. Verify Scout credentials are set correctly. Ensure OTEL_PHP_AUTOLOAD_ENABLED=true is set. Check the extension is loaded with php -m | grep opentelemetry."}},{"@type":"Question","name":"Why is the OpenTelemetry PHP extension not loaded?","acceptedAnswer":{"@type":"Answer","text":"Verify extension installation with pecl list | grep opentelemetry. Check php.ini includes the extension directive. Restart PHP-FPM if using FastCGI."}},{"@type":"Question","name":"Why are no MongoDB spans appearing in my Slim application?","acceptedAnswer":{"@type":"Answer","text":"Verify opentelemetry-auto-mongodb is installed with composer show | grep auto-mongodb. Confirm OTEL_PHP_AUTOLOAD_ENABLED=true is set. Check that the mongodb PHP extension is loaded with php -m | grep mongodb."}},{"@type":"Question","name":"Why do Slim 3 span names show raw paths instead of route patterns?","acceptedAnswer":{"@type":"Answer","text":"Ensure determineRouteBeforeAppMiddleware is set to true in your Slim 3 settings. Without it, the TelemetryMiddleware cannot read the matched route pattern and span names will contain high-cardinality paths like GET /api/articles/abc123 instead of GET /api/articles/{id}."}},{"@type":"Question","name":"Why is telemetry lost on PHP-FPM process exit?","acceptedAnswer":{"@type":"Answer","text":"PHP-FPM workers can exit before the SDK flushes its buffer. Ensure the shutdown handler is registered and loaded early via src/telemetry.php. Without it, spans from the final request before worker recycling may be lost."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 # Slim Framework
 
 Implement OpenTelemetry instrumentation for Slim Framework applications to
@@ -1097,6 +1087,43 @@ PHP-FPM workers can exit before the SDK flushes its buffer. Ensure the
 [Shutdown handler](#shutdown-handler) is registered and loaded early via
 `src/telemetry.php`. Without it, spans from the final request before worker
 recycling may be lost.
+
+## FAQ
+
+### Why are no traces appearing from my Slim OpenTelemetry setup?
+
+Work through four checks. Read the collector logs with
+`docker compose logs otel-collector`, confirm the Scout credentials are
+set, confirm `OTEL_PHP_AUTOLOAD_ENABLED=true` is exported, and confirm the
+extension is loaded with `php -m | grep opentelemetry`.
+
+### Why is the OpenTelemetry PHP extension not loaded?
+
+Verify the install with `pecl list | grep opentelemetry`, check that
+`php.ini` carries the `extension=opentelemetry.so` directive, and restart
+PHP-FPM if you run under FastCGI. The extension is loaded per SAPI, so a
+CLI check passing does not mean the web request path has it.
+
+### Why are no MongoDB spans appearing in my Slim application?
+
+Confirm `opentelemetry-auto-mongodb` is installed with
+`composer show | grep auto-mongodb`, that `OTEL_PHP_AUTOLOAD_ENABLED=true`
+is set, and that the MongoDB PHP extension itself is loaded with
+`php -m | grep mongodb`.
+
+### Why do Slim 3 span names show raw paths instead of route patterns?
+
+Set `determineRouteBeforeAppMiddleware` to `true` in your Slim 3 settings.
+Without it the telemetry middleware cannot read the matched route pattern,
+so span names carry high-cardinality paths like `GET /api/articles/abc123`
+instead of `GET /api/articles/{id}`.
+
+### Why is telemetry lost when a PHP-FPM process exits?
+
+PHP-FPM workers can exit before the SDK flushes its buffer. Make sure the
+shutdown handler is registered and loaded early through
+`src/telemetry.php`. Without it, spans from the final request before
+worker recycling are dropped.
 
 ## What's Next
 

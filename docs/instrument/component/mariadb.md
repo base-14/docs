@@ -374,13 +374,13 @@ automatically once replication is configured.
 
 ## FAQ
 
-**Why does this use the MySQL receiver?**
+### Why does this use the MySQL receiver?
 
 MariaDB is wire-compatible with MySQL - both use the MySQL protocol for
 client connections. The Collector's `mysql` receiver works against MariaDB
 without modification. There is no separate MariaDB receiver.
 
-**Does this work with MariaDB Galera Cluster?**
+### Does this work with MariaDB Galera Cluster?
 
 Yes. Add a receiver block per node with distinct names:
 
@@ -398,18 +398,18 @@ receivers:
 
 Then include both in the pipeline: `receivers: [mysql/node1, mysql/node2]`.
 
-**Does this work with MariaDB running in Kubernetes?**
+### Does this work with MariaDB running in Kubernetes?
 
 Yes. Set `endpoint` to the MariaDB service DNS
 (e.g., `mariadb.default.svc.cluster.local:3306`) and inject credentials via
 a Kubernetes secret. The Collector can run as a sidecar or DaemonSet.
 
-**What permissions does the monitoring account need?**
+### What permissions does the monitoring account need?
 
 `PROCESS`, `REPLICATION CLIENT`, and `SELECT` on `performance_schema`. No
 write access is required - the Collector only reads metrics.
 
-**Where is per-query latency?**
+### Where is per-query latency?
 
 The receiver exposes counters and gauges, not per-request timing.
 `mysql.query.slow.count` flags queries over `long_query_time`; for digest

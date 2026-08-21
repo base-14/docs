@@ -20,16 +20,6 @@ keywords:
   - tidb telemetry collection
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Which ports and path does TiDB use for metrics?","acceptedAnswer":{"@type":"Answer","text":"TiDB is three component types, each with its own Prometheus /metrics endpoint: PD on port 2379, TiKV on status port 20180, and TiDB on status port 10080. The Collector runs one prometheus scrape job per component type, all at metrics_path /metrics. No SQL login is involved - these are HTTP status endpoints, not the MySQL wire protocol on port 4000."}},{"@type":"Question","name":"Do I need a MySQL monitoring user like the mysqlreceiver needs?","acceptedAnswer":{"@type":"Answer","text":"No. Unlike the MySQL receiver, which connects over the MySQL wire protocol with a GRANT-ed monitoring user, TiDB's metrics come from plain HTTP status endpoints on PD, TiKV, and TiDB. Access setup is exposing those status ports (2379, 20180, 10080) to the Collector, not creating a CREATE USER / GRANT monitoring account."}},{"@type":"Question","name":"What does pd_cluster_status with store_up_count report in TiDB?","acceptedAnswer":{"@type":"Answer","text":"The number of TiKV stores PD currently considers live. In a healthy cluster it equals the store count; a drop signals a store PD can no longer reach. Single-node MySQL has no analogue - this is a distributed-cluster liveness signal."}},{"@type":"Question","name":"Why monitor tso_monitor_time_jump_back_total in TiDB?","acceptedAnswer":{"@type":"Answer","text":"PD's timestamp oracle (TSO) issues the timestamps TiDB uses to order every transaction. tso_monitor_time_jump_back_total increments when PD's physical clock moves backwards, which puts transaction ordering at risk. A rising counter means you should check the PD host clock and NTP."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 # TiDB
 
 TiDB is a distributed, MySQL-wire-compatible SQL database: the SQL layer
@@ -435,7 +425,7 @@ PD's etcd disk is the bottleneck behind leader flaps.
 
 ## FAQ
 
-**Which ports and path does TiDB use for metrics?**
+### Which ports and path does TiDB use for metrics?
 
 TiDB is three component types, each with its own Prometheus `/metrics`
 endpoint: PD on `2379`, TiKV on status port `20180`, and TiDB on status port
@@ -443,7 +433,7 @@ endpoint: PD on `2379`, TiKV on status port `20180`, and TiDB on status port
 all at `metrics_path` `/metrics`. No SQL login is involved - these are HTTP
 status endpoints, not the MySQL wire protocol on port `4000`.
 
-**Do I need a MySQL monitoring user like the `mysqlreceiver` needs?**
+### Do I need a MySQL monitoring user like the `mysqlreceiver` needs?
 
 No. Unlike the MySQL receiver, which connects over the MySQL wire protocol
 with a `GRANT`-ed monitoring user, TiDB's metrics come from plain-HTTP status
@@ -451,7 +441,7 @@ endpoints on PD, TiKV, and TiDB. Access setup is exposing those status ports
 (`2379`, `20180`, `10080`) to the Collector, not creating a `CREATE USER` /
 `GRANT` monitoring account.
 
-**How do I monitor all the stores in a cluster?**
+### How do I monitor all the stores in a cluster?
 
 Add every TiKV store's `host:20180` to the `tidb-tikv` job's
 `static_configs.targets`, every PD's `host:2379` to `tidb-pd`, and every TiDB
@@ -459,14 +449,14 @@ node's `host:10080` to `tidb-tidb`. Each instance serves only its own series,
 tagged with `job` and `instance`, so scraping each one is what makes the
 per-store region and replication tiers work.
 
-**What does `pd_cluster_status{type="store_up_count"}` report?**
+### What does `pd_cluster_status{type="store_up_count"}` report?
 
 The number of TiKV stores PD currently considers live. In a healthy cluster it
 equals the store count; a drop signals a store PD can no longer reach.
 Single-node MySQL has no analogue - this is a distributed-cluster liveness
 signal.
 
-**Why monitor `tso_monitor_time_jump_back_total`?**
+### Why monitor `tso_monitor_time_jump_back_total`?
 
 PD's timestamp oracle (TSO) issues the timestamps TiDB uses to order every
 transaction. `tso_monitor_time_jump_back_total` increments when PD's physical

@@ -20,16 +20,6 @@ keywords:
   ]
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How does the Prometheus CloudWatch exporter work?","acceptedAnswer":{"@type":"Answer","text":"The Prometheus CloudWatch exporter polls the CloudWatch GetMetricData API for the namespaces and metrics you list in its config and exposes them at /metrics on port 9106. The OpenTelemetry Collector's Prometheus receiver scrapes that endpoint and forwards the metrics to base14 Scout over OTLP."}},{"@type":"Question","name":"Do I need a public endpoint to pull CloudWatch metrics?","acceptedAnswer":{"@type":"Answer","text":"No. The exporter and the Collector reach out to the CloudWatch API; nothing inbound is required. This is the main operational advantage of the pull approach over Firehose HTTP endpoint delivery."}},{"@type":"Question","name":"What IAM permissions does the CloudWatch exporter need?","acceptedAnswer":{"@type":"Answer","text":"cloudwatch:GetMetricData, cloudwatch:GetMetricStatistics, cloudwatch:ListMetrics, and tag:GetResources. These are read-only and can be granted through an IAM user, an instance role, or EKS Pod Identity or IRSA."}},{"@type":"Question","name":"How fresh are metrics pulled through the exporter?","acceptedAnswer":{"@type":"Answer","text":"Freshness is the scrape interval plus CloudWatch's own metric-availability delay, which is typically a couple of minutes. This is slower than the push approaches, so choose pull when scrape-model fit and metric selection matter more than latency. To control cost, select only the metrics you need and raise period_seconds, or use YACE for tag-based discovery with batched GetMetricData."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 ## Overview
 
 This guide pulls AWS CloudWatch metrics using the
@@ -384,26 +374,26 @@ that the exporter is listening on 9106.
 
 ## FAQ
 
-**How does the Prometheus CloudWatch exporter work?**
+### How does the Prometheus CloudWatch exporter work?
 
 The Prometheus CloudWatch exporter polls the CloudWatch `GetMetricData` API
 for the namespaces and metrics you list in its config and exposes them at
 `/metrics` on port 9106. The OpenTelemetry Collector's Prometheus receiver
 scrapes that endpoint and forwards the metrics to base14 Scout over OTLP.
 
-**Do I need a public endpoint to pull CloudWatch metrics?**
+### Do I need a public endpoint to pull CloudWatch metrics?
 
 No. The exporter and the Collector reach out to the CloudWatch API; nothing
 inbound is required. This is the main operational advantage of the pull
 approach over Firehose HTTP endpoint delivery.
 
-**What IAM permissions does the CloudWatch exporter need?**
+### What IAM permissions does the CloudWatch exporter need?
 
 `cloudwatch:GetMetricData`, `cloudwatch:GetMetricStatistics`,
 `cloudwatch:ListMetrics`, and `tag:GetResources`. These are read-only and can
 be granted through an IAM user, an instance role, or EKS Pod Identity or IRSA.
 
-**How fresh are metrics pulled through the exporter?**
+### How fresh are metrics pulled through the exporter?
 
 Freshness is the scrape interval plus CloudWatch's own metric-availability
 delay, which is typically a couple of minutes. This is slower than the push

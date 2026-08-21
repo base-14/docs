@@ -808,28 +808,28 @@ collector on the host.
 
 ## FAQ
 
-**Does scroll tracking work on FlatList?**
+### Does scroll tracking work on FlatList?
 
 Yes. The SDK patches `RN.ScrollView`'s lazy getter at module load —
 since `FlatList → VirtualizedList → ScrollView`, every list's
 `onScroll` flows through the same observer. Custom `ScrollView`
 subclasses you don't pull from `react-native` won't be tracked.
 
-**Will the babel plugin break my existing `onPress` handlers?**
+### Will the babel plugin break my existing `onPress` handlers?
 
 No. The plugin's wrapper preserves `this` binding, forwards all
 arguments, returns the original handler's return value, and uses a
 `typeof === 'function'` guard so the call short-circuits cleanly when
 the SDK isn't loaded.
 
-**What if I'm on React Native 0.71 (old architecture)?**
+### What if I'm on React Native 0.71 (old architecture)?
 
 Mostly fine. The babel plugin works on any React/Babel version >= 7.
 The `ScrollView` lazy-getter patch relies on RN's `react-native/index.js`
 using lazy `get`-based exports — this has been the case since RN 0.60.
 KSCrash 2.5+ requires iOS 13.0 minimum.
 
-**Can I use this with React Navigation v6 AND v7?**
+### Can I use this with React Navigation v6 AND v7?
 
 Yes. The integration depends only on `NavigationContainerRef`'s
 `addListener('state', fn)` API which is stable across both major

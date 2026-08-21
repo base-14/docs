@@ -22,17 +22,20 @@ keywords:
   - base14 scout azure redis
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I add Azure Cache for Redis metrics to my existing OpenTelemetry Collector?","acceptedAnswer":{"@type":"Answer","text":"Add the azure_auth extension and an azure_monitor receiver scoped to Microsoft.Cache/Redis, route the receiver into a metrics pipeline that exports to Scout via the oauth2client-authenticated OTLP/HTTP exporter, and grant the collector's service principal Monitoring Reader at the resource group containing your cache. The receiver polls Azure Monitor's REST API every 60 seconds. Basic tier emits a smaller metric subset than Standard, Premium, and Enterprise; the receiver returns whatever the resource publishes without erroring on tier-gated metrics. The collector itself does not connect to Redis on port 6380 and does not need the cache's primary access key."}},{"@type":"Question","name":"What is the difference between cache-managed metrics and self-hosted Redis metrics?","acceptedAnswer":{"@type":"Answer","text":"Azure Cache for Redis publishes metrics through Azure Monitor at a 1-minute aggregation granularity with resource-level dimensions only. Self-hosted Redis exposes raw INFO output that the OTel redisreceiver scrapes every poll interval, producing per-key and per-database metrics that Azure Monitor does not surface. Pick the azure_monitor approach when running PaaS Cache for Redis. Pick the redisreceiver approach when running Redis on a VM, in a container, in Kubernetes, or on-premises. Both pipelines can coexist if you operate hybrid deployments."}},{"@type":"Question","name":"Why is my Cache for Redis hit rate under 50% on a freshly-deployed cache?","acceptedAnswer":{"@type":"Answer","text":"Cold-cache misses dominate the first traffic window after a deploy because every key is a miss until the application has populated the working set. Hit rate climbs as keys are written and read back. Wait for at least 10 to 30 minutes of representative production traffic before reading the cachemissrate metric as an SLI. Sustained low hit rate after warm-up is a workload-fit signal: the application is asking for keys it never wrote (cache key drift) or TTLs are firing faster than the access pattern (TTL too aggressive)."}},{"@type":"Question","name":"How do I monitor the SKU connection cap on Basic versus Premium?","acceptedAnswer":{"@type":"Answer","text":"The connectedclients metric publishes both Average and Maximum aggregations. Alert on the Maximum approaching the SKU's documented cap: Basic C0 at 256, Basic C1 at 1000, Basic C2 at 2000, Standard C1 at 1000, Premium P1 at 7500 scaling up to 40000 on P5. Saturation manifests as MAX_CLIENTS_REACHED errors at the application layer; pre-saturation alerting on connectedclients_maximum at 80 percent of the SKU's documented cap gives time to scale the cache or pool clients before traffic fails. Look up the cap for your specific SKU when setting the threshold rather than assuming a single value."}},{"@type":"Question","name":"Should I run Cache for Redis Diagnostic Logs through this metrics collector?","acceptedAnswer":{"@type":"Answer","text":"No. Cache for Redis exposes two Diagnostic Settings categories - ConnectedClientList and MSEntraAuthenticationAuditLog - but both emit data only on Premium tier per Microsoft documentation. On Premium, the recommended pattern is Diagnostic Settings forwarding to Event Hubs with the azureeventhubreceiver ingesting events as OTel logs in the same collector. That fragment is documented separately. On Basic and Standard tiers, the categories are listed by the API but no log data is emitted, so wiring the log pipeline produces nothing useful. Stay with the metrics-only configuration in this guide unless you operate Premium fleets."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 ## Overview
+
+:::note
+
+Microsoft has announced the retirement of Azure Cache for Redis. The
+Enterprise and Enterprise Flash tiers retire on 31 March 2027, and the Basic,
+Standard, and Premium tiers on 30 September 2028; instances are disabled the
+day after each date. The replacement is Azure Managed Redis, which publishes a
+different metric namespace, so a cache you migrate needs its receiver
+reconfigured. This guide still applies to Cache for Redis instances until you
+move them. See [Microsoft's retirement
+FAQ](https://learn.microsoft.com/en-us/azure/azure-cache-for-redis/retirement-faq).
+
+:::
 
 This guide is the **execution playbook** for Azure Cache for Redis. For
 the cross-surface architecture (auth, push vs pull, latency, the trace
@@ -553,6 +556,64 @@ CPU); the dimensions and aggregation primitives differ. Scout
 dashboards normalise both into the same metric names where
 possible (`azure_cachehits_total` and `aws_elasticache_cachehits_sum`
 unify under one panel via Scout query overlays).
+
+### How do I add Azure Cache for Redis metrics to my existing OpenTelemetry Collector?
+
+Add the `azure_auth` extension and an `azure_monitor` receiver scoped to
+`Microsoft.Cache/Redis`, route the receiver into a metrics pipeline that
+exports to Scout via the `oauth2client`-authenticated OTLP/HTTP exporter,
+and grant the collector's service principal Monitoring Reader at the
+resource group containing your cache. The receiver polls Azure Monitor's
+REST API every 60 seconds. Basic tier emits a smaller metric subset than
+Standard, Premium, and Enterprise; the receiver returns whatever the
+resource publishes without erroring on tier-gated metrics. The collector
+itself does not connect to Redis on port 6380 and does not need the cache's
+primary access key.
+
+### What is the difference between cache-managed metrics and self-hosted Redis metrics?
+
+Azure Cache for Redis publishes metrics through Azure Monitor at a 1-minute
+aggregation granularity with resource-level dimensions only. Self-hosted
+Redis exposes raw `INFO` output that the OTel `redisreceiver` scrapes every
+poll interval, producing per-key and per-database metrics that Azure Monitor
+does not surface. Pick the `azure_monitor` approach when running PaaS Cache
+for Redis. Pick the `redisreceiver` approach when running Redis on a VM, in
+a container, in Kubernetes, or on-premises. Both pipelines can coexist if
+you operate hybrid deployments.
+
+### Why is my Cache for Redis hit rate under 50% on a freshly-deployed cache?
+
+Cold-cache misses dominate the first traffic window after a deploy because
+every key is a miss until the application has populated the working set. Hit
+rate climbs as keys are written and read back. Wait for at least 10 to 30
+minutes of representative production traffic before reading the
+cachemissrate metric as an SLI. A hit rate that stays low after warm-up
+usually means one of two things: the application is asking for keys it never
+wrote (cache key drift), or TTLs are expiring faster than the access pattern
+reads the keys back.
+
+### How do I monitor the SKU connection cap on Basic versus Premium?
+
+The `connectedclients` metric publishes both Average and Maximum
+aggregations. Alert on the Maximum approaching the SKU's documented cap:
+Basic C0 at 256, Basic C1 at 1000, Basic C2 at 2000, Standard C1 at 1000,
+Premium P1 at 7500 scaling up to 40000 on P5. Once the cap is reached, the
+application sees MAX_CLIENTS_REACHED errors, so alert on
+connectedclients_maximum at 80 percent of the cap to leave time to scale the
+cache or pool clients. Look up the cap for your specific SKU when setting the
+threshold rather than assuming a single value.
+
+### Should I run Cache for Redis Diagnostic Logs through this metrics collector?
+
+No. Cache for Redis exposes two Diagnostic Settings categories -
+`ConnectedClientList` and `MSEntraAuthenticationAuditLog` - but both emit
+data only on Premium tier per Microsoft documentation. On Premium, the
+recommended pattern is Diagnostic Settings forwarding to Event Hubs with the
+`azureeventhubreceiver` ingesting events as OTel logs in the same collector.
+That fragment is documented separately. On Basic and Standard tiers, the
+categories are listed by the API but no log data is emitted, so wiring the
+log pipeline produces nothing useful. Stay with the metrics-only
+configuration in this guide unless you operate Premium fleets.
 
 ## Reference
 

@@ -615,7 +615,7 @@ adb reverse tcp:34318 tcp:34318
 
 ## FAQ
 
-**Does scout_flutter work on macOS / web / Linux / Windows desktop?**
+### Does scout_flutter work on macOS / web / Linux / Windows desktop?
 
 iOS and Android are fully supported, including native crash capture.
 macOS works for the Dart-side instrumentation (taps, navigation,
@@ -625,28 +625,29 @@ Dart-side instrumentation — for richer web RUM, use
 `@base14/scout-react` directly in a web app and (for hybrid apps)
 bridge with the WebView bridge.
 
-**Will the SDK ever block my app's boot?**
+### Will the SDK ever block my app's boot?
 
 No. `ScoutFlutter.initialize()` is async and fire-and-forget — wrap
 it in `unawaited(...)` as shown above. If init fails (network down,
 disk full, etc.) the error is swallowed; your app keeps running.
 
-**How big are crash reports on the wire?**
+### How big are crash reports on the wire?
 
 A KSCrash report with full register dump + callstack tree typically
 serializes to 30–80 KB. ApplicationExitInfo tombstones are capped at
 128 KB by default (`maxTombstoneBytes`). They're sent as part of the
 next launch's first batch — each death exactly once.
 
-**Can I add custom spans?**
+### Can I add custom spans?
 
 Yes — the underlying OTel Tracer is accessible. Custom spans go
 through the same beforeSend / sampling / export pipeline as
 auto-instrumented ones.
 
-**Can I emit metrics or logs manually?**
+### Can I emit metrics or logs manually?
 
-Yes:
+Yes. `ScoutFlutter` exposes log and metric helpers that emit through the same
+exporter as the automatic telemetry:
 
 ```dart
 ScoutFlutter.logInfo('checkout started', attributes: {'cart.size': 3});

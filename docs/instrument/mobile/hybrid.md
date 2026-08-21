@@ -394,29 +394,29 @@ Calling `Scout.start` after Flutter has started has no effect. See
 
 ## FAQ
 
-**Do I need to change my Flutter code for hybrid?**
+### Do I need to change my Flutter code for hybrid?
 
 No. The same `ScoutFlutter.initialize` call works. It detects the native SDK and
 delegates automatically. Matching `serviceName` and `endpoint` is the only
 requirement.
 
-**What happens if I use `scout_flutter` 0.1.x in a hybrid app?**
+### What happens if I use `scout_flutter` 0.1.x in a hybrid app?
 
 The `0.1.x` line has no delegation bridge, so both SDKs export independently.
 You get two sessions under one service instead of one unified session.
 
-**Does the bridge change anything for pure-Flutter apps?**
+### Does the bridge change anything for pure-Flutter apps?
 
 Yes. From 0.2.0 the native engine starts alongside the Flutter SDK on both
 platforms, even with no native host. A pure-Flutter app gains a native scope
 with native crash capture and CPU/memory vitals. Flutter telemetry is unchanged.
 
-**Can the two layers use different service names?**
+### Can the two layers use different service names?
 
 No. A different `serviceName` or `endpoint` on either side produces two separate
 services and no session unification.
 
-**Does iOS need a separate native dependency?**
+### Does iOS need a separate native dependency?
 
 No. The iOS engine ships inside `scout_flutter` through the
 `scout-kotlin-multiplatform` Swift package.

@@ -368,21 +368,21 @@ and node families appear immediately.
 
 ## FAQ
 
-**Does this work with Jenkins running in Kubernetes?**
+### Does this work with Jenkins running in Kubernetes?
 
 Yes. Set the scrape target to the Jenkins service DNS endpoint on port
 `8080` (e.g., `jenkins.default.svc.cluster.local:8080`) and bake the
 Prometheus Metrics plugin into the controller image. The Collector can run
 as a sidecar or DaemonSet.
 
-**What is the difference between `up` and `default_jenkins_up`?**
+### What is the difference between `up` and `default_jenkins_up`?
 
 `up` is the prometheus receiver's scrape liveness - `1` means the
 `/prometheus/` endpoint responded. `default_jenkins_up` is the plugin's own
 gauge - `1` means the Jenkins controller itself reports healthy. Alert on
 both: a down endpoint and a down controller are different failures.
 
-**Why is `/prometheus/` empty right after startup?**
+### Why is `/prometheus/` empty right after startup?
 
 The Prometheus plugin collects metrics on a timer
 (`COLLECTING_METRICS_PERIOD_IN_SECONDS`, default `120s`) and serves the last
@@ -390,14 +390,14 @@ cached snapshot. Until the first cycle completes, the endpoint returns `200`
 with an empty body and scrapes carry only `up` and `scrape_*`. Wait one
 collection period.
 
-**Why are there no build metrics?**
+### Why are there no build metrics?
 
 The build families (`jenkins_runs_*`, `default_jenkins_builds_*`) need at
 least one job that has run. A controller with no executed builds shows the
 executor, queue, and node families but no build results. Run a job to
 populate them.
 
-**Should I keep both `vm_*` and `jvm_*`?**
+### Should I keep both `vm_*` and `jvm_*`?
 
 No. `vm_*` is the Dropwizard JVM instrumentation (with the large per-pool
 `vm_memory_*` family) and `jvm_*` is the Prometheus client's own JVM export -

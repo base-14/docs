@@ -21,16 +21,6 @@ tags: [linux, opentelemetry, base14 scout]
 sidebar_position: 3
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I install the OpenTelemetry Collector on Ubuntu or Debian?","acceptedAnswer":{"@type":"Answer","text":"Download the otelcol-contrib .deb package for your architecture (amd64, arm64, or i386) from the official releases, then install it with sudo dpkg -i. The collector registers as a systemd service automatically."}},{"@type":"Question","name":"How do I install the OpenTelemetry Collector on RHEL or CentOS?","acceptedAnswer":{"@type":"Answer","text":"Download the otelcol-contrib .rpm package for your architecture, then install with sudo rpm -ivh. The collector starts as a systemd service with the default config at /etc/otelcol-contrib/config.yaml."}},{"@type":"Question","name":"Where is the default OpenTelemetry Collector config file on Linux?","acceptedAnswer":{"@type":"Answer","text":"The default configuration file is located at /etc/otelcol-contrib/config.yaml. Customize collector options via the OTELCOL_OPTIONS variable in /etc/otelcol-contrib/otelcol-contrib.conf."}},{"@type":"Question","name":"How do I restart the OpenTelemetry Collector service on Linux?","acceptedAnswer":{"@type":"Answer","text":"Run sudo systemctl restart otelcol-contrib after modifying the configuration. Check logs with sudo journalctl -u otelcol-contrib to verify the collector started correctly."}},{"@type":"Question","name":"What are the system requirements for running the OTel Collector on Linux?","acceptedAnswer":{"@type":"Answer","text":"You need a Linux system with systemd, root or sudo access, minimum 512MB RAM, and 1GB free disk space. Packages are available for amd64, arm64, and i386 architectures."}},{"@type":"Question","name":"How do I collect Docker container logs with the OpenTelemetry Collector on Linux?","acceptedAnswer":{"@type":"Answer","text":"Use the filelog receiver to tail /var/lib/docker/containers/*/*-json.log with the container operator, set add_metadata_from_filepath to false, and run the collector as root so it can read the Docker log directory."}},{"@type":"Question","name":"Why does otelcol-contrib validate report a missing endpoint or client ID?","acceptedAnswer":{"@type":"Answer","text":"Environment variables referenced with ${env:...} are only set when systemd starts the service. When you run validate manually, load the environment file first so the values are substituted before the config is parsed."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 # Linux
 
 Install and configure the Scout Collector on Linux systems.
@@ -596,6 +586,50 @@ you configured.
 | `failed to detect a valid log path` from the `container` operator | `add_metadata_from_filepath: true` expects Kubernetes pod log paths | Set `add_metadata_from_filepath: false`. |
 | Config edits have no effect | The collector reads its config only at startup | Run `sudo systemctl restart otelcol-contrib`. |
 | No data arrives, but there are no errors | `filelog` uses `start_at: end`, so only new lines are sent | Generate new activity; historical lines are not backfilled. Use `start_at: beginning` only for testing. |
+
+## FAQ
+
+### How do I install the OpenTelemetry Collector on Ubuntu or Debian?
+
+Download the `otelcol-contrib` `.deb` package for your architecture
+(amd64, arm64, or i386) from the official releases and install it with
+`sudo dpkg -i`. The package registers a systemd service on install.
+
+### How do I install the OpenTelemetry Collector on RHEL or CentOS?
+
+Download the `otelcol-contrib` `.rpm` package for your architecture and
+install it with `sudo rpm -ivh`. The collector starts as a systemd service
+using the default config at `/etc/otelcol-contrib/config.yaml`.
+
+### Where is the default OpenTelemetry Collector config file on Linux?
+
+At `/etc/otelcol-contrib/config.yaml`. Command-line options go in the
+`OTELCOL_OPTIONS` variable in
+`/etc/otelcol-contrib/otelcol-contrib.conf`.
+
+### How do I restart the OpenTelemetry Collector service on Linux?
+
+Run `sudo systemctl restart otelcol-contrib` after editing the config,
+then check `sudo journalctl -u otelcol-contrib` to confirm it came back up
+rather than crash-looping on a config error.
+
+### What are the system requirements for the OTel Collector on Linux?
+
+A systemd-based Linux system, root or sudo access, at least 512MB of RAM,
+and 1GB of free disk. Packages ship for amd64, arm64, and i386.
+
+### How do I collect Docker container logs with the Collector on Linux?
+
+Use the filelog receiver to tail
+`/var/lib/docker/containers/*/*-json.log` with the container operator, set
+`add_metadata_from_filepath` to `false`, and run the collector as root so
+it can read the Docker log directory.
+
+### Why does otelcol-contrib validate report a missing endpoint or client ID?
+
+Environment variables referenced with `${env:...}` are set by systemd when
+it starts the service, not by your shell. Load the environment file first
+so the values are substituted before the config is parsed.
 
 ## Related Guides
 

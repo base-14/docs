@@ -362,7 +362,7 @@ for compaction backlog and on-disk read amplification.
 
 ## FAQ
 
-**Why is there no exporter or JMX agent like Cassandra?**
+### Why is there no exporter or JMX agent like Cassandra?
 
 ScyllaDB is a C++/seastar rewrite of Cassandra, so there is no JVM and no JMX.
 The database process serves a native Prometheus endpoint on `:9180` at
@@ -371,7 +371,7 @@ JAR to download, no `-javaagent` flag, and no `:9404` exporter. The entire
 metric surface is `scylla_*`, with no `jvm_*`, `go_*`, or `process_*` runtime
 families.
 
-**What is the `shard` label on every metric?**
+### What is the `shard` label on every metric?
 
 seastar is shard-per-core: each CPU core is one shard, with its own thread,
 memory, and IO queue. A single-core node has one `shard="0"`; a multi-core
@@ -379,21 +379,21 @@ node emits the same metric once per core. Read saturation per shard
 (`scylla_reactor_utilization`), not just per node - a single hot shard caps
 throughput while the node's aggregate CPU looks idle.
 
-**Does this work with ScyllaDB running in Kubernetes?**
+### Does this work with ScyllaDB running in Kubernetes?
 
 Yes. Point the scrape `targets` at each node's service DNS on `:9180`
 (e.g., `scylla-0.scylla.default.svc.cluster.local:9180`). The Collector can
 run as a sidecar or a Deployment. No credentials are needed for the metrics
 endpoint.
 
-**How do I monitor a multi-node ScyllaDB cluster?**
+### How do I monitor a multi-node ScyllaDB cluster?
 
 Add every node's `:9180` endpoint to the single `scylla` scrape job's
 `targets` list. Each node is scraped independently and identified by its
 `instance` label, and seastar's `shard` label separates per-core series within
 each node.
 
-**Why are some metric families reading zero?**
+### Why are some metric families reading zero?
 
 Families like `scylla_streaming_*`, `scylla_view_*`, and
 `scylla_load_balancer_*` only move on topology change or when materialized

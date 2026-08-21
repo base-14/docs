@@ -320,7 +320,7 @@ runtime side, the Diagnostic `go_*` (goroutine count, GC pauses) and
 
 ## FAQ
 
-**How do I get per-route HTTP metrics?**
+### How do I get per-route HTTP metrics?
 
 Set the `metrics` global option in the Caddyfile global-options block.
 That exposes the `caddy_http_*` series. The labels differ by series:
@@ -329,14 +329,14 @@ latency and size histograms (for example
 `caddy_http_request_duration_seconds`) add `method` and `code`. Without
 it, Caddy exposes only admin API and Go runtime metrics.
 
-**Does this work with Caddy running in Kubernetes?**
+### Does this work with Caddy running in Kubernetes?
 
 Yes. Set the scrape target to the Caddy pod or service DNS on port 2019
 (e.g., `caddy.default.svc.cluster.local:2019`). The admin API must be
 reachable from the Collector pod; keep it on a private interface and
 restrict it with a network policy.
 
-**How do I monitor multiple Caddy instances?**
+### How do I monitor multiple Caddy instances?
 
 Add each instance to the scrape targets:
 
@@ -354,7 +354,7 @@ receivers:
 
 Each instance is identified by its `instance` label.
 
-**Why is the status code missing from `caddy_http_requests_total`?**
+### Why is the status code missing from `caddy_http_requests_total`?
 
 `caddy_http_requests_total` carries only the `server` and `handler`
 labels. The HTTP status `code` lives on the latency histograms
@@ -362,7 +362,7 @@ labels. The HTTP status `code` lives on the latency histograms
 `caddy_http_response_duration_seconds`), so error-rate and per-code
 queries use those `_count` series instead.
 
-**Should I expose the admin API in production?**
+### Should I expose the admin API in production?
 
 No. The admin API has no authentication by default. Bind it to localhost
 or a private interface with the `admin` directive and restrict it with

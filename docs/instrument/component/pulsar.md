@@ -337,14 +337,14 @@ Check `pulsar_ml_AddEntryErrors` for write-path failures.
 
 ## FAQ
 
-**Does this work with Pulsar running in Kubernetes?**
+### Does this work with Pulsar running in Kubernetes?
 
 Yes. Set the Collector's `targets` to the broker's web-port service DNS
 (e.g., `pulsar-broker.pulsar.svc.cluster.local:8080`). With the Apache Pulsar
 Helm chart the broker web port is exposed by default. The Collector can run as
 a sidecar or a DaemonSet.
 
-**What is the difference between standalone and a cluster for monitoring?**
+### What is the difference between standalone and a cluster for monitoring?
 
 Standalone runs the broker, BookKeeper bookie, and functions worker in one
 process, so all metrics come from one `/metrics`. A production cluster splits
@@ -374,14 +374,14 @@ receivers:
 
 Each process is scraped independently and identified by its `instance` label.
 
-**Why do I only see broker-level metrics?**
+### Why do I only see broker-level metrics?
 
 The per-topic, per-subscription, and managed-ledger families populate only once
 a topic exists and has active producers or consumers. An idle standalone shows
 mostly broker-level zeros plus the JVM runtime. Produce and consume on a topic
 to advance them.
 
-**Why are the `pulsar_ml_*` metrics in camel-case?**
+### Why are the `pulsar_ml_*` metrics in camel-case?
 
 The BookKeeper managed-ledger family (`pulsar_ml_AddEntryErrors`,
 `pulsar_ml_ReadEntriesRate`, `pulsar_ml_StoredMessagesSize`, and the rest) keeps

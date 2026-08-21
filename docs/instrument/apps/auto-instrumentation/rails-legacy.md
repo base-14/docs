@@ -22,16 +22,6 @@ keywords:
   ]
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Can I use the all-in-one instrumentation gem with Ruby 3.0?","acceptedAnswer":{"@type":"Answer","text":"No. The -all meta-gem pulls latest versions that require Ruby 3.1+. Use individual instrumentation gems with pinned versions instead."}},{"@type":"Question","name":"Can I use the all-in-one instrumentation gem with Ruby 2.7?","acceptedAnswer":{"@type":"Answer","text":"Not recommended. Use individual instrumentation gems to avoid compatibility issues with gems that require Ruby 3.0+."}},{"@type":"Question","name":"Will my legacy app slow down with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Yes, expect 5-10ms overhead on Ruby 2.7 vs 1-3ms on Ruby 3.x."}},{"@type":"Question","name":"Is Rails 5.2 instrumentation production-ready?","acceptedAnswer":{"@type":"Answer","text":"No. Rails 5.2 support is limited and untested. Upgrade to Rails 6.1+ for production observability."}},{"@type":"Question","name":"Can I run Ruby 2.7 with Rails 7.1?","acceptedAnswer":{"@type":"Answer","text":"No. Rails 7.1 requires Ruby 3.0 or later."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 # Ruby on Rails (Legacy)
 
 > This guide covers Ruby 3.0 (EOL: March 2024), Ruby 2.7 (EOL: March 2023),
@@ -87,9 +77,10 @@ so you must pin gem versions to the last compatible releases.
 ### Why Pinned Versions?
 
 Starting in late 2024, the `opentelemetry-sdk` gem and its dependencies began
-requiring Ruby >= 3.1. Running `bundle update` on a Ruby 3.0 app will pull
-incompatible versions and fail. The configuration below pins every OTel gem to
-its last Ruby 3.0–compatible release.
+raising their Ruby floor; current releases require Ruby >= 3.3. Running
+`bundle update` on a Ruby 3.0 app will pull incompatible versions and fail.
+The configuration below pins every OTel gem to its last Ruby
+3.0–compatible release.
 
 ### Known Limitations
 
@@ -650,7 +641,7 @@ versions and use the latest releases (including
 
 - Rails 6.1 supports Ruby 3.0+
 - Rails 7.0 requires Ruby 2.7+, supports Ruby 3.x
-- Rails 7.1 requires Ruby 3.0+
+- Rails 7.1 requires Ruby 2.7+, supports Ruby 3.x
 
 **Priority 2: Rails Upgrade** (After Ruby is upgraded)
 
@@ -800,6 +791,32 @@ class HealthController < ApplicationController
 end
 ```
 
+## FAQ
+
+### Can I use the all-in-one instrumentation gem on Ruby 2.7 or 3.0?
+
+No. The `opentelemetry-instrumentation-all` meta-gem pulls the latest
+versions of its dependencies, and those now require Ruby 3.3 or later. On
+either runtime the install fails or resolves to gems that break at runtime.
+Install individual instrumentation gems with pinned versions instead.
+
+### Will my legacy Rails app slow down with OpenTelemetry?
+
+Expect roughly 5-10ms of added latency per request on Ruby 2.7, against
+1-3ms on Ruby 3.x. The gap comes from the older runtime, not from the SDK
+configuration.
+
+### Is Rails 5.2 instrumentation production-ready?
+
+No. Rails 5.2 support is limited and untested. Upgrade to Rails 6.1 or
+later before relying on this instrumentation in production.
+
+### Can I run Ruby 2.7 with Rails 7.1?
+
+Yes. Rails 7.1 requires Ruby 2.7.0 or newer, so the combination is supported.
+Rails 7.2 is the release that raises the floor to Ruby 3.1, so upgrade the
+Ruby runtime before going past 7.1.
+
 ## Getting Help
 
 ### Community Resources
@@ -810,32 +827,6 @@ end
   [Rails upgrade guides](https://guides.rubyonrails.org/upgrading_ruby_on_rails.html)
 - **base14 Scout**: For help with legacy versions,
   [contact the base14 team](mailto:support@base14.io)
-
-### Common Questions
-
-**Q: Can I use the all-in-one instrumentation gem with Ruby 3.0?**
-
-A: No. The `-all` meta-gem pulls latest versions that require Ruby 3.1+. Use
-individual instrumentation gems with pinned versions instead (see
-[Ruby 3.0 / Rails 6.1](#ruby-30--rails-61)).
-
-**Q: Can I use the all-in-one instrumentation gem with Ruby 2.7?**
-
-A: Not recommended. Use individual instrumentation gems to avoid compatibility
-issues with gems that require Ruby 3.0+.
-
-**Q: Will my legacy app slow down with OpenTelemetry?**
-
-A: Yes, expect 5-10ms overhead on Ruby 2.7 vs 1-3ms on Ruby 3.x.
-
-**Q: Is Rails 5.2 instrumentation production-ready?**
-
-A: No. Rails 5.2 support is limited and untested. Upgrade to Rails 6.1+ for
-production observability.
-
-**Q: Can I run Ruby 2.7 with Rails 7.1?**
-
-A: No. Rails 7.1 requires Ruby 3.0 or later.
 
 ## Related Guides
 

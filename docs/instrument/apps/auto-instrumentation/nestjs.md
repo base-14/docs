@@ -41,16 +41,6 @@ keywords:
   ]
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does OpenTelemetry work with NestJS dependency injection?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry fully supports NestJS DI. TracingModule can be imported and services are automatically traced when called from instrumented controllers."}},{"@type":"Question","name":"What is the performance impact of OpenTelemetry on NestJS applications?","acceptedAnswer":{"@type":"Answer","text":"With BatchSpanProcessor, expect 0.5-2ms added latency per request, 2-5% CPU increase, and 15-35MB additional memory. Minimal impact for most production workloads."}},{"@type":"Question","name":"Can I trace TypeORM and Prisma queries in NestJS with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"The SQL these ORMs issue is traced at the driver level by instrumentation-pg (or the matching driver package) in the auto-instrumentations bundle. ORM-level spans for TypeORM, Prisma, and Sequelize need their own instrumentation packages, which are not part of auto-instrumentations-node."}},{"@type":"Question","name":"How do I trace BullMQ background jobs in NestJS?","acceptedAnswer":{"@type":"Answer","text":"BullMQ has no dedicated auto-instrumentation package. The Redis commands it issues are traced by instrumentation-ioredis. Add a manual span in the processor with trace.getTracer() and propagate trace context through the job data to link the job to the request that enqueued it."}},{"@type":"Question","name":"Does OpenTelemetry work with NestJS microservices?","acceptedAnswer":{"@type":"Answer","text":"Yes, OpenTelemetry traces distributed NestJS microservices automatically. Context propagates across HTTP, gRPC, and message queue boundaries for end-to-end visibility."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 # NestJS
 
 :::note Running this in production
@@ -1307,7 +1297,7 @@ for (const user of users) {
 Yes, OpenTelemetry fully supports NestJS DI. TracingModule can be imported and
 services are automatically traced when called from instrumented controllers.
 
-### What's the performance impact on NestJS applications?
+### What is the performance impact of OpenTelemetry on NestJS applications?
 
 With BatchSpanProcessor, expect +0.5-2ms latency per request, +2-5% CPU, and
 +15-35MB memory. Minimal impact for most production workloads.
@@ -1319,7 +1309,7 @@ The SQL these ORMs issue is traced at the driver level by `instrumentation-pg`
 spans for TypeORM, Prisma, and Sequelize need their own instrumentation packages,
 which are not part of `auto-instrumentations-node`.
 
-### How do I trace BullMQ background jobs?
+### How do I trace BullMQ background jobs in NestJS?
 
 BullMQ has no dedicated auto-instrumentation package. The Redis commands it
 issues are traced by `instrumentation-ioredis`, so add a manual span in the
@@ -1356,6 +1346,13 @@ aggregate performance data (counters, histograms). Both are supported.
 
 Yes, use interceptors or method decorators to add custom spans. Access metadata
 using `Reflector` and add attributes to active spans.
+
+### Can I trace TypeORM and Prisma queries in NestJS with OpenTelemetry?
+
+The SQL these ORMs issue is traced at the driver level by `instrumentation-
+pg` (or the matching driver package) in the auto-instrumentations bundle.
+ORM-level spans for `TypeORM`, Prisma, and `Sequelize` need their own
+instrumentation packages, which are not part of auto-instrumentations-node.
 
 ## What's Next?
 

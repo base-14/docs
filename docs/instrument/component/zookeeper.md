@@ -324,7 +324,7 @@ during the same investigation.
 
 ## FAQ
 
-**Does this work with ZooKeeper running in Kubernetes?**
+### Does this work with ZooKeeper running in Kubernetes?
 
 Yes. Set `endpoint` to the ZooKeeper service DNS
 (e.g., `zookeeper.default.svc.cluster.local:2181`). The Collector can run as a
@@ -332,7 +332,7 @@ sidecar or DaemonSet. Make sure the 4LW whitelist is configured in the
 StatefulSet pod spec (`ZOO_4LW_COMMANDS_WHITELIST=mntr,ruok,srvr`), or the
 receiver reads nothing.
 
-**How do I monitor a ZooKeeper ensemble?**
+### How do I monitor a ZooKeeper ensemble?
 
 Add a receiver block per node with distinct names:
 
@@ -350,13 +350,13 @@ Then include all of them in the pipeline:
 `receivers: [zookeeper/node1, zookeeper/node2, zookeeper/node3]`. The
 leader-only metrics emit from whichever node is currently the leader.
 
-**Does this receiver work with the ZooKeeper Prometheus metrics provider?**
+### Does this receiver work with the ZooKeeper Prometheus metrics provider?
 
 No. If `metricsProvider.className` is set to `PrometheusMetricsProvider`, the
 `mntr` output format changes and the receiver cannot parse it. Use the default
 metrics provider with this receiver.
 
-**What resource attributes are added to metrics?**
+### What resource attributes are added to metrics?
 
 The receiver stamps `server.state` (leader, follower, or standalone) and
 `zk.version` as resource attributes on every emitted metric.

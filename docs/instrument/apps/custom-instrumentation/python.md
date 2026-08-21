@@ -16,16 +16,6 @@ keywords:
   ]
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I add custom spans to a Python application with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Install opentelemetry-api and opentelemetry-sdk, initialize a TracerProvider with a BatchSpanProcessor, then use tracer.start_as_current_span() as a context manager or decorator to create custom spans. Export them to base14 Scout via the OTLP exporter."}},{"@type":"Question","name":"What Python packages are needed for OpenTelemetry custom instrumentation?","acceptedAnswer":{"@type":"Answer","text":"You need opentelemetry-api, opentelemetry-sdk, and opentelemetry-exporter-otlp. Optionally install opentelemetry-semantic-conventions for standardized span attributes."}},{"@type":"Question","name":"How do I create custom metrics in Python with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Initialize a MeterProvider with PeriodicExportingMetricReader and OTLPMetricExporter, then call meter.create_counter() or meter.create_histogram() to record custom metrics. base14 Scout displays these metrics in dashboards."}},{"@type":"Question","name":"How do I extract trace and span IDs in Python for log correlation?","acceptedAnswer":{"@type":"Answer","text":"Call trace.get_current_span() to get the active span, then access span_context.trace_id and span_context.span_id. Format them as hex strings for use in structured logging or debugging."}},{"@type":"Question","name":"Can I create nested spans in Python OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Yes. Nest tracer.start_as_current_span() context managers inside each other. OpenTelemetry automatically links child spans to their parent, creating a complete trace hierarchy visible in base14 Scout."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 # Python
 
 Implement OpenTelemetry custom instrumentation for `Python` applications to
@@ -393,6 +383,40 @@ def traced_function():
         # Use these IDs for log correlation or debugging
         print(f"Processing operation with trace: {trace_id}, span: {span_id}")
 ```
+
+## FAQ
+
+### How do I add custom spans to a Python application with OpenTelemetry?
+
+Install `opentelemetry-api` and `opentelemetry-sdk`, initialize a
+`TracerProvider` with a `BatchSpanProcessor`, then use
+`tracer.start_as_current_span()` as a context manager or a decorator. The
+OTLP exporter sends the spans to Scout.
+
+### What Python packages are needed for OpenTelemetry custom instrumentation?
+
+`opentelemetry-api`, `opentelemetry-sdk`, and
+`opentelemetry-exporter-otlp`. Add `opentelemetry-semantic-conventions` if
+you want the standard attribute names rather than hand-written strings.
+
+### How do I create custom metrics in Python with OpenTelemetry?
+
+Initialize a `MeterProvider` with a `PeriodicExportingMetricReader` and
+`OTLPMetricExporter`, then call `meter.create_counter()` or
+`meter.create_histogram()` to record values. Scout reads them without extra
+configuration.
+
+### How do I extract trace and span IDs in Python for log correlation?
+
+Call `trace.get_current_span()` to get the active span, then read
+`span_context.trace_id` and `span_context.span_id`. Format both as hex
+strings before putting them in structured logs.
+
+### Can I create nested spans in Python OpenTelemetry?
+
+Yes. Nest `tracer.start_as_current_span()` context managers inside each
+other and OpenTelemetry links each child to its parent automatically,
+producing the full trace hierarchy in Scout.
 
 ## Related Guides
 

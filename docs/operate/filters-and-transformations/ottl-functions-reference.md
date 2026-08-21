@@ -17,16 +17,6 @@ keywords:
   - ottl playground
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is OTTL in OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"OTTL (OpenTelemetry Transformation Language) is a domain-specific language for transforming telemetry data inside the OpenTelemetry Collector. It works with the transform processor to modify spans, metrics, and logs using editor functions (set, delete_key, replace_pattern) and converter functions (ParseJSON, Concat, Int, IsMatch)."}},{"@type":"Question","name":"What is the difference between OTTL editors and converters?","acceptedAnswer":{"@type":"Answer","text":"Editors modify telemetry data in place — they change, delete, or rearrange fields (e.g., set, delete_key, flatten). Converters are pure functions that return a value without side effects — they parse, hash, format, or check types (e.g., ParseJSON, SHA256, IsMatch). Editors appear as standalone statements; converters are used as arguments inside other functions."}},{"@type":"Question","name":"How do I test OTTL expressions before deploying?","acceptedAnswer":{"@type":"Answer","text":"Use the OTTL Playground at ottl.run to test expressions interactively. Paste sample telemetry data, write your OTTL statements, and see transformed output immediately. For production validation, run the Collector locally with debug logging enabled and a small sample of real traffic."}},{"@type":"Question","name":"What contexts does OTTL support?","acceptedAnswer":{"@type":"Answer","text":"OTTL operates in signal-specific contexts: resource, scope, span, and spanevent for traces; resource, scope, metric, and datapoint for metrics; resource, scope, and log for logs. Each context determines which paths (fields) are accessible. For example, span context gives access to span.name, span.attributes, and span.status, while log context provides body, severity_text, and log attributes."}},{"@type":"Question","name":"How do I check conditions across multiple spans in OTTL?","acceptedAnswer":{"@type":"Answer","text":"OTTL contexts are hierarchical — a span statement can access resource and scope fields but cannot inspect other spans in the same trace. To filter individual spans, use where clauses (e.g., delete() where attributes[\"http.target\"] == \"/health\"). For cross-span decisions like sampling based on error spans in a trace, use the tail sampling processor instead of OTTL."}},{"@type":"Question","name":"How do I use ParseJSON in OTTL?","acceptedAnswer":{"@type":"Answer","text":"Use ParseJSON(body) to convert a JSON string into a map, then access fields with bracket notation: set(attributes[\"level\"], ParseJSON(body)[\"level\"]). Guard with a where IsString(body) clause since ParseJSON fails on non-string inputs. Set error_mode to ignore if log bodies contain mixed formats."}},{"@type":"Question","name":"How do I delete attributes in OTTL?","acceptedAnswer":{"@type":"Answer","text":"Use delete_key(attributes, \"key_name\") to remove a single attribute, delete_matching_keys(attributes, \"pattern.*\") to remove all attributes matching a regex, or keep_keys(attributes, [\"key1\", \"key2\"]) to remove everything except the listed keys."}},{"@type":"Question","name":"What is error_mode in the OTTL transform processor?","acceptedAnswer":{"@type":"Answer","text":"error_mode controls what happens when an OTTL statement fails. Set it to propagate (default) to halt the pipeline, ignore to skip the failed statement and continue, or silent to skip without logging. Use ignore during development and when processing mixed-format data where some records will not match your statements."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 # OTTL Functions Reference
 
 OTTL (OpenTelemetry Transformation Language) is the built-in language for
@@ -620,6 +610,68 @@ config.
 - **Monitor Collector resources.** Complex OTTL pipelines (regex, JSON
   parsing) add CPU and memory overhead. Profile with `pprof` under
   production load.
+
+## FAQ
+
+### What is OTTL in OpenTelemetry?
+
+OTTL, the OpenTelemetry Transformation Language, is a domain-specific
+language for transforming telemetry inside the Collector. It runs in the
+transform processor and modifies spans, metrics, and logs through editor
+functions such as `set`, `delete_key`, and `replace_pattern`, and
+converter functions such as `ParseJSON`, `Concat`, `Int`, and `IsMatch`.
+
+### What is the difference between OTTL editors and converters?
+
+Editors modify telemetry in place, changing, deleting, or rearranging
+fields (`set`, `delete_key`, `flatten`). Converters are pure functions
+that return a value with no side effects (`ParseJSON`, `SHA256`,
+`IsMatch`). Editors stand alone as statements; converters appear as
+arguments inside other functions.
+
+### How do I test OTTL expressions before deploying?
+
+Use the OTTL Playground at `ottl.run` for interactive testing: paste
+sample telemetry, write the statements, and see the transformed output.
+Before production, run the Collector locally with debug logging and a
+small sample of real traffic.
+
+### What contexts does OTTL support?
+
+Signal-specific ones: `resource`, `scope`, `span`, and `spanevent` for
+traces; `resource`, `scope`, `metric`, and `datapoint` for metrics; and
+`resource`, `scope`, and `log` for logs. The context determines which
+paths are reachable, so span context exposes `span.name` and
+`span.attributes` while log context exposes `body` and `severity_text`.
+
+### How do I check conditions across multiple spans in OTTL?
+
+You cannot. OTTL contexts are hierarchical, so a span statement can read
+resource and scope fields but never another span in the same trace. Use
+`where` clauses to filter individual spans, and the tail sampling
+processor for decisions that depend on the whole trace.
+
+### How do I use ParseJSON in OTTL?
+
+Call `ParseJSON(body)` to turn a JSON string into a map, then index it:
+`set(attributes["level"], ParseJSON(body)["level"])`. Guard it with a
+`where IsString(body)` clause, since `ParseJSON` fails on non-string
+input, and set `error_mode` to `ignore` when log bodies are mixed format.
+
+### How do I delete attributes in OTTL?
+
+Use `delete_key(attributes, "key_name")` for one attribute,
+`delete_matching_keys(attributes, "pattern.*")` for everything matching a
+regex, or `keep_keys(attributes, ["key1", "key2"])` to drop everything
+except the keys you list.
+
+### What is error_mode in the OTTL transform processor?
+
+`error_mode` decides what happens when a statement fails. `propagate`,
+the default, halts the pipeline. `ignore` skips the failed statement and
+continues. `silent` skips it without logging. Use `ignore` during
+development and when processing mixed-format data that some statements
+will not match.
 
 ## Related Guides
 

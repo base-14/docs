@@ -362,7 +362,7 @@ TTL churn is reshaping the working set.
 
 ## FAQ
 
-**Why is there no exporter or `redis` receiver like Redis?**
+### Why is there no exporter or `redis` receiver like Redis?
 
 DragonflyDB serves a native Prometheus endpoint on the main port `:6379` at
 `/metrics`, multiplexed with the Redis protocol and on by default. You scrape
@@ -371,20 +371,20 @@ no `redis` receiver, no TCP `AUTH`, and no `INFO`/`COMMAND` parsing. The
 entire metric surface is `dragonfly_*`, with no `jvm_*`, `go_*`, or
 `process_*` runtime families, because DragonflyDB is a single C++ process.
 
-**Does the metrics endpoint need a password?**
+### Does the metrics endpoint need a password?
 
 No. The `/metrics` endpoint is not behind `requirepass` - the scrape is a
 plain HTTP `GET` on `:6379/metrics` and needs no Redis `AUTH`. Your RESP
 clients can still authenticate normally on the same port.
 
-**Does this work with DragonflyDB running in Kubernetes?**
+### Does this work with DragonflyDB running in Kubernetes?
 
 Yes. Point the scrape `targets` at each instance's service DNS on `:6379`
 (e.g., `dragonfly-primary.default.svc.cluster.local:6379`). The Collector can
 run as a sidecar or a Deployment. No credentials are needed for the metrics
 endpoint.
 
-**Why are the replication metrics showing only on one instance?**
+### Why are the replication metrics showing only on one instance?
 
 The replication family is instance-scoped. The replica-only metrics
 (`dragonfly_master_link_status`, `dragonfly_master_last_io_seconds_ago`,

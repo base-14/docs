@@ -361,14 +361,14 @@ leadership currently sits.
 
 ## FAQ
 
-**Does this work with Consul running in Kubernetes?**
+### Does this work with Consul running in Kubernetes?
 
 Yes. Set `targets` to the Consul service DNS
 (e.g., `consul-server.consul.svc.cluster.local:8500`) and make sure
 `prometheus_retention_time` is set in the server config. The Collector
 can run as a sidecar or DaemonSet.
 
-**How do I monitor a multi-node Consul cluster?**
+### How do I monitor a multi-node Consul cluster?
 
 Each Consul agent exposes its own metrics endpoint. Add every server to
 the scrape config:
@@ -392,21 +392,21 @@ receivers:
 Each agent is scraped independently and identified by its `instance`
 label.
 
-**Why are Raft leadership metrics only appearing on one node?**
+### Why are Raft leadership metrics only appearing on one node?
 
 `consul_raft_leader_lastContact` and `consul_raft_leader_dispatchLog`
 are emitted only by the current leader. Other servers emit follower-side
 metrics like `consul_raft_state_follower`. This is expected behavior, not
 a collection gap.
 
-**What does `consul_autopilot_healthy` mean?**
+### What does `consul_autopilot_healthy` mean?
 
 A value of `1` means Autopilot considers the cluster healthy - enough
 voters are alive and reachable. A value of `0` indicates the cluster is
 degraded. Monitor it alongside `consul_raft_peers` and
 `consul_autopilot_failure_tolerance` for the full quorum picture.
 
-**Why do some metrics appear twice with a `consul_consul_` prefix?**
+### Why do some metrics appear twice with a `consul_consul_` prefix?
 
 The cache, FSM, and peering families are emitted under both `consul_<x>`
 and `consul_consul_<x>` (for example `consul_cache_fetch_success` and

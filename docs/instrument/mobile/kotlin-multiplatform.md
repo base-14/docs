@@ -404,13 +404,13 @@ status to the platform console.
 
 ## FAQ
 
-**Do I need to add `scout-android` and `scout-ios` separately?**
+### Do I need to add `scout-android` and `scout-ios` separately?
 
 No. `scout-kmp` depends on them with `api(...)`, so both come in
 transitively at the versions listed under
 [Installation](#installation).
 
-**Does the iOS side go through `ScoutKit`?**
+### Does the iOS side go through `ScoutKit`?
 
 No. `scout-kmp` calls the Kotlin engine (`ScoutEngine`) directly rather
 than the Swift `Scout.start(...)` entry point. KSCrash still installs,
@@ -420,7 +420,7 @@ engine subscribes to MetricKit, so Apple's asynchronous
 `MXCrashDiagnostic` / `MXHangDiagnostic` payloads are collected. The full
 [iOS](/instrument/mobile/ios) capability table applies.
 
-**How do I track screens in a Compose Multiplatform app?**
+### How do I track screens in a Compose Multiplatform app?
 
 Call `Scout.setScreen("Checkout")` from shared code at each navigation
 point. The automatic trackers key off platform view containers
@@ -428,14 +428,14 @@ point. The automatic trackers key off platform view containers
 Multiplatform app presents one host container per platform — so
 automatic screen names collapse to that single host.
 
-**Can I still use the platform-specific APIs?**
+### Can I still use the platform-specific APIs?
 
 Yes. The common `Scout` object exposes the cross-platform surface; from
 `androidMain` you can call `io.base14.scout.android.Scout` directly for
 Android-only helpers such as `NavController.trackScoutScreens()` and
 `setBreadcrumbs(...)`, which have no common equivalent.
 
-**How do I tell KMP telemetry apart from native SDK telemetry?**
+### How do I tell KMP telemetry apart from native SDK telemetry?
 
 Every export carries a `scout.kmp.version` resource attribute. Filter on
 it.

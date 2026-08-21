@@ -20,16 +20,6 @@ keywords:
 sidebar_position: 44
 ---
 
-<!-- markdownlint-disable MD013 MD011 MD033 -->
-
-<head>
-  <script type="application/ld+json">
-    {JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does SQL Server OpenTelemetry monitoring work in Kubernetes?","acceptedAnswer":{"@type":"Answer","text":"Yes. Set the receiver server to the SQL Server service DNS (e.g., sqlserver.default.svc.cluster.local) on port 1433 and inject the monitoring credentials via a Kubernetes secret. The OpenTelemetry Collector can run as a sidecar or a Deployment."}},{"@type":"Question","name":"What permissions does the SQL Server monitoring login need?","acceptedAnswer":{"@type":"Answer","text":"On SQL Server 2022 and later: VIEW SERVER PERFORMANCE STATE plus VIEW ANY DATABASE. On SQL Server 2017-2019: VIEW SERVER STATE plus VIEW ANY DATABASE. No write permissions are needed."}},{"@type":"Question","name":"How do I monitor multiple SQL Server instances with OpenTelemetry?","acceptedAnswer":{"@type":"Answer","text":"Add multiple sqlserver receiver blocks with distinct names (e.g., sqlserver/primary and sqlserver/replica) in the OpenTelemetry Collector config, then include both in the metrics pipeline."}},{"@type":"Question","name":"Why are some default SQL Server metrics missing on a Linux container?","acceptedAnswer":{"@type":"Answer","text":"13 of the sqlserverreceiver default metrics read Windows performance counters and emit nothing on a Linux container by design. On Linux you get the DMV-backed set; running the collector against a Windows SQL Server host adds the Windows-only perfcounter metrics."}},{"@type":"Question","name":"Does this work with Azure SQL Database or Azure SQL Managed Instance?","acceptedAnswer":{"@type":"Answer","text":"This guide targets self-hosted SQL Server. Azure SQL Database and Azure SQL Managed Instance expose metrics through Azure Monitor, which the azuremonitorreceiver collects instead. See the Azure SQL Database guide for the managed path."}}]})}
-  </script>
-</head>
-
-<!-- markdownlint-enable MD013 MD011 -->
-
 # SQL Server
 
 The OpenTelemetry Collector's `sqlserverreceiver` connects to Microsoft
@@ -442,20 +432,20 @@ runs everywhere; the performance-counter path is Windows-only.
 
 ## FAQ
 
-**Does this work with SQL Server running in Kubernetes?**
+### Does this work with SQL Server running in Kubernetes?
 
 Yes. Set the receiver `server` to the SQL Server service DNS
 (e.g., `sqlserver.default.svc.cluster.local`) on port 1433 and inject the
 monitoring credentials via a Kubernetes secret. The Collector can run as a
 sidecar or a Deployment.
 
-**What permissions does the monitoring login need?**
+### What permissions does the SQL Server monitoring login need?
 
 On SQL Server 2022+: `VIEW SERVER PERFORMANCE STATE` plus
 `VIEW ANY DATABASE`. On SQL Server 2017-2019: `VIEW SERVER STATE` plus
 `VIEW ANY DATABASE`. No write permissions are required.
 
-**How do I monitor multiple SQL Server instances?**
+### How do I monitor multiple SQL Server instances with OpenTelemetry?
 
 Add multiple receiver blocks with distinct names, then include both in the
 pipeline:
@@ -479,19 +469,26 @@ service:
       receivers: [sqlserver/primary, sqlserver/replica]
 ```
 
-**Why is a default metric like `sqlserver.transaction_log.usage` missing?**
+### Why is a default metric like `sqlserver.transaction_log.usage` missing?
 
 It is one of the 13 Windows-perfcounter metrics the receiver silently skips
 on Linux. On a Linux instance you can capture log usage indirectly with the
 `sqlquery` receiver, or run the collector on a Windows host for the full set.
 
-**Does this work with Azure SQL Database or Azure SQL Managed Instance?**
+### Does this work with Azure SQL Database or Azure SQL Managed Instance?
 
 This guide targets self-hosted SQL Server. Azure SQL Database and Azure SQL
 Managed Instance expose metrics through Azure Monitor; collect them with the
 `azuremonitorreceiver` instead. See the
 [Azure SQL Database guide](../infra/azure/sql-database.md) for the managed
 path.
+
+### Why are some default SQL Server metrics missing on a Linux container?
+
+13 of the `sqlserverreceiver` default metrics read Windows performance
+counters and emit nothing on a Linux container by design. On Linux you get
+the DMV-backed set; running the collector against a Windows SQL Server host
+adds the Windows-only perfcounter metrics.
 
 ## Related Guides
 

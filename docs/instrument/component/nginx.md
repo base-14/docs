@@ -493,7 +493,7 @@ counts - it has no status codes, error rate, or latency.
 
 ## FAQ
 
-**Why are there three separate collection methods?**
+### Why are there three separate collection methods?
 
 OSS NGINX does not expose all telemetry through a single interface. Metrics come
 from `stub_status` via the exporter, traces require `nginx-module-otel`, and
@@ -501,14 +501,14 @@ logs are read from files. Each needs its own receiver in the Collector pipeline.
 Together they give you the throughput and saturation that metrics cover, plus
 the error rate and latency that only logs and traces can.
 
-**Why is there no error-rate or latency metric?**
+### Why is there no error-rate or latency metric?
 
 `stub_status` is a connection-and-request-count endpoint - it has no HTTP status
 codes, no error rate, and no request latency. That is a limitation of the OSS
 status surface, not the exporter. Use the access logs (`filelog`) for error rate
 and traces (`nginx-module-otel`) for latency.
 
-**Can I use NGINX Plus instead of open-source NGINX?**
+### Can I use NGINX Plus instead of open-source NGINX?
 
 Yes. NGINX Plus provides a richer metrics API at `/api/` that includes
 per-upstream, per-zone, and response-code data - including the error rate and
@@ -517,7 +517,7 @@ NGINX Plus mode: point it at the Plus `/api/` endpoint and it exposes those
 richer metrics (prefixed `nginxplus_*`), which you scrape with the same
 `prometheus` receiver shown above.
 
-**Does this work with NGINX running in Kubernetes?**
+### Does this work with NGINX running in Kubernetes?
 
 Yes. Deploy the `nginx-prometheus-exporter` as a sidecar container in the NGINX
 pod and point the Collector's Prometheus scrape config at the sidecar. For

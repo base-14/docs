@@ -352,14 +352,14 @@ the count.
 
 ## FAQ
 
-**Does this work with Envoy running as an Istio sidecar?**
+### Does this work with Envoy running as an Istio sidecar?
 
 Yes. Each Envoy sidecar exposes its admin interface - set `targets` to the
 sidecar's admin port (typically 15000 in Istio). The Collector can run as a
 DaemonSet to scrape all sidecars on a node, or use Prometheus service
 discovery for dynamic pod targeting.
 
-**How do I monitor multiple Envoy instances?**
+### How do I monitor multiple Envoy instances?
 
 Add all admin endpoints to the scrape config:
 
@@ -379,14 +379,14 @@ receivers:
 
 Each instance is scraped independently and identified by its `instance` label.
 
-**Why are upstream cluster metrics missing?**
+### Why are upstream cluster metrics missing?
 
 Upstream metrics (`envoy_cluster_*`) only appear when Envoy has configured
 clusters with active endpoints. With only a direct-response or passthrough
 configuration, cluster-level metrics are not emitted. Add at least one cluster
 with endpoints to see upstream metrics.
 
-**What does `envoy_server_live` indicate?**
+### What does `envoy_server_live` indicate?
 
 A value of `1` means Envoy is accepting connections and serving requests; `0`
 indicates it is draining or shutting down. It sits in the Operational tier as
