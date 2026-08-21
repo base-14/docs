@@ -6,7 +6,7 @@
 npm run start        # Dev server
 npm run build        # Production build
 npm run check        # Typecheck + markdownlint + content checks + build
-npm run check:content # FAQ schema sync + fact consistency on src/pages
+npm run check:content # Fact consistency on src/pages
 npm run markdownlint # Lint markdown with auto-fix
 ```
 
@@ -21,11 +21,8 @@ npm run markdownlint # Lint markdown with auto-fix
 
 ## Content Checks
 
-`npm run check:content` runs two scripts:
+`npm run check:content` runs one script:
 
-- `scripts/check-faq-schema.mjs` — every FAQPage JSON-LD question and answer
-  must match the visible text on the page. Enforced for `src/pages/`, reported
-  as warnings elsewhere (`--strict` enforces everywhere).
 - `scripts/check-facts.mjs` — checks `src/pages/*.mdx` against
   `src/data/marketing-facts.json`: scenario totals add up and appear on the
   pages that cite them, shared rates agree across pages, forbidden claims stay
@@ -33,6 +30,19 @@ npm run markdownlint # Lint markdown with auto-fix
 
 When a vendor changes a price, edit `marketing-facts.json` first and let the
 checker point at the pages that need updating.
+
+## Structured Data
+
+Never hand-write `FAQPage` or `HowTo` JSON-LD. `src/plugins/faq-schema.ts`
+reads the rendered HTML at build time and emits `FAQPage` for every page with
+a `## FAQ` section holding two or more `###` questions, so the schema cannot
+drift from the visible text. `Organization` is emitted site-wide from
+`headTags` in `docusaurus.config.ts`; Docusaurus emits `BreadcrumbList` and
+`BlogPosting` on its own.
+
+Write FAQ questions as `###` headings under a `## FAQ` heading, phrased the
+way someone would ask them, and open each answer with a sentence that stands
+on its own. That first sentence is what answer engines quote.
 
 ## Doc Sections
 

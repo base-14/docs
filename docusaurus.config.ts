@@ -25,6 +25,31 @@ const config: Config = {
 
   headTags: [
     {
+      tagName: "script",
+      attributes: { type: "application/ld+json" },
+      innerHTML: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "@id": "https://base14.io/#organization",
+        name: "base14",
+        url: "https://base14.io",
+        logo: "https://docs.base14.io/img/logo.svg",
+        description:
+          "base14 builds Scout, an OpenTelemetry-native observability platform for traces, metrics, and logs.",
+        sameAs: [
+          "https://github.com/base-14",
+          "https://www.linkedin.com/company/base14-io",
+          "https://twitter.com/base14io",
+        ],
+        contactPoint: {
+          "@type": "ContactPoint",
+          contactType: "customer support",
+          email: "support@base14.io",
+          url: "https://base14.io/contact",
+        },
+      }),
+    },
+    {
       tagName: "link",
       attributes: {
         rel: "preconnect",
@@ -141,6 +166,7 @@ const config: Config = {
             "/blog/authors",
             "/blog/authors/**",
           ],
+          lastmod: "date",
         },
       } satisfies Preset.Options,
     ],
@@ -148,6 +174,7 @@ const config: Config = {
 
   plugins: [
     require.resolve("./src/plugins/noindex-thin-pages.ts"),
+    require.resolve("./src/plugins/faq-schema.ts"),
     [
       "docusaurus-plugin-llms",
       {

@@ -59,6 +59,10 @@ Check each file for:
 
 6. **Code blocks tagged**: Every fenced code block (```) should have a language identifier (e.g.,```bash, ```json).
 
+7. **FAQ shape**: Under a `## FAQ` heading, every question is its own `###` heading, phrased the way someone would ask it and carrying enough context to make sense on its own. Each answer opens with a sentence that answers the question standalone, before any caveat, list, or code block. That first sentence is what answer engines quote, and the build generates FAQPage schema from these headings.
+
+8. **No hand-written JSON-LD**: Pages should contain no `<script type="application/ld+json">` blocks. `FAQPage` is generated at build time and `Organization` comes from site config.
+
 ---
 
 ### Pass 3 — Writing Quality (AI Tropes)

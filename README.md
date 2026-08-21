@@ -35,7 +35,7 @@ npm start
 | `make clean`    | `npm run clear`       | Clear Docusaurus cache               |
 | `make typecheck`| `npm run typecheck`   | Run TypeScript type checking         |
 | `make lint`     | `npm run markdownlint`| Run markdown linting                 |
-| `make content`  | `npm run check:content`| Check FAQ schema and marketing facts|
+| `make content`  | `npm run check:content`| Check marketing facts consistency    |
 | `make test`     | `npm test`            | Run tests                            |
 | `make check`    | `npm run check`       | Run all checks (typecheck, lint, content, build) |
 
