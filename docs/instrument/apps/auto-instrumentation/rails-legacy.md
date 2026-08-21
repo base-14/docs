@@ -29,7 +29,7 @@ keywords:
 
 This guide covers OpenTelemetry instrumentation for legacy Rails applications
 running on end-of-life Ruby or Rails versions. The latest OTel Ruby gems now
-require Ruby >= 3.1, so users on older versions need pinned gem versions. While
+require Ruby >= 3.3, so users on older versions need pinned gem versions. While
 instrumentation works, these versions are no longer officially maintained or
 tested.
 
@@ -71,7 +71,7 @@ support)
 ## Ruby 3.0 / Rails 6.1
 
 Ruby 3.0 reached EOL in March 2024 and Rails 6.1 in April 2024. Many production
-apps still run this combination. The latest OTel Ruby gems require Ruby >= 3.1,
+apps still run this combination. The latest OTel Ruby gems require Ruby >= 3.3,
 so you must pin gem versions to the last compatible releases.
 
 ### Why Pinned Versions?

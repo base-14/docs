@@ -46,7 +46,7 @@ This guide demonstrates how to:
 
 Before starting, ensure you have:
 
-- **PHP 8.0 or later** installed
+- **PHP 8.1 or later** installed
 - **Composer** for dependency management
 - Basic understanding of OpenTelemetry concepts (traces, spans, attributes)
 

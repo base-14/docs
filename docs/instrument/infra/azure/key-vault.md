@@ -68,7 +68,7 @@ Entra ID.
 | --- | --- |
 | Authentication | Microsoft Entra ID token negotiation per data-plane call (the "Authentication 401 then retry" pattern that dominates `ServiceApiResult` volume). |
 | Data plane | Per-operation counters (SecretGet, SecretSet, KeyGet, etc.) split by activity name and status code. Latency per operation. |
-| Throttling subsystem | `SaturationShoebox` reports proximity to the per-vault, per-region 2000-ops-per-10-second rate limit. |
+| Throttling subsystem | `SaturationShoebox` reports proximity to the per-vault, per-region data-plane rate limit, which varies by operation. |
 | Availability subsystem | `Availability` percentage based on Microsoft's external probes. |
 
 The receiver does not see per-secret breakdowns - Azure Monitor
@@ -211,7 +211,7 @@ single-aggregation, for 6 emitted series in total.
 | `azure_serviceapilatency_maximum` | Gauge | Milliseconds | Peak per-operation latency within the 1-minute aggregation window. Same dimensions as `_average`. |
 | `azure_serviceapiresult_total` | Counter | Count | Per-status-code throughput. Splits by activity + `metadata_statuscode` + `metadata_statuscodeclass`. **The SLI numerator** - split by `metadata_statuscodeclass = '2xx'` for success rate. |
 | `azure_availability_average` | Gauge | Percent | Microsoft's external availability probe result, 0-100. Single series per vault. |
-| `azure_saturationshoebox_average` | Gauge | Percent | Throttling capacity consumed, 0-100. KV's data-plane rate limit is 2000 ops / 10s / vault per region; this metric tracks proximity. **The capacity-planning signal.** |
+| `azure_saturationshoebox_average` | Gauge | Percent | Throttling capacity consumed, 0-100. KV's data-plane limits are per vault per region per 10s and depend on the operation (4,000 for secrets and most transactions, 300 for CREATE/IMPORT, 250-4,000 for key ops); this metric tracks proximity to whichever applies. **The capacity-planning signal.** |
 
 ### Operations notes
 
@@ -283,7 +283,7 @@ Duration (`ServiceApiLatency`).
 
 | Signal | Source metric | Warning | Critical | Notes |
 | --- | --- | --- | --- | --- |
-| **Throttling proximity** | `azure_saturationshoebox_average` | > 70% / 5m | > 90% / 5m | Cap is 2000 ops / 10s / vault / region. Pre-saturation alerting at 70% gives time to scale by sharding secrets or caching values application-side. |
+| **Throttling proximity** | `azure_saturationshoebox_average` | > 70% / 5m | > 90% / 5m | The metric is a percentage of whichever per-operation cap applies, so alert on it directly. Alerting at 70% gives time to shard secrets or cache values application-side. |
 | **Auth failures (data plane)** | `$increase(azure_serviceapiresult_total{metadata_statuscode='401', metadata_activityname!='authentication'})` | > 0 / 5m | > 0 / 1m | Excludes the expected `authentication`/401 noise. Real 401s on `secret*` / `key*` operations indicate stale credentials or revoked role assignments. |
 | **Forbidden (RBAC denial)** | `$increase(azure_serviceapiresult_total{metadata_statuscode='403'})` | > 0 / 5m | > 5 / 1m | A caller has a token but lacks the required data-plane role. Indicates either misconfigured role assignment or attempted privilege escalation. |
 | **Throttled (429)** | `$increase(azure_serviceapiresult_total{metadata_statuscode='429'})` | > 0 / 5m | > 0 / 1m | Rate limit hit. Correlates with `SaturationShoebox` rising; if SaturationShoebox is healthy but 429s appear, suspect a single client burst rather than steady traffic. |
