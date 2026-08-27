@@ -57,7 +57,7 @@ This guide demonstrates how to:
 
 Before starting, ensure you have:
 
-- **.NET 8.0 or later** installed (.NET 9.0 recommended)
+- **.NET 8.0 or later** installed (.NET 10.0 recommended)
 - **Visual Studio 2022**, **VS Code**, or **Rider**
 - **base14 Scout account** with collector endpoint and API key
 - Basic familiarity with async C# and dependency injection

@@ -132,8 +132,11 @@ This guide demonstrates how to:
 
 Before starting, ensure you have:
 
-- **.NET 9.0 SDK** installed (Aspire 13 supports .NET 8+; 9 is recommended).
+- **.NET 10.0 SDK** installed (Aspire 13 supports .NET 8+; 10 is recommended).
   - Verify with `dotnet --version`.
+- **Aspire CLI** installed (`dotnet tool install -g Aspire.Cli`).
+  - AppHost projects that set `AspireUseCliBundle=true` resolve the
+    orchestration and dashboard binaries from the CLI at build time.
 - **Docker Desktop** with Apple Silicon native daemon and Rosetta enabled for
   the `postgres:18.3` x86 image.
 - **base14 Scout account** for OAuth2 export credentials.
@@ -146,16 +149,16 @@ Before starting, ensure you have:
 
 | Component | Minimum | Recommended |
 | --- | --- | --- |
-| .NET SDK | 8.0 | 9.0.308+ |
-| ASP.NET Core | 8.0 | 9.0+ |
-| .NET Aspire (AppHost + Hosting.*) | 9.5 | 13.2.4+ |
-| OpenTelemetry .NET (core) | 1.10 | 1.15.3 |
-| OpenTelemetry.Instrumentation.AspNetCore | 1.10 | 1.15.2 |
-| OpenTelemetry.Instrumentation.Http | 1.10 | 1.15.1 |
+| .NET SDK | 8.0 | 10.0.400+ |
+| ASP.NET Core | 8.0 | 10.0+ |
+| .NET Aspire (AppHost + Hosting.*) | 9.5 | 13.5.2+ |
+| OpenTelemetry .NET (core) | 1.10 | 1.18.0 |
+| OpenTelemetry.Instrumentation.AspNetCore | 1.10 | 1.18.0 |
+| OpenTelemetry.Instrumentation.Http | 1.10 | 1.18.0 |
 | OpenTelemetry.Instrumentation.EntityFrameworkCore | 1.0-rc | 1.15.1-beta.1 (contrib beta) |
-| OpenTelemetry.Instrumentation.Runtime | 1.10 | 1.15.1 |
-| Entity Framework Core | 8.0 | 9.0.15 |
-| Npgsql.EntityFrameworkCore.PostgreSQL | 8.0 | 9.0.4 |
+| OpenTelemetry.Instrumentation.Runtime | 1.10 | 1.18.0 |
+| Entity Framework Core | 8.0 | 10.0.11 |
+| Npgsql.EntityFrameworkCore.PostgreSQL | 8.0 | 10.0.3 |
 | OTel Collector contrib | 0.140 | 0.151.0 |
 
 > Aspire requires .NET 8 minimum. .NET Framework 4.8 is **not** supported.
@@ -173,13 +176,14 @@ Before starting, ensure you have:
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <IsAspireHost>true</IsAspireHost>
+    <AspireUseCliBundle>true</AspireUseCliBundle>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.2.4" />
-    <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="13.2.4" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.5.2" />
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="13.5.2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -202,7 +206,7 @@ the project root SDK stays `Microsoft.NET.Sdk`. Setting
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <IsAspireSharedProject>true</IsAspireSharedProject>
   </PropertyGroup>
 
@@ -211,14 +215,14 @@ the project root SDK stays `Microsoft.NET.Sdk`. Setting
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="9.0.0" />
-    <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" Version="9.0.0" />
-    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.3" />
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.15.3" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.15.2" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.15.1" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.9.0" />
+    <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" Version="10.9.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.18.0" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.18.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.18.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.18.0" />
     <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.15.1-beta.1" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.15.1" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.18.0" />
   </ItemGroup>
 
 </Project>
@@ -632,7 +636,7 @@ on `dotnet restore`; no workload install required.
 
 ### Compose-mode build fails with `useradd: exit code 9`
 
-The .NET 9 runtime image (`mcr.microsoft.com/dotnet/aspnet:9.0`) ships with a
+The .NET runtime image (`mcr.microsoft.com/dotnet/aspnet:10.0`) ships with a
 non-root `app` user pre-created since the .NET 8 release. Drop the `groupadd`
 / `useradd` lines from your Dockerfile and use `USER app` directly.
 
@@ -655,7 +659,7 @@ with OAuth2 authentication.
 
 ### Which .NET and Aspire versions are supported?
 
-.NET 8.0 minimum, .NET 9.0 recommended. Aspire 9.5+ uses the package-only
+.NET 8.0 minimum, .NET 10.0 recommended. Aspire 9.5+ uses the package-only
 AppHost SDK; 13.x is the current generation. .NET Framework 4.8 is not
 supported.
 

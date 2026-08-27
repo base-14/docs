@@ -1517,6 +1517,13 @@ router.get("/health", (req, res) => {
    });
    ```
 
+#### Issue: Redis spans missing after upgrading ioredis
+
+`@opentelemetry/instrumentation-ioredis` patches ioredis versions
+`>=2.0.0 <6` only. On ioredis 6.x the module is not patched, so Redis
+client spans stop appearing while the application continues to work.
+Stay on ioredis 5.x until the instrumentation supports ioredis 6.
+
 #### Issue: Database queries not traced
 
 **Solutions:**

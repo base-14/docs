@@ -294,7 +294,7 @@ spec:
 ```
 
 Use `linux-musl-x64` for Alpine-based images. Pin the image version
-explicitly and verify .NET 9.0 support against the
+explicitly and verify .NET 10.0 support against the
 [auto-instrumentation release notes](https://github.com/open-telemetry/opentelemetry-dotnet-instrumentation/releases)
 for the tag you choose. Do not use `latest`.
 

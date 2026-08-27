@@ -758,7 +758,7 @@ and rely on quota alerts in the Azure portal instead.
 ### Apps-side instrumentation
 
 - [.NET Aspire](../../apps/auto-instrumentation/dotnet-aspire.md) - the
-  canonical Microsoft path for new .NET 9 apps. Emits OTel by default.
+  canonical Microsoft path for new .NET apps. Emits OTel by default.
 - [OpenTelemetry .NET SDK](../../apps/auto-instrumentation/dotnet.md) -
   direct OTel for existing .NET apps not on Aspire.
 - For Python / Node / Java apps, use the OTel SDK for your language

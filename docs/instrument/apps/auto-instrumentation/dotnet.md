@@ -111,7 +111,7 @@ This comprehensive guide demonstrates how to:
 Before starting, ensure you have:
 
 - **.NET 8.0 or later** (LTS version recommended)
-  - .NET 9.0 is recommended for optimal OpenTelemetry support
+  - .NET 10.0 (LTS) is recommended; .NET 9.0 (STS) is out of support
   - .NET 6.0+ is supported but may require additional configuration
 - **ASP.NET Core 8.0 or later** installed
 - **NuGet** for package management
@@ -126,17 +126,16 @@ Before starting, ensure you have:
 
 | Component         | Minimum Version | Recommended Version |
 | ----------------- | --------------- | ------------------- |
-| .NET SDK          | 6.0.0           | 9.0.0+              |
-| ASP.NET Core      | 6.0.0           | 9.0.0+              |
+| .NET SDK          | 6.0.0           | 10.0+               |
+| ASP.NET Core      | 6.0.0           | 10.0+               |
 | OpenTelemetry     | 1.7.0           | 1.11+               |
-| Entity Framework  | 6.0.0           | 9.0.0+              |
+| Entity Framework  | 6.0.0           | 10.0+               |
 
 ## Required Packages
 
 Install the following NuGet packages:
 
 ```bash showLineNumbers
-dotnet add package OpenTelemetry
 dotnet add package OpenTelemetry.Exporter.OpenTelemetryProtocol
 dotnet add package OpenTelemetry.Extensions.Hosting
 dotnet add package OpenTelemetry.Instrumentation.AspNetCore
@@ -149,13 +148,12 @@ Or add them to your `.csproj` file:
 
 ```xml showLineNumbers title="Api.csproj"
 <ItemGroup>
-  <PackageReference Include="OpenTelemetry" Version="1.11.2" />
-  <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.11.2" />
-  <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.11.2" />
-  <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.11.1" />
-  <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.11.1" />
-  <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" Version="1.11.0-beta.1" />
-  <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.11.1" />
+  <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.3" />
+  <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.15.0" />
+  <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.15.0" />
+  <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.15.0" />
+  <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" Version="1.15.1" />
+  <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.15.0" />
 </ItemGroup>
 ```
 
@@ -565,7 +563,7 @@ setup:
 
 ```dockerfile showLineNumbers title="Dockerfile"
 # Build stage
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Copy project files
@@ -577,7 +575,7 @@ COPY . .
 RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
 
 # Runtime stage
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
 # Install curl for healthcheck
@@ -1477,20 +1475,19 @@ OpenTelemetry instrumentation:
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.0" />
-    <PackageReference Include="OpenTelemetry" Version="1.11.2" />
-    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.11.2" />
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.11.2" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.11.1" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.11.1" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" Version="1.11.0-beta.1" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.11.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.11" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.3" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.15.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.15.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.15.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" Version="1.15.1" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.15.0" />
   </ItemGroup>
 
 </Project>
