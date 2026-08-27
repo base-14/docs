@@ -1412,7 +1412,7 @@ stage and its child LLM calls are correctly nested.
 
 ### Related Guides
 
-- [Next.js Instrumentation](./nextjs.md) - Common host for AI SDK applications
+- [Next.js Instrumentation](./nextjs-scout.md) - Common host for AI SDK applications
 - [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)
   \- Manual spans and advanced patterns
 - [All framework guides](/instrument/apps/auto-instrumentation/) -

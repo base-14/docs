@@ -31,7 +31,7 @@ zero-config browser RUM that captures clicks, route changes, fetch and XHR
 calls, errors, Core Web Vitals, and long tasks with a single
 `Scout.initialize()` call. See the
 [React guide](../auto-instrumentation/react.md) or the
-[Next.js guide](../auto-instrumentation/nextjs.md).
+[Next.js guide](../auto-instrumentation/nextjs-scout.md).
 
 Use this guide for vanilla JavaScript, or when you need control over exactly
 which spans are produced.

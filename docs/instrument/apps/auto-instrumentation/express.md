@@ -2046,7 +2046,7 @@ calls in real time.
   trace context into an Express API
 - [NestJS Instrumentation](./nestjs.md) - Structured framework that runs on top
   of Express
-- [Next.js Instrumentation](./nextjs.md) - Full-stack React framework on Node.js
+- [Next.js Instrumentation](./nextjs-scout.md) - Full-stack React framework on Node.js
 - [Fastify Instrumentation](./fastify.md) - High-performance Node.js web
   framework
 - [Hono Instrumentation](./hono.md) - Lightweight, edge-first Node.js framework
