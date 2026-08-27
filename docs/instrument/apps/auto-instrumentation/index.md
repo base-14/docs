@@ -63,7 +63,7 @@ your collector is working first, try the
 | Elysia (Bun)      | [Elysia](./elysia)               | HTTP requests, middleware, structured logging     |
 | tRPC              | [tRPC](./trpc)                   | Procedures, Prisma queries, PostgreSQL            |
 | NestJS            | [NestJS](./nestjs)               | Controllers, services, guards, interceptors       |
-| Next.js           | [Next.js](./nextjs-scout)        | SSR, API routes, server actions — direct OTLP to Scout, no collector |
+| Next.js           | [Next.js](./nextjs-scout)        | SSR, route handlers, outbound fetch — direct OTLP to Scout, no collector |
 | Next.js (full-stack) | [Next.js Full-Stack](./nextjs-fullstack) | Browser + server traces, error boundaries, Web Vitals, OTLP proxy route |
 | Next.js (collector) | [Next.js Collector](./nextjs)  | SSR, API routes, middleware, React components — exports to your collector |
 | Node.js (generic) | [Node.js](./nodejs)              | HTTP, filesystem, child processes                 |

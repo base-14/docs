@@ -102,9 +102,9 @@ hop buys nothing. The general tradeoffs are covered in
 Before starting, ensure you have:
 
 - **Node.js 22 or later**.
-- **Next.js 15 or later** using the App Router. The `instrumentation.ts`
-  register hook and `after()` are both stable from 15. This guide is written
-  against **Next.js 16**.
+- **Next.js 15.1 or later** using the App Router. The `instrumentation.ts`
+  register hook is stable from 15 and `after()` from 15.1. This guide is
+  written against **Next.js 16**.
 - **Scout tenant credentials**: OTLP endpoint, token URL, client ID and client
   secret. [Contact the base14 team](mailto:support@base14.io) if you do not
   have them.
@@ -204,6 +204,12 @@ OTEL_SERVICE_NAME=your-app
 These are the same four values a collector puts in its `oauth2client`
 extension, so an app instrumented this way and a collector in the same tenant
 rotate together.
+
+Put real values in `.env.local` (which `create-next-app` gitignores) and in
+your host's environment settings. Never in `.env`, and never in a commit. A
+build-time check that fails when the secret's literal value appears in a
+client bundle is cheap insurance; one is shown under
+[Security Considerations](#security-considerations).
 
 :::danger Never prefix any of these with `NEXT_PUBLIC_`
 
@@ -669,10 +675,6 @@ export function startTelemetry(): void {
   });
 }
 
-export function serverMeterProvider(): MeterProvider | undefined {
-  return registry().meterProvider;
-}
-
 /**
  * Push everything to Scout before the instance freezes.
  *
@@ -807,11 +809,13 @@ TOKEN=$(curl -s -X POST "$SCOUT_TOKEN_URL" \
   -d client_secret="$SCOUT_CLIENT_SECRET" \
   -d audience=b14collector | jq -r .access_token)
 
-echo "${TOKEN:0:12}..."
+[ -n "$TOKEN" ] && [ "$TOKEN" != null ] && echo "token ok" || echo "no token"
 ```
 
 An `invalid_client` here is a credential problem, not an instrumentation
-problem. Check the `$`-escaping note above first.
+problem. Check the `$`-escaping note above first. Load the variables from
+`.env.local` (`set -a; source .env.local; set +a`) rather than typing the
+secret on the command line, where it lands in shell history.
 
 ### 2. Check the ingest path
 
@@ -841,16 +845,56 @@ The browser holds no credential in this design. If you want RUM alongside these
 server traces, keep it that way: have the browser export to a same-origin
 route that attaches the bearer server-side.
 
+First, a small guard module. The limiter is a cost cap, not a security
+boundary: a serverless platform runs many instances and freezes them
+arbitrarily, so the bucket is per instance and per lifetime. What it reliably
+stops is one looping tab or a naive script turning into unbounded ingest.
+
+```typescript showLineNumbers title="src/lib/telemetry/guard.ts"
+const WINDOW_MS = 60_000;
+const MAX_PER_WINDOW = 120;
+/** Bounded so the map cannot itself become the memory leak. */
+const MAX_TRACKED = 5000;
+
+const hits = new Map<string, { count: number; resetAt: number }>();
+
+export function rateLimit(key: string): boolean {
+  const now = Date.now();
+  const entry = hits.get(key);
+
+  if (!entry || now > entry.resetAt) {
+    if (hits.size > MAX_TRACKED) hits.clear();
+    hits.set(key, { count: 1, resetAt: now + WINDOW_MS });
+    return true;
+  }
+  entry.count++;
+  return entry.count <= MAX_PER_WINDOW;
+}
+
+/** Best-effort client identity. Most hosts set x-forwarded-for at the edge. */
+export function clientKey(req: Request): string {
+  const fwd = req.headers.get('x-forwarded-for');
+  return (fwd?.split(',')[0] ?? req.headers.get('x-real-ip') ?? 'unknown').trim();
+}
+```
+
+Then the route itself:
+
 ```typescript showLineNumbers title="src/app/api/otel/[...signal]/route.ts"
 import { after } from 'next/server';
 import { scoutConfig } from '@/lib/telemetry/config';
+import { clientKey, rateLimit } from '@/lib/telemetry/guard';
 import { getScoutToken } from '@/lib/telemetry/token';
 import { flush } from '@/lib/telemetry/server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+/** Spans can be larger than a metrics batch, but not unboundedly so. */
 const MAX_BYTES = 512 * 1024;
+
+/** The two OTLP/HTTP encodings. Anything else is not a span payload. */
+const CONTENT_TYPES = new Set(['application/json', 'application/x-protobuf']);
 
 export async function POST(
   request: Request,
@@ -864,25 +908,45 @@ export async function POST(
     return new Response(null, { status: 404 });
   }
 
+  // Unconfigured: accept and discard, so a fork or a local run behaves the
+  // same as production from the browser's point of view.
   const cfg = scoutConfig();
-  const token = cfg ? await getScoutToken() : null;
-  if (!token) return new Response(null, { status: 202 });
+  if (!cfg) return new Response(null, { status: 202 });
 
-  const body = await request.arrayBuffer();
+  if (!rateLimit(clientKey(request))) return new Response(null, { status: 429 });
+
+  const contentType = (request.headers.get('content-type') ?? '').split(';')[0];
+  if (!CONTENT_TYPES.has(contentType)) return new Response(null, { status: 415 });
+
+  // Checked before AND after reading: content-length is client-supplied.
+  const declared = Number(request.headers.get('content-length') ?? 0);
+  if (declared > MAX_BYTES) return new Response(null, { status: 413 });
+
+  let body: ArrayBuffer;
+  try {
+    body = await request.arrayBuffer();
+  } catch {
+    return new Response(null, { status: 400 });
+  }
   if (body.byteLength > MAX_BYTES) return new Response(null, { status: 413 });
+
+  const token = await getScoutToken();
+  if (!token) return new Response(null, { status: 202 });
 
   // Relayed BYTE FOR BYTE. The browser stamped service.role=browser on its
   // resource; re-resourcing it here would erase the only thing separating
   // browser spans from server spans in the tenant.
-  await fetch(`${cfg!.endpoint}/v1/traces`, {
-    method: 'POST',
-    headers: {
-      'content-type': request.headers.get('content-type') ?? 'application/json',
-      authorization: `Bearer ${token}`,
-    },
-    body,
-    signal: AbortSignal.timeout(5000),
-  });
+  try {
+    await fetch(`${cfg.endpoint}/v1/traces`, {
+      method: 'POST',
+      headers: { 'content-type': contentType, authorization: `Bearer ${token}` },
+      body,
+      // Telemetry must never be what holds a function open.
+      signal: AbortSignal.timeout(5000),
+    });
+  } catch {
+    // Dropped. Never surface an upstream failure to the browser.
+  }
 
   after(async () => {
     await flush();
@@ -892,15 +956,25 @@ export async function POST(
   // into a probe for whether the tenant and credential are valid.
   return new Response(null, { status: 202 });
 }
+
+/** A GET here is a scanner or a misconfiguration; neither deserves a body. */
+export function GET(): Response {
+  return new Response(null, { status: 405 });
+}
 ```
+
+Because the browser posts same-origin, `connect-src 'self'` in an existing
+Content-Security-Policy already permits it. No Scout origin, tenant id or
+credential is added to the CSP or to the client bundle.
 
 :::warning This is an unauthenticated write path
 
-`/api/otel` accepts POSTs from anyone who can reach your app. Rate-limit it,
-cap the body size, and reject anything that is not `v1/traces`. A per-instance
-token bucket is a cost cap rather than a security boundary — it will not stop a
-distributed sender, but it does stop one looping tab from becoming unbounded
-ingest.
+`/api/otel` accepts POSTs from anyone who can reach your app. The route above
+rate-limits, caps the body, allow-lists the content type and rejects anything
+that is not `v1/traces`. Keep all four. If you later proxy logs or metrics
+too, validate every value that can become a metric attribute against a closed
+set on the server first; the browser cannot be trusted to bound its own
+cardinality, and one unbounded attribute degrades the whole tenant.
 
 :::
 
@@ -930,6 +1004,46 @@ Vitals and error boundaries — see
 - **The credential lives in one place.** Only the Node runtime reads
   `SCOUT_CLIENT_SECRET`. No `NEXT_PUBLIC_` prefix, ever, and no endpoint or
   tenant id in the client bundle.
+- **Enforce that at build time.** The rule is invisible in review (a one-word
+  prefix) and catastrophic if broken (the secret ships to every visitor and
+  every CDN cache). Fail the build on either signal:
+
+  ```javascript showLineNumbers title="scripts/check-no-secrets.mjs"
+  import { existsSync, globSync, readFileSync } from 'node:fs';
+
+  let failed = false;
+
+  // 1. No NEXT_PUBLIC_ anywhere in the telemetry code. The browser is
+  //    configured by same-origin relative paths and needs none.
+  for (const file of globSync('src/lib/telemetry/*.ts')) {
+    readFileSync(file, 'utf8').split('\n').forEach((line, i) => {
+      const t = line.trim();
+      if (!t.startsWith('//') && t.includes('NEXT_PUBLIC_')) {
+        console.error(`${file}:${i + 1}  NEXT_PUBLIC_ in telemetry code`);
+        failed = true;
+      }
+    });
+  }
+
+  // 2. No literal secret in a built client bundle. Read from the environment,
+  //    never hardcoded: this script is committed.
+  const secret = process.env.SCOUT_CLIENT_SECRET;
+  if (existsSync('.next/static') && secret && secret.length >= 12) {
+    for (const file of globSync('.next/static/**/*.js')) {
+      if (readFileSync(file, 'utf8').includes(secret)) {
+        console.error(`${file}  CONTAINS A CREDENTIAL`);
+        failed = true;
+      }
+    }
+  }
+
+  if (failed) process.exit(1);
+  ```
+
+  Wire it into `prebuild` so `next build` cannot succeed past it.
+- **The token is never logged.** The only warning the token module prints is
+  the `invalid_client` hint, and it prints no request or response body. Keep
+  it that way; a bearer in a log line is a bearer in your log pipeline.
 - **Unconfigured is a clean no-op.** With no secret, the register hook returns
   immediately and the routes accept and discard. A fork, a preview build
   without secrets, and a plain `next dev` all behave identically and silently.
