@@ -164,7 +164,7 @@ volume and run as a user that can read it:
 ```yaml showLineNumbers title="compose.yaml"
 services:
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.153.0
+    image: otel/opentelemetry-collector-contrib:latest
     user: "0:0"              # Run as a user that can read the socket
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
