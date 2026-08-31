@@ -57,7 +57,7 @@ tracing, and Pino for structured logs correlated to traces.
 
 tRPC is a type-safe API layer rather than a standalone server. It runs as an
 adapter on top of frameworks like [Express](./express.md),
-[Fastify](./fastify.md), and [Next.js](./nextjs.md).
+[Fastify](./fastify.md), and [Next.js](./nextjs-scout.md).
 
 tRPC applications benefit from automatic instrumentation of the HTTP layer,
 Prisma ORM queries, and outbound `fetch()` calls. With OpenTelemetry, you can

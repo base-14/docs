@@ -1450,7 +1450,7 @@ Complete working example:
 
 - [Express Instrumentation](./express.md) - The HTTP layer NestJS runs on by
   default
-- [Next.js Instrumentation](./nextjs.md) - Full-stack React framework on Node.js
+- [Next.js Instrumentation](./nextjs-scout.md) - Full-stack React framework on Node.js
 - [Fastify Instrumentation](./fastify.md) - Alternate NestJS HTTP adapter
 - [Hono Instrumentation](./hono.md) - Lightweight Node.js web framework
 - [BullMQ Instrumentation](./bullmq.md) - Trace the background jobs NestJS

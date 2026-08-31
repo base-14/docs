@@ -1,7 +1,7 @@
 ---
-title: Next.js OpenTelemetry Instrumentation - App Router Traces & Metrics
-sidebar_label: Next.js
-sidebar_position: 12
+title: Next.js OpenTelemetry Instrumentation - Collector-Based App Router Setup
+sidebar_label: Next.js (Collector)
+sidebar_position: 12.7
 description:
   Next.js OpenTelemetry instrumentation for server components and API routes
   with App Router support. Export traces, metrics, and logs to base14 Scout.
@@ -39,7 +39,18 @@ keywords:
   ]
 ---
 
-# Next.js
+# Next.js (Collector)
+
+:::info Sending to a collector you run
+
+This guide exports OTLP to an OpenTelemetry Collector on your own network.
+**For server-side Next.js apps, the default path is
+[Next.js](./nextjs-scout.md)**, which exports straight to base14 Scout with
+OIDC client credentials and needs no collector. Use this guide instead when
+several services already share a collector, or when you need tail sampling,
+redaction, routing, or host and container metrics alongside app telemetry.
+
+:::
 
 :::note Running this in production
 

@@ -44,6 +44,15 @@ Storing and querying this data at production volume is what base14 Scout does.
 
 :::
 
+:::info Server side only?
+
+This guide covers browser and server together, exporting to a collector. If you
+only need the server side, or you have nowhere to run a collector, start with
+[Next.js](./nextjs-scout.md) — direct OTLP to Scout with OIDC client
+credentials — and add the browser tier from here on top.
+
+:::
+
 ## Introduction
 
 Instrument a Next.js App Router application with OpenTelemetry on both sides of
