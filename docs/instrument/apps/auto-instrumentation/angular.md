@@ -1389,7 +1389,7 @@ without locking you into a single vendor's agent.
 
 - [React browser instrumentation](./react.md) - full browser RUM powered by the
   Scout React SDK.
-- [Next.js instrumentation](./nextjs.md) - server and client tracing for a
+- [Next.js instrumentation](./nextjs-scout.md) - server and client tracing for a
   full-stack React framework.
 - [Next.js full-stack instrumentation](./nextjs-fullstack.md) - browser and
   server in one trace across all three signals, with browser OTLP routed

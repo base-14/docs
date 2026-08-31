@@ -1,5 +1,5 @@
 ---
-title: Next.js OpenTelemetry Instrumentation - App Router Traces & Metrics
+title: Next.js OpenTelemetry Instrumentation - Collector-Based App Router Setup
 sidebar_label: Next.js (Collector)
 sidebar_position: 12.7
 description:

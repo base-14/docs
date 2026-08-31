@@ -102,7 +102,8 @@ frameworks. For framework-specific details, see:
   MongoDB, Redis, WebSockets
 - **[NestJS](./nestjs.md)** - Enterprise framework with DI, TypeORM, BullMQ,
   WebSocket gateway
-- **[Next.js](./nextjs.md)** - React framework with App Router, MongoDB, BullMQ
+- **[Next.js](./nextjs-scout.md)** - React framework with App Router,
+  direct OTLP to Scout
   workers
 - **[Fastify](./fastify.md)** - High-performance framework with hooks,
   plugins, PostgreSQL, BullMQ
