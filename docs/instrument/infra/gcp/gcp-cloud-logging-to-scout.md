@@ -3,6 +3,7 @@ date: 2026-05-27
 id: gcp-cloud-logging-to-scout
 title: Sending Google Cloud Logging Logs to Scout via Pub/Sub and OpenTelemetry
 sidebar_label: GCP Cloud Logging
+sidebar_position: 3
 description: >
   Stream Google Cloud Logging logs to base14 Scout using Pub/Sub and
   the OpenTelemetry googlecloudpubsub receiver. Covers Log Router
@@ -509,3 +510,16 @@ extension's type is `google_cloud_logentry_encoding` from 0.148 and
 Check in order: messages are reaching the Pub/Sub subscription, the
 collector has valid GCP credentials, the collector logs show no permission
 errors, and the receiver is actually referenced in a logs pipeline.
+
+## Related Guides
+
+- [GCP Monitoring overview](./overview.md) - the architecture behind
+  this path, and the resource attributes every GCP pipeline should set.
+- [GCP Cloud Monitoring](./gcp-cloud-monitoring-to-scout.md) - the
+  metrics path, which needs none of the Pub/Sub setup above.
+- [VPC](./vpc.md) - flow logs, the highest-volume consumer of this
+  pipeline.
+- [Cloud Load Balancing](./load-balancing.md) - what the access logs
+  used as this guide's example actually contain.
+- [Cloud Run](./cloud-run.md) - request and application logs, and when
+  to use a sidecar instead of this path.
