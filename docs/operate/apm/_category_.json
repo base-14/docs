@@ -1,0 +1,9 @@
+{
+  "label": "APM",
+  "position": 4,
+  "link": {
+    "type": "generated-index",
+    "title": "Application Performance Monitoring",
+    "description": "Monitor service health with APM in base14 Scout. Track request rates, error rates, and latency percentiles, map service dependencies, and drill into transactions and errors."
+  }
+}
