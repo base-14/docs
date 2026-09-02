@@ -54,11 +54,13 @@ For that you need the in-database path described under
 
 ## Cloud SQL at a glance
 
-| Layer | What emits it | Metric prefix | Collected by |
+All Cloud SQL metric types start `cloudsql.googleapis.com/`, elided below.
+
+| Layer | Source | Metric prefix | Collected by |
 |---|---|---|---|
-| Instance host | Cloud SQL platform | `cloudsql.googleapis.com/database/` | `googlecloudmonitoring` |
-| Engine counters | Cloud SQL platform | `cloudsql.googleapis.com/database/{postgresql,mysql,sqlserver}/` | `googlecloudmonitoring` |
-| Query and table detail | The database itself | `postgresql.*` / `mysql.*` | `postgresql` / `mysql` receiver |
+| Instance host | Cloud SQL | `database/` | `googlecloudmonitoring` |
+| Engine counters | Cloud SQL | `database/postgresql/`, `database/mysql/`, `database/sqlserver/` | `googlecloudmonitoring` |
+| Query and table detail | The database | `postgresql.*`, `mysql.*` | `postgresql` / `mysql` receiver |
 | Database logs | Cloud Logging | `resource.type="cloudsql_database"` | `googlecloudpubsub` |
 
 The monitored resource is `cloudsql_database`, whose labels
