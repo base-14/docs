@@ -3,6 +3,7 @@ date: 2026-08-18
 id: gcp-cloud-monitoring-to-scout
 title: Sending GCP Managed Service Metrics to Scout with OpenTelemetry
 sidebar_label: GCP Cloud Monitoring
+sidebar_position: 2
 description: >
   Collect metrics for GCP managed services — Cloud SQL, Memorystore,
   Pub/Sub, Cloud Run, BigQuery, Compute Engine — into base14 Scout
@@ -24,7 +25,9 @@ Compute Engine — into Scout using the OpenTelemetry
 `googlecloudmonitoring` receiver.
 
 If you also want GCP **logs**, that is a separate mechanism:
-see [GCP Cloud Logging](./gcp-cloud-logging-to-scout.md).
+see [GCP Cloud Logging](./gcp-cloud-logging-to-scout.md). For the
+architecture behind both, and the resource attributes every GCP pipeline
+should set, start at the [GCP Monitoring overview](./overview.md).
 
 :::note Running this in production
 
@@ -351,16 +354,19 @@ Metrics Explorer before adding it.
 
 Prefixes to use with Metrics Explorer or `metric_descriptor_filter`:
 
-| Service | Metric type prefix |
-|---|---|
-| Cloud SQL | `cloudsql.googleapis.com/` |
-| Memorystore for Redis | `redis.googleapis.com/` |
-| Pub/Sub | `pubsub.googleapis.com/` |
-| Cloud Run | `run.googleapis.com/` |
-| BigQuery | `bigquery.googleapis.com/` |
-| Compute Engine | `compute.googleapis.com/` |
-| Cloud Load Balancing | `loadbalancing.googleapis.com/` |
-| Cloud Storage | `storage.googleapis.com/` |
+| Service | Metric type prefix | Guide |
+|---|---|---|
+| Cloud SQL | `cloudsql.googleapis.com/` | [Cloud SQL](./cloud-sql.md) |
+| Memorystore for Redis | `redis.googleapis.com/` | [Memorystore](./memorystore.md) |
+| Memorystore for Valkey | `memorystore.googleapis.com/instance/` | [Memorystore](./memorystore.md) |
+| Pub/Sub | `pubsub.googleapis.com/` | [Pub/Sub](./pub-sub.md) |
+| Cloud Run | `run.googleapis.com/` | [Cloud Run](./cloud-run.md) |
+| Cloud Load Balancing | `loadbalancing.googleapis.com/` | [Cloud Load Balancing](./load-balancing.md) |
+| API Gateway | `apigateway.googleapis.com/` | [API Gateway and nginx](./api-gateway.md) |
+| Cloud NAT | `router.googleapis.com/nat/` | [VPC](./vpc.md) |
+| BigQuery | `bigquery.googleapis.com/` | - |
+| Compute Engine | `compute.googleapis.com/` | - |
+| Cloud Storage | `storage.googleapis.com/` | - |
 
 :::tip Managed service vs. self-hosted
 This receiver only sees **GCP-managed** services. Software you run
