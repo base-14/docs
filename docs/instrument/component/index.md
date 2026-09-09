@@ -100,6 +100,7 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 | Component | Guide                                   | Key Metrics                                            |
 |-----------|-----------------------------------------|--------------------------------------------------------|
 | vLLM      | [vLLM](./collecting-vllm-telemetry)     | KV-cache usage, request queueing, token throughput, latency phases |
+| llama.cpp | [llama.cpp](./collecting-llama-cpp-telemetry) | Slot occupancy and queueing, token throughput, prompt-cache reuse, batching efficiency |
 
 ### AI Gateways
 
