@@ -127,6 +127,7 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 | Component | Guide                                         | Key Metrics                                        |
 | --------- | --------------------------------------------- | -------------------------------------------------- |
 | Temporal  | [Temporal](./collecting-temporal-telemetry)   | Workflow latency, task queues, persistence, shards |
+| Hatchet   | [Hatchet](./collecting-hatchet-telemetry)     | Task inflow and outcome, queue backlog, worker slot capacity, per-workflow duration |
 | Nomad     | [Nomad](./collecting-nomad-telemetry)         | Raft consensus, broker, RPC, job status, autopilot |
 
 ### Continuous Delivery
