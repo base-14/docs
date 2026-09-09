@@ -279,12 +279,6 @@ receivers:
                 - ${env:JENKINS_HOST}:8080
 ```
 
-> **Semconv version note**: `deployment.environment.name` is the current
-> OTel attribute (semantic conventions v1.27+, stable as of v1.41.0).
-> Scout's UI filters on the lowercase `environment` key, so emit it
-> alongside the OTel-native `deployment.environment.name`. The legacy
-> `deployment.environment` is still accepted for backward compatibility.
-
 ## Verify the Setup
 
 Start the Collector and check for metrics within 60 seconds:

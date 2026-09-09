@@ -282,12 +282,6 @@ The `metric_relabel_configs` keep filter scopes collection to the Couchbase
 families (`cm_*`, `kv_*`, `sys_*`, `sysproc_*`, `up`). Narrow the regex to
 adjust which families are collected and tune metric volume to your needs.
 
-> **Semconv version note**: `deployment.environment.name` is the current
-> OTel attribute (introduced in semantic conventions v1.27.0, stable as of
-> v1.41.0). Scout's UI filters on the lowercase `environment` key, so emit
-> it alongside the OTel-native `deployment.environment.name`. The legacy
-> `deployment.environment` is still accepted for backward compatibility.
-
 ### Environment Variables
 
 ```bash showLineNumbers title=".env"

@@ -304,12 +304,6 @@ service:
 To control metric volume in production, drop the Diagnostic-tier metrics
 with a `filter` processor while keeping the Core and Operational series.
 
-> **Semconv version note**: `deployment.environment.name` is the current OTel
-> attribute (semantic conventions v1.27+, stable in v1.40.0). Scout's UI filters
-> on the lowercase `environment` key, so emit it alongside the OTel-native
-> `deployment.environment.name`. The legacy `deployment.environment` is still
-> accepted for backward compatibility.
-
 ### Environment Variables
 
 ```bash showLineNumbers title=".env"

@@ -234,12 +234,6 @@ service:
 The Traefik metrics entrypoint serves at the default `/metrics` path, so
 no `metrics_path` override is needed.
 
-> **Semconv version note**: `deployment.environment.name` is the current OTel
-> attribute (semantic conventions v1.27+, stable as of v1.41.0). Scout's UI
-> filters on the lowercase `environment` key, so emit it alongside the
-> OTel-native `deployment.environment.name`. The legacy `deployment.environment`
-> is still accepted for backward compatibility.
-
 ### Scoping to the Traefik namespace
 
 The metrics entrypoint also serves the endpoint's own `go_*` / `process_*`

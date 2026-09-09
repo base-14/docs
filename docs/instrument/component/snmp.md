@@ -565,12 +565,6 @@ device with `device.kind=network` — there is no separate
 appears as its own service in Scout because each receiver pipeline
 stamps a distinct `service.name`.
 
-> **Semconv version note**: `deployment.environment.name` is the current OTel
-> attribute (introduced in semantic conventions v1.27.0, stable as of v1.41.0).
-> Scout's UI filters on the lowercase `environment` key, so emit it alongside
-> the OTel-native `deployment.environment.name`. The legacy
-> `deployment.environment` is still accepted for backward compatibility.
-
 ### Shipping via a Local Scout Collector
 
 The `otlphttp/b14` exporter above ships directly to Scout. If you

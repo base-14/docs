@@ -248,12 +248,6 @@ SERVICE_NAME=your_service_name
 OTEL_EXPORTER_OTLP_ENDPOINT=https://<your-tenant>.base14.io
 ```
 
-> **Semconv version note**: `deployment.environment.name` is the current
-> OTel attribute (semantic conventions v1.27+, stable in v1.40.0).
-> Scout's UI filters on the lowercase `environment` key, so emit it
-> alongside the OTel-native `deployment.environment.name`. The legacy
-> `deployment.environment` is still accepted for backward compatibility.
-
 ## Verify the Setup
 
 Start the scraper and Collector, then confirm metrics flow within 60

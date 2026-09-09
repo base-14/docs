@@ -252,12 +252,6 @@ The `up` and `scrape_*` series survive the keep filter - the `prometheus`
 receiver synthesizes them after relabeling - so the liveness signal is
 preserved.
 
-> **Semconv version note**: `deployment.environment.name` is the current OTel
-> attribute (semantic conventions v1.27+, stable in v1.41.0). Scout's UI filters
-> on the lowercase `environment` key, so emit it alongside the OTel-native
-> `deployment.environment.name`. The legacy `deployment.environment` is still
-> accepted for backward compatibility.
-
 ### Environment Variables
 
 ```bash showLineNumbers title=".env"

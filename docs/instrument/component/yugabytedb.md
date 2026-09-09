@@ -287,11 +287,6 @@ control metric volume in production, drop the Diagnostic tier with a
 Operational series. If you do not run YCQL workloads, dropping the `yb-ycql`
 job is the simplest first cut.
 
-> **Semconv version note**: `deployment.environment.name` is the current OTel
-> attribute. Scout's UI filters on the lowercase `environment` key, so emit it
-> alongside the OTel-native `deployment.environment.name`. The legacy
-> `deployment.environment` is still accepted for backward compatibility.
-
 ### Environment Variables
 
 ```bash showLineNumbers title=".env"

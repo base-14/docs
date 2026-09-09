@@ -247,12 +247,6 @@ Core + Operational, add a `metric_relabel_configs` block to the scrape job:
               action: drop
 ```
 
-> **Semconv version note**: `deployment.environment.name` is the current
-> dotted OTel attribute. Scout's UI filters on the lowercase
-> `environment` key, so emit it alongside the OTel-native
-> `deployment.environment.name`. The legacy `deployment.environment` is
-> still accepted for backward compatibility.
-
 ## Verify the Setup
 
 Start the Collector and check for metrics within 60 seconds:

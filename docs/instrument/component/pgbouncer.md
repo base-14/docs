@@ -282,12 +282,6 @@ service:
       exporters: [otlphttp/b14]
 ```
 
-> **Semconv version note**: `deployment.environment.name` is the current OTel
-> attribute (semantic conventions v1.27+, stable as of v1.41.0). Scout's UI
-> filters on the lowercase `environment` key, so emit it alongside the
-> OTel-native `deployment.environment.name`. The legacy `deployment.environment`
-> is still accepted for backward compatibility.
-
 To keep more or fewer series, adjust the `regex` in `metric_relabel_configs`.
 Dropping the keep filter entirely sends the exporter's runtime and scrape-meta
 metrics too.

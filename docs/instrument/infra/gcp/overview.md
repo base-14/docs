@@ -169,16 +169,6 @@ Memorystore instances live in a region; Pub/Sub topics, global load
 balancers and VPC networks do not, and stamping a region on them
 invents a dimension that is not real.
 
-:::note Semconv version note
-
-`deployment.environment.name` is the current OTel attribute (semantic
-conventions v1.27+, stable in v1.40.0). Scout's UI filters on the
-lowercase `environment` key, so emit it alongside the OTel-native
-`deployment.environment.name`. The legacy `deployment.environment` is
-still accepted for backward compatibility.
-
-:::
-
 :::warning Give each surface its own pipeline
 
 The `insert` action on `service.name` and the `/cloudsql` suffix on the
