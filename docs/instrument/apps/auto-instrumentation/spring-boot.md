@@ -1894,7 +1894,7 @@ single dashboard.
 For a fully working Spring Boot application with OpenTelemetry instrumentation,
 refer to our example repository:
 
-**[Spring Boot OpenTelemetry Example](https://github.com/base-14/examples/tree/main/java)**
+**[Spring Boot OpenTelemetry Example](https://github.com/base-14/examples/tree/main/java/spring-boot-java25-postgresql)**
 
 The example includes:
 
@@ -1915,7 +1915,7 @@ The example includes:
 ```bash showLineNumbers
 # Clone the repository
 git clone https://github.com/base-14/examples.git
-cd examples/java
+cd examples/java/spring-boot-java25-postgresql
 
 # Run locally with Docker Compose
 docker-compose up

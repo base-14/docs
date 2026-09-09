@@ -152,7 +152,7 @@ Before starting, ensure you have:
 ### What Gets Instrumented
 
 OpenTelemetry produces the following telemetry for the Litestar example
-shipped at `~/dev/base14/examples/python/litestar-postgres`:
+shipped at [python/litestar-postgres](https://github.com/base-14/examples/tree/main/python/litestar-postgres):
 
 | Source                 | Telemetry produced                                                              | Driver                                              |
 | ---------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------- |
@@ -166,7 +166,8 @@ shipped at `~/dev/base14/examples/python/litestar-postgres`:
 The complete working example with two services, Alembic migrations, a
 collector config, an end-to-end smoke script, and a verifier that proves
 telemetry reached Scout is at
-`~/dev/base14/examples/python/litestar-postgres/`. Read along with this guide.
+[python/litestar-postgres](https://github.com/base-14/examples/tree/main/python/litestar-postgres).
+Read along with this guide.
 
 ## Installation
 
@@ -908,7 +909,8 @@ Postgres, and an OTel collector. The Makefile wraps the common operations.
 ### Local Development with Docker Compose
 
 ```bash
-cd ~/dev/base14/examples/python/litestar-postgres
+git clone https://github.com/base-14/examples.git
+cd examples/python/litestar-postgres
 cp .env.example .env
 # edit .env to set DB_PASSWORD; SCOUT_* vars are optional
 
@@ -1354,7 +1356,8 @@ configuration.
 
 The full working example with two Litestar services, Postgres, the OTel
 collector, Alembic migrations, and end-to-end verification scripts is at
-`~/dev/base14/examples/python/litestar-postgres/`. Layout:
+[python/litestar-postgres](https://github.com/base-14/examples/tree/main/python/litestar-postgres).
+Layout:
 
 ```text
 litestar-postgres/
@@ -1388,7 +1391,8 @@ litestar-postgres/
 To run it:
 
 ```bash
-cd ~/dev/base14/examples/python/litestar-postgres
+git clone https://github.com/base-14/examples.git
+cd examples/python/litestar-postgres
 cp .env.example .env
 # edit .env to set DB_PASSWORD; SCOUT_* vars are optional for local-only dev
 make docker-up

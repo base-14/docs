@@ -1524,6 +1524,9 @@ symfony-mysql/
 
 ### Running the Example
 
+The full source is in
+[php/symfony-mysql](https://github.com/base-14/examples/tree/main/php/symfony-mysql).
+
 ```bash
 # Clone the examples repository
 git clone https://github.com/base-14/examples.git

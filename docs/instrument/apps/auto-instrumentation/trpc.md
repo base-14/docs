@@ -1666,6 +1666,9 @@ trpc-postgres/
 
 ### Running the Example
 
+The full source is in
+[nodejs/trpc-postgres](https://github.com/base-14/examples/tree/main/nodejs/trpc-postgres).
+
 ```bash
 git clone https://github.com/base-14/examples.git
 cd examples/nodejs/trpc-postgres

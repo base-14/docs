@@ -1654,7 +1654,7 @@ RUST_LOG=info,sqlx=warn
 ```
 
 This complete example is available in our
-[GitHub examples repository](https://github.com/base-14/examples/tree/main/rust).
+[GitHub examples repository](https://github.com/base-14/examples/tree/main/rust/axum-postgres).
 
 ## References
 

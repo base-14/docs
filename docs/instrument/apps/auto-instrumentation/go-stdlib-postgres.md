@@ -71,7 +71,7 @@ collector's `oauth2client` extension for Scout's bearer token, and the rest
 of the code is identical. This guide covers prerequisites, installation,
 configuration, production hardening, custom instrumentation, troubleshooting,
 security, performance, and a complete worked example based on
-`~/dev/base14/examples/go/stdlib-postgres/`.
+[go/stdlib-postgres](https://github.com/base-14/examples/tree/main/go/stdlib-postgres).
 
 :::tip TL;DR
 
@@ -148,7 +148,7 @@ Before starting, ensure you have:
 | Process resource attrs  | `process.runtime.name=go`, `process.pid`, telemetry SDK info          |
 
 The complete reference application lives in
-[`~/dev/base14/examples/go/stdlib-postgres/`](https://github.com/base-14/examples/tree/main/go/stdlib-postgres)
+[go/stdlib-postgres](https://github.com/base-14/examples/tree/main/go/stdlib-postgres)
 and ships an articles API on port 8080 plus a notify service on port 8081.
 Both export OTLP/HTTP to a collector, which forwards to Scout over TLS with
 an OAuth2 client-credentials flow.
@@ -829,7 +829,8 @@ func chargeCustomer(ctx context.Context, customerID string) error {
 ### Local with Docker Compose
 
 ```bash
-cd ~/dev/base14/examples/go/stdlib-postgres
+git clone https://github.com/base-14/examples.git
+cd examples/go/stdlib-postgres
 cp .env.example .env
 # edit .env with your Scout credentials (or leave defaults for local-only)
 docker compose up -d --build
@@ -1208,7 +1209,7 @@ observability](https://www.base14.io).
 ## Complete Example
 
 The full reference implementation lives at
-`~/dev/base14/examples/go/stdlib-postgres/`:
+[go/stdlib-postgres](https://github.com/base-14/examples/tree/main/go/stdlib-postgres):
 
 ```text
 go/stdlib-postgres/
@@ -1248,7 +1249,8 @@ go/stdlib-postgres/
 ### Run it
 
 ```bash
-cd ~/dev/base14/examples/go/stdlib-postgres
+git clone https://github.com/base-14/examples.git
+cd examples/go/stdlib-postgres
 cp .env.example .env
 # fill in Scout credentials, or leave defaults for local-only
 docker compose up -d --build

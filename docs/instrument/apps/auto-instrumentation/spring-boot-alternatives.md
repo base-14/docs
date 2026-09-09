@@ -115,6 +115,9 @@ The Java Agent provides zero-code automatic instrumentation by attaching to your
 JVM at startup. This is the fastest way to add OpenTelemetry to Spring Boot
 applications without any code or dependency changes.
 
+A working example of this approach is
+[java/spring-boot-java25-mongodb-java-agent](https://github.com/base-14/examples/tree/main/java/spring-boot-java25-mongodb-java-agent).
+
 ### Download the Agent
 
 Download the latest OpenTelemetry Java agent JAR:

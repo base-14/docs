@@ -1618,7 +1618,7 @@ RAILS_ENV=production
 DATABASE_URL=postgres://user:pass@db:5432/production
 ```
 
-This complete example is available in our [GitHub examples repository](https://github.com/base-14/examples/tree/main/ruby).
+This complete example is available in our [GitHub examples repository](https://github.com/base-14/examples/tree/main/ruby/rails8-sqlite).
 
 ## References
 

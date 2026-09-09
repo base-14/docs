@@ -920,7 +920,9 @@ telemetry.
 
 ### Development with Docker Compose
 
-Clone the example, copy the environment file, and bring the stack up. The
+Clone the
+[php/wordpress-mariadb example](https://github.com/base-14/examples/tree/main/php/wordpress-mariadb),
+copy the environment file, and bring the stack up. The
 `SCOUT_*` placeholders in `.env.example` let the collector start without real
 credentials.
 

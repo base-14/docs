@@ -1617,7 +1617,7 @@ ASPNETCORE_ENVIRONMENT=Development
 ```
 
 This complete example is available in our
-[GitHub examples repository](https://github.com/base-14/examples/tree/main/csharp).
+[GitHub examples repository](https://github.com/base-14/examples/tree/main/csharp/dotnet-sqlserver).
 
 ## References
 
