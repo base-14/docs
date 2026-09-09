@@ -63,6 +63,7 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 |-----------|-------------------------------------------|--------------------------------------------------------|
 | Qdrant    | [Qdrant](./collecting-qdrant-telemetry)   | Request rate and latency, collection points, update queue, memory and mmap ceilings |
 | Milvus    | [Milvus](./collecting-milvus-telemetry)   | Request rate and error rate, search and insert latency, ingestion lag, entity counts, segment growth |
+| Weaviate  | [Weaviate](./collecting-weaviate-telemetry) | REST, GraphQL and gRPC request rate and errors, query and write latency, vector index size, async index queue depth |
 
 ### Search
 
