@@ -95,6 +95,12 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 | --------- | ----------------------------------------- | ------------------------------------------------- |
 | Vault     | [Vault](./collecting-vault-telemetry)     | Seal operations, token lifecycle, barrier, leases |
 
+### AI Model Serving
+
+| Component | Guide                                   | Key Metrics                                            |
+|-----------|-----------------------------------------|--------------------------------------------------------|
+| vLLM      | [vLLM](./collecting-vllm-telemetry)     | KV-cache usage, request queueing, token throughput, latency phases |
+
 ### Orchestration
 
 | Component | Guide                                         | Key Metrics                                        |
