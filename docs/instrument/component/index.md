@@ -108,6 +108,12 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 |-----------------|--------------------------------------------------------|------------------------------------------------------------------------|
 | LiteLLM Gateway | [LiteLLM Gateway](./collecting-litellm-telemetry)      | Deployment health and cooldowns, request failures, latency split, token spend |
 
+### Distributed Compute
+
+| Component | Guide                                   | Key Metrics                                            |
+|-----------|-----------------------------------------|--------------------------------------------------------|
+| Ray       | [Ray](./collecting-ray-telemetry)       | Task and actor state, cluster resources, object store and spilling, scheduler placement |
+
 ### Orchestration
 
 | Component | Guide                                         | Key Metrics                                        |
