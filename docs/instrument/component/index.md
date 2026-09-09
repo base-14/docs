@@ -57,6 +57,12 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 | Aerospike | [Aerospike](./collecting-aerospike-telemetry) | Connections, transactions, memory, namespace stats  |
 | etcd      | [etcd](./collecting-etcd-telemetry)           | Raft proposals, disk latency, MVCC, gRPC           |
 
+### Vector Databases
+
+| Component | Guide                                     | Key Metrics                                            |
+|-----------|-------------------------------------------|--------------------------------------------------------|
+| Qdrant    | [Qdrant](./collecting-qdrant-telemetry)   | Request rate and latency, collection points, update queue, memory and mmap ceilings |
+
 ### Search
 
 | Component  | Guide                                             | Key Metrics                                         |
