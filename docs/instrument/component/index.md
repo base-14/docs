@@ -101,6 +101,12 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 |-----------|-----------------------------------------|--------------------------------------------------------|
 | vLLM      | [vLLM](./collecting-vllm-telemetry)     | KV-cache usage, request queueing, token throughput, latency phases |
 
+### AI Gateways
+
+| Component       | Guide                                                  | Key Metrics                                                            |
+|-----------------|--------------------------------------------------------|------------------------------------------------------------------------|
+| LiteLLM Gateway | [LiteLLM Gateway](./collecting-litellm-telemetry)      | Deployment health and cooldowns, request failures, latency split, token spend |
+
 ### Orchestration
 
 | Component | Guide                                         | Key Metrics                                        |
