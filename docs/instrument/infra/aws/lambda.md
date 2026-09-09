@@ -309,6 +309,38 @@ Add custom resource attributes to all spans:
 OTEL_RESOURCE_ATTRIBUTES=environment=demo,team=backend
 ```
 
+## FAQ
+
+### Do I need to change my function code to get traces from Lambda?
+
+No. The language layer wraps the handler through `AWS_LAMBDA_EXEC_WRAPPER` and
+instruments HTTP clients, AWS SDK calls, and supported frameworks automatically.
+Code changes are only needed for custom spans or attributes.
+
+### Why does the OTLP endpoint point at localhost?
+
+The collector layer runs as an extension inside the same execution environment.
+The instrumentation layer sends spans to `http://localhost:4318`, and the
+collector, configured through `collector.yaml`, forwards them to Scout. Only the
+collector needs the Scout endpoint and credentials.
+
+### How much latency does the collector layer add?
+
+Plan for 50-100 ms on cold starts and 64-128 MB of extra memory for the
+collector process. Add 5-10 seconds to the function timeout so the collector can
+flush telemetry before the environment is frozen.
+
+### How do I get function logs, not just traces, into Scout?
+
+Add the `telemetryapi` receiver to the logs pipeline in `collector.yaml`. It
+subscribes to the Lambda Telemetry API and captures stdout, stderr, and the
+platform START, END, and REPORT records without any log shipping code.
+
+### Does this work on ARM64 (Graviton) functions?
+
+Yes. Use the `arm64` collector layer ARN instead of `amd64`. The language layers
+are architecture independent.
+
 ## Related Guides
 
 - [OTel Collector Configuration](../../collector-setup/otel-collector-config.md)

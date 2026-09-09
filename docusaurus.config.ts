@@ -127,6 +127,7 @@ const config: Config = {
         docs: {
           routeBasePath: "/", // Serve the docs at the site's root
           sidebarPath: "./sidebars.ts",
+          showLastUpdateTime: true,
         },
         blog: {
           routeBasePath: "blog",

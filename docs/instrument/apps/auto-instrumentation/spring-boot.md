@@ -1695,7 +1695,7 @@ otel.instrumentation.logback.enabled=false
 otel.instrumentation.annotations.enabled=false
 ```
 
-## Frequently Asked Questions
+## FAQ
 
 ### Choosing Between Approaches
 

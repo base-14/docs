@@ -288,7 +288,7 @@ def lambda_handler(event, context):
 
 ---
 
-## Step 3: Configure IAM Role Permissions\*\*
+## Step 3: Configure IAM Role Permissions
 
 1. **Find Role:** Go to the IAM console -> Roles. Find the role automatically
    created for your Lambda function (e.g.,
@@ -320,7 +320,7 @@ def lambda_handler(event, context):
 
 ---
 
-## Step 4: Configure S3 Event Notification Trigger\*\*
+## Step 4: Configure S3 Event Notification Trigger
 
 1. **Navigate to S3 Bucket:** Go to the S3 console and select your VPC Flow Log
    bucket.
@@ -344,7 +344,7 @@ def lambda_handler(event, context):
 
 ---
 
-## Step 5: Test and Monitor\*\*
+## Step 5: Test and Monitor
 
 1. **Wait for Logs:** Allow some time for VPC Flow Logs to generate new files in
    the S3 bucket.
@@ -361,6 +361,41 @@ This detailed setup provides a robust way to process VPC Flow Logs from S3 using
 Lambda and forward them via OTLP. We can further adjust parsing logic, OTel
 configuration, and IAM permissions based on your specific Flow Log format and
 environment.
+
+## FAQ
+
+### Why go through S3 instead of sending VPC Flow Logs straight to a collector?
+
+VPC Flow Logs have no OTLP delivery option, so something has to read the
+files and forward them. This guide uses S3 as the destination and an S3 event
+notification to invoke the Lambda function for each new file, so there is no
+polling and no long-running process to operate.
+
+### How does the Lambda function authenticate to the Scout collector?
+
+Set `OTEL_EXPORTER_OTLP_HEADERS` on the function, for example
+`Authorization=Bearer <token>`. The handler parses that variable into request
+headers for the OTLP log exporter, so no credentials are hard-coded.
+
+### What happens when a flow log file is large?
+
+The handler reads and decompresses the whole object into memory before
+parsing, so size the function for your largest flow log file. Records are
+exported through a `BatchLogRecordProcessor`, so export itself does not grow
+with file size. If invocations time out, raise the function timeout so the
+final `force_flush()` completes, otherwise buffered records are lost.
+
+### Can I use a custom flow log format?
+
+Yes. Update `DEFAULT_FIELDS` in the handler to match the field order you chose
+when creating the flow log. The handler warns when the file header does not
+match the expected fields, which is the first thing to check if attributes look
+wrong in Scout.
+
+### How do I keep the Lambda from triggering on other objects in the bucket?
+
+Set a prefix such as `AWSLogs/` and a suffix of `.gz` on the S3 event
+notification. Only flow log files then invoke the function.
 
 ## Related Guides
 
