@@ -27,6 +27,7 @@
       "apmPerHost": 31,
       "logIngestPerGb": 0.1,
       "indexedPerMillion": 1.7,
+      "customMetricPer100": 5,
       "includedSpansPerHostMillions": 1,
       "defaultRetentionDays": 15
     },
@@ -168,8 +169,9 @@
     },
     {
       "label": "Datadog custom metric rate",
-      "pattern": "\\$1 per (\\d+) custom metrics",
-      "allowed": [100]
+      "pattern": "\\$([0-9.]+) ?(?:/|per )100\\b",
+      "allowed": [5],
+      "note": "Custom metrics are $5 per 100 per month, from Datadog's rate card at datadoghq.com/pricing/list/. The summary pricing page defers overage to contract pricing."
     }
   ],
 
