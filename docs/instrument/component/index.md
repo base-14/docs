@@ -44,6 +44,7 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 | Couchbase           | [Couchbase](./collecting-couchbase-telemetry)                  | Cluster management, KV connections, CPU, memory     |
 | MariaDB             | [MariaDB](./collecting-mariadb-telemetry)                      | Connections, queries, InnoDB, replication            |
 | Materialize         | [Materialize](./collecting-materialize-telemetry)              | Dataflow freshness, source lag, replica memory, peeks |
+| Trino               | [Trino](./collecting-trino-telemetry)                          | Query lifecycle, cluster memory pools, execution slots, query traces |
 
 ### Time-Series Databases
 
@@ -205,7 +206,8 @@ Each component exposes metrics through one of four methods:
    Prometheus Metrics plugin, InfluxDB, Caddy, Varnish via
    prometheus_varnish_exporter, Redpanda via its native
    `/public_metrics` endpoint, Materialize via its native
-   `/metrics/public` endpoint)
+   `/metrics/public` endpoint, Trino via its native `/metrics`
+   endpoint)
 3. **JMX Scraper** - a standalone process connects to the application's
    JMX port via RMI, converts MBeans to OpenTelemetry metrics, and
    exports OTLP to the Collector (Tomcat, ActiveMQ, Jetty, WildFly).
