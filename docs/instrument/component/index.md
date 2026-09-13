@@ -89,6 +89,7 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 | NATS      | [NATS](./collecting-nats-telemetry)             | Connections, subscriptions, message rates, JetStream |
 | Pulsar    | [Pulsar](./collecting-pulsar-telemetry)         | Broker throughput, backlog, managed ledger, storage  |
 | ActiveMQ  | [ActiveMQ](./collecting-activemq-telemetry)     | Queue depth, enqueue/dequeue, producers, consumers   |
+| Redpanda  | [Redpanda](./collecting-redpanda-telemetry)     | Produce/fetch throughput, partition health, Raft leadership |
 
 ### Service Discovery & Coordination
 
@@ -200,7 +201,8 @@ Each component exposes metrics through one of three methods:
    MinIO, OpenSearch via prometheus-exporter plugin, PgBouncer via
    pgbouncer-exporter, Nomad, Couchbase, Pulsar, ArgoCD, Jenkins via
    Prometheus Metrics plugin, InfluxDB, Caddy, Varnish via
-   prometheus_varnish_exporter)
+   prometheus_varnish_exporter, Redpanda via its native
+   `/public_metrics` endpoint)
 3. **JMX Scraper** - a standalone process connects to the application's
    JMX port via RMI, converts MBeans to OpenTelemetry metrics, and
    exports OTLP to the Collector (Tomcat, ActiveMQ, Jetty, WildFly).
