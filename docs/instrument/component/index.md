@@ -129,6 +129,7 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 
 | Component | Guide                                         | Key Metrics                                        |
 | --------- | --------------------------------------------- | -------------------------------------------------- |
+| Airflow   | [Apache Airflow](./collecting-airflow-telemetry) | Scheduler health, task outcomes, pool and executor saturation, DAG run traces |
 | Temporal  | [Temporal](./collecting-temporal-telemetry)   | Workflow latency, task queues, persistence, shards |
 | Hatchet   | [Hatchet](./collecting-hatchet-telemetry)     | Task inflow and outcome, queue backlog, worker slot capacity, per-workflow duration |
 | Restate   | [Restate](./collecting-restate-telemetry)     | Invocation rate and outcome, partition health, invoker backlog, workflow traces |
@@ -189,7 +190,7 @@ patterns, see [IoT & Edge Instrumentation](../iot/index.md).
 
 ## How Component Monitoring Works
 
-Each component exposes metrics through one of three methods:
+Each component exposes metrics through one of four methods:
 
 1. **Dedicated OTel receiver** - the Collector connects directly to the
    component's stats API (PostgreSQL, MySQL, MariaDB, MongoDB, Redis,
@@ -209,6 +210,9 @@ Each component exposes metrics through one of three methods:
    JMX port via RMI, converts MBeans to OpenTelemetry metrics, and
    exports OTLP to the Collector (Tomcat, ActiveMQ, Jetty, WildFly).
    See [JMX Metrics Collection Guide](../collector-setup/jmx-metrics-collection-guide.md).
+4. **Native OTLP push** - the component builds an OpenTelemetry SDK into
+   its own processes and pushes to the Collector, so there is no endpoint
+   to scrape (Apache Airflow).
 
 Java applications using JMX have two collection approaches: the OTel
 JMX Scraper (remote, OTLP-native) and the Prometheus JMX Exporter
