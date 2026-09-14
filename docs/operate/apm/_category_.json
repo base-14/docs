@@ -1,0 +1,9 @@
+{
+  "label": "APM",
+  "position": 4,
+  "link": {
+    "type": "generated-index",
+    "title": "Application Performance Monitoring",
+    "description": "Monitor service, operation, dependency, error, database, messaging, and infrastructure health with APM in base14 Scout."
+  }
+}
