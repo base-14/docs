@@ -339,6 +339,8 @@ events alongside the state metrics.
 
 ## Related Guides
 
+- [k8X](../../operate/k8x/getting-started.md) — Explore this telemetry as
+  clusters, nodes, namespaces, and workloads in Scout
 - [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md) —
   Deploy the Collector in your cluster
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md) —

@@ -774,6 +774,8 @@ traces from every node and pod in a single platform.
 
 ## Related Guides
 
+- [k8X](../../operate/k8x/getting-started.md) - Explore this telemetry as
+  clusters, nodes, namespaces, and workloads in Scout
 - [Scout Exporter Configuration](./scout-exporter.md) - Configure authentication
   to send data to Scout
 - [OpenTelemetry Operator Setup](./opentelemetry-operator-setup.md) -
