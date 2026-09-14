@@ -378,7 +378,6 @@ const OTEL_ENDPOINT = process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localho
 const resource = resourceFromAttributes({
   [ATTR_SERVICE_NAME]: process.env.OTEL_SERVICE_NAME || 'sample-nextjs-app',
   [ATTR_SERVICE_VERSION]: '1.0.0',
-  'deployment.environment': process.env.NODE_ENV || 'development',
   'environment': process.env.NODE_ENV || 'development',
 });
 
@@ -430,9 +429,7 @@ const sdk = new NodeSDK({
 sdk.start();
 ```
 
-The resource sets `environment` alongside `deployment.environment`. The
-lowercase key is what Scout filters on, and carrying both keeps the resource
-valid under semantic conventions while staying queryable in the UI.
+The resource sets `environment`, which is the key Scout filters on.
 
 The `ignoreIncomingRequestHook` filter drops `/_next` asset requests. A single
 page load pulls dozens of chunks from that path, and without the filter they
@@ -473,7 +470,6 @@ export function initBrowserTelemetry() {
   const resource = resourceFromAttributes({
     [ATTR_SERVICE_NAME]: process.env.NEXT_PUBLIC_OTEL_SERVICE_NAME || 'sample-nextjs-app-browser',
     [ATTR_SERVICE_VERSION]: '1.0.0',
-    'deployment.environment': process.env.NODE_ENV || 'development',
     'environment': process.env.NODE_ENV || 'development',
     'telemetry.sdk.language': 'webjs',
   });

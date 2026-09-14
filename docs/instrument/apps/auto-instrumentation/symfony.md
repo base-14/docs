@@ -272,7 +272,7 @@ OTEL_TRACES_EXPORTER=otlp
 OTEL_METRICS_EXPORTER=otlp
 OTEL_LOGS_EXPORTER=otlp
 OTEL_PHP_PSR3_MODE=export
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment=development,environment=development
+OTEL_RESOURCE_ATTRIBUTES=environment=development
 ```
 
 Setting `OTEL_PHP_AUTOLOAD_ENABLED=true` is all it takes to start collecting
@@ -329,7 +329,7 @@ x-otel-env: &otel-env
   OTEL_LOGS_EXPORTER: otlp
   OTEL_PHP_AUTOLOAD_ENABLED: "true"
   OTEL_PHP_PSR3_MODE: export
-  OTEL_RESOURCE_ATTRIBUTES: deployment.environment=development,environment=development
+  OTEL_RESOURCE_ATTRIBUTES: environment=development
 
 x-db-env: &db-env
   DATABASE_URL: mysql://symfony:secret@db:3306/symfony?serverVersion=8.4
@@ -565,7 +565,7 @@ OTEL_BSP_MAX_EXPORT_BATCH_SIZE=512
 OTEL_PROPAGATORS=baggage,tracecontext
 
 # Resource Attributes
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment=demo,environment=demo,host.name=${HOSTNAME}
+OTEL_RESOURCE_ATTRIBUTES=environment=demo,host.name=${HOSTNAME}
 ```
 
 Benefits of this configuration:

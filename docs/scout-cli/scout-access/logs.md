@@ -50,7 +50,7 @@ scout logs <SERVICE> [flags]
 | `--body-only` | bool | `false` | Output only log bodies, one per line. Conflicts with `--raw` |
 | `--discover` | bool | `false` | Show available log metadata instead of querying |
 | `--wide` | bool | `false` | Show full log bodies without truncation |
-| `--environment <ENV>` | string | — | Restrict results to records tagged with this OTel `deployment.environment` (e.g. `production`, `staging`). Records without that resource attribute are filtered out. |
+| `--environment <ENV>` | string | — | Restrict results to records tagged with this `environment` resource attribute (e.g. `production`, `staging`). Records without that resource attribute are filtered out. |
 
 ## Examples
 

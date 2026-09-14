@@ -315,7 +315,7 @@ quarkus.otel.exporter.otlp.protocol=grpc
 quarkus.otel.traces.exporter=otlp
 
 # Service resource attributes
-quarkus.otel.resource.attributes=service.name=quarkus-order-service,service.version=1.0.0,deployment.environment=development,environment=development
+quarkus.otel.resource.attributes=service.name=quarkus-order-service,service.version=1.0.0,environment=development
 
 # Sampling (always-on for dev, probabilistic for production)
 quarkus.otel.traces.sampler=always_on
@@ -361,7 +361,6 @@ services:
       QUARKUS_OTEL_RESOURCE_ATTRIBUTES: >-
         service.name=quarkus-order-service,
         service.version=1.0.0,
-        deployment.environment=docker,
         environment=docker
       QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://postgres:5432/orders
       QUARKUS_DATASOURCE_USERNAME: quarkus
@@ -452,7 +451,6 @@ image compilation for minimal resource usage.
 %prod.quarkus.otel.resource.attributes=\
   service.name=quarkus-order-service,\
   service.version=${APP_VERSION:1.0.0},\
-  deployment.environment=demo,\
   environment=demo,\
   cloud.provider=aws,\
   cloud.region=${AWS_REGION:us-east-1},\
@@ -573,7 +571,6 @@ spec:
               value: >-
                 service.name=quarkus-order-service,
                 service.version=1.0.0,
-                deployment.environment=demo,
                 environment=demo,
                 k8s.cluster.name=production,
                 k8s.namespace.name=$(K8S_NAMESPACE),
@@ -1871,7 +1868,7 @@ quarkus.otel.exporter.otlp.endpoint=http://localhost:4317
 quarkus.otel.exporter.otlp.protocol=grpc
 quarkus.otel.traces.exporter=otlp
 quarkus.otel.traces.sampler=always_on
-quarkus.otel.resource.attributes=service.name=quarkus-order-service,service.version=1.0.0,deployment.environment=development,environment=development
+quarkus.otel.resource.attributes=service.name=quarkus-order-service,service.version=1.0.0,environment=development
 
 # OpenTelemetry - Production
 %prod.quarkus.otel.exporter.otlp.endpoint=https://scout.base14.io:4317

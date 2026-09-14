@@ -110,7 +110,6 @@ builder.Services.AddOpenTelemetry()
             serviceVersion: "1.0.0")
         .AddAttributes(new[]
         {
-            new KeyValuePair<string, object>("deployment.environment", "production"),
             new KeyValuePair<string, object>("environment", "production")
         }))
     .WithTracing(tracing => tracing
@@ -158,9 +157,6 @@ public static class TelemetrySetup
                 .AddService(serviceName)
                 .AddAttributes(new[]
                 {
-                    new KeyValuePair<string, object>(
-                        "deployment.environment",
-                        builder.Environment.EnvironmentName),
                     new KeyValuePair<string, object>(
                         "environment",
                         builder.Environment.EnvironmentName)

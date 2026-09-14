@@ -121,7 +121,6 @@ match the attribute used when collecting metrics.
 
 - `environment`
 - `env`
-- `deployment.environment`
 
 #### Service Names
 

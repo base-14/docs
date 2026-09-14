@@ -43,7 +43,7 @@ scout metrics <SERVICE> [flags]
 | `--search` | string | — | Filter metrics by name substring (case-insensitive) |
 | `--wide` | bool | `false` | Show full descriptions without truncation |
 | `--raw` | bool | `false` | Output JSON |
-| `--environment <ENV>` | string | — | Restrict to metrics emitted by services tagged with this `deployment.environment` (e.g. `production`, `staging`). Services without the tag return no metrics. |
+| `--environment <ENV>` | string | — | Restrict to metrics emitted by services tagged with this `environment` resource attribute (e.g. `production`, `staging`). Services without the tag return no metrics. |
 
 ## Examples
 

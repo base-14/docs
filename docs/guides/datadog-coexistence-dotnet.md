@@ -155,7 +155,6 @@ builder.Services.AddOpenTelemetry()
             serviceName: Environment.GetEnvironmentVariable("OTEL_SERVICE_NAME") ?? "dotnet-app")
         .AddAttributes(new Dictionary<string, object>
         {
-            ["deployment.environment"] = builder.Environment.EnvironmentName.ToLowerInvariant(),
             ["environment"] = builder.Environment.EnvironmentName.ToLowerInvariant()
         }))
     .WithTracing(t => t

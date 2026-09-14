@@ -296,10 +296,6 @@ pub fn init_telemetry(
             "service.namespace", "examples",
         ))
         .with_attribute(KeyValue::new(
-            "deployment.environment",
-            config.environment.clone(),
-        ))
-        .with_attribute(KeyValue::new(
             "environment",
             config.environment.clone(),
         ))
@@ -1809,9 +1805,6 @@ processors:
 
   attributes:
     actions:
-      - key: deployment.environment
-        value: ${SCOUT_ENVIRONMENT}
-        action: upsert
       - key: environment
         value: ${SCOUT_ENVIRONMENT}
         action: upsert

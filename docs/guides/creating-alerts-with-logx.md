@@ -52,8 +52,7 @@ The alert creation process involves three main steps:
 1. Open the **LogX** application in Scout
 2. Configure your log filters:
    - Select the service you want to monitor
-   - Add resource attribute filters (e.g., `host.name`,
-     `deployment.environment`)
+   - Add resource attribute filters (e.g., `host.name`, `environment`)
    - Add log attribute filters as needed
    - Apply body search terms or regex patterns
 3. Verify your filters are showing the logs you want to alert on

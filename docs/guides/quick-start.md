@@ -108,9 +108,6 @@ receivers:
 processors:
   resource:
     attributes:
-      - key: deployment.environment
-        value: production
-        action: upsert
       - key: environment
         value: production
         action: upsert

@@ -488,7 +488,6 @@ processors:
     attributes:
       - { key: service.name,                value: "linux-host-01",            action: insert }
       - { key: service.namespace,           value: ${env:SERVICE_NAMESPACE},   action: insert }
-      - { key: deployment.environment.name, value: ${env:ENVIRONMENT},         action: insert }
       - { key: environment,                 value: ${env:ENVIRONMENT},         action: insert }
       - { key: device.kind,                 value: compute,                    action: insert }
       - { key: device.manufacturer,         value: "generic-linux",            action: insert }
@@ -499,7 +498,6 @@ processors:
     attributes:
       - { key: service.name,                value: "cisco-router-01",          action: insert }
       - { key: service.namespace,           value: ${env:SERVICE_NAMESPACE},   action: insert }
-      - { key: deployment.environment.name, value: ${env:ENVIRONMENT},         action: insert }
       - { key: environment,                 value: ${env:ENVIRONMENT},         action: insert }
       - { key: device.kind,                 value: network,                    action: insert }
       - { key: device.manufacturer,         value: "cisco",                    action: insert }
@@ -510,7 +508,6 @@ processors:
     attributes:
       - { key: service.name,                value: "apc-ups-01",               action: insert }
       - { key: service.namespace,           value: ${env:SERVICE_NAMESPACE},   action: insert }
-      - { key: deployment.environment.name, value: ${env:ENVIRONMENT},         action: insert }
       - { key: environment,                 value: ${env:ENVIRONMENT},         action: insert }
       - { key: device.kind,                 value: power,                      action: insert }
       - { key: device.manufacturer,         value: "apc",                      action: insert }

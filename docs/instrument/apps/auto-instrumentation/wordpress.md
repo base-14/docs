@@ -455,10 +455,8 @@ variables. Two settings cannot come from the environment, because they have to
 take effect before any PHP code runs: loading the extension and setting the
 prepend file. Those live in a `php.ini` drop-in.
 
-Set `environment` alongside `deployment.environment` in
-`OTEL_RESOURCE_ATTRIBUTES`. Scout's UI filters on the lowercase `environment`
-key, and carrying both keeps the resource valid under semantic conventions
-while staying queryable in the UI.
+Set `environment` in `OTEL_RESOURCE_ATTRIBUTES`. Scout's UI filters on the
+`environment` key.
 
 ```mdx-code-block
 <Tabs>
@@ -473,7 +471,7 @@ OTEL_TRACES_EXPORTER=otlp
 OTEL_METRICS_EXPORTER=otlp
 OTEL_LOGS_EXPORTER=otlp
 OTEL_PHP_AUTOLOAD_ENABLED=true
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment=development,environment=development
+OTEL_RESOURCE_ATTRIBUTES=environment=development
 ```
 
 `OTEL_PHP_AUTOLOAD_ENABLED=true` tells the SDK to configure itself from these
@@ -550,7 +548,7 @@ x-otel-env: &otel-env
   OTEL_METRICS_EXPORTER: otlp
   OTEL_LOGS_EXPORTER: otlp
   OTEL_PHP_AUTOLOAD_ENABLED: "true"
-  OTEL_RESOURCE_ATTRIBUTES: deployment.environment=development,environment=development
+  OTEL_RESOURCE_ATTRIBUTES: environment=development
 
 x-db-creds: &db-creds
   WORDPRESS_DB_HOST: mariadb:3306
@@ -577,7 +575,7 @@ services:
       - wordpress-data:/var/www/html
     environment:
       <<: [*wp-env, *otel-env]
-      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=development,environment=development,service.instance.role=apache
+      OTEL_RESOURCE_ATTRIBUTES: environment=development,service.instance.role=apache
     healthcheck:
       test: ["CMD", "curl", "-fsS", "-o", "/dev/null", "http://localhost/"]
       interval: 10s

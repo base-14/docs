@@ -110,7 +110,6 @@ processors:
       - {key: cloud.platform, value: gcp_cloud_sql, action: insert}
       - {key: cloud.account.id, value: "${env:GCP_PROJECT_ID}", action: insert}
       - {key: cloud.region, value: "${env:GCP_REGION}", action: insert}
-      - {key: deployment.environment.name, value: "${env:ENVIRONMENT}", action: upsert}
       - {key: environment, value: "${env:ENVIRONMENT}", action: upsert}
 
   memory_limiter:

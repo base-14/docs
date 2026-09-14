@@ -219,9 +219,6 @@ receivers:
 processors:
   resource:
     attributes:
-      - key: deployment.environment.name
-        value: ${env:ENVIRONMENT}
-        action: upsert
       - key: environment
         value: ${env:ENVIRONMENT}
         action: upsert
@@ -252,11 +249,8 @@ Set `protocol_version` to match your cluster - `4.0.0` for Kafka 4.x,
 production, drop the Diagnostic-tier topic and committed-offset series
 with a `filter` processor while keeping Core and Operational.
 
-> **Environment keys**: Scout's UI filters on the lowercase `environment`
-> key, so emit it alongside the OTel-native `deployment.environment.name`
-> (semantic conventions v1.27+, stable in v1.40.0). The legacy
-> `deployment.environment` is still accepted by Scout for backward
-> compatibility.
+> **Environment key**: Scout's UI filters on the `environment` resource
+> attribute, so set it on every pipeline that ships data to Scout.
 
 ### Environment Variables
 

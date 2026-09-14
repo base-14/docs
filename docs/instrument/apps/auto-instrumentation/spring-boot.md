@@ -455,7 +455,7 @@ Choose the approach that best fits your deployment model.
 ```bash title=".env" showLineNumbers
 # Service identification
 OTEL_SERVICE_NAME=your-service-name
-OTEL_RESOURCE_ATTRIBUTES=service.namespace=your-namespace,deployment.environment.name=development,environment=development
+OTEL_RESOURCE_ATTRIBUTES=service.namespace=your-namespace,environment=development
 
 # OTLP Exporter configuration
 OTEL_EXPORTER_OTLP_ENDPOINT=http://scout-collector:4318
@@ -496,7 +496,6 @@ server.address=0.0.0.0
 # OpenTelemetry
 otel.service.name=your-service-name
 otel.resource.attributes=service.namespace=your-namespace,\
-    deployment.environment.name=dev,\
     environment=dev
 
 # OTLP Exporter
@@ -586,7 +585,7 @@ otel:
   service:
     name: my-service-dev
   resource:
-    attributes: deployment.environment.name=dev,environment=dev,service.namespace=development
+    attributes: environment=dev,service.namespace=development
   exporter:
     otlp:
       endpoint: http://localhost:4318
@@ -599,7 +598,7 @@ otel:
   service:
     name: my-service-prod
   resource:
-    attributes: deployment.environment.name=demo,environment=demo,service.namespace=production
+    attributes: environment=demo,service.namespace=production
   exporter:
     otlp:
       endpoint: https://scout-collector.example.com:4318
@@ -766,7 +765,6 @@ otel.resource.attributes=\
     service.namespace=production,\
     service.version=1.2.3,\
     service.instance.id=${HOSTNAME},\
-    deployment.environment.name=demo,\
     environment=demo,\
     deployment.region=us-east-1,\
     cloud.provider=aws,\
@@ -810,7 +808,7 @@ services:
     environment:
       OTEL_SERVICE_NAME: payment-service
       OTEL_EXPORTER_OTLP_ENDPOINT: http://scout-collector:4318
-      OTEL_RESOURCE_ATTRIBUTES: deployment.environment.name=development,environment=development
+      OTEL_RESOURCE_ATTRIBUTES: environment=development
     depends_on:
       - scout-collector
 
@@ -849,7 +847,7 @@ spec:
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: "http://scout-collector.observability.svc.cluster.local:4318"
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: "deployment.environment.name=demo,environment=demo,k8s.cluster.name=prod-cluster"
+              value: "environment=demo,k8s.cluster.name=prod-cluster"
             - name: POD_NAME
               valueFrom:
                 fieldRef:
@@ -1327,7 +1325,7 @@ docker run -d \
   -p 8080:8080 \
   -e OTEL_SERVICE_NAME=my-service \
   -e OTEL_EXPORTER_OTLP_ENDPOINT=http://scout-collector:4318 \
-  -e OTEL_RESOURCE_ATTRIBUTES=deployment.environment.name=development,environment=development \
+  -e OTEL_RESOURCE_ATTRIBUTES=environment=development \
   my-service:1.0.0
 ```
 

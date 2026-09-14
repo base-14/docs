@@ -248,9 +248,6 @@ receivers:
 processors:
   resource:
     attributes:
-      - key: deployment.environment.name
-        value: ${env:ENVIRONMENT}
-        action: upsert
       - key: environment
         value: ${env:ENVIRONMENT}
         action: upsert

@@ -344,7 +344,7 @@ OTEL_EXPORTER_OTLP_ENDPOINT=scout-collector:4318
 OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 
 # Resource attributes
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment=development,environment=development,service.namespace=backend
+OTEL_RESOURCE_ATTRIBUTES=environment=development,service.namespace=backend
 
 # Sampling (optional)
 OTEL_TRACES_SAMPLER=parentbased_always_on

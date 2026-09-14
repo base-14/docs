@@ -194,8 +194,6 @@ public static class TelemetrySetup
             .ConfigureResource(resource => resource
                 .AddService(serviceName)
                 .AddAttributes([
-                    new KeyValuePair<string, object>("deployment.environment",
-                        builder.Environment.EnvironmentName.ToLowerInvariant()),
                     new KeyValuePair<string, object>("environment",
                         builder.Environment.EnvironmentName.ToLowerInvariant())
                 ]))
@@ -410,8 +408,6 @@ public static WebApplicationBuilder AddTelemetry(this WebApplicationBuilder buil
         .ConfigureResource(resource => resource
             .AddService(serviceName)
             .AddAttributes([
-                new KeyValuePair<string, object>("deployment.environment",
-                    builder.Environment.EnvironmentName.ToLowerInvariant()),
                 new KeyValuePair<string, object>("environment",
                     builder.Environment.EnvironmentName.ToLowerInvariant())
             ]))
@@ -486,8 +482,6 @@ builder.Services.AddOpenTelemetry()
                 .GetName().Version?.ToString() ?? "1.0.0",
             serviceInstanceId: Environment.MachineName)
         .AddAttributes([
-            new KeyValuePair<string, object>("deployment.environment",
-                builder.Environment.EnvironmentName.ToLowerInvariant()),
             new KeyValuePair<string, object>("environment",
                 builder.Environment.EnvironmentName.ToLowerInvariant()),
             new KeyValuePair<string, object>("service.namespace", "production"),
@@ -1513,8 +1507,6 @@ public static class TelemetrySetup
             .ConfigureResource(resource => resource
                 .AddService(serviceName)
                 .AddAttributes([
-                    new KeyValuePair<string, object>("deployment.environment",
-                        builder.Environment.EnvironmentName.ToLowerInvariant()),
                     new KeyValuePair<string, object>("environment",
                         builder.Environment.EnvironmentName.ToLowerInvariant())
                 ]))

@@ -160,7 +160,6 @@ processors:
       - {key: cloud.account.id, value: "${env:GCP_PROJECT_ID}", action: insert}
       # Regional surfaces only — omit for Pub/Sub, Cloud Load Balancing and VPC
       - {key: cloud.region, value: "${env:GCP_REGION}", action: insert}
-      - {key: deployment.environment.name, value: "${env:ENVIRONMENT}", action: upsert}
       - {key: environment, value: "${env:ENVIRONMENT}", action: upsert}
 ```
 

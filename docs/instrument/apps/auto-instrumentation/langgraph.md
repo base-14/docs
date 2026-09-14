@@ -250,9 +250,6 @@ def setup_telemetry(
     resource = Resource.create({
         "service.name": service_name,
         "service.version": os.getenv("SERVICE_VERSION", "1.0.0"),
-        "deployment.environment": os.getenv(
-            "SCOUT_ENVIRONMENT", "development"
-        ),
         "environment": os.getenv(
             "SCOUT_ENVIRONMENT", "development"
         ),
@@ -452,9 +449,6 @@ processors:
     send_batch_size: 1024
   attributes:
     actions:
-      - key: deployment.environment
-        value: ${SCOUT_ENVIRONMENT}
-        action: upsert
       - key: environment
         value: ${SCOUT_ENVIRONMENT}
         action: upsert

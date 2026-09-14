@@ -209,7 +209,6 @@ pub fn init_telemetry(service_name: &str, otlp_endpoint: &str) -> anyhow::Result
         .with_service_name(service_name.to_string())
         .with_attribute(KeyValue::new("service.version", "1.0.0"))
         .with_attribute(KeyValue::new("service.namespace", "production"))
-        .with_attribute(KeyValue::new("deployment.environment", "production"))
         .with_attribute(KeyValue::new("environment", "production"))
         .build();
 
@@ -453,7 +452,6 @@ pub fn init_production_telemetry(
     let resource = Resource::builder()
         .with_service_name(service_name.to_string())
         .with_attribute(KeyValue::new("service.version", env!("CARGO_PKG_VERSION")))
-        .with_attribute(KeyValue::new("deployment.environment", "production"))
         .with_attribute(KeyValue::new("environment", "production"))
         .build();
 
@@ -504,7 +502,6 @@ fn build_resource(service_name: &str, environment: &str) -> Resource {
         .with_service_name(service_name.to_string())
         .with_attribute(KeyValue::new("service.version", env!("CARGO_PKG_VERSION")))
         .with_attribute(KeyValue::new("service.namespace", "production"))
-        .with_attribute(KeyValue::new("deployment.environment", environment.to_string()))
         .with_attribute(KeyValue::new("environment", environment.to_string()))
         .with_attribute(KeyValue::new("host.name", hostname))
         .with_attribute(KeyValue::new(

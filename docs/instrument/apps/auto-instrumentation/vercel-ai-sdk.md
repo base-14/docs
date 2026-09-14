@@ -371,9 +371,6 @@ processors:
     send_batch_max_size: 2048
   attributes:
     actions:
-      - key: deployment.environment
-        value: ${SCOUT_ENVIRONMENT}
-        action: upsert
       - key: environment
         value: ${SCOUT_ENVIRONMENT}
         action: upsert

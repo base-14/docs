@@ -394,9 +394,6 @@ processors:
 
   resource:
     attributes:
-      - key: deployment.environment
-        value: ${SCOUT_ENVIRONMENT}
-        action: upsert
       - key: environment
         value: ${SCOUT_ENVIRONMENT}
         action: upsert
@@ -477,7 +474,7 @@ SERVICE_NAMESPACE=production
 OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
 
 # Resource attributes
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment=demo,environment=demo,service.namespace=api
+OTEL_RESOURCE_ATTRIBUTES=environment=demo,service.namespace=api
 
 # Sampling (reduce volume in high-traffic scenarios)
 OTEL_TRACES_SAMPLER=parentbased_traceidratio
@@ -535,7 +532,7 @@ services:
       REDIS_URL: redis://redis:6379
       OTEL_SERVICE_NAME: fastify-api
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
-      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=development,environment=development
+      OTEL_RESOURCE_ATTRIBUTES: environment=development
     depends_on:
       postgres:
         condition: service_healthy

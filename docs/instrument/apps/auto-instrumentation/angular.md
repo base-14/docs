@@ -577,7 +577,6 @@ export function initBrowserTelemetry(): void {
   const resource = resourceFromAttributes({
     [ATTR_SERVICE_NAME]: environment.otelServiceName,
     [ATTR_SERVICE_VERSION]: '1.0.0',
-    'deployment.environment.name': environment.deploymentEnvironment,
     environment: environment.deploymentEnvironment,
   });
 
@@ -654,9 +653,8 @@ export function initBrowserTelemetry(): void {
 }
 ```
 
-The dual-key resource attributes (`deployment.environment.name` plus a
-lowercase `environment`) keep the SDK aligned with the current semantic
-conventions while satisfying dashboards that filter on the short key. The same
+The `environment` resource attribute is what Scout dashboards filter on. The
+same
 `resource` is shared across all three providers so traces, metrics, and logs
 carry identical service identity.
 
@@ -1018,7 +1016,6 @@ const sdk = new NodeSDK({
   resource: resourceFromAttributes({
     [ATTR_SERVICE_NAME]: 'angular-items-api',
     [ATTR_SERVICE_VERSION]: '1.0.0',
-    'deployment.environment.name': env,
     environment: env,
   }),
   traceExporter: new OTLPTraceExporter({ url: `${base}/v1/traces` }),

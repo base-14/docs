@@ -493,7 +493,7 @@ shape.
 
 ### Resource attributes
 
-Add `service.namespace` and `deployment.environment` so Scout dashboards can
+Add `service.namespace` and `environment` so Scout dashboards can
 filter across environments and service families:
 
 ```csharp showLineNumbers title="ServiceDefaults/Extensions.cs"
@@ -504,7 +504,6 @@ builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource
         .AddAttributes(new[]
         {
-            new KeyValuePair<string, object>("deployment.environment", environment),
             new KeyValuePair<string, object>("environment", environment),
             new KeyValuePair<string, object>("service.namespace", "examples"),
         }))

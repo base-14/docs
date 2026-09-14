@@ -297,7 +297,6 @@ def setup_telemetry(otel_endpoint: str) -> None:
     resource = Resource.create({
         "service.name": service_name,
         "service.version": os.getenv("APP_VERSION", "1.0.0"),
-        "deployment.environment": os.getenv("ENVIRONMENT", "development"),
         "environment": os.getenv("ENVIRONMENT", "development")
     })
 
@@ -756,7 +755,6 @@ resource = Resource.create({
     "service.namespace": os.getenv("SERVICE_NAMESPACE", "production"),
 
     # Deployment information
-    "deployment.environment": os.getenv("ENVIRONMENT", "development"),
     "environment": os.getenv("ENVIRONMENT", "development"),
     "deployment.region": os.getenv("AWS_REGION", "us-east-1"),
 
@@ -804,7 +802,6 @@ def setup_telemetry() -> None:
     # Create resource
     resource = Resource.create({
         "service.name": service_name,
-        "deployment.environment": environment,
         "environment": environment,
         "service.version": os.getenv("APP_VERSION", "dev"),
     })
@@ -1863,7 +1860,6 @@ def setup_telemetry(otel_endpoint: str = None):
         "service.name": service_name,
         "service.version": os.getenv("APP_VERSION", "1.0.0"),
         "service.namespace": os.getenv("SERVICE_NAMESPACE", "default"),
-        "deployment.environment": environment,
         "environment": environment,
         "service.instance.id": socket.gethostname(),
         "host.name": socket.gethostname(),
