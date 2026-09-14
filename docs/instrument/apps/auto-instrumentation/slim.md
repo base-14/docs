@@ -265,7 +265,7 @@ OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 OTEL_TRACES_EXPORTER=otlp
 OTEL_METRICS_EXPORTER=otlp
 OTEL_LOGS_EXPORTER=otlp
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment.name=development,environment=development
+OTEL_RESOURCE_ATTRIBUTES=environment=development
 ```
 
 `OTEL_PHP_AUTOLOAD_ENABLED=true` is the key switch. It tells the SDK to
@@ -273,9 +273,8 @@ automatically discover and activate the auto-instrumentation packages (like
 `opentelemetry-auto-slim` and `opentelemetry-auto-mongodb`). Without it, the
 packages sit idle.
 
-Scout's UI filters on the lowercase `environment` key, so emit it alongside
-the OTel-native `deployment.environment.name`. The legacy
-`deployment.environment` is still accepted for backward compatibility.
+Scout's UI filters on the `environment` key, so set it in
+`OTEL_RESOURCE_ATTRIBUTES`.
 
 ### Scout Collector Integration
 
@@ -931,7 +930,7 @@ x-otel-env: &otel-env
   OTEL_METRICS_EXPORTER: otlp
   OTEL_LOGS_EXPORTER: otlp
   OTEL_PHP_AUTOLOAD_ENABLED: "true"
-  OTEL_RESOURCE_ATTRIBUTES: deployment.environment.name=development,environment=development
+  OTEL_RESOURCE_ATTRIBUTES: environment=development
 
 x-mongo-env: &mongo-env
   MONGO_URI: mongodb://mongo:27017

@@ -364,9 +364,6 @@ processors:
     send_batch_size: 1024
   resource:
     attributes:
-      - key: deployment.environment
-        value: ${env:SCOUT_ENVIRONMENT}
-        action: upsert
       - key: environment
         value: ${env:SCOUT_ENVIRONMENT}
         action: upsert

@@ -126,7 +126,6 @@ $resource = ResourceInfoFactory::defaultResource()->merge(
         Attributes::create([
             'service.name' => 'my-php-app',
             'service.version' => '1.0.0',
-            'deployment.environment' => 'development',
             'environment' => 'development',
         ])
     )

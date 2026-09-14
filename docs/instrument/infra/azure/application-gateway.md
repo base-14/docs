@@ -152,8 +152,6 @@ processors:
       # for multi-gateway fleets; the receiver injects azuremonitor.resource_id
       # per-resource automatically.
       - {key: cloud.resource_id, value: "${env:APPGATEWAY_RESOURCE_ID}",    action: insert}
-      - {key: deployment.environment.name,
-                                 value: "${env:DEPLOYMENT_ENVIRONMENT}",    action: insert}
       - {key: environment,       value: "${env:DEPLOYMENT_ENVIRONMENT}",    action: insert}
       - {key: service.name,      value: "${env:APPGATEWAY_SERVICE_NAME}",   action: insert}
 

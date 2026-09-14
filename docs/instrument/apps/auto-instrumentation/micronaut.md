@@ -227,7 +227,7 @@ OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 OTEL_TRACES_EXPORTER=otlp
 OTEL_METRICS_EXPORTER=otlp
 OTEL_LOGS_EXPORTER=otlp
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment=development,environment=development
+OTEL_RESOURCE_ATTRIBUTES=environment=development
 ```
 
 The agent reads these variables at startup and configures itself. No
@@ -294,7 +294,7 @@ x-otel-env: &otel-env
   OTEL_METRICS_EXPORTER: otlp
   OTEL_LOGS_EXPORTER: otlp
   OTEL_METRIC_EXPORT_INTERVAL: "10000"
-  OTEL_RESOURCE_ATTRIBUTES: deployment.environment=development,environment=development
+  OTEL_RESOURCE_ATTRIBUTES: environment=development
 
 services:
   otel-collector:
@@ -455,7 +455,7 @@ OTEL_BSP_MAX_EXPORT_BATCH_SIZE=512
 OTEL_METRIC_EXPORT_INTERVAL=30000
 
 # Resource Attributes
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment=demo,environment=demo,host.name=${HOSTNAME}
+OTEL_RESOURCE_ATTRIBUTES=environment=demo,host.name=${HOSTNAME}
 ```
 
 ### Docker Production Configuration

@@ -330,7 +330,6 @@ def initialize_tracing():
     resource = Resource.create({
         "service.name": os.getenv("OTEL_SERVICE_NAME", "django-order-service"),
         "service.version": os.getenv("APP_VERSION", "1.0.0"),
-        "deployment.environment.name": os.getenv("ENVIRONMENT", "development"),
         "environment": os.getenv("ENVIRONMENT", "development"),
     })
 
@@ -716,7 +715,6 @@ def initialize_tracing():
     resource = Resource.create({
         "service.name": os.getenv("OTEL_SERVICE_NAME", "django-order-service"),
         "service.version": os.getenv("APP_VERSION", "1.0.0"),
-        "deployment.environment.name": os.getenv("ENVIRONMENT", "development"),
         "environment": os.getenv("ENVIRONMENT", "development"),
         "cloud.provider": os.getenv("CLOUD_PROVIDER", "aws"),
         "cloud.region": os.getenv("AWS_REGION", "us-east-1"),

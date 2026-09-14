@@ -276,7 +276,6 @@ def setup_telemetry(engine=None):
         {
             "service.name": "my-ai-service",
             "service.version": "1.0.0",
-            "deployment.environment": "development",
             "environment": "development",
         }
     )
@@ -1206,9 +1205,6 @@ processors:
     send_batch_max_size: 2048
   attributes:
     actions:
-      - key: deployment.environment
-        value: ${SCOUT_ENVIRONMENT}
-        action: upsert
       - key: environment
         value: ${SCOUT_ENVIRONMENT}
         action: upsert

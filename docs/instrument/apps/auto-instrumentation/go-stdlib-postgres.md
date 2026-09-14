@@ -259,7 +259,7 @@ NOTIFY_URL=http://notify:8081/notify
 # OpenTelemetry SDK
 OTEL_SERVICE_NAME=stdlib-articles
 OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment=development,environment=development,service.namespace=examples
+OTEL_RESOURCE_ATTRIBUTES=environment=development,service.namespace=examples
 
 # Scout (only needed in the collector environment)
 SCOUT_ENDPOINT=https://your-scout-endpoint
@@ -291,7 +291,7 @@ services:
       NOTIFY_URL: http://notify:8081/notify
       OTEL_SERVICE_NAME: stdlib-articles
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
-      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=${SCOUT_ENVIRONMENT:-development},environment=${SCOUT_ENVIRONMENT:-development},service.namespace=examples
+      OTEL_RESOURCE_ATTRIBUTES: environment=${SCOUT_ENVIRONMENT:-development},service.namespace=examples
     depends_on:
       db:
         condition: service_healthy
@@ -306,7 +306,7 @@ services:
       NOTIFY_PORT: "8081"
       OTEL_SERVICE_NAME: stdlib-notify
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
-      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=${SCOUT_ENVIRONMENT:-development},environment=${SCOUT_ENVIRONMENT:-development},service.namespace=examples
+      OTEL_RESOURCE_ATTRIBUTES: environment=${SCOUT_ENVIRONMENT:-development},service.namespace=examples
     depends_on:
       otel-collector:
         condition: service_started
@@ -761,7 +761,7 @@ h.logger.InfoContext(r.Context(), "Article created", "article_id", article.ID)
 
 The counter exports every 60 s through the meter provider. In Scout this
 shows up as the `articles.created` metric, broken down by
-`service.name=stdlib-articles` and `deployment.environment`.
+`service.name=stdlib-articles` and `environment`.
 
 ### Trace ID echoed in the response
 

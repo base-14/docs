@@ -48,7 +48,7 @@ scout traces <SERVICE> [flags]
 | `--raw` | bool | `false` | Output JSON |
 | `--discover` | bool | `false` | Show available span metadata instead of querying |
 | `--id` | string | — | Drill into a specific trace by ID. Extends the time window to 60 minutes |
-| `--environment <ENV>` | string | — | Restrict results to records tagged with this OTel `deployment.environment` (e.g. `production`, `staging`). Records without that resource attribute are filtered out. |
+| `--environment <ENV>` | string | — | Restrict results to records tagged with this `environment` resource attribute (e.g. `production`, `staging`). Records without that resource attribute are filtered out. |
 
 ## Examples
 

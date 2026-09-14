@@ -253,7 +253,7 @@ process.on('SIGTERM', () => {
 ```bash showLineNumbers title=".env"
 # Service identification
 OTEL_SERVICE_NAME=bullmq-worker
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment=development,environment=development,service.namespace=jobs
+OTEL_RESOURCE_ATTRIBUTES=environment=development,service.namespace=jobs
 
 # Exporter
 OTEL_TRACES_EXPORTER=otlp
@@ -554,7 +554,6 @@ const sdk = new NodeSDK({
   resource: resourceFromAttributes({
     [ATTR_SERVICE_NAME]: process.env.OTEL_SERVICE_NAME || 'bullmq-worker',
     [ATTR_SERVICE_VERSION]: process.env.APP_VERSION || '1.0.0',
-    'deployment.environment.name': process.env.NODE_ENV || 'development',
     'environment': process.env.NODE_ENV || 'development',
   }),
   spanProcessors: [

@@ -329,7 +329,7 @@ OTEL_METRICS_EXPORTER=otlp
 OTEL_LOGS_EXPORTER=otlp
 
 # Resource attributes
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment=development,environment=development,service.namespace=myapp
+OTEL_RESOURCE_ATTRIBUTES=environment=development,service.namespace=myapp
 ```
 
 ```mdx-code-block

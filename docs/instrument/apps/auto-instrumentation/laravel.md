@@ -275,7 +275,6 @@ class OpenTelemetryServiceProvider extends ServiceProvider
                 Attributes::create([
                     'service.name' => config('app.name'),
                     'service.version' => config('app.version', '1.0.0'),
-                    'deployment.environment' => config('app.env'),
                     'environment' => config('app.env'),
                 ])
             )
@@ -452,7 +451,7 @@ OTEL_BSP_EXPORT_TIMEOUT_MILLIS=30000
 OTEL_BSP_MAX_EXPORT_BATCH_SIZE=512
 
 # Resource Attributes
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment=demo,environment=demo,host.name=${HOSTNAME},cloud.provider=aws,cloud.region=us-east-1
+OTEL_RESOURCE_ATTRIBUTES=environment=demo,host.name=${HOSTNAME},cloud.provider=aws,cloud.region=us-east-1
 ```
 
 **Benefits of production configuration:**
@@ -542,7 +541,7 @@ services:
       DB_PASSWORD: "${DB_PASSWORD}"
 
       # Resource Attributes
-      OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=demo,environment=demo,service.instance.id=${HOSTNAME}"
+      OTEL_RESOURCE_ATTRIBUTES: "environment=demo,service.instance.id=${HOSTNAME}"
     depends_on:
       - postgres
       - scout-collector
@@ -582,7 +581,7 @@ volumes:
 Add rich context to all telemetry data with resource attributes:
 
 ```bash showLineNumbers title=".env"
-OTEL_RESOURCE_ATTRIBUTES="deployment.environment=development,environment=development,service.namespace=ecommerce,service.instance.id=${HOSTNAME},host.name=${HOSTNAME},host.type=container,cloud.provider=aws,cloud.region=us-east-1,k8s.pod.name=${K8S_POD_NAME},k8s.namespace.name=${K8S_NAMESPACE}"
+OTEL_RESOURCE_ATTRIBUTES="environment=development,service.namespace=ecommerce,service.instance.id=${HOSTNAME},host.name=${HOSTNAME},host.type=container,cloud.provider=aws,cloud.region=us-east-1,k8s.pod.name=${K8S_POD_NAME},k8s.namespace.name=${K8S_NAMESPACE}"
 ```
 
 These attributes help you:

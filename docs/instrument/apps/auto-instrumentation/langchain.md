@@ -106,8 +106,8 @@ This guide demonstrates how to:
 - Capture prompts and completions safely, off by default, with PII scrubbing.
 - Handle real failures and graceful degradation without leaking spans.
 - Read the resulting span tree and avoid the common pitfalls.
-- Wire the collector to base14 Scout with the dual-key environment
-  convention.
+- Wire the collector to base14 Scout with the `environment` resource
+  attribute Scout filters on.
 
 ## Prerequisites
 
@@ -236,7 +236,7 @@ are the standard OpenTelemetry ones, read by the SDK itself:
 ```bash showLineNumbers title=".env"
 OTEL_SERVICE_NAME=your-agent-service
 OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment.name=production
+OTEL_RESOURCE_ATTRIBUTES=environment=production
 OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental
 ```
 
@@ -244,7 +244,7 @@ OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental
 | -------- | ------- | ---------------- |
 | `OTEL_SERVICE_NAME` | unset | Becomes `service.name` on every span. Set it, or your agent shows up as `unknown_service`. |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://localhost:4318` | OTLP HTTP endpoint of your collector. |
-| `OTEL_RESOURCE_ATTRIBUTES` | unset | Comma-separated resource attributes. Use it for `deployment.environment.name`. |
+| `OTEL_RESOURCE_ATTRIBUTES` | unset | Comma-separated resource attributes. Use it for `environment`. |
 | `OTEL_SEMCONV_STABILITY_OPT_IN` | unset | Set to `gen_ai_latest_experimental` to opt into the current GenAI conventions rather than the frozen older set. |
 
 Then there is content capture, which is the one GenAI-specific decision and
@@ -389,19 +389,17 @@ span on its `parent_run_id`'s span.
 ### Telemetry Setup
 
 Bootstrap the SDK once, before the app serves traffic. This wires the OTLP
-exporters for all three signals, the dual-key environment resource, and base
+exporters for all three signals, the `environment` resource attribute, and base
 auto-instrumentation for httpx, SQLAlchemy, and logging.
 
 ```python showLineNumbers title="src/runbook_assistant/telemetry/setup.py"
 def build_resource() -> Resource:
-    """Resource with the dual-key environment convention."""
+    """Resource with the environment attribute Scout filters on."""
     s = get_settings()
     return Resource.create(
         {
             "service.name": s.otel_service_name,
             "service.version": _APP_VERSION,
-            # Dual-key: Scout UI filters on lowercase `environment`.
-            "deployment.environment.name": s.scout_environment,
             "environment": s.scout_environment,
         }
     )
@@ -1001,8 +999,8 @@ Where this fits alongside neighbouring conventions and frameworks:
 ## Scout Wiring
 
 Route the SDK's OTLP output to a collector that forwards to base14 Scout. The
-collector authenticates with `oauth2client` and applies the dual-key
-environment on the way out.
+collector authenticates with `oauth2client` and applies the `environment`
+attribute on the way out.
 
 ```yaml showLineNumbers title="otel-collector-config.yaml"
 extensions:
@@ -1044,9 +1042,6 @@ processors:
 
   attributes:
     actions:
-      - key: deployment.environment
-        value: ${SCOUT_ENVIRONMENT}
-        action: upsert
       - key: environment
         value: ${SCOUT_ENVIRONMENT}
         action: upsert
@@ -1084,10 +1079,9 @@ service:
       exporters: [otlp_http/b14, debug]
 ```
 
-The dual-key environment is deliberate: the SDK resource sets
-`deployment.environment.name` and the collector upserts both
-`deployment.environment` and a lowercase `environment` with the same value,
-because the Scout UI filters on `environment`.
+The collector upserts `environment` because the Scout UI filters on it; the
+upsert guarantees the attribute is present even when an SDK resource does
+not set it.
 
 `filter/noisy` drops health-probe spans from the traces pipeline only. The
 `debug` exporter prints every batch to the collector log, which is what the

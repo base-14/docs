@@ -91,7 +91,6 @@ processors:
     attributes:
       - {key: cloud.provider, value: gcp, action: insert}
       - {key: cloud.platform, value: gcp_cloud_run, action: insert}
-      - {key: deployment.environment.name, value: "${env:ENVIRONMENT}", action: upsert}
       - {key: environment, value: "${env:ENVIRONMENT}", action: upsert}
 
   memory_limiter:
@@ -234,7 +233,6 @@ processors:
       - {key: cloud.provider, value: gcp, action: insert}
       - {key: cloud.platform, value: gcp_cloud_run, action: insert}
       - {key: cloud.account.id, value: "${env:GCP_PROJECT_ID}", action: insert}
-      - {key: deployment.environment.name, value: "${env:ENVIRONMENT}", action: upsert}
       - {key: environment, value: "${env:ENVIRONMENT}", action: upsert}
 
 service:

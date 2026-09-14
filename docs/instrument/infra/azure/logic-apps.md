@@ -223,7 +223,6 @@ processors:
       - {key: cloud.account.id,            value: "${env:AZURE_SUBSCRIPTION_ID}",  action: insert}
       - {key: cloud.region,                value: "${env:LOGICAPPS_REGION}",       action: insert}
       - {key: cloud.resource_id,           value: "${env:LOGICAPPS_RESOURCE_ID}",  action: insert}
-      - {key: deployment.environment.name, value: "${env:ENVIRONMENT}",            action: insert}
       - {key: environment,                 value: "${env:ENVIRONMENT}",            action: insert}
       - {key: service.name,                value: "${env:LOGICAPPS_SERVICE_NAME}", action: insert}
 
@@ -401,7 +400,6 @@ processors:
       - {key: cloud.account.id,            value: "${env:AZURE_SUBSCRIPTION_ID}",              action: insert}
       - {key: cloud.region,                value: "${env:LOGICAPPSLOGS_SOURCE_REGION}",        action: insert}
       - {key: cloud.resource_id,           value: "${env:LOGICAPPSLOGS_SOURCE_RESOURCE_ID}",   action: insert}
-      - {key: deployment.environment.name, value: "${env:LOGICAPPSLOGS_ENVIRONMENT}",          action: insert}
       - {key: environment,                 value: "${env:LOGICAPPSLOGS_ENVIRONMENT}",          action: insert}
       - {key: service.name,                value: "${env:LOGICAPPSLOGS_SERVICE_NAME}",         action: insert}
 

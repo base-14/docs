@@ -257,7 +257,6 @@ export function setupTelemetry(): NodeSDK {
   const resource = resourceFromAttributes({
     [ATTR_SERVICE_NAME]: process.env.OTEL_SERVICE_NAME || "express-app",
     [ATTR_SERVICE_VERSION]: process.env.APP_VERSION || "1.0.0",
-    "deployment.environment": process.env.NODE_ENV || "development",
     "environment": process.env.NODE_ENV || "development",
   });
 
@@ -417,7 +416,6 @@ Update your telemetry module to use environment variables:
 const resource = resourceFromAttributes({
   [ATTR_SERVICE_NAME]: process.env.OTEL_SERVICE_NAME || "express-app",
   [ATTR_SERVICE_VERSION]: process.env.APP_VERSION || "1.0.0",
-  "deployment.environment": process.env.NODE_ENV || "development",
   "environment": process.env.NODE_ENV || "development",
 });
 
@@ -724,7 +722,6 @@ const resource = resourceFromAttributes({
   [ATTR_SERVICE_VERSION]: process.env.APP_VERSION || "1.0.0",
 
   // Deployment information
-  "deployment.environment": process.env.NODE_ENV || "development",
   "environment": process.env.NODE_ENV || "development",
   "deployment.region": process.env.AWS_REGION || "us-east-1",
 
@@ -833,7 +830,7 @@ APP_VERSION=1.0.0
 # OpenTelemetry
 OTEL_SERVICE_NAME=express-mongodb-app
 OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment=development,environment=development,service.version=1.0.0
+OTEL_RESOURCE_ATTRIBUTES=environment=development,service.version=1.0.0
 
 # MongoDB
 MONGODB_URI=mongodb://mongo:27017/express-app

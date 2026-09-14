@@ -222,7 +222,6 @@ const otlpEndpoint =
 const resource = resourceFromAttributes({
   [ATTR_SERVICE_NAME]: serviceName,
   [ATTR_SERVICE_VERSION]: process.env.npm_package_version || '1.0.0',
-  'deployment.environment': process.env.NODE_ENV || 'development',
   'environment': process.env.NODE_ENV || 'development',
 });
 
@@ -334,7 +333,7 @@ PORT=3000
 # OpenTelemetry
 OTEL_SERVICE_NAME=nextjs-app
 OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment=development,environment=development,service.namespace=api
+OTEL_RESOURCE_ATTRIBUTES=environment=development,service.namespace=api
 
 # MongoDB
 MONGODB_URI=mongodb://mongo:27017/nextjs-app?replicaSet=rs0
@@ -386,7 +385,6 @@ const otlpEndpoint =
 const resource = resourceFromAttributes({
   [ATTR_SERVICE_NAME]: serviceName,
   [ATTR_SERVICE_VERSION]: '1.0.0',
-  'deployment.environment': process.env.NODE_ENV || 'development',
   'environment': process.env.NODE_ENV || 'development',
 });
 

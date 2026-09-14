@@ -296,8 +296,6 @@ config:
        - {key: cloud.account.id, value: "${env:AZURE_SUBSCRIPTION_ID}", action: insert}
        - {key: cloud.region, value: "${env:AZURE_REGION}", action: insert}
        - {key: k8s.cluster.name, value: "${env:AKS_CLUSTER_NAME}", action: insert}
-       - {key: deployment.environment.name, value: "${env:ENVIRONMENT}", action: insert}
-       - {key: deployment.environment, value: "${env:ENVIRONMENT}", action: insert}
        - {key: environment, value: "${env:ENVIRONMENT}", action: insert}
        - {key: service.name, value: otel-agent, action: insert}
 
@@ -470,8 +468,6 @@ config:
        - {key: cloud.account.id, value: "${env:AZURE_SUBSCRIPTION_ID}", action: insert}
        - {key: cloud.region, value: "${env:AZURE_REGION}", action: insert}
        - {key: k8s.cluster.name, value: "${env:AKS_CLUSTER_NAME}", action: insert}
-       - {key: deployment.environment.name, value: "${env:ENVIRONMENT}", action: insert}
-       - {key: deployment.environment, value: "${env:ENVIRONMENT}", action: insert}
        - {key: environment, value: "${env:ENVIRONMENT}", action: insert}
        - {key: service.name, value: otel-cluster, action: insert}
 
@@ -677,8 +673,6 @@ processors:
      - {key: cloud.region, value: "${env:AZURE_REGION}", action: insert}
      - {key: cloud.resource_id, value: "${env:AKS_RESOURCE_ID}", action: insert}
      - {key: k8s.cluster.name, value: "${env:AKS_CLUSTER_NAME}", action: insert}
-     - {key: deployment.environment.name, value: "${env:ENVIRONMENT}", action: insert}
-     - {key: deployment.environment, value: "${env:ENVIRONMENT}", action: insert}
      - {key: environment, value: "${env:ENVIRONMENT}", action: insert}
      - {key: service.name, value: aks-control-plane, action: insert}
   batch: {timeout: 5s, send_batch_size: 1024}

@@ -130,7 +130,6 @@ OpenTelemetry::SDK.configure do |c|
   resource = OpenTelemetry::SDK::Resources::Resource.create(
     {
       'service.name' => ENV.fetch("OTEL_SERVICE_NAME", "default-service"),
-      'deployment.environment' => ENV.fetch("RAILS_ENV", "development"),
       'environment' => ENV.fetch("RAILS_ENV", "development")
     }
   )
@@ -173,7 +172,6 @@ configured for direct export.
 c.resource = OpenTelemetry::SDK::Resources::Resource.create({
   "service.name" => ENV.fetch("OTEL_SERVICE_NAME", "rails-service-name"),
   "service.version" => "1.0.0",
-  "deployment.environment" => ENV.fetch("RAILS_ENV", "development"),
   "environment" => ENV.fetch("RAILS_ENV", "development")
 })
 ```

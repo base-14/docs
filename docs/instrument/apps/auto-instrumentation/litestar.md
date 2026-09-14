@@ -358,7 +358,7 @@ SDK before your application code runs.
 export OTEL_SERVICE_NAME=litestar-postgres-app
 export OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
 export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-export OTEL_RESOURCE_ATTRIBUTES=deployment.environment=development,environment=development,service.version=1.0.0
+export OTEL_RESOURCE_ATTRIBUTES=environment=development,service.version=1.0.0
 export OTEL_PYTHON_LOG_CORRELATION=true
 export OTEL_PYTHON_DISABLED_INSTRUMENTATIONS=asgi
 export OTEL_METRIC_EXPORT_INTERVAL=60000
@@ -451,7 +451,7 @@ services:
       - OTEL_SERVICE_NAME=litestar-postgres-app
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
       - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-      - OTEL_RESOURCE_ATTRIBUTES=${OTEL_RESOURCE_ATTRIBUTES:-deployment.environment=development,environment=development,service.version=1.0.0}
+      - OTEL_RESOURCE_ATTRIBUTES=${OTEL_RESOURCE_ATTRIBUTES:-environment=development,service.version=1.0.0}
       - OTEL_PYTHON_LOG_CORRELATION=true
       - OTEL_METRIC_EXPORT_INTERVAL=10000
       - OTEL_BSP_SCHEDULE_DELAY=2000
@@ -482,7 +482,7 @@ services:
 | `OTEL_SERVICE_NAME`                   | One unique value per service.                            | `litestar-postgres-app`                              |
 | `OTEL_EXPORTER_OTLP_ENDPOINT`         | OTLP collector address.                                  | `http://otel-collector:4318`                         |
 | `OTEL_EXPORTER_OTLP_PROTOCOL`         | `http/protobuf` or `grpc`.                               | `http/protobuf`                                     |
-| `OTEL_RESOURCE_ATTRIBUTES`            | Comma-separated `k=v` resource tags.                     | `deployment.environment=development,service.version=1.0.0` |
+| `OTEL_RESOURCE_ATTRIBUTES`            | Comma-separated `k=v` resource tags.                     | `environment=development,service.version=1.0.0` |
 | `OTEL_PYTHON_LOG_CORRELATION`         | Inject trace IDs onto Python LogRecords.                 | `true`                                              |
 | `OTEL_PYTHON_DISABLED_INSTRUMENTATIONS` | Skip auto-patching for the named entry-points.         | `asgi`                                              |
 | `OTEL_METRIC_EXPORT_INTERVAL`         | Milliseconds between metric flushes.                     | `60000` (prod) / `10000` (dev)                       |
@@ -521,11 +521,11 @@ example sets `compression: gzip`); the SDK side respects
 `OTEL_EXPORTER_OTLP_COMPRESSION` if you export directly without a collector.
 
 Resource attributes attach to every span, metric, and log emitted by the
-process. Set `service.version`, `deployment.environment`, and any other
+process. Set `service.version`, `environment`, and any other
 constants once via `OTEL_RESOURCE_ATTRIBUTES`:
 
 ```bash
-export OTEL_RESOURCE_ATTRIBUTES=deployment.environment=development,environment=development,service.version=2.7.1,service.instance.id=$(hostname)
+export OTEL_RESOURCE_ATTRIBUTES=environment=development,service.version=2.7.1,service.instance.id=$(hostname)
 ```
 
 ### Collector Config
@@ -575,9 +575,6 @@ processors:
         - 'IsMatch(name, "^(BEGIN|COMMIT|ROLLBACK)( TRANSACTION)?;?$")'
   resource:
     attributes:
-      - key: deployment.environment
-        value: ${SCOUT_ENVIRONMENT}
-        action: upsert
       - key: environment
         value: ${SCOUT_ENVIRONMENT}
         action: upsert

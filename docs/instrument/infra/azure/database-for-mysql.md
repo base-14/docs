@@ -260,7 +260,6 @@ processors:
       - {key: cloud.account.id,            value: "${env:AZURE_SUBSCRIPTION_ID}",              action: insert}
       - {key: cloud.region,                value: "${env:MYSQLFLEX_REGION}",                   action: insert}
       - {key: cloud.resource_id,           value: "${env:MYSQLFLEX_SERVER_RESOURCE_ID}",       action: insert}
-      - {key: deployment.environment.name, value: "${env:ENVIRONMENT}",                        action: insert}
       - {key: environment,                 value: "${env:ENVIRONMENT}",                        action: insert}
       - {key: service.name,                value: "${env:MYSQLFLEX_SERVICE_NAME}",             action: insert}
 
@@ -613,7 +612,6 @@ processors:
       - {key: cloud.region,                value: "${env:MYSQLFLEXLOGS_SOURCE_REGION}",        action: insert}
       # cloud.resource_id is NOT pinned - the receiver lifts the per-record
       # Azure resource ID to this attribute automatically (UPPERCASED).
-      - {key: deployment.environment.name, value: "${env:MYSQLFLEXLOGS_ENVIRONMENT}",          action: insert}
       - {key: environment,                 value: "${env:MYSQLFLEXLOGS_ENVIRONMENT}",          action: insert}
       - {key: service.name,                value: "${env:MYSQLFLEXLOGS_SERVICE_NAME}",         action: insert}
 

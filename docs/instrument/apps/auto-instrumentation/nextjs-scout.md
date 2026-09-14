@@ -469,11 +469,8 @@ function base(role: ServiceRole): Record<string, string> {
     [ATTR_SERVICE_NAME]: serviceName(),
     [ATTR_SERVICE_VERSION]: serviceVersion(),
     [ATTR_SERVICE_ROLE]: role,
-    // Both keys, same value. Scout's UI and its CLI --environment flag filter
-    // on the bare key; the OTel semantic convention is the dotted one. Setting
-    // both means a dashboard filter written either way works.
+    // Scout's UI and its CLI --environment flag filter on this key.
     environment: env,
-    'deployment.environment': env,
   };
 }
 
