@@ -1,10 +1,10 @@
 ---
 title: Infra
 sidebar_label: Infra
-sidebar_position: 8
+sidebar_position: 9
 description:
-  Check the health of the hosts or Kubernetes nodes running your services with
-  the APM Infra tab in base14 Scout.
+  Check host or Kubernetes node CPU, memory, receive-network, and filesystem
+  health alongside application performance in base14 Scout APM.
 keywords:
   [
     apm,
@@ -20,55 +20,64 @@ keywords:
   ]
 ---
 
-The Infra tab answers the question that follows every application regression:
-is it the code, or the machine underneath? It shows CPU, memory, network, and
-filesystem usage for the hosts or Kubernetes nodes running your services,
-right next to your application metrics.
+The Infra tab helps answer the question that follows an application regression:
+is it the code, or the machine underneath? It presents a focused live view of
+host or Kubernetes node resource usage next to APM workflows.
+
+The tab appears only when enabled for a deployment with the required
+OpenTelemetry metrics.
 
 ![Infra Tab](/img/apm/infra/infra-overview.png)
 
 ---
 
-## Hosts or Kubernetes
+## Hosts or Kubernetes Nodes
 
-Depending on how your environment runs, the tab shows one of two modes:
+An administrator configures the page in one of two modes:
 
-- **Hosts** — physical or virtual machines, identified by host name
-- **Kubernetes** — cluster nodes, identified by node name
+- **Hosts** identifies machines by host name.
+- **Kubernetes** identifies cluster nodes by node name.
 
-The selector in the topbar lists the discovered hosts or nodes; pick one to
-focus every chart and the table on it.
+Use the instance selector in the topbar to show one or several discovered hosts
+or nodes. Environment and configured telemetry-service restrictions also apply.
+
+---
+
+## Fixed Live Window
+
+Infra uses a fixed recent window rather than the application's general time
+picker. Depending on plugin settings, the window is 5, 10, or 15 minutes. The
+page clearly reports when no instances have sent data during that interval.
 
 ---
 
 ## Charts
 
-Four charts cover the core resources:
-
 | Chart | What it shows |
 | ----- | ------------- |
-| **CPU Usage** | CPU utilization percentage per host/node |
+| **CPU Usage** | CPU utilization percentage per host or node |
 | **Memory Usage** | Memory utilization percentage |
-| **Network Usage** | Network receive throughput |
-| **Filesystem Usage** | Disk space utilization |
+| **Network Usage (receive)** | Receive throughput in bytes per second |
+| **Filesystem Usage** | Filesystem utilization percentage |
 
-The Infra tab always shows a short live window (up to 15 minutes) so it
-reflects what the machines are doing right now.
+Multiple instances are plotted as separate series. The charts do not share a
+crosshair because each resource uses a different unit or scale.
 
 ![Infra Charts](/img/apm/infra/infra-charts.png)
 
 ---
 
-## The Instances Table
+## Instances Table
 
-Below the charts, a sortable table lists every host or node with its current
-CPU, memory, network, and filesystem figures — a quick way to spot the one
-machine that is saturated while the rest are idle.
+The table shows the latest recorded CPU, memory, network receive, and filesystem
+value for every visible host or node. Select any metric heading to sort; missing
+measurements stay below recorded values in either direction.
 
 ---
 
-## Alerts from Charts
+## Create Infrastructure Alerts
 
-Each chart's panel menu can open a pre-filled alert rule — for example, a high
-CPU alert for your nodes — in Grafana's alert editor with a sensible threshold
-already set.
+Each chart menu can open a Grafana alert-rule draft for the selected host or
+node scope. The query, environment, data source, metric, and infra mode are
+pre-filled. Review the threshold before saving. Availability depends on your
+Grafana permissions and alerting configuration.

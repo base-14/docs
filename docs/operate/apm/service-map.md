@@ -3,8 +3,8 @@ title: Service Map
 sidebar_label: Service Map
 sidebar_position: 3
 description:
-  Visualize service dependencies and failure propagation with the APM Service
-  Map in base14 Scout.
+  Visualize service dependencies and inspect service or connection health with
+  the APM Service Map in base14 Scout.
 keywords:
   [
     apm,
@@ -17,44 +17,63 @@ keywords:
   ]
 ---
 
-The Service Map draws your architecture as a live graph: services as nodes,
-calls between them as edges. It answers "what talks to what" at a glance and
-shows where errors and latency sit in the call graph.
+The Service Map draws services as nodes and calls as directed edges. It helps
+identify dependencies, failure propagation, and high-latency connections
+without requiring you to know the topology in advance.
 
 ![Service Map](/img/apm/service-map/service-map-overview.png)
 
 ---
 
-## Reading the Map
+## Explore the Map
 
-- **Nodes** are services; size and badges reflect traffic and health
-- **Edges** show call relationships and their direction
-- Services with elevated error rates are highlighted, so a failing dependency
-  stands out immediately
-
-The map runs in a live mode with a short rolling window, so what you see
-reflects current traffic rather than a stale snapshot.
+- Node size and health styling summarize traffic and errors.
+- Directed edges represent observed calls between services.
+- Service-kind chips show or hide categories of nodes.
+- **Filter services** searches the map by service name.
+- Selecting a service isolates its immediate neighborhood; clear isolation to
+  return to the full map.
+- The map follows the selected environment, service, and time range.
 
 ---
 
-## Inspecting a Service
+## Inspect a Service
 
-Click a node to open its detail panel:
+Select a node to open its side panel.
 
 ![Service Map Detail](/img/apm/service-map/service-map-detail.png)
 
-The panel shows the service's rate, errors, and latency, along with its direct
-upstream and downstream dependencies. From here you can jump to:
+The panel shows:
 
-- The service's **Service Detail** view for full charts
-- The **Traces** tab scoped to this service
-- **Logs** for the service in logX
+- Throughput, P99 latency, error rate, and span count.
+- Throughput and error-rate trends.
+- A link to **Service Detail**.
+- A scoped link to **Traces**.
+- A link to the service's logs in logX when logX is available.
+
+---
+
+## Inspect a Connection
+
+Select an edge to inspect the relationship between its caller and callee. The
+connection panel includes:
+
+- Call volume.
+- Average, minimum, and maximum latency.
+- Error rate and last-seen time.
+- The operation identifying the connection.
+- Links to either service's detail and to traces from the caller.
+
+Connection statistics come from observed trace relationships, so a missing
+edge generally means no matching relationship was recorded in the current
+scope.
 
 ---
 
 ## Typical Workflow
 
-1. An alert fires for a user-facing service
-2. Open the Service Map — the highlighted node downstream shows the actual
-   source of the failures
-3. Click that node and drill into its traces or logs to find the cause
+1. An alert identifies a user-facing service with rising failures.
+2. Open Service Map and isolate that service.
+3. Inspect unhealthy incoming and outgoing connections.
+4. Open the suspected dependency's Service Detail, traces, or logs.
+5. Use browser Back to return to the previous map context.
