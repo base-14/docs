@@ -22,11 +22,22 @@ keywords:
   ]
 ---
 
+import ThemedImage from '@theme/ThemedImage';
+
 The **Workloads** tab is where most k8X investigations end up. It covers pods
 and the four workload kinds that own them, with detail panels that tie a
 failing pod to its owner, its node, its images, and the events about it.
 
-![Pods table with Pod, Namespace, Node, Ready, Status, Restarts, CPU (cores), Mem (GiB), and Age columns beside a filters sidebar](/img/k8x/workloads/pods-list.png)
+<ThemedImage
+  alt={
+    'Pods table with Pod, Namespace, Node, Ready, Status, Restarts, CPU ' +
+    '(cores), Mem (GiB), and Age columns beside a filters sidebar'
+  }
+  sources={{
+    light: '/img/k8x/workloads/pods-list.png',
+    dark: '/img/k8x/workloads/pods-list-dark.png',
+  }}
+/>
 
 ---
 
@@ -102,7 +113,16 @@ the time picker lights up more rows without changing the numbers.
 The four kind sub-tabs share a table shape - name, namespace, readiness,
 restarts and age - and add the columns that only matter for that kind.
 
-![Deployments table with Name, Namespace, Strategy, Restarts, SHA, Age, and Image columns](/img/k8x/workloads/kind-table.png)
+<ThemedImage
+  alt={
+    'Deployments table with Name, Namespace, Strategy, Restarts, SHA, ' +
+    'Age, and Image columns'
+  }
+  sources={{
+    light: '/img/k8x/workloads/kind-table.png',
+    dark: '/img/k8x/workloads/kind-table-dark.png',
+  }}
+/>
 
 | Sub-tab | Readiness | Additional columns |
 | ------- | --------- | ------------------ |
@@ -125,7 +145,16 @@ default, since a Deployment with a long history accumulates many of them.
 
 Select a pod to open its detail panel.
 
-![Pod detail panel showing Status, Containers, Restart History, and Recent Events sections](/img/k8x/workloads/pod-detail.png)
+<ThemedImage
+  alt={
+    'Pod detail panel showing Status, Containers, Restart History, and ' +
+    'Recent Events sections'
+  }
+  sources={{
+    light: '/img/k8x/workloads/pod-detail.png',
+    dark: '/img/k8x/workloads/pod-detail-dark.png',
+  }}
+/>
 
 ### Status
 
@@ -178,7 +207,13 @@ neither shows no links.
 Select a Deployment, DaemonSet, StatefulSet or ReplicaSet to open its panel.
 Sections appear only when they apply to that kind.
 
-![Workload detail panel showing State, Rollout, Images, and Pods sections](/img/k8x/workloads/workload-detail.png)
+<ThemedImage
+  alt="Workload detail panel showing State, Rollout, Images, and Pods sections"
+  sources={{
+    light: '/img/k8x/workloads/workload-detail.png',
+    dark: '/img/k8x/workloads/workload-detail-dark.png',
+  }}
+/>
 
 ### State
 

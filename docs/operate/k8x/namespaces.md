@@ -20,12 +20,23 @@ keywords:
   ]
 ---
 
+import ThemedImage from '@theme/ThemedImage';
+
 The **Namespaces** tab shows how each namespace's actual resource use compares
 to what it asked for, and how close it is to any quota. It is the tab for
 capacity questions: who is using more than they reserved, and who is about to
 stop being able to schedule.
 
-![Namespace table with Namespace, Pods, CPU used / req (cores), Mem used / req (GiB), and Quota columns beside a filters sidebar](/img/k8x/namespaces/list.png)
+<ThemedImage
+  alt={
+    'Namespace table with Namespace, Pods, CPU used / req (cores), Mem ' +
+    'used / req (GiB), and Quota columns beside a filters sidebar'
+  }
+  sources={{
+    light: '/img/k8x/namespaces/list.png',
+    dark: '/img/k8x/namespaces/list-dark.png',
+  }}
+/>
 
 ---
 

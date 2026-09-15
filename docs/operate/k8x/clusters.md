@@ -20,11 +20,22 @@ keywords:
   ]
 ---
 
+import ThemedImage from '@theme/ThemedImage';
+
 The **Clusters** tab compares every cluster reporting to Scout side by side.
 It answers two questions: which cluster is under pressure, and which cluster
 has stopped reporting.
 
-![CPU utilisation, Memory utilisation, Nodes, and Nodes not ready charts above a table with Cluster, Nodes, CPU %, and Mem % columns](/img/k8x/clusters/list.png)
+<ThemedImage
+  alt={
+    'CPU utilisation, Memory utilisation, Nodes, and Nodes not ready ' +
+    'charts above a table with Cluster, Nodes, CPU %, and Mem % columns'
+  }
+  sources={{
+    light: '/img/k8x/clusters/list.png',
+    dark: '/img/k8x/clusters/list-dark.png',
+  }}
+/>
 
 Along with Overview, this is one of the two tabs with no filters sidebar -
 there is nothing to facet when each row is already a whole cluster. Use the

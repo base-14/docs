@@ -21,11 +21,22 @@ keywords:
   ]
 ---
 
+import ThemedImage from '@theme/ThemedImage';
+
 The **Nodes** tab lists every node across the clusters in scope, with the
 conditions, capacity and utilization that decide whether a node can still take
 work.
 
-![Node table with Node, Status, Role, Zone, Pods, CPU %, Mem %, Kubelet, and Age columns beside a filters sidebar](/img/k8x/nodes/list.png)
+<ThemedImage
+  alt={
+    'Node table with Node, Status, Role, Zone, Pods, CPU %, Mem %, ' +
+    'Kubelet, and Age columns beside a filters sidebar'
+  }
+  sources={{
+    light: '/img/k8x/nodes/list.png',
+    dark: '/img/k8x/nodes/list-dark.png',
+  }}
+/>
 
 ---
 
@@ -75,7 +86,16 @@ reporting pod capacity. Add `pods` to `allocatable_types_to_report` - see
 
 Select a node to open its detail panel.
 
-![Node detail panel showing Conditions, Committed, Taints, Pods on this Node, Recent Events, and Host sections](/img/k8x/nodes/detail.png)
+<ThemedImage
+  alt={
+    'Node detail panel showing Conditions, Committed, Taints, Pods on ' +
+    'this Node, Recent Events, and Host sections'
+  }
+  sources={{
+    light: '/img/k8x/nodes/detail.png',
+    dark: '/img/k8x/nodes/detail-dark.png',
+  }}
+/>
 
 ### Conditions
 

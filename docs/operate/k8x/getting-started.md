@@ -20,6 +20,8 @@ keywords:
   ]
 ---
 
+import ThemedImage from '@theme/ThemedImage';
+
 k8X is a Kubernetes fleet observability app built into base14 Scout. It gives
 you a single view across every cluster you run: cluster and node health,
 namespace resource commitment, workload rollouts, pod restarts, and the
@@ -236,7 +238,17 @@ double-counts every node, workload and event.
 
 Every k8X tab shares the same chrome:
 
-![Cluster selector, namespace selector, resource search box, time picker, and refresh button above the Overview, Clusters, Events, Nodes, Namespaces, and Workloads tabs](/img/k8x/getting-started/interface-chrome.png)
+<ThemedImage
+  alt={
+    'Cluster selector, namespace selector, resource search box, time ' +
+    'picker, and refresh button above the Overview, Clusters, Events, ' +
+    'Nodes, Namespaces, and Workloads tabs'
+  }
+  sources={{
+    light: '/img/k8x/getting-started/interface-chrome.png',
+    dark: '/img/k8x/getting-started/interface-chrome-dark.png',
+  }}
+/>
 
 | Section | Description |
 | ------- | ----------- |
@@ -351,7 +363,16 @@ Every tab except Overview and Clusters has a **Filters** sidebar. The
 available facets depend on the tab - Nodes offers node attributes, Workloads
 offers pod and owner attributes - and each tab's guide lists its own.
 
-![Filters sidebar with facet sections, per-value counts, and a Clear all link](/img/k8x/getting-started/filters-sidebar.png)
+<ThemedImage
+  alt={
+    'Filters sidebar with facet sections, per-value counts, and a Clear ' +
+    'all link'
+  }
+  sources={{
+    light: '/img/k8x/getting-started/filters-sidebar.png',
+    dark: '/img/k8x/getting-started/filters-sidebar-dark.png',
+  }}
+/>
 
 Shared behavior across every facet sidebar:
 

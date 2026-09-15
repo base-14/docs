@@ -20,12 +20,23 @@ keywords:
   ]
 ---
 
+import ThemedImage from '@theme/ThemedImage';
+
 The **Overview** tab is the first screen k8X opens on: the state of your whole
 fleet in one page. Every stat card is a link into the tab that explains it,
 carrying the relevant filter with it, so the usual path through k8X starts
 here and drills down.
 
-![Clusters, Nodes, Pods, Workloads, and Warning events stat cards above Pods by status and Cluster CPU / Memory utilization charts](/img/k8x/overview/stat-cards.png)
+<ThemedImage
+  alt={
+    'Clusters, Nodes, Pods, Workloads, and Warning events stat cards ' +
+    'above Pods by status and Cluster CPU / Memory utilization charts'
+  }
+  sources={{
+    light: '/img/k8x/overview/stat-cards.png',
+    dark: '/img/k8x/overview/stat-cards-dark.png',
+  }}
+/>
 
 ---
 
@@ -64,7 +75,16 @@ rather than a link.
 
 ## Charts
 
-![Pods by status stacked time series beside a Cluster CPU / Memory utilization chart](/img/k8x/overview/charts.png)
+<ThemedImage
+  alt={
+    'Pods by status stacked time series beside a Cluster CPU / Memory ' +
+    'utilization chart'
+  }
+  sources={{
+    light: '/img/k8x/overview/charts.png',
+    dark: '/img/k8x/overview/charts-dark.png',
+  }}
+/>
 
 - **Pods by status** - `Running`, `Pending`, and `Failed` pod counts over the
   window. A step change here usually pairs with something in the events table
@@ -79,7 +99,16 @@ Drag across either chart to narrow the whole page's time range to that span.
 
 ## Unhealthy Workloads
 
-![Unhealthy workloads table with Kind, Name, Namespace, Reason, and Since columns](/img/k8x/overview/tables.png)
+<ThemedImage
+  alt={
+    'Unhealthy workloads table with Kind, Name, Namespace, Reason, and ' +
+    'Since columns'
+  }
+  sources={{
+    light: '/img/k8x/overview/tables.png',
+    dark: '/img/k8x/overview/tables-dark.png',
+  }}
+/>
 
 Every workload not at its desired replica count, newest problem first.
 

@@ -20,13 +20,24 @@ keywords:
   ]
 ---
 
+import ThemedImage from '@theme/ThemedImage';
+
 The **Events** tab is the Kubernetes event stream across every cluster in
 scope. Where the other tabs show that something is wrong, events usually say
 why: `FailedScheduling` names the constraint that could not be met,
 `OOMKilling` names the container that exceeded its limit, `Unhealthy` names
 the probe that failed.
 
-![Event volume chart above a table with Last seen, Type, Reason, Object, Message, and Count columns beside a filters sidebar](/img/k8x/events/list.png)
+<ThemedImage
+  alt={
+    'Event volume chart above a table with Last seen, Type, Reason, ' +
+    'Object, Message, and Count columns beside a filters sidebar'
+  }
+  sources={{
+    light: '/img/k8x/events/list.png',
+    dark: '/img/k8x/events/list-dark.png',
+  }}
+/>
 
 Events are the one part of k8X that depends entirely on the `k8sobjects`
 receiver. If this tab is empty while the other tabs have data, that receiver
