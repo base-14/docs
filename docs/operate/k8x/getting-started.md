@@ -86,8 +86,8 @@ receivers:
     auth_type: serviceAccount
     objects:
       - name: events
-        mode: pull
-        interval: 60s
+        mode: watch
+        exclude_watch_type: [DELETED]
         group: events.k8s.io
       - name: pods
         mode: pull
@@ -128,17 +128,59 @@ receivers:
 | `k8s.container.status.last_terminated_reason` | The pod panel's `Last state: OOMKilled (exit 137)` line |
 | `k8sobjects` object snapshots | Ages, owner references, taints, kubelet versions, deployment strategy, image digests, PVC phases, and quotas - everywhere these appear |
 
-### Use pull mode for object snapshots
+### Pull objects, watch events
 
-Object snapshots must use `mode: pull`. k8X reads the latest snapshot per
+The two kinds of record need opposite modes, and each mode is wrong for the
+other kind.
+
+**Object snapshots must use `mode: pull`.** k8X reads the latest snapshot per
 object within a trailing window, and a watch only fires when an object
 changes. A Deployment that has been stable for a week would emit once when the
 collector started and then never again, so it would vanish from k8X entirely.
+The repeated pull is what keeps a stable object visible.
 
-Events are the exception: they work in either mode, because k8X unwraps the
-watch envelope that `mode: watch` puts around each record. Keeping everything
-on `pull` is simpler, but an existing events pipeline on `watch` does not need
-changing.
+**Events must use `mode: watch`.** k8X dedupes events by UID and orders them
+by the event's own timestamp, so re-shipping the same event every interval
+adds rows without adding information. Under `mode: pull` every event the API
+server still holds is collected again at each interval, so one event can be
+stored dozens of times over its lifetime. A watch emits each event once, when
+it happens, which is what the app expects.
+
+`mode: watch` wraps each record in an envelope,
+`{"type": "ADDED", "object": {...}}`, rather than writing the object directly.
+k8X unwraps it, so events collected this way read normally. Add
+`exclude_watch_type: [DELETED]` so deletions do not arrive as events in their
+own right.
+
+### Drop Normal events at the collector
+
+Kubernetes emits a `Normal` event for routine activity - every image pull,
+every successful schedule, every probe that starts passing. These outnumber
+`Warning` events heavily and nothing in k8X reads them, so the recommended
+pipeline drops them before they leave the cluster:
+
+```yaml showLineNumbers title="config/otel-collector.yaml (drop Normal events)"
+processors:
+  filter/k8s-events-warning:
+    error_mode: ignore
+    logs:
+      log_record:
+        # `mode: watch` writes the envelope; `mode: pull` writes the object.
+        - 'IsMap(body) and body["object"]["kind"] == "Event"
+           and body["object"]["type"] != "Warning"'
+        - 'IsMap(body) and body["kind"] == "Event"
+           and body["type"] != "Warning"'
+```
+
+Place it before `batch` in the pipeline carrying `k8sobjects`. Both conditions
+are needed only if you run a mix of modes; each is harmless when it matches
+nothing. Object snapshots are untouched - the conditions test for `Event`
+records specifically, so Deployments, quotas and the rest pass through.
+
+With this filter in place the [Events](./events.md) tab shows `Warning` events
+only: its **Type** facet carries a single value and **Event volume** draws one
+series. Everything else in k8X is unaffected, including the Overview tab's
+**Warning events** card, which never counted `Normal` events.
 
 ### Get the API groups right
 
@@ -226,15 +268,51 @@ k8X addresses each cluster by the `service.name` its collector writes, which
 becomes the `ServiceName` in the telemetry tables. Every query is pinned to
 that list.
 
+The name k8X wants is the one set on the **Kubernetes** pipelines, not one of
+the per-workload names elsewhere in the same file. A collector configuration
+typically sets `service.name` many times over - once for each application
+whose logs or metrics it ships - and those are logX and APM service names. The
+cluster's name is the one applied to the pipelines carrying `k8s_cluster` and
+`k8sobjects`, by convention the cluster's own name:
+
+```yaml showLineNumbers title="config/otel-collector.yaml (cluster identity)"
+processors:
+  resource/k8s:
+    attributes:
+      # This value is what k8X lists as a cluster. `upsert` so it wins over
+      # any service.name an earlier processor set.
+      - key: service.name
+        value: my-cluster-name
+        action: upsert
+
+service:
+  pipelines:
+    metrics/k8s:
+      receivers: [k8s_cluster, kubeletstats]
+      processors: [memory_limiter, resource/k8s, k8sattributes, batch]
+      exporters: [otlphttp/b14]
+    logs/k8s-objects:
+      receivers: [k8sobjects]
+      processors: [memory_limiter, filter/k8s-events-warning, resource/k8s, batch]
+      exporters: [otlphttp/b14]
+```
+
 This is the setting to check first when something looks wrong, because a list
 that does not match what your collectors write produces **an empty screen
 rather than an error**. If k8X shows no clusters while your collector is
 running, compare the **Kubernetes service names** field on the k8X
-configuration page against the `service.name` your collector sets.
+configuration page against the value above.
 
-Leaving the field blank is usually right. k8X then inherits the list set by
-whoever deployed your Scout instance, which is normally correct: the name is
-fixed by each cluster's collector.
+Leaving the field blank inherits the list set when your Scout instance was
+deployed, which falls back to `k8s` if nobody set one. That works only if your
+collectors write exactly that name, so fill the field in whenever they write
+anything else - and they must, as soon as you have more than one cluster.
+
+One case is easy to miss. Some collector configurations set a different
+`service.name` on the events pipeline than on the metrics pipeline, so a
+cluster arrives under two names and the Events tab is empty while every other
+tab has data. Either align the two pipelines on one name, as above, or list
+both names in the field.
 
 ---
 

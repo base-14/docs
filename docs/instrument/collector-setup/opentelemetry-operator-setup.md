@@ -208,13 +208,20 @@ spec:
           - memory
           - ephemeral-storage
           - storage
+          # Denominator for per-node pod capacity.
+          - pods
 
       k8sobjects:
         objects:
+          # `watch` emits each event once, as it happens. `pull` re-ships
+          # every event every interval and multiplies rows downstream.
           - name: events
-            mode: pull
-            interval: 60s
+            mode: watch
+            exclude_watch_type: [DELETED]
             group: events.k8s.io
+          # Object snapshots use `mode: pull`: a watch only fires when an
+          # object changes, so a stable object would be collected once at
+          # startup and then never again.
           - name: deployments
             mode: pull
             interval: 60s
@@ -222,6 +229,30 @@ spec:
           - name: resourcequotas
             mode: pull
             interval: 60s
+          # The objects below back the k8X app's node, workload and storage
+          # views, and are the bulk of object-snapshot volume. Drop any you
+          # do not need if you are not using k8X.
+          - name: pods
+            mode: pull
+            interval: 60s
+          - name: nodes
+            mode: pull
+            interval: 60s
+          - name: persistentvolumeclaims
+            mode: pull
+            interval: 60s
+          - name: replicasets
+            mode: pull
+            interval: 60s
+            group: apps
+          - name: daemonsets
+            mode: pull
+            interval: 60s
+            group: apps
+          - name: statefulsets
+            mode: pull
+            interval: 60s
+            group: apps
 
     processors:
       batch:
@@ -262,6 +293,17 @@ spec:
           resource_attributes:
             k8s.cluster.name:
               enabled: true
+
+      # `mode: watch` delivers each event wrapped as
+      # {"type": "ADDED", "object": {...}} rather than as the event itself.
+      # Unwrap it first so every rule below reads the event's own fields.
+      # Guarded on body["object"], so a pull-shaped body passes through.
+      transform/k8s-events-unwrap:
+        error_mode: ignore
+        log_statements:
+          - context: log
+            statements:
+              - set(body, body["object"]) where IsMap(body) and body["object"] != nil
 
       # Extract severity from log bodies; anything left unmatched defaults to
       # INFO. All rules are guarded by severity_text == "" so logs that already
@@ -420,6 +462,7 @@ spec:
             - resource/k8s-events
             - resourcedetection/eks
             - resource/env
+            - transform/k8s-events-unwrap
             - transform/severity
             - transform/k8s-events
             - batch
@@ -877,13 +920,20 @@ spec:
           - memory
           - ephemeral-storage
           - storage
+          # Denominator for per-node pod capacity.
+          - pods
 
       k8sobjects:
         objects:
+          # `watch` emits each event once, as it happens. `pull` re-ships
+          # every event every interval and multiplies rows downstream.
           - name: events
-            mode: pull
-            interval: 60s
+            mode: watch
+            exclude_watch_type: [DELETED]
             group: events.k8s.io
+          # Object snapshots use `mode: pull`: a watch only fires when an
+          # object changes, so a stable object would be collected once at
+          # startup and then never again.
           - name: deployments
             mode: pull
             interval: 60s
@@ -891,6 +941,30 @@ spec:
           - name: resourcequotas
             mode: pull
             interval: 60s
+          # The objects below back the k8X app's node, workload and storage
+          # views, and are the bulk of object-snapshot volume. Drop any you
+          # do not need if you are not using k8X.
+          - name: pods
+            mode: pull
+            interval: 60s
+          - name: nodes
+            mode: pull
+            interval: 60s
+          - name: persistentvolumeclaims
+            mode: pull
+            interval: 60s
+          - name: replicasets
+            mode: pull
+            interval: 60s
+            group: apps
+          - name: daemonsets
+            mode: pull
+            interval: 60s
+            group: apps
+          - name: statefulsets
+            mode: pull
+            interval: 60s
+            group: apps
 
     processors:
       batch:
@@ -931,6 +1005,17 @@ spec:
           resource_attributes:
             k8s.cluster.name:
               enabled: true
+
+      # `mode: watch` delivers each event wrapped as
+      # {"type": "ADDED", "object": {...}} rather than as the event itself.
+      # Unwrap it first so every rule below reads the event's own fields.
+      # Guarded on body["object"], so a pull-shaped body passes through.
+      transform/k8s-events-unwrap:
+        error_mode: ignore
+        log_statements:
+          - context: log
+            statements:
+              - set(body, body["object"]) where IsMap(body) and body["object"] != nil
 
       # Extract severity from log bodies; anything left unmatched defaults to
       # INFO. All rules are guarded by severity_text == "" so logs that already
@@ -1089,6 +1174,7 @@ spec:
             - resource/k8s-events
             - resourcedetection/eks
             - resource/env
+            - transform/k8s-events-unwrap
             - transform/severity
             - transform/k8s-events
             - batch
@@ -1181,7 +1267,11 @@ rules:
       - nodes/proxy
       - services
       - endpoints
+      # Needed alongside the events.k8s.io rule below: a grant covering only
+      # one of the two groups is invisible until the events stream is empty.
+      - events
       - resourcequotas
+      - persistentvolumeclaims
       - replicationcontrollers
       - replicationcontrollers/status
     verbs: ["get", "list", "watch"]

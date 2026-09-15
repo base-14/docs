@@ -32,13 +32,16 @@ Events are the one part of k8X that depends entirely on the `k8sobjects`
 receiver. If this tab is empty while the other tabs have data, that receiver
 is the thing to check.
 
+Where the collector drops `Normal` events before export - the recommended
+configuration - this tab shows `Warning` events only.
+
 ---
 
 ## Filters
 
 | Facet | Use it to... |
 | ----- | ------------ |
-| **Type** | Separate `Warning` from `Normal`. Warnings are what you usually want |
+| **Type** | Separate `Warning` from `Normal`. Usually a single value, because the recommended pipeline ships `Warning` events only |
 | **Reason** | Narrow to one kind of problem, such as `FailedScheduling`, `OOMKilling`, or `BackOff` |
 | **Involved kind** | Narrow to events about `Pod`, `Node`, `Deployment`, and so on |
 | **Namespace** | Narrow to one namespace |
@@ -55,8 +58,9 @@ Arriving here from the Overview tab's **Warning events** card pre-selects
 ## Event Volume
 
 A stacked bar chart of event counts over the window, one series per type.
-`Normal` events dominate by volume, so filter **Type** to `Warning` before
-reading it for signal. Drag across a spike to narrow the page's time range.
+Where the collector ships `Warning` events only, as recommended, that is a
+single series and every bar is signal. Drag across a spike to narrow the
+page's time range.
 
 ---
 
@@ -105,6 +109,11 @@ k8X distinguishes two absences.
 
 `No events match the current filters.` means the query worked and nothing
 matched. Clear the filters or widen the window.
+
+If k8X simply shows fewer events than `kubectl get events` does, the cause is
+usually deliberate: the recommended pipeline drops `Normal` events at the
+collector, so only `Warning` events ever reach Scout. See
+[Drop Normal events at the collector](./getting-started.md#drop-normal-events-at-the-collector).
 
 A message saying no Kubernetes events were found for the selected clusters -
 none in this window and none outside it - means no events have ever arrived.
