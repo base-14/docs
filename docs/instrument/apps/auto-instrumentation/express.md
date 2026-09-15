@@ -800,7 +800,7 @@ services:
       - "6379:6379"
 
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.115.1
+    image: otel/opentelemetry-collector-contrib:0.130.1
     command: ["--config=/etc/otelcol-contrib/config.yaml"]
     volumes:
       - ./config/otel-config.yaml:/etc/otelcol-contrib/config.yaml
