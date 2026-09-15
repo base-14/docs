@@ -1,0 +1,18 @@
+.video {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-bottom: var(--ifm-leading);
+  border: 1px solid var(--ifm-toc-border-color);
+  border-radius: var(--ifm-global-radius);
+}
+
+/* Holds the clip's own 16:9 so the page does not reflow when it arrives. */
+.placeholder {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  margin-bottom: var(--ifm-leading);
+  border: 1px solid var(--ifm-toc-border-color);
+  border-radius: var(--ifm-global-radius);
+  background: var(--ifm-color-emphasis-100);
+}

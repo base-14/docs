@@ -21,11 +21,25 @@ keywords:
 ---
 
 import ThemedImage from '@theme/ThemedImage';
+import ThemedVideo from '@site/src/components/ThemedVideo';
 
 k8X is a Kubernetes fleet observability app built into base14 Scout. It gives
 you a single view across every cluster you run: cluster and node health,
 namespace resource commitment, workload rollouts, pod restarts, and the
 Kubernetes events that explain them.
+
+One pass through every tab, ending on the pod detail panel that explains a
+crash loop:
+
+<ThemedVideo
+  label={
+    'A tour of k8X: the Overview, Clusters, Events, Nodes, Namespaces, and ' +
+    'Workloads tabs, ending on a pod detail panel showing a ' +
+    'CrashLoopBackOff'
+  }
+  sources={{ light: '/video/k8x/tour.mp4', dark: '/video/k8x/tour-dark.mp4' }}
+  posters={{ light: '/video/k8x/tour.png', dark: '/video/k8x/tour-dark.png' }}
+/>
 
 k8X is read-only. It reports what your clusters are doing and never changes
 them: there is no path from k8X to the Kubernetes API.
