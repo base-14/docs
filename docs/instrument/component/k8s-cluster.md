@@ -90,10 +90,14 @@ rules:
       - nodes/spec
       - pods
       - pods/status
+      - persistentvolumeclaims
       - replicationcontrollers
       - replicationcontrollers/status
       - resourcequotas
       - services
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["events.k8s.io"]
+    resources: ["events"]
     verbs: ["get", "list", "watch"]
   - apiGroups: ["apps"]
     resources: ["daemonsets", "deployments", "replicasets", "statefulsets"]
@@ -129,11 +133,32 @@ rule). Keep the rules in sync with the object kinds you expect to see.
 receivers:
   k8s_cluster:
     auth_type: serviceAccount
-    collection_interval: 30s
+    collection_interval: 60s
     # Node conditions to surface as k8s.node.condition_* metrics.
-    node_conditions_to_report: [Ready, MemoryPressure, DiskPressure]
+    node_conditions_to_report:
+      [Ready, MemoryPressure, DiskPressure, PIDPressure, NetworkUnavailable]
     # Node allocatable capacity to surface as k8s.node.allocatable_* metrics.
-    allocatable_types_to_report: [cpu, memory]
+    # `pods` is the denominator for per-node pod capacity.
+    allocatable_types_to_report:
+      [cpu, memory, ephemeral-storage, storage, pods]
+    resource_attributes:
+      # Why a container last died, e.g. OOMKilled.
+      k8s.container.status.last_terminated_reason:
+        enabled: true
+    # These are off by default and must be enabled explicitly.
+    metrics:
+      k8s.pod.status_reason:
+        enabled: true
+      k8s.node.condition:
+        enabled: true
+      k8s.container.cpu_request:
+        enabled: true
+      k8s.container.memory_request:
+        enabled: true
+      k8s.container.cpu_limit:
+        enabled: true
+      k8s.container.memory_limit:
+        enabled: true
 
 processors:
   resource:
@@ -178,6 +203,10 @@ These metrics emit for any non-empty cluster. The receiver reports
 whatever objects the cluster has - deploy or scale workloads to see the
 counts move.
 
+Some are off by default and only appear once enabled in the `metrics:` block
+shown in Configuration above: `k8s.pod.status_reason`, `k8s.node.condition`,
+and the four container request and limit metrics.
+
 ### Workloads
 
 | Metric | Type | Unit | Notes |
@@ -188,6 +217,10 @@ counts move.
 | `k8s.replicaset.desired` | gauge | `{pods}` | Desired replicas of a ReplicaSet. |
 | `k8s.container.ready` | gauge | `1` | 1 when the container's readiness probe passes. |
 | `k8s.container.restarts` | sum | `{restarts}` | Container restart count. |
+| `k8s.container.cpu_request` | gauge | `{cpu}` | CPU the container requests. |
+| `k8s.container.cpu_limit` | gauge | `{cpu}` | CPU ceiling for the container. |
+| `k8s.container.memory_request` | gauge | `By` | Memory the container requests. |
+| `k8s.container.memory_limit` | gauge | `By` | Memory ceiling for the container. |
 
 ### Pods and namespaces
 
@@ -202,6 +235,10 @@ counts move.
 | Metric | Type | Unit | Notes |
 | --- | --- | --- | --- |
 | `k8s.node.condition_ready` | gauge | `1` | 1 when the node's Ready condition is true. |
+| `k8s.node.condition_memory_pressure` | gauge | `1` | 1 when the node reports memory pressure. |
+| `k8s.node.condition_disk_pressure` | gauge | `1` | 1 when the node reports disk pressure. |
+| `k8s.node.condition_pid_pressure` | gauge | `1` | 1 when the node reports PID pressure. |
+| `k8s.node.condition_network_unavailable` | gauge | `1` | 1 when the node's network is unavailable. |
 
 ### Autoscaling and jobs (conditional)
 
@@ -230,6 +267,7 @@ receivers:
     objects:
       - name: events
         mode: watch
+        exclude_watch_type: [DELETED]
         group: events.k8s.io
 
 service:
@@ -241,8 +279,8 @@ service:
 ```
 
 The ServiceAccount needs `get`/`list`/`watch` on `events` in both the
-core (`""`) and `events.k8s.io` API groups - the core rule is already
-in the ClusterRole above; add the `events.k8s.io` group the same way.
+core (`""`) and `events.k8s.io` API groups. Both rules are already in the
+ClusterRole above.
 
 ## Verify the Setup
 
@@ -339,6 +377,8 @@ events alongside the state metrics.
 
 ## Related Guides
 
+- [k8X](../../operate/k8x/getting-started.md) — Explore this telemetry as
+  clusters, nodes, namespaces, and workloads in Scout
 - [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md) —
   Deploy the Collector in your cluster
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md) —

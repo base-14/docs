@@ -14,4 +14,5 @@ for log analysis, then build dashboards to track trends over time.
 
 - [traceX](../operate/tracex)
 - [LogX](../operate/logx)
+- [k8X](../operate/k8x/getting-started)
 - [Create Your First Dashboard](../guides/create-your-first-dashboard)

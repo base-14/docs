@@ -61,4 +61,5 @@ for a quick win and a clear next step.
 
 - [traceX](/operate/tracex)
 - [LogX](/operate/logx)
+- [k8X](/operate/k8x/getting-started)
 - [Create Your First Dashboard](/guides/create-your-first-dashboard)

@@ -331,6 +331,8 @@ No. The receiver reports `k8s.pod.cpu.usage` (instantaneous usage) and
 
 ## Related Guides
 
+- [k8X](../../operate/k8x/getting-started.md) — Explore this telemetry as
+  clusters, nodes, namespaces, and workloads in Scout
 - [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md) —
   Deploy the Collector as a DaemonSet
 - [OTel Collector Configuration](../collector-setup/otel-collector-config.md) —

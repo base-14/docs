@@ -124,41 +124,85 @@ scout:
               endpoint: ${env:MY_POD_IP}:4318
 
         k8s_cluster:
-           auth_type: 'serviceAccount'
-           collection_interval: 60s
-           node_conditions_to_report: [
-             ready,
-             memorypressure,
-             diskpressure,
-             pidpressure,
-             networkunavailable]
-           resource_attributes:
-             k8s.container.status.last_terminated_reason:
-               enabled: true
-           metrics:
-             k8s.pod.status_reason:
-               enabled: true
-             k8s.node.condition:
-               enabled: true
-           allocatable_types_to_report: [
-             cpu,
-             memory,
-             ephemeral-storage,
-             storage ]
+          auth_type: serviceAccount
+          collection_interval: 60s
+          node_conditions_to_report: [
+            ready,
+            memorypressure,
+            diskpressure,
+            pidpressure,
+            networkunavailable ]
+          resource_attributes:
+            k8s.container.status.last_terminated_reason:
+              enabled: true
+          metrics:
+            k8s.pod.status_reason:
+              enabled: true
+            k8s.node.condition:
+              enabled: true
+            # Requested and limit values, so used-vs-requested comparisons
+            # work. Pinned because a receiver default is not a contract.
+            k8s.container.cpu_request:
+              enabled: true
+            k8s.container.memory_request:
+              enabled: true
+            k8s.container.cpu_limit:
+              enabled: true
+            k8s.container.memory_limit:
+              enabled: true
+          # `pods` is the capacity denominator for per-node pod counts.
+          allocatable_types_to_report: [
+            cpu,
+            memory,
+            ephemeral-storage,
+            storage,
+            pods ]
         k8sobjects:
           objects:
+            # Events use `watch`, which emits each event once as it happens.
+            # `pull` re-ships every event every interval and multiplies rows
+            # downstream without adding information.
             - name: events
-              mode: pull
-              interval: 60s
+              mode: watch
+              exclude_watch_type: [DELETED]
               group: events.k8s.io
-            - name: deployments
-              mode: pull
-              interval: 60s
-              group: deployments.k8s.io
+            # Everything below uses `mode: pull`: a watch only fires when an
+            # object changes, so an object that is stable would be collected
+            # once at startup and then never again.
+            #
+            # ResourceQuotas and PersistentVolumeClaims are core resources and
+            # take no `group:`. Workload kinds live in the `apps` group.
             - name: resourcequotas
               mode: pull
               interval: 60s
-              group: resourcequotas.k8s.io
+            - name: deployments
+              mode: pull
+              interval: 60s
+              group: apps
+            # The objects below back the k8X app's node, workload and storage
+            # views. They are the bulk of the object-snapshot volume, so drop
+            # any you do not need if you are not using k8X.
+            - name: pods
+              mode: pull
+              interval: 60s
+            - name: nodes
+              mode: pull
+              interval: 60s
+            - name: persistentvolumeclaims
+              mode: pull
+              interval: 60s
+            - name: replicasets
+              mode: pull
+              interval: 60s
+              group: apps
+            - name: daemonsets
+              mode: pull
+              interval: 60s
+              group: apps
+            - name: statefulsets
+              mode: pull
+              interval: 60s
+              group: apps
 
       processors:
         batch:
@@ -686,25 +730,69 @@ scout:
               enabled: true
             k8s.node.condition:
               enabled: true
+            # Requested and limit values, so used-vs-requested comparisons
+            # work. Pinned because a receiver default is not a contract.
+            k8s.container.cpu_request:
+              enabled: true
+            k8s.container.memory_request:
+              enabled: true
+            k8s.container.cpu_limit:
+              enabled: true
+            k8s.container.memory_limit:
+              enabled: true
+          # `pods` is the capacity denominator for per-node pod counts.
           allocatable_types_to_report: [
             cpu,
             memory,
             ephemeral-storage,
-            storage ]
+            storage,
+            pods ]
         k8sobjects:
           objects:
+            # Events use `watch`, which emits each event once as it happens.
+            # `pull` re-ships every event every interval and multiplies rows
+            # downstream without adding information.
             - name: events
-              mode: pull
-              interval: 60s
+              mode: watch
+              exclude_watch_type: [DELETED]
               group: events.k8s.io
-            - name: deployments
-              mode: pull
-              interval: 60s
-              group: deployments.k8s.io
+            # Everything below uses `mode: pull`: a watch only fires when an
+            # object changes, so an object that is stable would be collected
+            # once at startup and then never again.
+            #
+            # ResourceQuotas and PersistentVolumeClaims are core resources and
+            # take no `group:`. Workload kinds live in the `apps` group.
             - name: resourcequotas
               mode: pull
               interval: 60s
-              group: resourcequotas.k8s.io
+            - name: deployments
+              mode: pull
+              interval: 60s
+              group: apps
+            # The objects below back the k8X app's node, workload and storage
+            # views. They are the bulk of the object-snapshot volume, so drop
+            # any you do not need if you are not using k8X.
+            - name: pods
+              mode: pull
+              interval: 60s
+            - name: nodes
+              mode: pull
+              interval: 60s
+            - name: persistentvolumeclaims
+              mode: pull
+              interval: 60s
+            - name: replicasets
+              mode: pull
+              interval: 60s
+              group: apps
+            - name: daemonsets
+              mode: pull
+              interval: 60s
+              group: apps
+            - name: statefulsets
+              mode: pull
+              interval: 60s
+              group: apps
       service:
         extensions: [ oauth2client, zpages, health_check ]
         pipelines:
@@ -774,6 +862,8 @@ traces from every node and pod in a single platform.
 
 ## Related Guides
 
+- [k8X](../../operate/k8x/getting-started.md) - Explore this telemetry as
+  clusters, nodes, namespaces, and workloads in Scout
 - [Scout Exporter Configuration](./scout-exporter.md) - Configure authentication
   to send data to Scout
 - [OpenTelemetry Operator Setup](./opentelemetry-operator-setup.md) -
