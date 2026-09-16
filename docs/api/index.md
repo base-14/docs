@@ -3,7 +3,7 @@ title: Scout API
 sidebar_label: Overview
 description:
   Query your Scout observability data over HTTP — traces, logs, metrics,
-  service topology, APM rollups, RUM and alerts.
+  service topology, APM rollups and RUM.
 keywords:
   - scout api
   - observability api
@@ -16,8 +16,8 @@ keywords:
 # Scout API
 
 The Scout API gives you the same data the Scout UI runs on: distributed
-traces, logs, metrics, service topology, APM rollups, real user monitoring
-and alerts. Use it to pull telemetry into your own tools, build reports,
+traces, logs, metrics, service topology, APM rollups and real user
+monitoring. Use it to pull telemetry into your own tools, build reports,
 or wire observability data into automation.
 
 Every endpoint is read-only and returns JSON.

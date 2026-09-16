@@ -186,38 +186,6 @@ const sidebar: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "alerts",
-      link: {
-        type: "doc",
-        id: "api/reference/alerts",
-      },
-      items: [
-        {
-          type: "doc",
-          id: "api/reference/list-alerts",
-          label: "List alerts",
-          className: "api-method get",
-        },
-      ],
-    },
-    {
-      type: "category",
-      label: "system",
-      link: {
-        type: "doc",
-        id: "api/reference/system",
-      },
-      items: [
-        {
-          type: "doc",
-          id: "api/reference/get-system-health-summary",
-          label: "Get system health summary",
-          className: "api-method get",
-        },
-      ],
-    },
-    {
-      type: "category",
       label: "Schemas",
       items: [
         {
@@ -500,42 +468,6 @@ const sidebar: SidebarsConfig = {
           type: "doc",
           id: "api/reference/schemas/metricdatapoint",
           label: "MetricDataPoint",
-          className: "schema",
-        },
-        {
-          type: "doc",
-          id: "api/reference/schemas/systemhealthsummaryresponse",
-          label: "SystemHealthSummaryResponse",
-          className: "schema",
-        },
-        {
-          type: "doc",
-          id: "api/reference/schemas/firingalertinfo",
-          label: "FiringAlertInfo",
-          className: "schema",
-        },
-        {
-          type: "doc",
-          id: "api/reference/schemas/servicehealthinfo",
-          label: "ServiceHealthInfo",
-          className: "schema",
-        },
-        {
-          type: "doc",
-          id: "api/reference/schemas/relationshipstats",
-          label: "RelationshipStats",
-          className: "schema",
-        },
-        {
-          type: "doc",
-          id: "api/reference/schemas/listalertsresponse",
-          label: "ListAlertsResponse",
-          className: "schema",
-        },
-        {
-          type: "doc",
-          id: "api/reference/schemas/alertinfo",
-          label: "AlertInfo",
           className: "schema",
         },
         {

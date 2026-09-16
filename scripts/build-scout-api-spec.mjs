@@ -38,16 +38,21 @@ if (!SOURCE) {
   process.exit(1);
 }
 
-// Paths kept out of the public reference. Each is unreachable for a customer
-// holding a Scout Read key, so documenting them only generates support load.
+// Paths kept out of the public reference.
 //
-//   health probes        unauthenticated, for Kubernetes
+// Most are unreachable for a customer holding a Scout Read key, so
+// documenting them would only generate support load:
+//
+//   health probes          unauthenticated, for Kubernetes
 //   system/health-summary  platform-wide internal view
-//   incidents            internal alerting pipeline; takes tenant_id in body
-//   artifacts            CI OIDC auth, not client credentials; own guide later
-//   symbolicate          tenant API key injected by the datasource proxy
-//   ci-upload-trusts     super-admin realm only
-const INTERNAL_PATHS = [
+//   incidents              internal alerting pipeline; tenant_id in body
+//   artifacts              CI OIDC auth, not client credentials
+//   symbolicate            tenant API key from the datasource proxy
+//   ci-upload-trusts       super-admin realm only
+//
+// alerts and status are callable, but are held back from the first
+// release of these docs.
+const EXCLUDED_PATHS = [
   "/health/live",
   "/health/ready",
   "/system/health-summary",
@@ -58,19 +63,23 @@ const INTERNAL_PATHS = [
   "/artifacts/{id}/finalize",
   "/symbolicate",
   "/accounts/{account}/ci-upload-trusts",
+  "/alerts",
+  "/status",
 ];
 
-const INTERNAL_TAGS = new Set([
+const EXCLUDED_TAGS = new Set([
   "health",
   "incidents",
   "artifacts",
   "ci-upload-trusts",
+  "alerts",
+  "system",
 ]);
 
 const PUBLIC_INFO_DESCRIPTION = `
 Query the observability data base14 Scout collects for your organisation:
-distributed traces, logs, metrics, service topology, APM rollups, real user
-monitoring and alerts.
+distributed traces, logs, metrics, service topology, APM rollups and real
+user monitoring.
 
 Every request needs a bearer token from the base14 identity service and a
 base URL specific to your organisation. Both are covered in the
@@ -235,22 +244,22 @@ const spec = source;
 const pathsBefore = Object.keys(spec.paths).length;
 
 // 2. Prune.
-for (const path of INTERNAL_PATHS) delete spec.paths[path];
+for (const path of EXCLUDED_PATHS) delete spec.paths[path];
 
 const leftover = Object.keys(spec.paths).filter((p) =>
   Object.values(spec.paths[p]).some(
-    (op) => op?.tags?.some((t) => INTERNAL_TAGS.has(t)),
+    (op) => op?.tags?.some((t) => EXCLUDED_TAGS.has(t)),
   ),
 );
 if (leftover.length) {
   console.error(
-    `\nPaths tagged internal but not in INTERNAL_PATHS:\n  ${leftover.join("\n  ")}\n` +
-      "Add them to INTERNAL_PATHS or retag them upstream.",
+    `\nPaths carry an excluded tag but are not in EXCLUDED_PATHS:\n  ${leftover.join("\n  ")}\n` +
+      "Add them to EXCLUDED_PATHS or retag them upstream.",
   );
   process.exit(1);
 }
 
-spec.tags = (spec.tags ?? []).filter((t) => !INTERNAL_TAGS.has(t.name));
+spec.tags = (spec.tags ?? []).filter((t) => !EXCLUDED_TAGS.has(t.name));
 const schemasRemoved = pruneUnreachableSchemas(spec);
 
 // 3 & 4. Public metadata.

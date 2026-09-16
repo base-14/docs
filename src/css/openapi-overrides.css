@@ -1,0 +1,128 @@
+/**
+ * Styles for the generated Scout API reference.
+ *
+ * docusaurus-theme-openapi-docs tags sidebar entries with the HTTP method
+ * (`class="... get api-method"`) but ships no styles for them, and its
+ * on-page badges use `--ifm-color-primary`, which this site remaps to
+ * near-black in light mode. Without the rules below the method labels are
+ * invisible and the badges are colourless.
+ *
+ * Everything here follows the doc-page design already set in custom.css:
+ * square corners, flat surfaces, no glass. Colours come from the emerald
+ * and orange scales rather than being introduced here.
+ */
+
+:root {
+  --scout-method-get: var(--ifm-color-primary-darker);
+  --scout-method-post: #1d4ed8;
+  --scout-method-put: #b45309;
+  --scout-method-patch: #7c3aed;
+  --scout-method-delete: var(--base14-orange-darkest);
+  --scout-method-label-width: 3.25rem;
+}
+
+[data-theme="dark"] {
+  /* Lift the hues for contrast against the dark surface. */
+  --scout-method-get: var(--ifm-color-primary-light);
+  --scout-method-post: #60a5fa;
+  --scout-method-put: #fbbf24;
+  --scout-method-patch: #c4b5fd;
+  --scout-method-delete: #fca5a5;
+}
+
+/* Sidebar method labels
+   ------------------------------------------------------------------ */
+
+.api-method > .menu__link {
+  align-items: center;
+  display: flex;
+}
+
+.api-method > .menu__link::before {
+  border-radius: 0;
+  color: #fff;
+  flex-shrink: 0;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.25rem;
+  margin-right: 0.5rem;
+  text-align: center;
+  text-transform: uppercase;
+  width: var(--scout-method-label-width);
+}
+
+.get > .menu__link::before {
+  background-color: var(--scout-method-get);
+  content: "get";
+}
+
+.post > .menu__link::before {
+  background-color: var(--scout-method-post);
+  content: "post";
+}
+
+.put > .menu__link::before {
+  background-color: var(--scout-method-put);
+  content: "put";
+}
+
+.patch > .menu__link::before {
+  background-color: var(--scout-method-patch);
+  content: "patch";
+}
+
+.delete > .menu__link::before {
+  background-color: var(--scout-method-delete);
+  content: "del";
+}
+
+[data-theme="dark"] .api-method > .menu__link::before {
+  /* The lifted hues are light, so flip the label text dark to keep it
+     readable rather than white-on-pastel. */
+  color: var(--base14-dark-bg);
+}
+
+/* On-page badges
+   ------------------------------------------------------------------ */
+
+.openapi__method-endpoint .badge--primary,
+.theme-doc-markdown .badge--primary {
+  background-color: var(--scout-method-get);
+  border: none;
+  border-radius: 0;
+  color: #fff;
+}
+
+[data-theme="dark"] .openapi__method-endpoint .badge--primary,
+[data-theme="dark"] .theme-doc-markdown .badge--primary {
+  color: var(--base14-dark-bg);
+}
+
+/* Surfaces
+   ------------------------------------------------------------------ */
+
+/* Match the flat, square treatment custom.css applies to doc-page cards. */
+:root {
+  --openapi-card-border-radius: 0;
+}
+
+.openapi-explorer__request-btn,
+.openapi-tabs__mime-btn,
+.openapi-tabs__code-item {
+  border-radius: 0;
+}
+
+/* The reference pages are parameter tables and response schemas, which
+   need more width than the 860px prose measure set in custom.css. */
+.theme-doc-markdown:has(.openapi__method-endpoint) {
+  max-width: none;
+}
+
+/* Required-field markers read as an error state by default; here they are
+   just emphasis, so tone them down to the site's accent. */
+.openapi-schema__required {
+  color: var(--base14-orange-darker);
+  font-size: 0.75rem;
+  font-weight: 600;
+}

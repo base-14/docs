@@ -144,7 +144,11 @@ const config: Config = {
           postsPerPage: 10,
         },
         theme: {
-          customCss: "./src/css/custom.css",
+          customCss: [
+            "./src/css/custom.css",
+            // Must load after custom.css: it overrides tokens set there.
+            "./src/css/openapi-overrides.css",
+          ],
         },
         gtag: process.env.GOOGLE_ANALYTICS_ID
           ? {

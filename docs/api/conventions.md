@@ -160,7 +160,6 @@ page until you get fewer rows than you asked for.
 | `/telemetry/logs` | 100 | 1000 |
 | `/telemetry/metrics` | 1000 | Enforced server-side |
 | `/rum/*`, `/apm/*` | 100 | 1000 |
-| `/alerts` | 10 | Enforced server-side |
 
 ## Rate limits
 
