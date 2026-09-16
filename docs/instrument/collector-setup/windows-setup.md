@@ -69,7 +69,7 @@ Download the Windows AMD64 binary:
 New-Item -ItemType Directory -Force -Path "C:\Program Files\otelcol-contrib"
 
 # Download the collector (update version as needed)
-$version = "0.127.0"
+$version = "0.130.1"
 Invoke-WebRequest -Uri "https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v$version/otelcol-contrib_${version}_windows_amd64.tar.gz" -OutFile "$env:TEMP\otelcol-contrib.tar.gz"
 
 # Extract the archive
@@ -88,7 +88,7 @@ Download the Windows 386 binary:
 New-Item -ItemType Directory -Force -Path "C:\Program Files\otelcol-contrib"
 
 # Download the collector (update version as needed)
-$version = "0.127.0"
+$version = "0.130.1"
 Invoke-WebRequest -Uri "https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v$version/otelcol-contrib_${version}_windows_386.tar.gz" -OutFile "$env:TEMP\otelcol-contrib.tar.gz"
 
 # Extract the archive

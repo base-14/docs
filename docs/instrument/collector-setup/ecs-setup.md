@@ -337,7 +337,7 @@ your existing application task definition as a sidecar:
 ```json
 {
   "name": "scout-sidecar-collector",
-  "image": "otel/opentelemetry-collector-contrib:0.130.0",
+  "image": "otel/opentelemetry-collector-contrib:0.130.1",
   "essential": false,
   "secrets": [
     {

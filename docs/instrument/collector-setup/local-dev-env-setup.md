@@ -112,7 +112,7 @@ version: "3.8"
 
 services:
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.130.0
+    image: otel/opentelemetry-collector-contrib:0.130.1
     container_name: otel-collector
     restart: unless-stopped
     command: ["--config=/etc/otelcol/config.yaml"]
@@ -143,7 +143,7 @@ docker run -d \
   -p 4317:4317 \
   -p 4318:4318 \
   -v $(pwd)/otel-collector-config.yaml:/etc/otelcol/config.yaml \
-  otel/opentelemetry-collector-contrib:0.130.0 \
+  otel/opentelemetry-collector-contrib:0.130.1 \
   --config=/etc/otelcol/config.yaml
 ```
 
