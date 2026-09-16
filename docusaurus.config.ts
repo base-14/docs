@@ -269,6 +269,22 @@ const config: Config = {
   themeConfig: {
     // Replace with your project's social card
     image: "img/base14-social-card.jpg",
+    // Scout API reference: show curl only. The theme otherwise renders a tab
+    // per language postman-code-generators supports, which is ~20 tabs of
+    // generated code nobody asked for. curl is the one readers copy.
+    languageTabs: [
+      {
+        highlight: "bash",
+        language: "curl",
+        logoClass: "curl",
+        variant: "cURL",
+        options: {
+          longFormat: false,
+          followRedirect: true,
+          trimRequestBody: true,
+        },
+      },
+    ],
     announcementBar: {
       id: "announcement-scout-mcp",
       content:

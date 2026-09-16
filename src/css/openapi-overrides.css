@@ -102,26 +102,140 @@
 /* Surfaces
    ------------------------------------------------------------------ */
 
-/* Match the flat, square treatment custom.css applies to doc-page cards. */
-:root {
+/* Match the flat, square treatment custom.css applies to doc-page cards.
+   The theme's stylesheet is injected after this file, so anything it also
+   declares has to be outspecified rather than merely restated — hence the
+   doubled `:root` and the `.theme-api-markdown` prefixes below. */
+:root:root {
   --openapi-card-border-radius: 0;
 }
 
-.openapi-explorer__request-btn,
-.openapi-tabs__mime-btn,
-.openapi-tabs__code-item {
+.theme-api-markdown .openapi-explorer__request-btn,
+.theme-api-markdown .openapi-tabs__mime-btn,
+.theme-api-markdown .openapi-tabs__code-item {
   border-radius: 0;
 }
 
-/* The reference pages are parameter tables and response schemas, which
-   need more width than the 860px prose measure set in custom.css. */
-.theme-doc-markdown:has(.openapi__method-endpoint) {
+/* Width
+   ------------------------------------------------------------------ */
+
+/* custom.css caps every doc body at 860px and centres it with
+   `margin-inline: auto`. That measure is right for prose, but the API
+   reference is a two-column layout, so both panels were being squeezed
+   into 860px and floated away from the sidebar. Release the cap and the
+   centring on reference pages only.
+
+   The selector needs to outspecify `html:not(.blog-wrapper) .markdown`,
+   hence the leading `html:not(...)`. `:has(.theme-api-markdown)` matches
+   only pages ApiItem rendered, so prose pages keep their measure. */
+html:not(.blog-wrapper) .theme-doc-markdown:has(.theme-api-markdown),
+html:not(.blog-wrapper) .markdown:has(.theme-api-markdown) {
+  margin-inline: 0;
   max-width: none;
+}
+
+/* Give the two panels an even split, as Stripe does. The theme ships 7/5,
+   which leaves the response column too narrow to read JSON in. */
+@media (min-width: 997px) {
+  .theme-api-markdown > .openapi-left-panel__container,
+  .theme-api-markdown > .openapi-right-panel__container {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+}
+
+/* Below the sidebar breakpoint, stack rather than shrink. */
+@media (max-width: 996px) {
+  .theme-api-markdown > .openapi-left-panel__container,
+  .theme-api-markdown > .openapi-right-panel__container {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+/* Horizontal scrolling
+   ------------------------------------------------------------------ */
+
+/* The endpoint banner is a <pre> holding a full server URL, so it scrolled
+   sideways at every width. Wrap it instead. */
+.theme-api-markdown .openapi__method-endpoint,
+.openapi-left-panel__container .openapi__method-endpoint {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  overflow-x: visible;
+  white-space: normal;
+}
+
+.theme-api-markdown .openapi__method-endpoint-path,
+.openapi-left-panel__container .openapi__method-endpoint-path {
+  overflow-wrap: anywhere;
+  white-space: normal;
+  word-break: break-all;
+}
+
+/* A tab strip with one tab is noise, and the language tab also renders a
+   logo the theme ships no asset for, so it showed as an empty box. Hide any
+   single-item strip. Written as "has no second item" so the strip comes
+   back on its own if more languages are ever configured. */
+.openapi-tabs__code-list-container:not(
+    :has(.openapi-tabs__code-item:nth-child(2))
+  ) {
+  display: none;
+}
+
+/* The endpoint banner prints the whole server URL at heading size, which
+   crowded out the summary. Set it in mono at body size, closer to how the
+   method and path read in Stripe's reference. */
+.theme-api-markdown .openapi__method-endpoint-path,
+.openapi-left-panel__container .openapi__method-endpoint-path {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Generated curl samples are long single lines. Wrapping them matches how
+   the request actually gets typed and removes the third scrollbar. */
+.openapi-explorer__code-block-code-line,
+.openapi-tabs__code-item pre code,
+.theme-api-markdown .openapi-explorer__code-block pre code {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* The auth block renders its description in a <pre>, which does not wrap,
+   so a long scheme description scrolled the whole right panel sideways. */
+.theme-api-markdown .openapi-security__details pre,
+.theme-api-markdown .openapi-security__details pre span,
+.theme-api-markdown .openapi-security__details code {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* The theme gives this full-width button a 4px left margin, which makes it
+   4px wider than its container and puts a scrollbar on the parameters
+   panel. */
+.theme-api-markdown .openapi-explorer__show-more-btn {
+  margin-left: 0;
+}
+
+/* Nothing in the reference should push the page itself sideways. */
+.theme-api-markdown,
+.theme-api-markdown .openapi-left-panel__container,
+.theme-api-markdown .openapi-right-panel__container,
+.openapi-explorer__details-outer-container,
+.openapi-explorer__details-container,
+.openapi-explorer__request-form {
+  min-width: 0;
 }
 
 /* Required-field markers read as an error state by default; here they are
    just emphasis, so tone them down to the site's accent. */
-.openapi-schema__required {
+.theme-api-markdown .openapi-schema__required {
   color: var(--base14-orange-darker);
   font-size: 0.75rem;
   font-weight: 600;
