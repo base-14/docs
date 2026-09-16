@@ -128,6 +128,11 @@ const config: Config = {
           routeBasePath: "/", // Serve the docs at the site's root
           sidebarPath: "./sidebars.ts",
           showLastUpdateTime: true,
+          // Required by docusaurus-theme-openapi-docs: ApiItem supplies the
+          // redux Provider the API explorer components read from, so without
+          // it every generated reference page throws on mount. It renders
+          // ordinary docs unchanged, through the same layout as DocItem.
+          docItemComponent: "@theme/ApiItem",
         },
         blog: {
           routeBasePath: "blog",
