@@ -59,28 +59,31 @@ within a status. Never match on `message`; the wording changes.
 | `400` | Invalid request — a malformed timestamp, a missing required parameter, or a time window wider than the endpoint allows | Fix the request. Retrying unchanged will not help |
 | `401` | Missing, malformed or expired token | Get a new token and retry once. See [Authentication](./authentication.md#401-unauthorized) |
 | `403` | Valid token, insufficient role | Check the key has the **Scout Read** role. Do not retry |
-| `404` | The resource does not exist, or has no data in the requested window | Widen the window or check the identifier |
+| `404` | A named resource does not exist in the requested window. Only `/telemetry/traces/{traceId}`, `/services/{serviceName}/dependencies` and `/services/{serviceName}/profile` return it | Check the identifier, or widen the window |
 | `500` | Server error | Retry with backoff. If it persists, contact support |
-| `503` | A dependency is unavailable | Retry with backoff |
+
+An empty result is not an error. A query that matches nothing returns
+`200` with an empty array — `/telemetry/logs` and `/telemetry/traces` never
+return `404` for "no matching records".
 
 ## Handling errors
 
 A workable policy for an unattended client:
 
-- **`400`, `403`, `404`** — do not retry. The request is wrong, and
+- **`400`, `403`, `404`**: do not retry. The request is wrong, and
   repeating it just adds load. Log the `message` and surface it.
-- **`401`** — refresh the token and retry once. If the retry also returns
+- **`401`**: refresh the token and retry once. If the retry also returns
   `401`, the credentials are wrong, not stale.
-- **`500`, `503`** — retry with exponential backoff and a cap. These are
-  usually transient.
-- **`429`** — nothing returns this today, but handle it as a backoff case
-  so a future rate limit does not break your integration.
+- **`500`**: retry with exponential backoff and a cap. Usually transient.
+- **`429` and `503`**: neither is returned by the endpoints documented
+  here today. Handle them as backoff cases anyway, so a future rate limit
+  or dependency outage does not break your integration.
 
 ```python
 import time
 import requests
 
-RETRYABLE = {500, 503, 429}
+RETRYABLE = {500, 503, 429}   # 503 and 429 are defensive
 
 def scout_get(session, url, token_provider, params=None, attempts=4):
     for attempt in range(attempts):
@@ -117,14 +120,16 @@ wording is not stable.
 
 ### Why did a query that worked yesterday start returning 400?
 
-The most common cause is a time window computed relative to now that has
-grown past the endpoint's maximum — for example a job that widens its
-lookback after a failure. Check the window against the
-[maximum windows table](./conventions.md#maximum-windows).
+A common cause is a time window computed relative to now that has grown
+past the endpoint's maximum, for example a job that widens its lookback
+after a failure. The other is `start_time` drifting beyond the 30-day
+[maximum lookback](./conventions.md#maximum-lookback). Check both against
+the [maximum windows table](./conventions.md#maximum-windows).
 
-### What does a 404 mean on a query endpoint?
+### What does a 404 mean?
 
-Usually that the identifier does not exist within the window you asked
-for, rather than that it never existed. A trace ID outside the requested
-time range returns `404`. Widen the range before concluding the data is
-missing.
+That a resource you named does not exist in the window you asked for,
+rather than that it never existed — a trace ID outside the requested time
+range returns `404`. Only the three endpoints that take an identifier in
+the path return it. A filter that matches nothing returns `200` with an
+empty array instead.

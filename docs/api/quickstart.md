@@ -15,14 +15,15 @@ keywords:
 # Quickstart
 
 This page takes you from nothing to a working query. It uses `acme` as the
-organisation slug throughout — substitute your own.
+organization slug throughout — substitute your own. The Scout CLI calls the
+same value the *account slug*; they are interchangeable.
 
-You need admin access to your Scout organisation to create an API key. If
-you do not have it, ask your organisation admin.
+You need admin access to your Scout organization to create an API key. If
+you do not have it, ask your organization admin.
 
 ## 1. Create an API key
 
-Open the API keys page for your organisation:
+Open the API keys page for your organization:
 
 ```text
 https://console.base14.io/acme/api-keys
@@ -46,7 +47,7 @@ break everything else.
 ## 2. Get an access token
 
 Exchange the client ID and secret for an access token using the OAuth 2.0
-client credentials grant. The realm in the URL is your organisation slug:
+client credentials grant. The realm in the URL is your organization slug:
 
 ```bash
 export CLIENT_ID="<your-client-id>"
@@ -66,7 +67,7 @@ caching it indefinitely — see [Authentication](./authentication.md).
 
 ## 3. Find your base URL
 
-Your Scout API base URL depends on the region your organisation is
+Your Scout API base URL depends on the region your organization is
 provisioned in. Rather than hardcoding it, ask the discovery endpoint:
 
 ```bash
@@ -78,8 +79,9 @@ SCOUT_API_URL=$(curl -s \
 echo "$SCOUT_API_URL"
 ```
 
-The result looks like `https://api.use1-scout.base14.io/acme`, and your
-request path is that value plus `/api/v1`.
+The result looks like `https://api.use1-scout.base14.io/acme`. Append
+`/api/v1` to get the **API base URL** every path in the reference is
+relative to.
 
 :::note
 Discover the URL rather than hardcoding it. Regions and hostnames can
@@ -89,7 +91,9 @@ when they do.
 
 ## 4. Run your first query
 
-List the services reporting telemetry in the last five minutes:
+List the services active in the last five minutes. The list comes from the
+dependency graph, so it covers services that call something else; leaf-only
+infrastructure such as a database host is not included:
 
 ```bash
 curl -s -H "Authorization: Bearer $ACCESS_TOKEN" \
@@ -113,16 +117,15 @@ curl -s -G -H "Authorization: Bearer $ACCESS_TOKEN" \
   --data-urlencode "limit=20" | jq '.logs[] | {timestamp, severity, body}'
 ```
 
-That is the whole flow. Everything else is a different endpoint with
-different parameters.
+Everything else is a different endpoint with different parameters.
 
 ## Where to go next
 
 - [Conventions](./conventions.md) — time windows, the attribute filter
-  syntax, and pagination. The filter syntax is the part most people get
-  stuck on.
+  syntax, and pagination.
 - [Errors](./errors.md) — what the status codes mean.
-- Endpoint reference — every endpoint and its parameters.
+- [Endpoint reference](./reference/scout-api.info.mdx) — every endpoint and
+  its parameters.
 
 ## FAQ
 
@@ -143,8 +146,9 @@ new key with the correct role — an existing key's roles cannot be changed.
 No. The API does not return CORS headers, so a browser will block the
 request at preflight. Call it from a server-side process instead.
 
-### How do I find my organisation slug?
+### How do I find my organization slug?
 
 It is the path segment in your Scout console URL. If you sign in at
 `https://console.base14.io/acme/`, your slug is `acme`. It is also the
-realm name in the token URL.
+realm name in the token URL, and what the Scout CLI calls the account
+slug.

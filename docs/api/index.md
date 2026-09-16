@@ -26,10 +26,10 @@ Every endpoint is read-only and returns JSON.
 
 Four things go into every request:
 
-| | Where it comes from |
+| What you need | Where it comes from |
 | --- | --- |
-| A base URL | Returned by the discovery endpoint. It is specific to your organisation — see [Quickstart](./quickstart.md) |
-| An access token | Exchanged for an API key at `id.base14.io` |
+| An API base URL | Returned by the discovery endpoint; specific to your organization. See [Quickstart](./quickstart.md) |
+| An access token | Obtained by exchanging an API key at the base14 identity service |
 | A service name | Almost every query is scoped to one service |
 | A time range | `start_time` and `end_time`, RFC3339, with a maximum window per endpoint |
 
@@ -44,10 +44,11 @@ from an API key to a result in four commands.
   token lifetime, and what a 401 or 403 actually means.
 - **[Conventions](./conventions.md)** — time ranges, the attribute filter
   syntax, pagination, and result limits. Read this before writing anything
-  non-trivial; the filter syntax in particular is not guessable.
+  non-trivial.
 - **[Errors](./errors.md)** — the error envelope and the status codes.
-- **Endpoint reference** — every endpoint, its parameters and its response
-  schema, generated from the API specification.
+- **[Endpoint reference](./reference/scout-api.info.mdx)** — every endpoint,
+  its parameters and its response schema, generated from the API
+  specification.
 
 ## Other ways in
 
@@ -64,11 +65,12 @@ unattended, or when you need a response shape the CLI does not produce.
 
 ## Limits worth knowing up front
 
-- **Query windows are capped per endpoint**, from 15 minutes on logs and
-  spans up to 30 days on APM. Exceeding the cap returns `400`, it does not
-  silently truncate. The [conventions](./conventions.md) page has the table.
-- **There is no rate limiting today.** Do not design around a specific
-  request rate; per-request `limit` caps are the real constraint, and rate
-  limits may be introduced later.
-- **The API does not send CORS headers**, so you cannot call it directly
-  from browser JavaScript. Call it from a server, a job, or a script.
+- **Query windows are capped per endpoint**, from 15 minutes on logs up to
+  30 days on APM, and `start_time` cannot be more than 30 days ago.
+  Exceeding either returns `400` rather than silently truncating.
+- **There is no rate limiting today**, so per-request `limit` caps are the
+  real constraint.
+- **The API sends no CORS headers**, so it cannot be called from browser
+  JavaScript.
+
+[Conventions](./conventions.md) covers all three in full.

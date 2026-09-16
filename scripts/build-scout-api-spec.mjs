@@ -77,15 +77,15 @@ const EXCLUDED_TAGS = new Set([
 ]);
 
 const PUBLIC_INFO_DESCRIPTION = `
-Query the observability data base14 Scout collects for your organisation:
+Query the observability data base14 Scout collects for your organization:
 distributed traces, logs, metrics, service topology, APM rollups and real
 user monitoring.
 
 Every request needs a bearer token from the base14 identity service and a
-base URL specific to your organisation. Both are covered in the
+base URL specific to your organization. Both are covered in the
 [quickstart](/api/quickstart/).
 
-Requests are scoped to a single organisation, derived from the access token
+Requests are scoped to a single organization, derived from the access token
 — there is no tenant header or path parameter to set. All timestamps are
 RFC3339.
 `.trim();
@@ -93,16 +93,16 @@ RFC3339.
 const SERVER = {
   url: "https://api.{region}-scout.base14.io/{org}/api/v1",
   description:
-    "Your organisation's Scout API. Both values are returned by the " +
+    "Your organization's Scout API. Both values are returned by the " +
     "discovery endpoint described in the quickstart; do not guess them.",
   variables: {
     region: {
       default: "use1",
-      description: "The region your organisation is provisioned in.",
+      description: "The region your organization is provisioned in.",
     },
     org: {
       default: "acme",
-      description: "Your organisation slug.",
+      description: "Your organization slug.",
     },
   },
 };

@@ -15,22 +15,23 @@ keywords:
 
 # Conventions
 
-These rules apply across the API. The attribute filter syntax in particular
-is not something you would guess from an endpoint's parameter list, so it
-is worth reading before you build anything beyond a first query.
+These rules apply across the API. The attribute filter syntax is not
+something you would guess from an endpoint's parameter list, so it is worth
+reading before you build anything beyond a first query.
 
 ## Base URL
 
-Every path in the reference is relative to your organisation's base URL
-plus `/api/v1`:
+Every path in the reference is relative to your **API base URL**:
 
 ```text
 https://api.<region>-scout.base14.io/<your-org>/api/v1
 ```
 
-Discover it rather than hardcoding it — see
-[Quickstart](./quickstart.md#3-find-your-base-url). Your organisation slug
-is already part of the base URL, so it never appears again in a path.
+That is the discovery URL returned by
+[step 3 of the quickstart](./quickstart.md#3-find-your-base-url) with
+`/api/v1` appended. Discover it rather than hardcoding it. Your
+organization slug is already part of it, so it never appears again in a
+path.
 
 ## Time ranges
 
@@ -40,18 +41,19 @@ Query endpoints take `start_time` and `end_time` as RFC3339 timestamps:
 2026-09-16T06:00:00Z
 ```
 
-Most endpoints require both. Discovery and topology endpoints default to
-the last five minutes if you omit them.
+Most endpoints require both. The `/services*` and `discover` endpoints
+default to the last five minutes if you omit them.
 
 ### Maximum windows
 
 Each endpoint family caps how wide a window you may request. Asking for
 more returns `400` — the response is not silently truncated.
 
-| Endpoint family | Default maximum window |
+| Endpoint | Default maximum window |
 | --- | --- |
 | `/telemetry/logs`, `/telemetry/logs/discover` | 15 minutes |
-| `/telemetry/traces`, `/telemetry/traces/discover` | 15 minutes |
+| `/telemetry/traces/discover` | 15 minutes |
+| `/telemetry/traces` | 24 hours |
 | `/telemetry/traces/{traceId}` | 24 hours |
 | `/telemetry/metrics/discover` | 30 minutes |
 | `/telemetry/metrics` | 1 hour (30 minutes with `raw=true`) |
@@ -59,9 +61,19 @@ more returns `400` — the response is not silently truncated.
 | `/rum/*` | 7 days |
 | `/apm/*` | 30 days |
 
-To cover a longer period, page through it in chunks. The narrow windows on
-logs and traces are what keep those queries fast; the APM and RUM
-endpoints read pre-aggregated data, which is why they can span months.
+Note that the two trace endpoints differ: querying traces allows 24 hours,
+but `discover` on the same signal allows 15 minutes, because it scans
+every span in the window to collect attribute keys.
+
+To cover a longer period, page through it in chunks. The tight windows on
+logs and span discovery are what keep those queries fast; the APM and RUM
+endpoints read pre-aggregated data, which is why they reach 30 days.
+
+### Maximum lookback
+
+Separately from the window width, `start_time` cannot be more than **30
+days** in the past on any endpoint. A 15-minute window is still rejected if
+it sits 40 days back.
 
 :::tip
 If you are tempted to loop 15-minute windows across a whole day to compute
@@ -84,9 +96,13 @@ attribute key.
 | `attr_<key>` | Metric attributes, on metrics | `attr_http.method=GET` |
 | `resource_attr_<key>` | Resource attributes, on all three | `resource_attr_k8s.pod.name=pod-1` |
 
+`/services` also accepts `span_attr_` and `resource_attr_` filters, which
+is a useful way to narrow the service list to, say, one Kubernetes
+namespace.
+
 ### Combining filters
 
-The rule is the one you would want: same key is OR, different keys are AND.
+Same key is OR, different keys are AND.
 
 ```text
 # method is GET OR POST
@@ -121,7 +137,6 @@ present for a service in a window:
 - `/telemetry/metrics/discover`
 
 Call `discover` first, build your filters from what it returns, then query.
-It is the difference between guessing attribute names and reading them.
 
 ## Pagination
 
@@ -148,17 +163,20 @@ construct one.
 
 ### Offset pagination
 
-All `/rum/*` and `/apm/*` list endpoints take `limit` and `offset`, and
-return a `count` for the current page. There is no cursor and no total, so
+Every `/rum/*` and `/apm/*` list endpoint takes `limit` and `offset` and
+returns a `count` for the current page. There is no cursor and no total, so
 page until you get fewer rows than you asked for.
 
-### Result limits
+The exception is `/apm/facets`, which takes `limit` but no `offset` — it
+returns the top values for a dimension, not a pageable list.
+
+## Result limits
 
 | Endpoint family | Default `limit` | Maximum |
 | --- | --- | --- |
 | `/telemetry/traces` | 20 | 100 |
 | `/telemetry/logs` | 100 | 1000 |
-| `/telemetry/metrics` | 1000 | Enforced server-side |
+| `/telemetry/metrics` | 1000 | 5000 |
 | `/rum/*`, `/apm/*` | 100 | 1000 |
 
 ## Rate limits

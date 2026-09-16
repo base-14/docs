@@ -19,14 +19,14 @@ API key for a short-lived access token, then send that token on every
 request.
 
 ```text
-API key (client ID + secret) → identity service → access token → Scout API
+API key (client ID + secret) -> identity service -> access token -> Scout API
 ```
 
 ## API keys
 
 Create keys in the Scout console at
 `https://console.base14.io/<your-org>/api-keys`. You need admin access to
-your organisation.
+your organization.
 
 A key has three parts:
 
@@ -41,15 +41,19 @@ key and revoke the old one.
 
 :::warning
 Treat the client secret like a password. Store it in a secret manager, not
-in source control or a CI variable that is visible to everyone. If a secret
-leaks, revoke the key in the console — revocation takes effect within about
-a minute.
+in source control or a CI variable that is visible to everyone.
+
+Revoking a key stops it issuing **new** tokens, but does not invalidate
+tokens it has already issued. Those stay valid until they expire, because
+the API verifies a token's signature and expiry rather than calling back to
+the identity service. Your exposure window after a leak is therefore the
+remaining lifetime of any token already minted from that key.
 :::
 
 ## Getting an access token
 
 Scout uses the OAuth 2.0 client credentials grant. The realm in the token
-URL is your organisation slug:
+URL is your organization slug:
 
 ```bash
 curl -s -X POST \
@@ -104,6 +108,11 @@ class ScoutToken:
         self._token = None
         self._expires_at = 0
 
+    def invalidate(self):
+        """Force the next get() to fetch a fresh token."""
+        self._token = None
+        self._expires_at = 0
+
     def get(self):
         if self._token and time.monotonic() < self._expires_at:
             return self._token
@@ -116,15 +125,15 @@ class ScoutToken:
         return self._token
 ```
 
-Fetching a token once at startup and holding it forever is the most common
-cause of a job that works on day one and returns `401` later.
+Fetching a token once at startup and holding it forever is a common cause
+of a job that works on day one and returns `401` later.
 
 ## Tenancy
 
-Requests are scoped to one organisation, and that scope comes from the
+Requests are scoped to one organization, and that scope comes from the
 token itself — specifically from the realm that issued it. There is no
 tenant header, query parameter or body field to set, and a token issued for
-one organisation cannot read another's data.
+one organization cannot read another's data.
 
 ## Troubleshooting
 
@@ -142,7 +151,7 @@ Check, in order:
 1. The `Authorization` header is present and formatted as
    `Bearer <token>`, with the scheme, a single space, then the token.
 2. The token has not expired.
-3. The realm in the token URL matches your organisation slug. A typo here
+3. The realm in the token URL matches your organization slug. A typo here
    produces a token that is valid but issued by the wrong realm.
 
 ### 403 Forbidden
@@ -171,9 +180,11 @@ revoking a compromised staging key does not take production down with it.
 
 ### What happens when I revoke a key?
 
-New token requests with that key fail immediately. Tokens already issued
-stop being accepted within about a minute. For an urgent revocation, assume
-up to a minute of residual access.
+New token requests with that key fail immediately. Access tokens already
+issued keep working until they expire — the API checks a token's signature
+and expiry, not whether the key behind it still exists. Treat the token
+lifetime as your revocation window, and if you need access cut off sooner
+than that, contact the base14 team.
 
 ### Do I need a separate key for the Scout CLI or MCP?
 
