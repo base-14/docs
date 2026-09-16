@@ -1,0 +1,1 @@
+{"schema":{"type":"object","properties":{"bucket":{"type":"string","format":"date-time"},"sessions":{"type":"integer","format":"int64"},"cold_start_ms":{"type":"number","format":"double"},"warm_start_ms":{"type":"number","format":"double"}},"title":"RumKpiPoint"},"schemaType":"response"}

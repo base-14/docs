@@ -1,0 +1,1 @@
+{"schema":{"type":"object","properties":{"level":{"type":"string","description":"Severity level name"},"count":{"type":"integer","format":"int64","description":"Number of logs with this severity"}},"title":"SeverityCount"},"schemaType":"response"}

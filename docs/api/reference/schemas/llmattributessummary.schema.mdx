@@ -1,0 +1,32 @@
+---
+id: llmattributessummary
+title: "LLMAttributesSummary"
+description: "Normalized LLM-specific attributes for list view (excludes large fields like output_message)"
+sidebar_label: "LLMAttributesSummary"
+hide_title: true
+hide_table_of_contents: true
+schema: true
+sample: {"request_model":"string","provider_name":"string","input_tokens":0,"output_tokens":0,"total_cost":"string","operation_name":"string","output_type":"string","sdk_name":"string","sdk_version":"string","system_prompt":"string","user_prompt":"string"}
+custom_edit_url: null
+---
+
+import Schema from "@theme/Schema";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"LLMAttributesSummary"}
+>
+</Heading>
+
+
+
+Normalized LLM-specific attributes for list view (excludes large fields like output_message)
+
+<Schema
+  {...require("./llmattributessummary.Schema.json")}
+>
+  
+</Schema>
+            

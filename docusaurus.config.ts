@@ -220,13 +220,42 @@ const config: Config = {
         indexDocs: true,
         indexBlog: true,
         indexPages: false,
+        // The Scout API reference lives under docs/api/ in the default docs
+        // instance, whose routeBasePath is "/", so it is indexed by the
+        // first entry here. No extra entry is needed for it.
         docsRouteBasePath: ["/", "/scope"],
         blogRouteBasePath: "/blog",
         language: ["en"],
         searchBarShortcutHint: false,
       },
     ],
+    // Generates the Scout API endpoint reference from a committed spec.
+    // Generation is a manual step (`npm run gen:api`) and its output is
+    // committed, so CI never needs the spec or network access.
+    [
+      "docusaurus-plugin-openapi-docs",
+      {
+        id: "openapi",
+        docsPluginId: "default",
+        config: {
+          scout: {
+            specPath: "api-spec/scout-api.openapi.json",
+            outputDir: "docs/api/reference",
+            downloadUrl: undefined,
+            hideSendButton: true,
+            showSchemas: true,
+            sidebarOptions: {
+              groupPathsBy: "tag",
+              categoryLinkSource: "tag",
+            },
+          },
+        },
+      },
+    ],
+    "docusaurus-plugin-sass",
   ],
+
+  themes: ["docusaurus-theme-openapi-docs"],
 
   themeConfig: {
     // Replace with your project's social card

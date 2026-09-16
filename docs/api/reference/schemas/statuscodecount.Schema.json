@@ -1,0 +1,1 @@
+{"schema":{"type":"object","properties":{"status_code":{"type":"string","description":"Status code (OK, ERROR, UNSET)"},"count":{"type":"integer","format":"int64","description":"Number of spans with this status code"}},"title":"StatusCodeCount"},"schemaType":"response"}

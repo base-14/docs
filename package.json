@@ -4,6 +4,9 @@
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
+    "spec:api": "node scripts/build-scout-api-spec.mjs",
+    "gen:api": "docusaurus gen-api-docs scout",
+    "clean:api": "docusaurus clean-api-docs scout",
     "start": "docusaurus start",
     "build": "docusaurus build",
     "swizzle": "docusaurus swizzle",
@@ -26,9 +29,13 @@
     "@easyops-cn/docusaurus-search-local": "^0.55.1",
     "@mdx-js/react": "^3.0.0",
     "clsx": "^2.0.0",
+    "docusaurus-plugin-openapi-docs": "^5.2.0",
+    "docusaurus-plugin-sass": "^0.2.7",
+    "docusaurus-theme-openapi-docs": "^5.2.0",
     "prism-react-renderer": "^2.3.0",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "sass": "^1.104.1"
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "^3.10.2",
@@ -38,6 +45,7 @@
     "gray-matter": "^4.0.3",
     "markdownlint-cli": "^0.49.1",
     "patch-package": "^8.0.1",
+    "swagger2openapi": "^7.0.8",
     "typescript": "^5.9.3"
   },
   "browserslist": {
