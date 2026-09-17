@@ -24,6 +24,22 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import converter from "swagger2openapi";
+import { createHash } from "node:crypto";
+
+/** Short, stable digest of a tenant slug. See TENANT_DIGESTS in findLeaks. */
+const digest = (value) =>
+  createHash("sha256").update(value.toLowerCase()).digest("hex").slice(0, 16);
+
+// Maintenance helper, so adding a tenant never means writing its name here.
+if (process.argv[2] === "--hash") {
+  const slug = process.argv[3];
+  if (!slug) {
+    console.error("usage: node scripts/build-scout-api-spec.mjs --hash <slug>");
+    process.exit(1);
+  }
+  console.log(`    "${digest(slug)}",`);
+  process.exit(0);
+}
 
 const SOURCE = process.env.SCOUT_API_SPEC;
 const OUTPUT = "api-spec/scout-api.openapi.json";
@@ -152,6 +168,9 @@ function findLeaks(serialised) {
     [/\bclickhouse-[a-z-]+\b/gi, "ClickHouse endpoint"],
     [/\botel_(traces|logs|metrics)[a-z_]*\b/gi, "internal table name"],
     [/\brum_(sessions|users|kpis|screens|http|crashes)\b/gi, "internal table name"],
+    [/\b(clickhouse|memgraph|keycloak|postgres(ql)?|rego)\b/gi, "backing component name"],
+    [/\b(DEPENDS_ON|RUNS_ON|HAS_[A-Z_]+)\b/g, "internal graph schema"],
+    [/Resource\{type:/g, "internal graph schema"],
   ];
 
   for (const [pattern, label] of patterns) {
@@ -161,36 +180,41 @@ function findLeaks(serialised) {
     }
   }
 
-  // Named customers. The pattern rules above cannot infer these, so they are
-  // listed. Keep in sync with the tenant files under ops/scout-api/ in
-  // base14-infra when a customer is onboarded.
+  // Named tenants, stored as digests rather than in the clear.
   //
-  // Matched case-insensitively on a word boundary. Short or dictionary-word
-  // slugs are omitted deliberately — they false-positive on ordinary prose
-  // and the structural rules above already cover the hostnames they appear
-  // in.
-  const customers = [
-    "sessionm",
-    "snabbit",
-    "glomopay",
-    "jswone",
-    "wizcommerce",
-    "numocity",
-    "credresolve",
-    "probe42",
-    "quantacus",
-    "ascguard",
-    "infraspec",
-    "buildnext",
-    "iquasar",
-    "boardroom",
-    "oteldemo1",
-    "oteldemo2",
-  ];
+  // This script lives in a public repo, so a plaintext list of customers
+  // would itself be the leak it exists to prevent. Each entry below is the
+  // first 16 hex characters of the SHA-256 of a lowercased tenant slug.
+  //
+  // To add one:
+  //   node scripts/build-scout-api-spec.mjs --hash <slug>
+  //
+  // Matching is exact and token-wise: the spec is split on non-alphanumeric
+  // characters, so this catches a slug inside `scout-api.<slug>.com` but not
+  // a slug that itself contains a hyphen. The structural rules above already
+  // cover the hostnames those appear in.
+  const TENANT_DIGESTS = new Set([
+    "33647f89a1d8e01a",
+    "40a0885b0b937616",
+    "421dcbde4180d2e0",
+    "42c4406b948a237a",
+    "617549ae4b69ae52",
+    "771327f1d9444191",
+    "9fb5202827ae6939",
+    "c2716d8dbdf7a702",
+    "c3459d5460a8ef4f",
+    "c3b0fa901c9a8903",
+    "d1293c1de85850bf",
+    "d512be3a894a7cc7",
+    "d93b67843319948b",
+    "dc7b81b3996b3baf",
+    "eed6d8600d70bd63",
+    "fe11990604b0d0c8",
+  ]);
 
-  for (const name of customers) {
-    if (new RegExp(`\\b${name}\\b`, "i").test(serialised)) {
-      violations.push(`customer name: ${name}`);
+  for (const token of new Set(serialised.toLowerCase().match(/[a-z0-9]+/g))) {
+    if (TENANT_DIGESTS.has(digest(token))) {
+      violations.push(`tenant name (digest ${digest(token)})`);
     }
   }
 

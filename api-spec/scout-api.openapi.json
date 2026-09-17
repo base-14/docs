@@ -178,7 +178,7 @@
       "get": {
         "operationId": "listServices",
         "summary": "List services",
-        "description": "Returns the distinct names of services active during the time window.\nThe list is sourced from the entity graph (services seen within the\nwindow) and is restricted to services that have at least one outgoing\n`DEPENDS_ON` edge to another service. Leaf-only infrastructure\nidentities (database hosts, caches, external endpoints) are excluded.\nWhen the window is omitted it defaults to the last 5 minutes (max 1 hour).\n\n**Environment Filter:**\nSupply `environment=<value>` to limit results to services tagged with\na `RUNS_ON` edge to a `Resource{type:'environment'}` with that value\n(e.g. `production`, `staging`). Omitting it disables the environment\nfilter.\n\n**Attribute Filtering:**\nWhen span or resource attribute filters are supplied the list is instead\nsourced from ClickHouse traces, since the entity graph cannot answer\nattribute-level queries:\n- `span_attr_<key>=<value>` - Filter by span attribute\n- `resource_attr_<key>=<value>` - Filter by resource attribute\n\n**Operator Suffixes:**\n- Default (no suffix): Equality matching\n- `[ne]` suffix with empty value: \"Not empty\" filter\n\nExample: `?span_attr_gen_ai.request.model[ne]=` returns only services that have LLM traces.\n",
+        "description": "Returns the distinct names of services active during the time window.\nOnly services that call at least one other service are returned;\nleaf-only identities such as database hosts, caches and external\nendpoints are not listed. When the window is omitted it defaults to\nthe last 5 minutes (max 1 hour).\n\n**Environment Filter:**\nSupply `environment=<value>` to limit results to services tagged with\nthat environment (e.g. `production`, `staging`). Omitting it disables\nthe environment filter.\n\n**Attribute Filtering:**\nSupplying a span or resource attribute filter changes how the list is\nbuilt: results are drawn from matching trace data instead, so services\nwith no outgoing calls are included and `environment` is ignored.\n- `span_attr_<key>=<value>` - Filter by span attribute\n- `resource_attr_<key>=<value>` - Filter by resource attribute\n\n**Operator Suffixes:**\n- Default (no suffix): Equality matching\n- `[ne]` suffix with empty value: \"Not empty\" filter\n\nExample: `?span_attr_gen_ai.request.model[ne]=` returns only services that have LLM traces.\n",
         "tags": [
           "services"
         ],
@@ -204,7 +204,7 @@
           {
             "name": "environment",
             "in": "query",
-            "description": "Optional. Filter to services that have a `RUNS_ON` edge to a\n`Resource{type:'environment'}` with this value (e.g. `production`,\n`staging`, `dev`). Omit to disable the environment filter.\n",
+            "description": "Optional. Filter to services tagged with this environment\n(e.g. `production`, `staging`, `dev`). Omit to disable the\nenvironment filter. Ignored when an attribute filter is supplied.\n",
             "schema": {
               "type": "string"
             }
@@ -274,7 +274,7 @@
           {
             "name": "environment",
             "in": "query",
-            "description": "Optional. Restrict edges to those originating from services with\na `RUNS_ON` edge to a `Resource{type:'environment'}` carrying this\nvalue (e.g. `production`, `staging`). Targets need not be\nenvironment-tagged. Omit to disable the filter.\n",
+            "description": "Optional. Restrict edges to those originating from services\ntagged with this environment (e.g. `production`, `staging`).\nTargets need not be environment-tagged. Omit to disable the\nfilter.\n",
             "schema": {
               "type": "string"
             }
@@ -480,7 +480,7 @@
       "get": {
         "operationId": "getServiceMetrics",
         "summary": "Get service metrics",
-        "description": "Returns metric names emitted by a specific service. When `environment`\nis supplied, results are restricted to services tagged with a\n`RUNS_ON` edge to a `Resource{type:'environment'}` carrying that value.\n",
+        "description": "Returns metric names emitted by a specific service. When `environment`\nis supplied, results are restricted to services tagged with that\nenvironment.\n",
         "tags": [
           "services"
         ],
