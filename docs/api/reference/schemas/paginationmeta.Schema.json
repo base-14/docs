@@ -1,0 +1,1 @@
+{"schema":{"type":"object","properties":{"next_cursor":{"type":"string","description":"Cursor for the next page"},"has_more":{"type":"boolean","description":"Whether there are more items to fetch"}},"title":"PaginationMeta"},"schemaType":"response"}

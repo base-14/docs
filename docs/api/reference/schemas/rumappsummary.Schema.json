@@ -1,0 +1,1 @@
+{"schema":{"type":"object","properties":{"service_name":{"type":"string"},"sessions":{"type":"integer","format":"int64"},"active_users":{"type":"integer","format":"int64"},"crashes":{"type":"integer","format":"int64"},"crash_free_rate":{"type":"number","format":"double"},"latest_version":{"type":"string"}},"title":"RumAppSummary"},"schemaType":"response"}

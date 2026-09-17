@@ -1,0 +1,1 @@
+{"schema":{"type":"object","description":"An event within a span","properties":{"timestamp":{"type":"string","format":"date-time","description":"Event timestamp"},"name":{"type":"string","description":"Event name"},"attributes":{"type":"object","additionalProperties":{"type":"string"},"description":"Event attributes"}},"title":"SpanEvent"},"schemaType":"response"}

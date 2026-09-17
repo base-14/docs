@@ -1,0 +1,1 @@
+{"schema":{"type":"object","properties":{"bucket":{"type":"string","format":"date-time"},"spans":{"type":"integer","format":"int64"},"errors":{"type":"integer","format":"int64"},"p95_ms":{"type":"number","format":"double"}},"title":"ApmSparklinePoint"},"schemaType":"response"}

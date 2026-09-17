@@ -1,0 +1,1 @@
+{"schema":{"type":"object","properties":{"total_sessions":{"type":"integer","format":"int64"},"active_users":{"type":"integer","format":"int64"},"avg_cold_start_ms":{"type":"number","format":"double"},"avg_warm_start_ms":{"type":"number","format":"double"},"total_errors":{"type":"integer","format":"int64"}},"title":"RumKpiSummary"},"schemaType":"response"}

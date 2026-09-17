@@ -37,7 +37,7 @@ scout --environment production
 When set, the services picker, topology refresh, and logs stream are all
 restricted to records carrying that `environment` resource attribute. The active
 environment is shown in the status bar alongside the account name
-(e.g. `⬡ snabbit · production`).
+(e.g. `⬡ acme · production`).
 
 :::note
 TUI mode requires an active authentication session. Run

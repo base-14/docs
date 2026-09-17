@@ -120,8 +120,8 @@ If you run into issues, [contact the base14 team](mailto:support@base14.io).
 
 ## Finding Your Scout URL
 
-Replace `<SCOUT_URL>` in the examples above with your organization's Scout API
-base URL. It follows this pattern:
+Replace `<SCOUT_URL>` in the examples above with your organization's Scout
+MCP base URL. It follows this pattern:
 
 ```text
 https://<your-org>.api.<region>-scout.base14.io
@@ -139,6 +139,13 @@ And the full MCP endpoint:
 ```text
 https://acme.api.as1-scout.base14.io/mcp/v1
 ```
+
+:::note
+This host serves MCP only. The Scout HTTP API is on a different URL, with
+your organization as a path segment rather than a subdomain — see the
+[API quickstart](../api/quickstart.md#3-find-your-base-url) for how to
+discover it.
+:::
 
 If you are unsure about your organization name or region, check with your team
 or [contact the base14 team](mailto:support@base14.io).

@@ -1,0 +1,1 @@
+{"schema":{"type":"object","properties":{"services":{"type":"array","items":{"type":"string"},"description":"List of service names"}},"title":"ListServicesResponse"},"schemaType":"response"}

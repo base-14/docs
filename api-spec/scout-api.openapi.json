@@ -1,0 +1,3983 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Scout API",
+    "description": "Query the observability data base14 Scout collects for your organization:\ndistributed traces, logs, metrics, service topology, APM rollups and real\nuser monitoring.\n\nEvery request needs a bearer token from the base14 identity service and a\nbase URL specific to your organization. Both are covered in the\n[quickstart](/api/quickstart/).\n\nRequests are scoped to a single organization, derived from the access token\n— there is no tenant header or path parameter to set. All timestamps are\nRFC3339.",
+    "version": "0.12.0"
+  },
+  "tags": [
+    {
+      "name": "telemetry",
+      "description": "Query and explore raw traces, logs and metrics. The `discover`\noperations return the attributes, severities and span names available\nfor a service, and are intended to be called before a query so filters\ncan be built against real values."
+    },
+    {
+      "name": "services",
+      "description": "The service catalogue and its relationships: which services are\nreporting, what they depend on, and what metrics they emit."
+    },
+    {
+      "name": "apm",
+      "description": "Application performance rollups. Pre-aggregated request rates, error\nrates and latency percentiles, sliced by service, operation or HTTP\nroute."
+    },
+    {
+      "name": "rum",
+      "description": "Real user monitoring for mobile and web applications: sessions, users,\nscreens, HTTP calls, crashes and headline KPIs."
+    }
+  ],
+  "paths": {
+    "/telemetry/traces": {
+      "get": {
+        "operationId": "listTraces",
+        "summary": "List traces",
+        "description": "Returns a paginated list of traces filtered by time range and service.\n\n**Attribute Filtering:**\nUse prefix-based query parameters to filter by span and resource attributes:\n- `span_attr_<key>=<value>` - Filter by span attribute (e.g., `span_attr_http.method=GET`)\n- `resource_attr_<key>=<value>` - Filter by resource attribute (e.g., `resource_attr_service.version=1.0.0`)\n\n**Operator Suffixes:**\n- Default (no suffix): Equality matching (`span_attr_key=value` matches where key == value)\n- `[ne]` suffix with empty value: \"Not empty\" filter (`span_attr_key[ne]=` matches where key is not empty)\n\nExample: `?span_attr_gen_ai.request.model[ne]=` filters for traces that have any gen_ai.request.model value.\n\n**Multiple Values:**\nMultiple values for the same key use OR matching:\n`?span_attr_http.method=GET&span_attr_http.method=POST` matches traces where method is GET OR POST.\n\nMultiple different keys use AND matching:\n`?span_attr_http.method=GET&span_attr_http.status_code=200` matches traces where method is GET AND status_code is 200.\n",
+        "tags": [
+          "telemetry"
+        ],
+        "parameters": [
+          {
+            "name": "start_time",
+            "in": "query",
+            "required": true,
+            "description": "Start time (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "end_time",
+            "in": "query",
+            "required": true,
+            "description": "End time (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "service_name",
+            "in": "query",
+            "required": true,
+            "description": "Service name filter",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "prompt_id",
+            "in": "query",
+            "description": "Filter by gen_ai.conversation.id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "operation",
+            "in": "query",
+            "description": "Filter by gen_ai.operation.name",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "chat",
+                "embeddings",
+                "text_completion"
+              ]
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "description": "Filter by gen_ai.provider.name (openai, anthropic, etc.)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "span_name",
+            "in": "query",
+            "description": "Filter by span name(s). Multiple values use OR matching.",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "status_code",
+            "in": "query",
+            "description": "Filter by status code(s). Multiple values use OR matching.",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "Unset",
+                  "Ok",
+                  "Error"
+                ]
+              }
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of items to return (max 100)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Pagination cursor from previous response",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of LLM traces",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListTracesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/services": {
+      "get": {
+        "operationId": "listServices",
+        "summary": "List services",
+        "description": "Returns the distinct names of services active during the time window.\nOnly services that call at least one other service are returned;\nleaf-only identities such as database hosts, caches and external\nendpoints are not listed. When the window is omitted it defaults to\nthe last 5 minutes (max 1 hour).\n\n**Environment Filter:**\nSupply `environment=<value>` to limit results to services tagged with\nthat environment (e.g. `production`, `staging`). Omitting it disables\nthe environment filter.\n\n**Attribute Filtering:**\nSupplying a span or resource attribute filter changes how the list is\nbuilt: results are drawn from matching trace data instead, so services\nwith no outgoing calls are included and `environment` is ignored.\n- `span_attr_<key>=<value>` - Filter by span attribute\n- `resource_attr_<key>=<value>` - Filter by resource attribute\n\n**Operator Suffixes:**\n- Default (no suffix): Equality matching\n- `[ne]` suffix with empty value: \"Not empty\" filter\n\nExample: `?span_attr_gen_ai.request.model[ne]=` returns only services that have LLM traces.\n",
+        "tags": [
+          "services"
+        ],
+        "parameters": [
+          {
+            "name": "start_time",
+            "in": "query",
+            "description": "Start of time window (ISO 8601). Defaults to 5 minutes ago.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "end_time",
+            "in": "query",
+            "description": "End of time window (ISO 8601). Defaults to now.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "description": "Optional. Filter to services tagged with this environment\n(e.g. `production`, `staging`, `dev`). Omit to disable the\nenvironment filter. Ignored when an attribute filter is supplied.\n",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of services",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListServicesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/services/topology": {
+      "get": {
+        "operationId": "getServiceTopology",
+        "summary": "Get service topology",
+        "description": "Returns service-to-service dependency edges within the specified time\nwindow. When `environment` is supplied, edges are restricted to those\noriginating from services tagged for that deployment environment;\ntarget services (databases, caches, external endpoints) are not\nrequired to carry an environment tag.\n",
+        "tags": [
+          "services"
+        ],
+        "parameters": [
+          {
+            "name": "start_time",
+            "in": "query",
+            "description": "Start of time window (ISO 8601). Defaults to 5 minutes ago.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "end_time",
+            "in": "query",
+            "description": "End of time window (ISO 8601). Defaults to now. Max duration is 1 hour.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "description": "Optional. Restrict edges to those originating from services\ntagged with this environment (e.g. `production`, `staging`).\nTargets need not be environment-tagged. Omit to disable the\nfilter.\n",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Service topology",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceTopologyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/services/{serviceName}/dependencies": {
+      "get": {
+        "operationId": "getServiceDependencies",
+        "summary": "Get service dependencies",
+        "description": "Returns all dependencies for a specific service, including incoming and outgoing",
+        "tags": [
+          "services"
+        ],
+        "parameters": [
+          {
+            "name": "serviceName",
+            "in": "path",
+            "required": true,
+            "description": "The service name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start_time",
+            "in": "query",
+            "description": "Start of time window (ISO 8601). Defaults to 5 minutes ago.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "end_time",
+            "in": "query",
+            "description": "End of time window (ISO 8601). Defaults to now. Max duration is 1 hour.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Service dependencies",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceDependenciesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Service not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/services/{serviceName}/profile": {
+      "get": {
+        "operationId": "getServiceProfile",
+        "summary": "Get service profile",
+        "description": "Returns per-span performance stats (error rate, latency) for all inbound and outbound relationships of a service",
+        "tags": [
+          "services"
+        ],
+        "parameters": [
+          {
+            "name": "serviceName",
+            "in": "path",
+            "required": true,
+            "description": "The service name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start_time",
+            "in": "query",
+            "description": "Start of time window (ISO 8601). Defaults to 5 minutes ago.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "end_time",
+            "in": "query",
+            "description": "End of time window (ISO 8601). Defaults to now. Max duration is 1 hour.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Service profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceProfileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Service not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/services/{serviceName}/metrics": {
+      "get": {
+        "operationId": "getServiceMetrics",
+        "summary": "Get service metrics",
+        "description": "Returns metric names emitted by a specific service. When `environment`\nis supplied, results are restricted to services tagged with that\nenvironment.\n",
+        "tags": [
+          "services"
+        ],
+        "parameters": [
+          {
+            "name": "serviceName",
+            "in": "path",
+            "required": true,
+            "description": "The service name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start_time",
+            "in": "query",
+            "description": "Start of time window (ISO 8601). Defaults to 5 minutes ago.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "end_time",
+            "in": "query",
+            "description": "End of time window (ISO 8601). Defaults to now. Max duration is 1 hour.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "description": "Optional. Restrict to metrics from services tagged with this\ndeployment environment (e.g. `production`, `staging`). Services\nwithout the tag return no metrics under any env filter.\n",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Service metrics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceMetricsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/telemetry/traces/{traceId}": {
+      "get": {
+        "operationId": "getTrace",
+        "summary": "Get trace details",
+        "description": "Returns full trace details with all spans",
+        "tags": [
+          "telemetry"
+        ],
+        "parameters": [
+          {
+            "name": "traceId",
+            "in": "path",
+            "required": true,
+            "description": "The trace ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "service_name",
+            "in": "query",
+            "required": true,
+            "description": "Service name for query optimization",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start_time",
+            "in": "query",
+            "required": true,
+            "description": "Start time (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "end_time",
+            "in": "query",
+            "required": true,
+            "description": "End time (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Trace details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TraceDetailResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Trace not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/telemetry/logs/discover": {
+      "get": {
+        "operationId": "discoverLogs",
+        "summary": "Discover log schema",
+        "description": "Discover available log attributes, severity levels, and resource attributes for a service. Use this before querying logs to understand the log schema.",
+        "tags": [
+          "telemetry"
+        ],
+        "parameters": [
+          {
+            "name": "service_name",
+            "in": "query",
+            "required": true,
+            "description": "Service name to discover logs for",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start_time",
+            "in": "query",
+            "description": "Start of time window (ISO 8601). Defaults to 5 minutes ago.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "end_time",
+            "in": "query",
+            "description": "End of time window (ISO 8601). Defaults to now. The difference between start_time and end_time must not exceed 15 minutes.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Log discovery result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogDiscoveryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/telemetry/logs": {
+      "get": {
+        "operationId": "queryLogs",
+        "summary": "Query logs",
+        "description": "Query logs from a service with optional filters. Supports filtering by severity, body content, log attributes, resource attributes, and trace ID.\n\n**Attribute Filtering:**\nUse prefix-based query parameters to filter by log and resource attributes:\n- `log_attr_<key>=<value>` - Filter by log attribute (e.g., `log_attr_user_id=123`)\n- `resource_attr_<key>=<value>` - Filter by resource attribute (e.g., `resource_attr_k8s.pod.name=pod-1`)\n\n**Operator Suffixes:**\n- Default (no suffix): Equality matching (`log_attr_key=value` matches where key == value)\n- `[ne]` suffix with empty value: \"Not empty\" filter (`log_attr_key[ne]=` matches where key is not empty)\n\nExample: `?log_attr_user_id[ne]=` filters for logs that have any user_id value.\n\n**Multiple Values:**\nMultiple values for the same key use OR matching:\n`?log_attr_user_id=123&log_attr_user_id=456` matches logs where user_id is 123 OR 456.\n\nMultiple different keys use AND matching:\n`?log_attr_user_id=123&log_attr_order_id=456` matches logs where user_id is 123 AND order_id is 456.\n",
+        "tags": [
+          "telemetry"
+        ],
+        "parameters": [
+          {
+            "name": "service_name",
+            "in": "query",
+            "required": true,
+            "description": "Service name to query logs for",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start_time",
+            "in": "query",
+            "required": true,
+            "description": "Start time (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "end_time",
+            "in": "query",
+            "required": true,
+            "description": "End time (ISO 8601). The difference between start_time and end_time must not exceed 15 minutes.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "severity",
+            "in": "query",
+            "description": "Filter by severity levels (e.g., ERROR, WARN, INFO)",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "body_contains",
+            "in": "query",
+            "description": "Search for text within log body",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "trace_id",
+            "in": "query",
+            "description": "Filter by trace ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of logs to return (max 1000)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 100
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Pagination cursor from previous response",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Log query result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogQueryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/telemetry/traces/discover": {
+      "get": {
+        "operationId": "discoverSpans",
+        "summary": "Discover span schema",
+        "description": "Discover available span names, status codes, and span attributes for a service. Use this before querying traces to understand the trace schema.",
+        "tags": [
+          "telemetry"
+        ],
+        "parameters": [
+          {
+            "name": "service_name",
+            "in": "query",
+            "required": true,
+            "description": "Service name to discover spans for",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start_time",
+            "in": "query",
+            "description": "Start of time window (ISO 8601). Defaults to 5 minutes ago.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "end_time",
+            "in": "query",
+            "description": "End of time window (ISO 8601). Defaults to now. The difference between start_time and end_time must not exceed 15 minutes.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Span discovery result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpanDiscoveryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/telemetry/metrics/discover": {
+      "get": {
+        "operationId": "discoverMetrics",
+        "summary": "Discover metrics",
+        "description": "Discover what metrics exist for a service, their types, units, and available filter dimensions.\nUse this before query_metrics to understand the metric schema.\n",
+        "tags": [
+          "telemetry"
+        ],
+        "parameters": [
+          {
+            "name": "service_name",
+            "in": "query",
+            "required": true,
+            "description": "Service name to discover metrics for",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start_time",
+            "in": "query",
+            "description": "Start of time window (ISO 8601). Defaults to 5 minutes ago.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "end_time",
+            "in": "query",
+            "description": "End of time window (ISO 8601). Defaults to now. The difference between start_time and end_time must not exceed 30 minutes.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Metric discovery result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricDiscoveryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/telemetry/metrics": {
+      "get": {
+        "operationId": "queryMetrics",
+        "summary": "Query metrics",
+        "description": "Query metric values with filtering, grouping, and aggregation.\nSupports gauge, sum, histogram, and summary metric types.\n\n**Attribute Filtering:**\nUse prefix-based query parameters to filter by metric and resource attributes:\n- `attr_<key>=<value>` - Filter by metric attribute (e.g., `attr_http.method=GET`)\n- `resource_attr_<key>=<value>` - Filter by resource attribute\n\n**Operator Suffixes:**\n- Default (no suffix): Equality matching\n- `[ne]` suffix with empty value: \"Not empty\" filter\n\n**Multiple Values:**\nMultiple values for the same key use OR matching.\nMultiple different keys use AND matching.\n",
+        "tags": [
+          "telemetry"
+        ],
+        "parameters": [
+          {
+            "name": "service_name",
+            "in": "query",
+            "required": true,
+            "description": "Service name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "metric_name",
+            "in": "query",
+            "required": true,
+            "description": "Metric name to query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start_time",
+            "in": "query",
+            "required": true,
+            "description": "Start time (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "end_time",
+            "in": "query",
+            "required": true,
+            "description": "End time (ISO 8601). Max duration 1 hour (30 minutes in raw mode).",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "group_by",
+            "in": "query",
+            "description": "Attribute key(s) to group results by",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "aggregate_interval",
+            "in": "query",
+            "description": "Aggregation bucket interval. Auto-selected if not specified.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1m",
+                "5m",
+                "15m"
+              ]
+            }
+          },
+          {
+            "name": "raw",
+            "in": "query",
+            "description": "Return raw data points instead of aggregated. Max time range 30 minutes.",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum data points to return (max 5000)",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "default": 1000
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Metric query result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricQueryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rum/crashes": {
+      "get": {
+        "operationId": "rumListCrashes",
+        "summary": "List RUM crashes",
+        "description": "List grouped RUM crash/error/ANR signatures for a mobile service, with occurrence\ncounts and affected sessions and users.\n",
+        "tags": [
+          "rum"
+        ],
+        "parameters": [
+          {
+            "name": "service_name",
+            "in": "query",
+            "required": true,
+            "description": "RUM service name (e.g. prod-customer-android)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start_time",
+            "in": "query",
+            "required": true,
+            "description": "Start time (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "end_time",
+            "in": "query",
+            "required": true,
+            "description": "End time (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "description": "Scope to a crash family (default all)",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "error",
+                "crash",
+                "anr"
+              ]
+            }
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "description": "Filter by deployment environment",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_version",
+            "in": "query",
+            "description": "Filter by app/service version (OR match)",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "os_name",
+            "in": "query",
+            "description": "Filter by OS name (OR match)",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "os_version",
+            "in": "query",
+            "description": "Filter by OS version (OR match)",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "device_manufacturer",
+            "in": "query",
+            "description": "Filter by device manufacturer (OR match)",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "device_model",
+            "in": "query",
+            "description": "Filter by device model (OR match)",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "network_type",
+            "in": "query",
+            "description": "Filter by network connection type (OR match)",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of crash groups to return (max 1000)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 100
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Row offset for pagination",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Crash list result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RumCrashListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rum/applications": {
+      "get": {
+        "operationId": "rumListApps",
+        "summary": "List RUM applications",
+        "description": "Per-application RUM summary (sessions, users, crashes, crash-free rate, latest version).",
+        "tags": [
+          "rum"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/rumStartTime"
+          },
+          {
+            "$ref": "#/components/parameters/rumEndTime"
+          },
+          {
+            "$ref": "#/components/parameters/rumEnvironment"
+          },
+          {
+            "$ref": "#/components/parameters/rumLimit"
+          },
+          {
+            "$ref": "#/components/parameters/rumOffset"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Application summaries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RumAppListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rum/kpis": {
+      "get": {
+        "operationId": "rumGetKpis",
+        "summary": "Get RUM KPIs",
+        "description": "Overview KPIs (sessions, users, cold/warm start, errors) with optional timeseries.",
+        "tags": [
+          "rum"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/rumServiceName"
+          },
+          {
+            "$ref": "#/components/parameters/rumStartTime"
+          },
+          {
+            "$ref": "#/components/parameters/rumEndTime"
+          },
+          {
+            "name": "include_timeseries",
+            "in": "query",
+            "description": "Also return sessions/cold-start/warm-start and crash timeseries",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "$ref": "#/components/parameters/rumEnvironment"
+          },
+          {
+            "$ref": "#/components/parameters/rumAppVersion"
+          },
+          {
+            "$ref": "#/components/parameters/rumOsName"
+          },
+          {
+            "$ref": "#/components/parameters/rumOsVersion"
+          },
+          {
+            "$ref": "#/components/parameters/rumDeviceManufacturer"
+          },
+          {
+            "$ref": "#/components/parameters/rumDeviceModel"
+          },
+          {
+            "$ref": "#/components/parameters/rumNetworkType"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "KPI result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RumKpisResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rum/sessions": {
+      "get": {
+        "operationId": "rumListSessions",
+        "summary": "List RUM sessions",
+        "description": "Per-session list (user, duration, screens, errors, crashes, device/version).",
+        "tags": [
+          "rum"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/rumServiceName"
+          },
+          {
+            "$ref": "#/components/parameters/rumStartTime"
+          },
+          {
+            "$ref": "#/components/parameters/rumEndTime"
+          },
+          {
+            "$ref": "#/components/parameters/rumEnvironment"
+          },
+          {
+            "$ref": "#/components/parameters/rumAppVersion"
+          },
+          {
+            "$ref": "#/components/parameters/rumOsName"
+          },
+          {
+            "$ref": "#/components/parameters/rumOsVersion"
+          },
+          {
+            "$ref": "#/components/parameters/rumDeviceManufacturer"
+          },
+          {
+            "$ref": "#/components/parameters/rumDeviceModel"
+          },
+          {
+            "$ref": "#/components/parameters/rumNetworkType"
+          },
+          {
+            "$ref": "#/components/parameters/rumLimit"
+          },
+          {
+            "$ref": "#/components/parameters/rumOffset"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RumSessionListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rum/users": {
+      "get": {
+        "operationId": "rumListUsers",
+        "summary": "List RUM users",
+        "description": "Per-user rollup (sessions, errors, crashes, devices, app versions, last seen).",
+        "tags": [
+          "rum"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/rumServiceName"
+          },
+          {
+            "$ref": "#/components/parameters/rumStartTime"
+          },
+          {
+            "$ref": "#/components/parameters/rumEndTime"
+          },
+          {
+            "$ref": "#/components/parameters/rumEnvironment"
+          },
+          {
+            "$ref": "#/components/parameters/rumLimit"
+          },
+          {
+            "$ref": "#/components/parameters/rumOffset"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RumUserListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rum/screens": {
+      "get": {
+        "operationId": "rumListScreens",
+        "summary": "List RUM screen performance",
+        "description": "Per-screen performance (views, unique sessions, load times, jank, crashes).",
+        "tags": [
+          "rum"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/rumServiceName"
+          },
+          {
+            "$ref": "#/components/parameters/rumStartTime"
+          },
+          {
+            "$ref": "#/components/parameters/rumEndTime"
+          },
+          {
+            "$ref": "#/components/parameters/rumEnvironment"
+          },
+          {
+            "$ref": "#/components/parameters/rumAppVersion"
+          },
+          {
+            "$ref": "#/components/parameters/rumOsName"
+          },
+          {
+            "$ref": "#/components/parameters/rumOsVersion"
+          },
+          {
+            "$ref": "#/components/parameters/rumDeviceManufacturer"
+          },
+          {
+            "$ref": "#/components/parameters/rumDeviceModel"
+          },
+          {
+            "$ref": "#/components/parameters/rumNetworkType"
+          },
+          {
+            "$ref": "#/components/parameters/rumLimit"
+          },
+          {
+            "$ref": "#/components/parameters/rumOffset"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Screen performance summaries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RumScreenListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rum/http": {
+      "get": {
+        "operationId": "rumListHTTP",
+        "summary": "List RUM HTTP endpoints",
+        "description": "Per-endpoint HTTP performance (avg duration, error rate, request count).",
+        "tags": [
+          "rum"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/rumServiceName"
+          },
+          {
+            "$ref": "#/components/parameters/rumStartTime"
+          },
+          {
+            "$ref": "#/components/parameters/rumEndTime"
+          },
+          {
+            "name": "failed_only",
+            "in": "query",
+            "description": "Only include endpoints with HTTP status >= 400",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "$ref": "#/components/parameters/rumEnvironment"
+          },
+          {
+            "$ref": "#/components/parameters/rumAppVersion"
+          },
+          {
+            "$ref": "#/components/parameters/rumOsName"
+          },
+          {
+            "$ref": "#/components/parameters/rumOsVersion"
+          },
+          {
+            "$ref": "#/components/parameters/rumDeviceManufacturer"
+          },
+          {
+            "$ref": "#/components/parameters/rumDeviceModel"
+          },
+          {
+            "$ref": "#/components/parameters/rumNetworkType"
+          },
+          {
+            "$ref": "#/components/parameters/rumLimit"
+          },
+          {
+            "$ref": "#/components/parameters/rumOffset"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "HTTP endpoint summaries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RumHTTPListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/apm/services": {
+      "get": {
+        "operationId": "apmListServices",
+        "summary": "List APM services",
+        "description": "Per-service RED metrics (throughput, error rate, p50/p95/p99 latency), with\noverview totals and optional per-service trend sparklines and\nprevious-window comparison deltas.\n\nServed from a pre-aggregated rollup, so this is much cheaper than the\nequivalent query against raw spans.\n",
+        "tags": [
+          "apm"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apmStartTime"
+          },
+          {
+            "$ref": "#/components/parameters/apmEndTime"
+          },
+          {
+            "name": "include_sparkline",
+            "in": "query",
+            "description": "Also return bucketed per-service trend points",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "include_comparison",
+            "in": "query",
+            "description": "Also return the previous equal-length window's values per service",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "$ref": "#/components/parameters/apmEnvironment"
+          },
+          {
+            "$ref": "#/components/parameters/apmSpanKind"
+          },
+          {
+            "$ref": "#/components/parameters/apmSpanName"
+          },
+          {
+            "$ref": "#/components/parameters/apmHttpRoute"
+          },
+          {
+            "$ref": "#/components/parameters/apmHttpStatusCode"
+          },
+          {
+            "$ref": "#/components/parameters/apmLimit"
+          },
+          {
+            "$ref": "#/components/parameters/apmOffset"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Service RED summaries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApmServiceListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/apm/kpis": {
+      "get": {
+        "operationId": "apmGetKpis",
+        "summary": "Get APM service KPIs",
+        "description": "One service's KPI summary (throughput, error rate, avg/p50/p95/p99/max\nlatency), with optional bucketed timeseries.\n",
+        "tags": [
+          "apm"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apmServiceName"
+          },
+          {
+            "$ref": "#/components/parameters/apmStartTime"
+          },
+          {
+            "$ref": "#/components/parameters/apmEndTime"
+          },
+          {
+            "name": "include_timeseries",
+            "in": "query",
+            "description": "Also return bucketed throughput/latency/error-rate timeseries",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "$ref": "#/components/parameters/apmEnvironment"
+          },
+          {
+            "$ref": "#/components/parameters/apmSpanKind"
+          },
+          {
+            "$ref": "#/components/parameters/apmSpanName"
+          },
+          {
+            "$ref": "#/components/parameters/apmHttpRoute"
+          },
+          {
+            "$ref": "#/components/parameters/apmHttpStatusCode"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "KPI result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApmKpisResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/apm/operations": {
+      "get": {
+        "operationId": "apmListOperations",
+        "summary": "List APM operations",
+        "description": "One service's per-operation breakdown (calls, errors, error rate, avg and\np95 latency), grouped by span name or HTTP route.\n",
+        "tags": [
+          "apm"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apmServiceName"
+          },
+          {
+            "$ref": "#/components/parameters/apmStartTime"
+          },
+          {
+            "$ref": "#/components/parameters/apmEndTime"
+          },
+          {
+            "name": "group_by",
+            "in": "query",
+            "description": "Operation grouping column",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "span_name",
+                "http_route"
+              ],
+              "default": "span_name"
+            }
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "description": "Sort column",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "calls",
+                "errors",
+                "error_pct",
+                "avg_ms",
+                "p95_ms"
+              ],
+              "default": "calls"
+            }
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "description": "Sort direction",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/apmEnvironment"
+          },
+          {
+            "$ref": "#/components/parameters/apmSpanKind"
+          },
+          {
+            "$ref": "#/components/parameters/apmHttpStatusCode"
+          },
+          {
+            "$ref": "#/components/parameters/apmLimit"
+          },
+          {
+            "$ref": "#/components/parameters/apmOffset"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operation summaries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApmOperationListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/apm/facets": {
+      "get": {
+        "operationId": "apmListFacetValues",
+        "summary": "List APM facet values",
+        "description": "Distinct values of one APM dimension with span counts, for building filter\ndropdowns.\n",
+        "tags": [
+          "apm"
+        ],
+        "parameters": [
+          {
+            "name": "facet",
+            "in": "query",
+            "required": true,
+            "description": "Dimension to list values for",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "service_name",
+                "environment",
+                "span_kind",
+                "span_name",
+                "http_route",
+                "http_status_code"
+              ]
+            }
+          },
+          {
+            "$ref": "#/components/parameters/apmStartTime"
+          },
+          {
+            "$ref": "#/components/parameters/apmEndTime"
+          },
+          {
+            "name": "service_name",
+            "in": "query",
+            "description": "Optionally scope values to one service",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/apmEnvironment"
+          },
+          {
+            "$ref": "#/components/parameters/apmSpanKind"
+          },
+          {
+            "$ref": "#/components/parameters/apmLimit"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Facet values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApmFacetListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.{region}-scout.base14.io/{org}/api/v1",
+      "description": "Your organization's Scout API. Both values are returned by the discovery endpoint described in the quickstart; do not guess them.",
+      "variables": {
+        "region": {
+          "default": "use1",
+          "description": "The region your organization is provisioned in."
+        },
+        "org": {
+          "default": "acme",
+          "description": "Your organization slug."
+        }
+      }
+    }
+  ],
+  "components": {
+    "parameters": {
+      "rumServiceName": {
+        "name": "service_name",
+        "in": "query",
+        "required": true,
+        "description": "RUM service name (e.g. prod-customer-android)",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "rumStartTime": {
+        "name": "start_time",
+        "in": "query",
+        "required": true,
+        "description": "Start time (ISO 8601)",
+        "schema": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "rumEndTime": {
+        "name": "end_time",
+        "in": "query",
+        "required": true,
+        "description": "End time (ISO 8601)",
+        "schema": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "rumEnvironment": {
+        "name": "environment",
+        "in": "query",
+        "description": "Filter by deployment environment",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "rumAppVersion": {
+        "name": "app_version",
+        "in": "query",
+        "description": "Filter by app/service version (OR match)",
+        "explode": true,
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "rumOsName": {
+        "name": "os_name",
+        "in": "query",
+        "description": "Filter by OS name (OR match)",
+        "explode": true,
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "rumOsVersion": {
+        "name": "os_version",
+        "in": "query",
+        "description": "Filter by OS version (OR match)",
+        "explode": true,
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "rumDeviceManufacturer": {
+        "name": "device_manufacturer",
+        "in": "query",
+        "description": "Filter by device manufacturer (OR match)",
+        "explode": true,
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "rumDeviceModel": {
+        "name": "device_model",
+        "in": "query",
+        "description": "Filter by device model (OR match)",
+        "explode": true,
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "rumNetworkType": {
+        "name": "network_type",
+        "in": "query",
+        "description": "Filter by network connection type (OR match)",
+        "explode": true,
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "rumLimit": {
+        "name": "limit",
+        "in": "query",
+        "description": "Number of rows to return (max 1000)",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000,
+          "default": 100
+        }
+      },
+      "rumOffset": {
+        "name": "offset",
+        "in": "query",
+        "description": "Row offset for pagination",
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "apmServiceName": {
+        "name": "service_name",
+        "in": "query",
+        "required": true,
+        "description": "Service name",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "apmStartTime": {
+        "name": "start_time",
+        "in": "query",
+        "required": true,
+        "description": "Start time (ISO 8601)",
+        "schema": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "apmEndTime": {
+        "name": "end_time",
+        "in": "query",
+        "required": true,
+        "description": "End time (ISO 8601)",
+        "schema": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "apmEnvironment": {
+        "name": "environment",
+        "in": "query",
+        "description": "Filter by deployment environment",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "apmSpanKind": {
+        "name": "span_kind",
+        "in": "query",
+        "description": "Filter by span kind (e.g. Server)",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "apmSpanName": {
+        "name": "span_name",
+        "in": "query",
+        "description": "Filter by span name (OR match)",
+        "explode": true,
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "apmHttpRoute": {
+        "name": "http_route",
+        "in": "query",
+        "description": "Filter by HTTP route (OR match)",
+        "explode": true,
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "apmHttpStatusCode": {
+        "name": "http_status_code",
+        "in": "query",
+        "description": "Filter by exact HTTP status code (OR match)",
+        "explode": true,
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "apmLimit": {
+        "name": "limit",
+        "in": "query",
+        "description": "Number of rows to return (max 1000)",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000,
+          "default": 100
+        }
+      },
+      "apmOffset": {
+        "name": "offset",
+        "in": "query",
+        "description": "Row offset for pagination",
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "schemas": {
+      "ListTracesResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TraceListItem"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      },
+      "TraceListItem": {
+        "type": "object",
+        "properties": {
+          "trace_id": {
+            "type": "string",
+            "description": "Trace identifier"
+          },
+          "span_id": {
+            "type": "string",
+            "description": "Span identifier"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Span timestamp"
+          },
+          "service_name": {
+            "type": "string",
+            "description": "Service name"
+          },
+          "span_name": {
+            "type": "string",
+            "description": "Span name"
+          },
+          "duration_ns": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Duration in nanoseconds"
+          },
+          "status_code": {
+            "type": "string",
+            "description": "Status code"
+          },
+          "llm_attributes": {
+            "$ref": "#/components/schemas/LLMAttributesSummary"
+          }
+        }
+      },
+      "LLMAttributesSummary": {
+        "type": "object",
+        "description": "Normalized LLM-specific attributes for list view (excludes large fields like output_message)",
+        "properties": {
+          "request_model": {
+            "type": "string",
+            "description": "The model requested for the LLM call"
+          },
+          "provider_name": {
+            "type": "string",
+            "description": "The LLM provider name (e.g., openai, anthropic)"
+          },
+          "input_tokens": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Number of input/prompt tokens"
+          },
+          "output_tokens": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Number of output/completion tokens"
+          },
+          "total_cost": {
+            "type": "string",
+            "description": "Total cost of the LLM operation in dollars"
+          },
+          "operation_name": {
+            "type": "string",
+            "description": "Type of LLM operation (chat, embeddings, text_completion)"
+          },
+          "output_type": {
+            "type": "string",
+            "description": "Type of output (e.g., text)"
+          },
+          "sdk_name": {
+            "type": "string",
+            "description": "Name of the SDK that generated the trace (openllmetry, openlit)"
+          },
+          "sdk_version": {
+            "type": "string",
+            "description": "Version of the SDK"
+          },
+          "system_prompt": {
+            "type": "string",
+            "description": "System prompt/instructions"
+          },
+          "user_prompt": {
+            "type": "string",
+            "description": "User prompt/message"
+          }
+        }
+      },
+      "PaginationMeta": {
+        "type": "object",
+        "properties": {
+          "next_cursor": {
+            "type": "string",
+            "description": "Cursor for the next page"
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether there are more items to fetch"
+          }
+        }
+      },
+      "TraceDetailResponse": {
+        "type": "object",
+        "properties": {
+          "trace_id": {
+            "type": "string",
+            "description": "Trace identifier"
+          },
+          "spans": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SpanDetail"
+            }
+          }
+        }
+      },
+      "SpanDetail": {
+        "type": "object",
+        "properties": {
+          "trace_id": {
+            "type": "string",
+            "description": "Trace identifier"
+          },
+          "span_id": {
+            "type": "string",
+            "description": "Span identifier"
+          },
+          "parent_span_id": {
+            "type": "string",
+            "description": "Parent span identifier"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Span timestamp"
+          },
+          "service_name": {
+            "type": "string",
+            "description": "Service name"
+          },
+          "span_name": {
+            "type": "string",
+            "description": "Span name"
+          },
+          "span_kind": {
+            "type": "string",
+            "description": "Span kind"
+          },
+          "duration_ns": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Duration in nanoseconds"
+          },
+          "status_code": {
+            "type": "string",
+            "description": "Status code"
+          },
+          "status_message": {
+            "type": "string",
+            "description": "Status message"
+          },
+          "resource_attributes": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Resource attributes"
+          },
+          "span_attributes": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Span attributes"
+          },
+          "llm_attributes": {
+            "$ref": "#/components/schemas/LLMAttributes"
+          },
+          "events": {
+            "type": "array",
+            "description": "Span events",
+            "items": {
+              "$ref": "#/components/schemas/SpanEvent"
+            }
+          },
+          "links": {
+            "type": "array",
+            "description": "Span links",
+            "items": {
+              "$ref": "#/components/schemas/SpanLink"
+            }
+          }
+        }
+      },
+      "SpanEvent": {
+        "type": "object",
+        "description": "An event within a span",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Event timestamp"
+          },
+          "name": {
+            "type": "string",
+            "description": "Event name"
+          },
+          "attributes": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Event attributes"
+          }
+        }
+      },
+      "SpanLink": {
+        "type": "object",
+        "description": "A link to another span",
+        "properties": {
+          "trace_id": {
+            "type": "string",
+            "description": "Linked trace ID"
+          },
+          "span_id": {
+            "type": "string",
+            "description": "Linked span ID"
+          },
+          "trace_state": {
+            "type": "string",
+            "description": "Trace state"
+          },
+          "attributes": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Link attributes"
+          }
+        }
+      },
+      "LLMAttributes": {
+        "type": "object",
+        "description": "Normalized LLM-specific attributes extracted from span attributes",
+        "properties": {
+          "request_model": {
+            "type": "string",
+            "description": "The model requested for the LLM call"
+          },
+          "provider_name": {
+            "type": "string",
+            "description": "The LLM provider name (e.g., openai, anthropic)"
+          },
+          "input_tokens": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Number of input/prompt tokens"
+          },
+          "output_tokens": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Number of output/completion tokens"
+          },
+          "total_cost": {
+            "type": "string",
+            "description": "Total cost of the LLM operation in dollars"
+          },
+          "operation_name": {
+            "type": "string",
+            "description": "Type of LLM operation (chat, embeddings, text_completion)"
+          },
+          "output_type": {
+            "type": "string",
+            "description": "Type of output (e.g., text)"
+          },
+          "sdk_name": {
+            "type": "string",
+            "description": "Name of the SDK that generated the trace (openllmetry, openlit)"
+          },
+          "sdk_version": {
+            "type": "string",
+            "description": "Version of the SDK"
+          },
+          "system_prompt": {
+            "type": "string",
+            "description": "System prompt/instructions"
+          },
+          "user_prompt": {
+            "type": "string",
+            "description": "User prompt/message"
+          },
+          "output_message": {
+            "type": "string",
+            "description": "LLM output/completion message"
+          },
+          "total_duration_ms": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total request duration in milliseconds (from span duration)"
+          },
+          "time_to_first_token_ms": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Time to generate first token in milliseconds (prompt processing/prefill time)"
+          },
+          "time_per_output_token_ms": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Average time per output token in milliseconds (decode time)"
+          },
+          "inference_duration_ms": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total inference time in milliseconds (output_tokens * time_per_output_token)"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Error code"
+          },
+          "message": {
+            "type": "string",
+            "description": "Error message"
+          }
+        }
+      },
+      "RumCrashListResponse": {
+        "type": "object",
+        "properties": {
+          "crashes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RumCrashGroup"
+            }
+          },
+          "count": {
+            "type": "integer",
+            "description": "Number of crash groups returned"
+          }
+        }
+      },
+      "RumCrashGroup": {
+        "type": "object",
+        "properties": {
+          "crash_id": {
+            "type": "string",
+            "description": "Stable crash signature identifier"
+          },
+          "crash_kind": {
+            "type": "string",
+            "description": "native or javascript"
+          },
+          "title": {
+            "type": "string",
+            "description": "Crash title / grouping key"
+          },
+          "crash_type": {
+            "type": "string",
+            "description": "Crash/error type"
+          },
+          "occurrences": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Number of occurrences in the window"
+          },
+          "affected_sessions": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Distinct sessions affected"
+          },
+          "affected_users": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Distinct identified users affected"
+          },
+          "last_app_version": {
+            "type": "string",
+            "description": "App version of the most recent occurrence"
+          },
+          "last_seen": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp of the most recent occurrence"
+          }
+        }
+      },
+      "RumAppListResponse": {
+        "type": "object",
+        "properties": {
+          "apps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RumAppSummary"
+            }
+          },
+          "count": {
+            "type": "integer"
+          }
+        }
+      },
+      "RumAppSummary": {
+        "type": "object",
+        "properties": {
+          "service_name": {
+            "type": "string"
+          },
+          "sessions": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "active_users": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "crashes": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "crash_free_rate": {
+            "type": "number",
+            "format": "double"
+          },
+          "latest_version": {
+            "type": "string"
+          }
+        }
+      },
+      "RumKpisResponse": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "$ref": "#/components/schemas/RumKpiSummary"
+          },
+          "timeseries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RumKpiPoint"
+            }
+          },
+          "crash_timeseries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RumCrashPoint"
+            }
+          }
+        }
+      },
+      "RumKpiSummary": {
+        "type": "object",
+        "properties": {
+          "total_sessions": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "active_users": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "avg_cold_start_ms": {
+            "type": "number",
+            "format": "double"
+          },
+          "avg_warm_start_ms": {
+            "type": "number",
+            "format": "double"
+          },
+          "total_errors": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "RumKpiPoint": {
+        "type": "object",
+        "properties": {
+          "bucket": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sessions": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "cold_start_ms": {
+            "type": "number",
+            "format": "double"
+          },
+          "warm_start_ms": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "RumCrashPoint": {
+        "type": "object",
+        "properties": {
+          "bucket": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "crashes": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "RumSessionListResponse": {
+        "type": "object",
+        "properties": {
+          "sessions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RumSessionItem"
+            }
+          },
+          "count": {
+            "type": "integer"
+          }
+        }
+      },
+      "RumSessionItem": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "is_anonymous": {
+            "type": "boolean"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "duration_sec": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "screens": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "errors": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "crashes": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "app_version": {
+            "type": "string"
+          },
+          "os_name": {
+            "type": "string"
+          },
+          "os_version": {
+            "type": "string"
+          },
+          "device_manufacturer": {
+            "type": "string"
+          },
+          "device_model": {
+            "type": "string"
+          },
+          "network_type": {
+            "type": "string"
+          }
+        }
+      },
+      "RumUserListResponse": {
+        "type": "object",
+        "properties": {
+          "users": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RumUserItem"
+            }
+          },
+          "count": {
+            "type": "integer"
+          }
+        }
+      },
+      "RumUserItem": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string"
+          },
+          "user_kind": {
+            "type": "string"
+          },
+          "sessions": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "errors": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "crashes": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "devices": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "app_versions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "last_seen": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "RumScreenListResponse": {
+        "type": "object",
+        "properties": {
+          "screens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RumScreenSummary"
+            }
+          },
+          "count": {
+            "type": "integer"
+          }
+        }
+      },
+      "RumScreenSummary": {
+        "type": "object",
+        "properties": {
+          "screen": {
+            "type": "string"
+          },
+          "views": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "unique_sessions": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "avg_time_spent_sec": {
+            "type": "number",
+            "format": "double"
+          },
+          "avg_load_ms": {
+            "type": "number",
+            "format": "double"
+          },
+          "p95_load_ms": {
+            "type": "number",
+            "format": "double"
+          },
+          "long_tasks": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "crashes": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "RumHTTPListResponse": {
+        "type": "object",
+        "properties": {
+          "endpoints": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RumHTTPEndpoint"
+            }
+          },
+          "count": {
+            "type": "integer"
+          }
+        }
+      },
+      "RumHTTPEndpoint": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "avg_duration_ms": {
+            "type": "number",
+            "format": "double"
+          },
+          "error_rate": {
+            "type": "number",
+            "format": "double"
+          },
+          "requests": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "ListServicesResponse": {
+        "type": "object",
+        "properties": {
+          "services": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of service names"
+          }
+        }
+      },
+      "ServiceTopologyResponse": {
+        "type": "object",
+        "required": [
+          "dependencies"
+        ],
+        "properties": {
+          "dependencies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceDependency"
+            }
+          }
+        }
+      },
+      "ServiceDependenciesResponse": {
+        "type": "object",
+        "required": [
+          "service",
+          "dependencies"
+        ],
+        "properties": {
+          "service": {
+            "$ref": "#/components/schemas/ServiceInfo"
+          },
+          "dependencies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceDependency"
+            }
+          },
+          "infrastructure": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Map of resource type to list of resource values"
+          }
+        }
+      },
+      "ServiceProfileResponse": {
+        "type": "object",
+        "properties": {
+          "service": {
+            "$ref": "#/components/schemas/ServiceInfo"
+          },
+          "spans": {
+            "type": "array",
+            "description": "All spans for this service with peer service and performance stats",
+            "items": {
+              "$ref": "#/components/schemas/ProfileRelationship"
+            }
+          }
+        }
+      },
+      "ProfileRelationship": {
+        "type": "object",
+        "properties": {
+          "peer_service": {
+            "type": "string",
+            "description": "The other service in the relationship"
+          },
+          "span_name": {
+            "type": "string",
+            "description": "Span name for this relationship"
+          },
+          "method": {
+            "type": "string",
+            "description": "HTTP/RPC method if applicable"
+          },
+          "error_rate": {
+            "type": "number",
+            "format": "double",
+            "description": "Error rate (0.0 to 1.0)"
+          },
+          "avg_latency_ms": {
+            "type": "number",
+            "format": "double",
+            "description": "Average latency in milliseconds"
+          },
+          "min_latency_ms": {
+            "type": "number",
+            "format": "double",
+            "description": "Minimum latency in milliseconds"
+          },
+          "max_latency_ms": {
+            "type": "number",
+            "format": "double",
+            "description": "Maximum latency in milliseconds"
+          },
+          "first_seen": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the relationship was first seen"
+          },
+          "last_noticed": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the relationship was last noticed"
+          }
+        }
+      },
+      "ServiceMetricsResponse": {
+        "type": "object",
+        "properties": {
+          "service_name": {
+            "type": "string",
+            "description": "The service name"
+          },
+          "metrics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceMetric"
+            }
+          }
+        }
+      },
+      "ServiceInfo": {
+        "type": "object",
+        "required": [
+          "name",
+          "first_seen",
+          "last_noticed"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Service name",
+            "nullable": true
+          },
+          "first_seen": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the service was first seen",
+            "nullable": true
+          },
+          "last_noticed": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the service was last noticed",
+            "nullable": true
+          }
+        }
+      },
+      "ServiceDependency": {
+        "type": "object",
+        "required": [
+          "source",
+          "target",
+          "span_name",
+          "relationship_type",
+          "method",
+          "first_seen",
+          "last_noticed"
+        ],
+        "properties": {
+          "source": {
+            "type": "string",
+            "description": "Source service name",
+            "nullable": true
+          },
+          "target": {
+            "type": "string",
+            "description": "Target service name",
+            "nullable": true
+          },
+          "span_name": {
+            "type": "string",
+            "description": "Span name for this dependency",
+            "nullable": true
+          },
+          "relationship_type": {
+            "type": "string",
+            "description": "Type of relationship",
+            "nullable": true
+          },
+          "method": {
+            "type": "string",
+            "description": "HTTP/RPC method if applicable",
+            "nullable": true
+          },
+          "first_seen": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the dependency was first seen",
+            "nullable": true
+          },
+          "last_noticed": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the dependency was last noticed",
+            "nullable": true
+          }
+        }
+      },
+      "ServiceMetric": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Metric name"
+          },
+          "type": {
+            "type": "string",
+            "description": "Metric type (counter, gauge, histogram, etc.)"
+          },
+          "description": {
+            "type": "string",
+            "description": "Metric description"
+          },
+          "first_seen": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the metric was first seen"
+          },
+          "last_noticed": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the metric was last noticed"
+          }
+        }
+      },
+      "LogDiscoveryResponse": {
+        "type": "object",
+        "properties": {
+          "service_name": {
+            "type": "string",
+            "description": "Service name"
+          },
+          "time_range": {
+            "$ref": "#/components/schemas/TimeRange"
+          },
+          "total_count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total number of logs in the time range"
+          },
+          "severity_levels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeverityCount"
+            },
+            "description": "Breakdown of logs by severity level"
+          },
+          "log_attribute_keys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Available log attribute keys"
+          },
+          "resource_attribute_keys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Available resource attribute keys"
+          },
+          "scope_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Available scope names"
+          }
+        }
+      },
+      "LogQueryResponse": {
+        "type": "object",
+        "properties": {
+          "logs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LogEntry"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      },
+      "LogEntry": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Log timestamp"
+          },
+          "severity": {
+            "type": "string",
+            "description": "Severity level (e.g., ERROR, WARN, INFO)"
+          },
+          "severity_number": {
+            "type": "integer",
+            "description": "Numeric severity level"
+          },
+          "body": {
+            "type": "string",
+            "description": "Log message body"
+          },
+          "trace_id": {
+            "type": "string",
+            "description": "Associated trace ID"
+          },
+          "span_id": {
+            "type": "string",
+            "description": "Associated span ID"
+          },
+          "log_attributes": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Log-specific attributes"
+          },
+          "resource_attributes": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Resource attributes"
+          },
+          "scope_name": {
+            "type": "string",
+            "description": "Instrumentation scope name"
+          }
+        }
+      },
+      "TimeRange": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Start of time range"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time",
+            "description": "End of time range"
+          }
+        }
+      },
+      "SeverityCount": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "string",
+            "description": "Severity level name"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Number of logs with this severity"
+          }
+        }
+      },
+      "SpanDiscoveryResponse": {
+        "type": "object",
+        "properties": {
+          "service_name": {
+            "type": "string",
+            "description": "Service name"
+          },
+          "time_range": {
+            "$ref": "#/components/schemas/TimeRange"
+          },
+          "total_count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total number of spans in the time range"
+          },
+          "span_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Available span names"
+          },
+          "status_codes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatusCodeCount"
+            },
+            "description": "Breakdown of spans by status code"
+          },
+          "span_attribute_keys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Available span attribute keys"
+          },
+          "resource_attribute_keys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Available resource attribute keys"
+          }
+        }
+      },
+      "StatusCodeCount": {
+        "type": "object",
+        "properties": {
+          "status_code": {
+            "type": "string",
+            "description": "Status code (OK, ERROR, UNSET)"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Number of spans with this status code"
+          }
+        }
+      },
+      "MetricDiscoveryResponse": {
+        "type": "object",
+        "properties": {
+          "service_name": {
+            "type": "string",
+            "description": "Service name"
+          },
+          "time_range": {
+            "$ref": "#/components/schemas/TimeRange"
+          },
+          "metrics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MetricInfo"
+            },
+            "description": "Available metrics"
+          },
+          "total_count": {
+            "type": "integer",
+            "description": "Total number of distinct metrics"
+          }
+        }
+      },
+      "MetricInfo": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Metric name"
+          },
+          "type": {
+            "type": "string",
+            "description": "Metric type (gauge, sum, histogram, summary)"
+          },
+          "description": {
+            "type": "string",
+            "description": "Metric description"
+          },
+          "unit": {
+            "type": "string",
+            "description": "Metric unit"
+          },
+          "attribute_keys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Available metric attribute keys"
+          },
+          "resource_attribute_keys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Available resource attribute keys"
+          }
+        }
+      },
+      "MetricQueryResponse": {
+        "type": "object",
+        "properties": {
+          "metric_name": {
+            "type": "string",
+            "description": "Metric name"
+          },
+          "metric_type": {
+            "type": "string",
+            "description": "Metric type"
+          },
+          "unit": {
+            "type": "string",
+            "description": "Metric unit"
+          },
+          "time_range": {
+            "$ref": "#/components/schemas/TimeRange"
+          },
+          "aggregate_interval": {
+            "type": "string",
+            "description": "Aggregation bucket interval used"
+          },
+          "series": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MetricSeries"
+            },
+            "description": "Grouped metric data"
+          },
+          "count": {
+            "type": "integer",
+            "description": "Total data points returned"
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether more data is available"
+          }
+        }
+      },
+      "MetricSeries": {
+        "type": "object",
+        "properties": {
+          "group": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Group key-value pairs"
+          },
+          "data_points": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MetricDataPoint"
+            },
+            "description": "Time-bucketed data points"
+          }
+        }
+      },
+      "MetricDataPoint": {
+        "type": "object",
+        "properties": {
+          "bucket": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Time bucket start"
+          },
+          "avg_value": {
+            "type": "number",
+            "format": "double",
+            "description": "Average value"
+          },
+          "min_value": {
+            "type": "number",
+            "format": "double",
+            "description": "Minimum value"
+          },
+          "max_value": {
+            "type": "number",
+            "format": "double",
+            "description": "Maximum value"
+          },
+          "sample_count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Number of data points in bucket"
+          },
+          "total_count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total count (histogram/summary only)"
+          },
+          "total_sum": {
+            "type": "number",
+            "format": "double",
+            "description": "Total sum (histogram/summary only)"
+          }
+        }
+      },
+      "ApmServiceListResponse": {
+        "type": "object",
+        "properties": {
+          "services": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApmServiceSummary"
+            }
+          },
+          "totals": {
+            "$ref": "#/components/schemas/ApmTotals"
+          },
+          "count": {
+            "type": "integer"
+          }
+        }
+      },
+      "ApmServiceSummary": {
+        "type": "object",
+        "properties": {
+          "service_name": {
+            "type": "string"
+          },
+          "spans": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "errors": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "error_pct": {
+            "type": "number",
+            "format": "double"
+          },
+          "throughput_rpm": {
+            "type": "number",
+            "format": "double"
+          },
+          "p50_ms": {
+            "type": "number",
+            "format": "double"
+          },
+          "p95_ms": {
+            "type": "number",
+            "format": "double"
+          },
+          "p99_ms": {
+            "type": "number",
+            "format": "double"
+          },
+          "sparkline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApmSparklinePoint"
+            }
+          },
+          "previous": {
+            "$ref": "#/components/schemas/ApmPreviousWindow"
+          }
+        }
+      },
+      "ApmPreviousWindow": {
+        "type": "object",
+        "properties": {
+          "spans": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "error_pct": {
+            "type": "number",
+            "format": "double"
+          },
+          "p95_ms": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "ApmSparklinePoint": {
+        "type": "object",
+        "properties": {
+          "bucket": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "spans": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "errors": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "p95_ms": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "ApmTotals": {
+        "type": "object",
+        "properties": {
+          "services": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "spans": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "errors": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "error_pct": {
+            "type": "number",
+            "format": "double"
+          },
+          "throughput_rpm": {
+            "type": "number",
+            "format": "double"
+          },
+          "p95_ms": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "ApmKpisResponse": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "$ref": "#/components/schemas/ApmKpiSummary"
+          },
+          "timeseries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApmTimeseriesPoint"
+            }
+          }
+        }
+      },
+      "ApmKpiSummary": {
+        "type": "object",
+        "properties": {
+          "spans": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "errors": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "error_pct": {
+            "type": "number",
+            "format": "double"
+          },
+          "throughput_rpm": {
+            "type": "number",
+            "format": "double"
+          },
+          "avg_ms": {
+            "type": "number",
+            "format": "double"
+          },
+          "p50_ms": {
+            "type": "number",
+            "format": "double"
+          },
+          "p95_ms": {
+            "type": "number",
+            "format": "double"
+          },
+          "p99_ms": {
+            "type": "number",
+            "format": "double"
+          },
+          "max_ms": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "ApmOperationListResponse": {
+        "type": "object",
+        "properties": {
+          "operations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApmOperation"
+            }
+          },
+          "count": {
+            "type": "integer"
+          }
+        }
+      },
+      "ApmOperation": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "calls": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "errors": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "error_pct": {
+            "type": "number",
+            "format": "double"
+          },
+          "avg_ms": {
+            "type": "number",
+            "format": "double"
+          },
+          "p95_ms": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "ApmFacetListResponse": {
+        "type": "object",
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApmFacetValue"
+            }
+          },
+          "count": {
+            "type": "integer"
+          }
+        }
+      },
+      "ApmFacetValue": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "ApmTimeseriesPoint": {
+        "type": "object",
+        "properties": {
+          "bucket": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "spans": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "errors": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "error_pct": {
+            "type": "number",
+            "format": "double"
+          },
+          "throughput_rpm": {
+            "type": "number",
+            "format": "double"
+          },
+          "p50_ms": {
+            "type": "number",
+            "format": "double"
+          },
+          "p95_ms": {
+            "type": "number",
+            "format": "double"
+          },
+          "p99_ms": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "An access token from the base14 identity service, obtained with the OAuth 2.0 client credentials grant. Send it as `Authorization: Bearer <token>`. Tokens are short-lived; re-request rather than caching indefinitely."
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
+}

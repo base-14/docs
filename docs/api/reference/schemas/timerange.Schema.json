@@ -1,0 +1,1 @@
+{"schema":{"type":"object","properties":{"start":{"type":"string","format":"date-time","description":"Start of time range"},"end":{"type":"string","format":"date-time","description":"End of time range"}},"title":"TimeRange"},"schemaType":"response"}

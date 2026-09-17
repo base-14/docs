@@ -128,6 +128,11 @@ const config: Config = {
           routeBasePath: "/", // Serve the docs at the site's root
           sidebarPath: "./sidebars.ts",
           showLastUpdateTime: true,
+          // Required by docusaurus-theme-openapi-docs: ApiItem supplies the
+          // redux Provider the API explorer components read from, so without
+          // it every generated reference page throws on mount. It renders
+          // ordinary docs unchanged, through the same layout as DocItem.
+          docItemComponent: "@theme/ApiItem",
         },
         blog: {
           routeBasePath: "blog",
@@ -144,7 +149,11 @@ const config: Config = {
           postsPerPage: 10,
         },
         theme: {
-          customCss: "./src/css/custom.css",
+          customCss: [
+            "./src/css/custom.css",
+            // Must load after custom.css: it overrides tokens set there.
+            "./src/css/openapi-overrides.css",
+          ],
         },
         gtag: process.env.GOOGLE_ANALYTICS_ID
           ? {
@@ -220,17 +229,62 @@ const config: Config = {
         indexDocs: true,
         indexBlog: true,
         indexPages: false,
+        // The Scout API reference lives under docs/api/ in the default docs
+        // instance, whose routeBasePath is "/", so it is indexed by the
+        // first entry here. No extra entry is needed for it.
         docsRouteBasePath: ["/", "/scope"],
         blogRouteBasePath: "/blog",
         language: ["en"],
         searchBarShortcutHint: false,
       },
     ],
+    // Generates the Scout API endpoint reference from a committed spec.
+    // Generation is a manual step (`npm run gen:api`) and its output is
+    // committed, so CI never needs the spec or network access.
+    [
+      "docusaurus-plugin-openapi-docs",
+      {
+        id: "openapi",
+        docsPluginId: "default",
+        config: {
+          scout: {
+            specPath: "api-spec/scout-api.openapi.json",
+            outputDir: "docs/api/reference",
+            downloadUrl: undefined,
+            hideSendButton: true,
+            showSchemas: true,
+            sidebarOptions: {
+              groupPathsBy: "tag",
+              categoryLinkSource: "tag",
+            },
+          },
+        },
+      },
+    ],
+    "docusaurus-plugin-sass",
   ],
+
+  themes: ["docusaurus-theme-openapi-docs"],
 
   themeConfig: {
     // Replace with your project's social card
     image: "img/base14-social-card.jpg",
+    // Scout API reference: show curl only. The theme otherwise renders a tab
+    // per language postman-code-generators supports, which is ~20 tabs of
+    // generated code nobody asked for. curl is the one readers copy.
+    languageTabs: [
+      {
+        highlight: "bash",
+        language: "curl",
+        logoClass: "curl",
+        variant: "cURL",
+        options: {
+          longFormat: false,
+          followRedirect: true,
+          trimRequestBody: true,
+        },
+      },
+    ],
     announcementBar: {
       id: "announcement-scout-mcp",
       content:

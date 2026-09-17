@@ -1,0 +1,92 @@
+---
+id: scout-api
+title: "Scout API"
+description: "Query the observability data base14 Scout collects for your organization:"
+sidebar_label: Introduction
+sidebar_position: 0
+hide_title: true
+custom_edit_url: null
+---
+
+import ApiLogo from "@theme/ApiLogo";
+import Heading from "@theme/Heading";
+import SchemaTabs from "@theme/SchemaTabs";
+import TabItem from "@theme/TabItem";
+import Export from "@theme/ApiExplorer/Export";
+
+<span
+  className={"theme-doc-version-badge badge badge--secondary"}
+  children={"Version: 0.12.0"}
+>
+</span>
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Scout API"}
+>
+</Heading>
+
+
+
+Query the observability data base14 Scout collects for your organization:
+distributed traces, logs, metrics, service topology, APM rollups and real
+user monitoring.
+
+Every request needs a bearer token from the base14 identity service and a
+base URL specific to your organization. Both are covered in the
+[quickstart](/api/quickstart/).
+
+Requests are scoped to a single organization, derived from the access token
+— there is no tenant header or path parameter to set. All timestamps are
+RFC3339.
+
+<div
+  style={{"marginBottom":"2rem"}}
+>
+  <Heading
+    id={"authentication"}
+    as={"h2"}
+    className={"openapi-tabs__heading"}
+    children={"Authentication"}
+  >
+  </Heading><SchemaTabs
+    className={"openapi-tabs__security-schemes"}
+  >
+    <TabItem
+      label={"HTTP: Bearer Auth"}
+      value={"bearerAuth"}
+    >
+      
+      
+      An access token from the base14 identity service, obtained with the OAuth 2.0 client credentials grant. Send it as `Authorization: Bearer <token>`. Tokens are short-lived; re-request rather than caching indefinitely.
+      
+      <div>
+        <table>
+          <tbody>
+            <tr>
+              <th>
+                Security Scheme Type:
+              </th><td>
+                http
+              </td>
+            </tr><tr>
+              <th>
+                HTTP Authorization Scheme:
+              </th><td>
+                bearer
+              </td>
+            </tr><tr>
+              <th>
+                Bearer format:
+              </th><td>
+                JWT
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </TabItem>
+  </SchemaTabs>
+</div>
+      
