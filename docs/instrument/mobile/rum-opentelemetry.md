@@ -82,7 +82,8 @@ view comes up empty.
 
 ### Duration units are not uniform
 
-Most durations are in **seconds**, but app startup is in **milliseconds**.
+Most durations are in **seconds**. Attributes whose name ends in `_ms` are in
+**milliseconds**.
 
 | Attribute | Unit |
 | --------- | ---- |
@@ -90,11 +91,15 @@ Most durations are in **seconds**, but app startup is in **milliseconds**.
 | `view.time_spent` | seconds |
 | `long_task.duration` | seconds |
 | `anr.duration` | seconds |
-| `app_startup.duration` | **milliseconds** |
+| `app_startup.duration` | seconds |
+| `app_startup.duration_ms` | milliseconds (preferred; read with a fallback to `app_startup.duration * 1000`) |
 
 :::warning
-`app_startup.duration` is the one exception - it is in milliseconds. Sending it
-in seconds makes every startup look ~1000x too fast.
+`app_startup.duration` is **seconds**, like every other unsuffixed duration —
+the base14 SDKs (`scout-flutter`, `scout-react`) all send it that way. If you
+hand-instrument, send both `app_startup.duration` (seconds) and
+`app_startup.duration_ms` (milliseconds). Sending milliseconds under
+`app_startup.duration` makes every startup look ~1000x too *slow*.
 :::
 
 ---
@@ -240,7 +245,8 @@ A cold or warm start.
 | Attribute | Description |
 | --------- | ----------- |
 | `app_startup.type` | `cold` or `warm` |
-| `app_startup.duration` | Startup time in **milliseconds** (not seconds) |
+| `app_startup.duration` | Startup time in **seconds** |
+| `app_startup.duration_ms` | Startup time in milliseconds (preferred when present) |
 
 **Powers:** average cold/warm start, cold/warm counts.
 
@@ -425,7 +431,8 @@ Mirror the user identity onto crash spans so **Affected Users** counts work.
 **Emit at least these spans:**
 
 - `screen_view` - with `screen.name`
-- `app_startup` - with `app_startup.type` and `app_startup.duration` (ms)
+- `app_startup` - with `app_startup.type`, `app_startup.duration` (seconds)
+  and `app_startup.duration_ms`
 - `http.request` - with span duration set and the HTTP key pairs from
   [`http.request`](#httprequest)
 - `error` and/or `native_crash` - with a stable `error.message` /
@@ -443,7 +450,7 @@ screen-performance and stability coverage.
 | Data fragments into many "apps" | A changing `service.name` per build/env. Keep it fixed; use `environment` / `service.version` for those axes. |
 | A view is empty | Resource keys on the span, or span keys on the resource. `service.version` / `os.*` / `device.*` are `[R]`; `session.*` / `user.*` / `screen.name` / per-span fields are `[S]`. |
 | Crash **Affected Users** empty | The panel reads `user.id` / `user.anonymous_id`. Set them on crash spans too. |
-| Every startup looks ~1000x too fast | `app_startup.duration` sent in seconds - it must be **milliseconds**. |
+| Every startup looks ~1000x too slow (or too fast) | `app_startup.duration` must be **seconds**; put milliseconds in `app_startup.duration_ms`. |
 | No network data / partial network views | Only one HTTP naming convention sent. Send both `url.full` + `http.url`, `http.request.method` + `http.method`, `http.response.status_code` + `http.status_code`, and set the span's own duration. |
 | Crashes don't group (one row each) | Unstable `error.message` / `crash.reason` containing timestamps or ids. Keep titles stable. |
 | No network data at all | Span named `http` instead of `http.request`. |
