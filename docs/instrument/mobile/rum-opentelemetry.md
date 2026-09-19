@@ -318,6 +318,56 @@ kind), grouped by `error.message`.
 | `error.message` | Title and grouping key - keep it **stable** |
 | `crash.type` | Crash type |
 | `crash.last_screen` | Screen active when the crash occurred |
+| `crash.source` | What decided it was a crash: `exit_info` (the OS exit record for the dead process confirmed it) or `session_marker` (the SDK's own unclean-exit heuristic) |
+| `crash.timestamp` | When the crash happened, UTC ISO-8601 with a `Z` suffix |
+
+Send `app_crash` with the **crashed** session's `session.id` and
+`session.start_time`, not the session of the launch that reports it. The RUM
+app attributes the crash to that session, so it counts against the time range
+in which the session started.
+
+### `app_exit`
+
+A process death that is **not** a crash but is still worth seeing: on Android
+this is `ApplicationExitInfo` `REASON_LOW_MEMORY`, the OS reclaiming a
+(usually cached, background) process to free memory. Play Console and
+Crashlytics do not count these, so neither does RUM. Never send them as
+`native_crash` - on aggressive OEMs they outnumber real crashes several times
+over and drag the crash-free rate far below what the store reports.
+
+- **Resource:** standard set
+- **Span:** standard identity when the record belongs to a known session,
+  otherwise no `session.id`, plus:
+
+| Attribute | Description |
+| --------- | ----------- |
+| `exit.reason` | OS reason name, e.g. `low_memory` |
+| `exit.description` | OS description text |
+| `exit.timestamp` | When the process died, UTC ISO-8601 |
+| `exit.importance` | Process importance at death (`400` = cached) |
+| `exit.source` | `exit_info` |
+| `exit.pid`, `exit.process_name`, `exit.pss_kb`, `exit.rss_kb`, `exit.exit_status`, `exit.subreason`, `exit.death_timestamp_ms` | Process facts, same meaning as the `crash.*` twins |
+
+**Powers:** session timeline only. Never crash-free rate, crash lists or
+affected-user counts.
+
+### How crash-free is computed
+
+Every crash-free number in the RUM app (the Applications cards, the Overview
+**Crash-Free Sessions** card, the rollup API) uses one definition:
+
+- The population is **sessions that emitted an `app_startup` span** in the
+  selected range.
+- A session is **crashed** when it also carries an `app_crash` or
+  `native_crash` span. `error`, `anr` and `app_exit` never count.
+- Crash-free = 1 - crashed sessions / sessions, per session, so ten crash
+  spans in one session count once.
+
+Consequences for instrumentation: attach crash spans to the session that
+crashed (see `app_crash` above); attribute Android exit-info post-mortems to
+the process that died (match by pid) or send them without a `session.id`; and
+skip the OS exit history on the first launch after install, because those
+deaths predate any session you can name.
 
 ### `anr`
 
@@ -453,6 +503,7 @@ screen-performance and stability coverage.
 | Every startup looks ~1000x too slow (or too fast) | `app_startup.duration` must be **seconds**; put milliseconds in `app_startup.duration_ms`. |
 | No network data / partial network views | Only one HTTP naming convention sent. Send both `url.full` + `http.url`, `http.request.method` + `http.method`, `http.response.status_code` + `http.status_code`, and set the span's own duration. |
 | Crashes don't group (one row each) | Unstable `error.message` / `crash.reason` containing timestamps or ids. Keep titles stable. |
+| Crash-free far below Play Console / Crashlytics | Low-memory kills sent as `native_crash`, or the OS exit history dumped into the session that just started. Send `app_exit` for low-memory reclaims and attribute post-mortems to the dead process (see [`app_exit`](#app_exit)). |
 | No network data at all | Span named `http` instead of `http.request`. |
 | Session never registers | Missing or unparseable `session.start_time`. Send valid ISO-8601. |
 

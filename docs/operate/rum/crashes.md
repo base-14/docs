@@ -28,6 +28,13 @@ time.
 
 ---
 
+:::note What is not a crash
+Android low-memory kills - the OS reclaiming a backgrounded process - arrive
+as `app_exit` spans and show up only in a session's timeline. They are not
+listed here and do not affect the crash-free rate, which matches how Play
+Console and Crashlytics count.
+:::
+
 ## Crash List
 
 Filter chips at the top let you toggle between crash **Kind** values; the
