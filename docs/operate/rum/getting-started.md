@@ -77,7 +77,9 @@ each tagged with its platform.
 
 Each application card shows its **Crash-Free** rate, **Sessions**, **Active
 Users**, and current **Version** for the selected time range, so you can spot
-a struggling app before drilling in.
+a struggling app before drilling in. The three numbers use the same
+definitions as the Overview [key metrics](./overview.md#key-metrics), so a
+card and its Overview page always agree.
 
 ![Grid of application cards, each showing the app name, a platform badge, and Crash-Free, Sessions, Active Users, and Version stats](/img/rum/getting-started/applications.png)
 

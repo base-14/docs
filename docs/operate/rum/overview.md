@@ -32,7 +32,7 @@ app version/OS/device, and the screens most worth investigating.
 
 | Metric | Description |
 | ------ | ----------- |
-| **Crash-Free Sessions** | Percentage of sessions with no crashes |
+| **Crash-Free Sessions** | Percentage of sessions (those with an `app_startup` span in the range) that carry no `app_crash` or `native_crash` span. Errors, ANRs and low-memory process exits (`app_exit`) do not count. The Applications cards use the same definition. |
 | **Total Sessions** | Number of user sessions in the range |
 | **Active Users** | Distinct users in the range |
 | **Avg Cold Start** | Average cold app-startup time, with a trend sparkline |
