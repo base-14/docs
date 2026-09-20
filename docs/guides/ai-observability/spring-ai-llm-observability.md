@@ -53,9 +53,9 @@ three composable instrumentation layers: the OpenTelemetry Java Agent
 server/client spans, JDBC queries, and R2DBC connections. Spring AI emits
 Micrometer observations for ChatModel and VectorStore operations, which the
 `micrometer-tracing-bridge-otel` dependency bridges directly into OpenTelemetry.
-And the manual OpenTelemetry API (`GlobalOpenTelemetry.getTracer()` /
-`getMeter()`) adds GenAI semantic convention attributes and custom metrics that
-neither auto layer provides. All three layers share the same trace context,
+And the manual OpenTelemetry API, through an injected `Tracer`/`Meter` pair,
+adds GenAI semantic convention attributes and custom metrics that neither auto
+layer provides. All three layers share the same trace context,
 producing a unified trace with zero instrumentation gaps.
 
 Whether you are building AI support systems with Spring AI, integrating OpenAI,
@@ -86,9 +86,10 @@ is available under
 :::tip TL;DR
 
 Add the OpenTelemetry Java Agent (`-javaagent`), Spring AI's Micrometer bridge
-(`micrometer-tracing-bridge-otel`), and manual `GlobalOpenTelemetry` calls to
+(`micrometer-tracing-bridge-otel`), and an injected `Tracer`/`Meter` pair to
 get unified traces across HTTP, database, LLM, and pipeline layers. This guide
-covers Spring Boot 4.0.3 + Spring AI 2.0 with OpenAI, Anthropic, and Ollama.
+covers Spring Boot 4.0.7 + Spring AI 2.0.0 with Ollama by default, and OpenAI
+or Anthropic when you set a key.
 
 :::
 
@@ -138,24 +139,29 @@ This guide demonstrates how to:
 
 Before starting, ensure you have:
 
-- **Java 25+** installed (21+ minimum)
-- **Spring Boot 4.0.3+**
-- **Spring AI 2.0+** (BOM `2.0.0-M2` or later)
+- **Java 25+** installed (21+ minimum).
+- **Spring Boot 4.0.7**.
+- **Spring AI 2.0.0** (BOM `org.springframework.ai:spring-ai-bom:2.0.0`).
+- **Ollama** running locally with `qwen3.5:9B` and `embeddinggemma` pulled.
+  Ollama is the default provider and needs no API key; OpenAI and Anthropic
+  are opt-in through `LLM_PROVIDER` and their own keys.
 - **Scout Collector** configured and accessible from your application - see
   [Docker Compose Setup](../../instrument/collector-setup/docker-compose-example.md)
-  for local development
-- **Basic understanding of OpenTelemetry concepts** (traces, spans, attributes)
+  for local development.
+- **Basic understanding of OpenTelemetry concepts** (traces, spans, attributes).
 
 ### Compatibility Matrix
 
-| Component                | Minimum Version | Recommended Version |
-| ------------------------ | --------------- | ------------------- |
-| Java                     | 21              | 25+                 |
-| Spring Boot              | 3.4+            | 4.0.3+              |
-| Spring AI                | 1.0.0           | 2.0.0-M2+           |
-| OpenTelemetry Java Agent | 2.0.0           | 2.25+               |
-| OpenTelemetry API        | 1.40.0          | 1.52+               |
-| PostgreSQL (pgvector)    | 15              | 18+                 |
+| Component | Minimum Version | Pinned in the example |
+| --- | --- | --- |
+| Java | 21 | 25 |
+| Spring Boot | 3.4 | 4.0.7 |
+| Spring AI | 1.0.0 | 2.0.0 |
+| OpenTelemetry Java Agent | 2.0.0 | 2.31.1 |
+| OpenTelemetry API | 1.40.0 | 1.65.0 |
+| opentelemetry-micrometer-1.5 | 2.0.0 | 2.31.1-alpha |
+| PostgreSQL (pgvector) | 15 | 18 |
+| OTel Collector contrib | 0.158.0 | 0.158.0 |
 
 ## The Unified Trace
 
@@ -170,41 +176,52 @@ all three layers:
 POST /api/chat                              3.8s  [Layer 1: Java Agent]
 ├─ support_conversation                     3.7s  [Layer 3: Manual OTel]
 │  ├─ classify_intent                       0.4s  [Layer 3: Manual OTel]
-│  │  └─ gen_ai.chat gpt-4.1-mini          0.3s  [Layer 3: Manual OTel]
-│  │     └─ ChatModel                       0.3s  [Layer 2: Spring AI]
-│  │        └─ HTTP POST api.openai.com     0.3s  [Layer 1: Java Agent]
-│  ├─ rag_retrieval                         0.1s  [Layer 3: Manual OTel]
-│  │  └─ VectorStore                        0.1s  [Layer 2: Spring AI]
+│  │  └─ chat qwen3.5:9B                    0.3s  [Layer 2+3: Spring AI + handler]
+│  │     └─ HTTP POST localhost:11434       0.3s  [Layer 1: Java Agent]
+│  ├─ retrieval kb_articles                 0.1s  [Layer 3: Manual OTel]
+│  │  └─ embeddings embeddinggemma          0.1s  [Layer 2+3: Spring AI + handler]
 │  │     └─ db.query pgvector              15ms   [Layer 1: Java Agent]
 │  ├─ generate_response                     3.1s  [Layer 3: Manual OTel]
-│  │  └─ gen_ai.chat gpt-4.1               3.0s  [Layer 3: Manual OTel]
-│  │     └─ ChatModel                       3.0s  [Layer 2: Spring AI]
-│  │        ├─ HTTP POST api.openai.com     1.2s  [Layer 1: Java Agent]
-│  │        ├─ @Tool getOrderStatus          8ms  [Layer 2: Spring AI]
-│  │        │  └─ db.query orders            5ms  [Layer 1: Java Agent]
-│  │        └─ HTTP POST api.openai.com     1.7s  [Layer 1: Java Agent]
+│  │  ├─ chat qwen3.5:9B                    1.2s  [Layer 2+3: Spring AI + handler]
+│  │  │  └─ HTTP POST localhost:11434       1.2s  [Layer 1: Java Agent]
+│  │  ├─ execute_tool getOrderStatus         8ms  [Layer 2+3: Spring AI + handler]
+│  │  │  └─ db.query orders                  5ms  [Layer 1: Java Agent]
+│  │  └─ chat qwen3.5:9B                    1.7s  [Layer 2+3: Spring AI + handler]
+│  │     └─ HTTP POST localhost:11434       1.7s  [Layer 1: Java Agent]
 │  └─ escalation_check                      1ms   [Layer 3: Manual OTel]
 ```
+
+The two `chat` spans under `generate_response` are the tool-calling loop.
+`LlmService` runs that loop itself, so the `execute_tool` span sits between
+them as a sibling rather than inside either one. The models shown are the
+Ollama defaults; setting `LLM_PROVIDER=openai` or `anthropic` changes the
+model in the span name, the `gen_ai.provider.name` attribute and the HTTP
+client span's host, and nothing else about the shape of the trace.
 
 Three instrumentation layers work together in a single trace:
 
 - **Layer 1 - Java Agent** (zero-code): Captures the outermost HTTP server span,
   outbound HTTP client spans to LLM APIs, and JDBC database query spans - all
   without any code changes
-- **Layer 2 - Spring AI** (Micrometer bridge): Adds ChatModel call spans,
-  VectorStore query spans, and `@Tool` method execution spans as children of the
-  current trace context
-- **Layer 3 - Manual OTel API**: Adds GenAI semantic convention attributes
-  (model, tokens, cost), pipeline orchestration spans (`support_conversation`,
-  `classify_intent`, `rag_retrieval`), and custom metrics
+- **Layer 2 - Spring AI** (Micrometer bridge): Creates the `chat {model}` span
+  for every ChatModel call and the `embeddings {model}` span for every
+  VectorStore operation, as children of the current trace context. These are
+  the GenAI spans themselves - the application does not create its own chat or
+  embeddings span
+- **Layer 3 - Manual OTel API**: Enriches the `chat {model}` span Spring AI
+  already created with the GenAI attributes the framework's default convention
+  does not set (cost, business context), adds pipeline orchestration spans
+  (`support_conversation`, `classify_intent`, `retrieval kb_articles`), and
+  records custom metrics
 
 The Java Agent provides context propagation that ties everything together.
-Spring AI observations nest inside that context. Manual spans add the
-GenAI-specific metadata that neither auto layer provides. The result is a trace
-where you can see that a 3.8-second customer support response spent 0.4 seconds
-on intent classification with `gpt-4.1-mini`, 0.1 seconds on RAG retrieval, and
-3.1 seconds on response generation with `gpt-4.1` including a tool call to look
-up order status.
+Spring AI creates the ChatModel and VectorStore spans inside that context, and
+those spans already carry most GenAI attributes by default. Layer 3 adds the
+few attributes Spring AI does not set and layers pipeline spans and metrics on
+top. The result is a trace where you can see that a 3.8-second customer support
+response spent 0.4 seconds on intent classification, 0.1 seconds on RAG
+retrieval, and 3.1 seconds on response generation including a tool call to
+look up order status.
 
 ## Three-Layer Architecture
 
@@ -213,11 +230,11 @@ other language ecosystem matches. Each layer captures telemetry at a different
 level of abstraction, and all three compose into unified traces through shared
 OpenTelemetry context propagation.
 
-| Layer              | Source                                                       | What It Captures                                                        |
-| ------------------ | ------------------------------------------------------------ | ----------------------------------------------------------------------- |
-| 1. Java Agent      | `opentelemetry-javaagent.jar` (zero-code)                    | HTTP server/client spans, JDBC/R2DBC queries, Spring WebFlux            |
-| 2. Spring AI       | Micrometer observations via `micrometer-tracing-bridge-otel` | ChatModel calls, VectorStore operations, tool execution                 |
-| 3. Manual OTel API | `GlobalOpenTelemetry.getTracer()` / `getMeter()`             | GenAI semantic convention spans, custom metrics, pipeline orchestration |
+| Layer | Source | What It Captures |
+| --- | --- | --- |
+| 1. Java Agent | `opentelemetry-javaagent.jar` (zero-code) | HTTP server/client spans, JDBC/R2DBC queries, Spring WebFlux |
+| 2. Spring AI | Micrometer observations via `micrometer-tracing-bridge-otel` | The `chat {model}` and `embeddings {model}` spans themselves, plus tool execution |
+| 3. Manual OTel API | Injected `Tracer` / `Meter` (via `Telemetry`) | Enrichment of the chat span with cost and business context, custom metrics, pipeline spans |
 
 ### Layer 1: Java Agent (Zero-Code Auto-Instrumentation)
 
@@ -245,23 +262,40 @@ The Dockerfile downloads the agent JAR and attaches it at startup:
 ```dockerfile showLineNumbers title="Dockerfile"
 FROM gradle:9.2.1-jdk25 AS builder
 
+ARG OTEL_AGENT_VERSION=2.31.1
+
 WORKDIR /app
+
+# Fetched here rather than with ADD so the layer caches and the download retries.
+RUN curl -fsSL --retry 5 --retry-all-errors --retry-delay 5 \
+    -o /app/opentelemetry-javaagent.jar \
+    "https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${OTEL_AGENT_VERSION}/opentelemetry-javaagent.jar"
+
 COPY build.gradle settings.gradle ./
-COPY gradle ./gradle
+COPY config/checkstyle ./config/checkstyle
+COPY --from=shared pricing.json /app/_shared/pricing.json
+COPY --from=shared test-vectors /app/_shared/test-vectors
 COPY src ./src
 
-RUN gradle build -x test --no-daemon
+RUN gradle bootJar --no-daemon
 
 FROM eclipse-temurin:25-jre
 
+# curl is here only so the container healthcheck has something to call.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN groupadd --gid 10001 app \
+    && useradd --uid 10001 --gid 10001 --create-home app
+
 WORKDIR /app
 
-ADD https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.25.0/opentelemetry-javaagent.jar /app/opentelemetry-javaagent.jar
+COPY --from=builder --chown=app:app /app/opentelemetry-javaagent.jar /app/opentelemetry-javaagent.jar
 
-COPY --from=shared pricing.json /app/pricing.json
+COPY --from=builder --chown=app:app /app/build/libs/ai-customer-support-0.0.1-SNAPSHOT.jar /app/app.jar
 
-COPY --from=builder /app/build/libs/ai-customer-support-0.0.1-SNAPSHOT.jar /app/app.jar
-
+USER app
 EXPOSE 8080
 
 ENTRYPOINT ["java", \
@@ -269,10 +303,16 @@ ENTRYPOINT ["java", \
   "-jar", "/app/app.jar"]
 ```
 
+Three details matter here. The agent version is an `ARG`, so a bump is one
+build argument rather than an edit to a URL buried in the file. The JAR is
+fetched with `curl --retry` rather than `ADD`, so a flaky download retries
+instead of failing the build, and the layer caches. And the runtime image
+runs as the unprivileged `app` user, not root.
+
 The agent is configured through environment variables in the Docker Compose
 service definition:
 
-```yaml showLineNumbers title="compose.yml (agent environment variables)"
+```yaml showLineNumbers title="compose.yaml (agent environment variables)"
 environment:
   OTEL_SERVICE_NAME: ai-customer-support
   OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
@@ -281,27 +321,40 @@ environment:
   OTEL_METRICS_EXPORTER: otlp
   OTEL_LOGS_EXPORTER: otlp
   OTEL_INSTRUMENTATION_COMMON_DEFAULT_ENABLED: "true"
+  OTEL_SEMCONV_STABILITY_OPT_IN: gen_ai_latest_experimental
 ```
 
 ### Layer 2: Spring AI Observations (Micrometer Bridge)
 
 Spring AI emits Micrometer observations for ChatModel and VectorStore
-operations. The `micrometer-tracing-bridge-otel` dependency bridges these
-observations directly into OpenTelemetry, so they appear as child spans in the
-same trace context established by the Java Agent.
+operations, and its default observation conventions already follow the
+OpenTelemetry GenAI semantic conventions. Those conventions are still in
+Development status as of September 2026, with no tagged release, so the
+attribute names below can still change; see
+[open-telemetry/semantic-conventions-genai](https://github.com/open-telemetry/semantic-conventions-genai).
+The `micrometer-tracing-bridge-otel`
+dependency bridges these observations directly into OpenTelemetry, so the
+resulting spans - `chat {model}` for a ChatModel call, `embeddings {model}` for
+a VectorStore call - appear in the same trace context established by the Java
+Agent. There is no separate, hand-written chat span: Spring AI's observation is
+the chat span.
 
 What it captures:
 
-- **ChatModel call spans** - model name, provider, and call duration for every
+- **The `chat {model}` span** - `gen_ai.operation.name`, `gen_ai.provider.name`,
+  `gen_ai.request.model`, `gen_ai.response.model`, token counts, and finish
+  reason, set by Spring AI's default `ChatModelObservationConvention` for every
   `chatModel.call()` invocation
-- **VectorStore query spans** - similarity search operations against pgvector
+- **The `embeddings {model}` span** - similarity search and embedding
+  generation against pgvector
 - **Tool execution spans** - `@Tool` method invocations triggered by the LLM's
   tool-calling protocol
 
-Configuration is in `application.yml`. The `management.otlp` section configures
-the OTLP export endpoints, `management.tracing` sets the sampling rate, and
-`spring.ai.chat.observations` controls whether prompt/completion content is
-included in spans:
+The application ships no OpenTelemetry SDK and no OTLP exporter of its own, so
+there is no `management.otlp` block in `application.yml`. The Java Agent owns
+the SDK and is the only exporter. What `application.yml` does configure for
+this layer is whether prompt and completion content is included in the
+observations:
 
 ```yaml showLineNumbers title="src/main/resources/application.yml"
 management:
@@ -309,15 +362,7 @@ management:
     web:
       exposure:
         include: health,info,metrics
-  otlp:
-    tracing:
-      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318}/v1/traces
-    metrics:
-      export:
-        url: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318}/v1/metrics
-  tracing:
-    sampling:
-      probability: 1.0
+
 spring:
   ai:
     chat:
@@ -333,64 +378,135 @@ content capture for debugging, the manual OTel layer (Layer 3) provides
 PII-scrubbed content recording controlled by the
 `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT` environment variable.
 
+Two beans connect Spring's observability to the agent, both in
+`config/OpenTelemetryConfig.java`. The first publishes
+`GlobalOpenTelemetry.get()` - the instance the agent installs - as the
+`OpenTelemetry` bean, so the Micrometer tracing bridge writes into the
+agent's tracer. Spring Boot's own tracing auto-configuration needs an SDK on
+the classpath to build a tracer, does not find one, and backs off, which is
+what leaves room for this. The second bridges Micrometer meters, including
+Spring AI's token usage, onto the agent through
+`OpenTelemetryMeterRegistry` from the
+`io.opentelemetry.instrumentation:opentelemetry-micrometer-1.5` artifact:
+
+```java showLineNumbers title="src/main/java/com/example/support/config/OpenTelemetryConfig.java"
+@Bean
+OpenTelemetry openTelemetry() {
+    return GlobalOpenTelemetry.get();
+}
+
+@Bean
+MeterRegistry meterRegistry(OpenTelemetry openTelemetry) {
+    MeterRegistry registry = OpenTelemetryMeterRegistry.builder(openTelemetry).build();
+    registry.config().meterFilter(MeterFilter.deny(id ->
+        id.getName().startsWith("jvm.")
+            || id.getName().startsWith("process.")
+            || id.getName().startsWith("system.")
+            || id.getName().startsWith("disk.")));
+    return registry;
+}
+
+@Bean
+Tracer micrometerTracer(OpenTelemetry openTelemetry, OtelCurrentTraceContext currentTraceContext) {
+    return new OtelTracer(openTelemetry.getTracer(SCOPE), currentTraceContext, event -> { });
+}
+```
+
+The `MeterFilter.deny` is not cosmetic. The agent already reports JVM,
+process, system and disk metrics under those names; without the filter,
+Micrometer's binders report the same series again and every value doubles.
+
 ### Layer 3: Manual OTel API (GenAI Semantic Conventions)
 
-Direct use of `GlobalOpenTelemetry.getTracer()` and
-`GlobalOpenTelemetry.getMeter()` provides the GenAI-specific telemetry that
-neither the Java Agent nor Spring AI observations capture. This layer adds
-OpenTelemetry GenAI semantic convention attributes to LLM spans, defines custom
-metrics for token usage and cost tracking, and creates pipeline orchestration
-spans that give business context to traces.
+Direct use of the injected `Tracer` and `Meter`, through the shared
+`Telemetry` component, adds the telemetry that Spring AI's own observation
+does not produce: cost, retry/fallback/error counters, and pipeline
+orchestration spans that give business context to traces. Spring AI's
+`ChatModel` observation is still the only reason the `chat {model}` span
+exists - Layer 3 supplies the convention and the Micrometer `ObservationHandler`
+that build and tag that span, rather than opening a competing one.
 
 What it captures:
 
-- **`gen_ai.chat {model}` spans** with full GenAI semantic convention attributes
-  (`gen_ai.operation.name`, `gen_ai.provider.name`, `gen_ai.request.model`,
-  `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens`,
-  `gen_ai.usage.cost_usd`, `gen_ai.response.finish_reasons`)
-- **Custom GenAI metrics** - token usage histograms, cost counters, duration
-  histograms, error counters, retry counters, fallback counters
+- **Span creation and enrichment for chat, embeddings and tool calls** -
+  `GenAiChatObservationConvention` replaces `gen_ai.system` with
+  `gen_ai.provider.name` in the attributes Spring AI tags onto the span;
+  `GenAiTracingObservationHandler`, a Micrometer `ObservationHandler` at
+  `HIGHEST_PRECEDENCE`, creates the span itself with `SpanKind.CLIENT`, adds
+  the typed token, finish-reason and `base14.gen_ai.cost_usd` attributes, and
+  records the gated content-capture event
+- **Custom GenAI metrics** - operation duration histograms, cost counters,
+  retry counters, fallback counters, and error counters, recorded
+  independently of the span through the `Meter` API
 - **Domain-specific pipeline spans** - `support_conversation`,
-  `classify_intent`, `rag_retrieval`, `generate_response`, `escalation_check`
+  `classify_intent`, `retrieval kb_articles`, `generate_response` and
+  `escalation_check`. The three stage spans carry `base14.support.stage`;
+  `retrieval kb_articles` carries `gen_ai.data_source.id` instead, and the
+  chat span carries neither
 
-Why this layer is needed: Spring AI's Micrometer observations record that a
-ChatModel call happened and how long it took, but they do not include GenAI
-semantic conventions like token counts, cost, error classification, or the
-specific model that responded (which may differ from the requested model after
-fallback). The manual OTel API adds this layer.
+Why this layer is needed: Spring AI's default convention already sets the
+standard GenAI attributes (operation name, provider, model, tokens, finish
+reason) on its own `chat {model}` span. It has no way to know your pricing
+table or your pipeline's business context, so Layer 3 supplies a custom
+observation convention for cost and adds separate spans and metrics for
+everything else.
 
-The tracer and meter are initialized from `GlobalOpenTelemetry`, which the Java
-Agent populates at startup:
+The tracer and meter come from a single shared component that every
+instrumented class injects, rather than each class calling a static
+accessor:
 
-```java showLineNumbers title="Tracer and Meter initialization pattern"
-private static final Tracer tracer =
-    GlobalOpenTelemetry.getTracer("ai-customer-support");
-private static final Meter meter =
-    GlobalOpenTelemetry.getMeter("ai-customer-support");
+```java showLineNumbers title="src/main/java/com/example/support/telemetry/Telemetry.java"
+@Component
+public class Telemetry {
+
+    private static final String SCOPE = "ai-customer-support";
+
+    private final Tracer tracer;
+    private final Meter meter;
+
+    public Telemetry(OpenTelemetry openTelemetry) {
+        this.tracer = openTelemetry.getTracer(SCOPE);
+        this.meter = openTelemetry.getMeter(SCOPE);
+    }
+
+    public Tracer tracer() {
+        return tracer;
+    }
+
+    public Meter meter() {
+        return meter;
+    }
+}
 ```
+
+Spring's OpenTelemetry starter auto-configures the `OpenTelemetry` bean that
+`Telemetry` wraps; the Java Agent populates the SDK it points to at startup.
 
 ### How the Layers Compose
 
 The three layers compose through OpenTelemetry's context propagation. The Java
 Agent creates the outermost HTTP server span and propagates the trace context to
 all child operations. When Spring AI's Micrometer-bridged observations start,
-they pick up the current trace context and create child spans. When manual
-`tracer.spanBuilder()` calls start, they also inherit the current context. The
-result is a single trace where Layer 1 provides the HTTP and database frame,
-Layer 2 adds AI framework observations, and Layer 3 adds GenAI semantic
-convention attributes and custom metrics. No explicit context passing is needed
-between layers - `Span.current()` and `span.makeCurrent()` handle the
+they pick up the current trace context and create the `chat {model}` and
+`embeddings {model}` spans as children. The pipeline's own
+`tracer.spanBuilder()` calls, for `support_conversation` and the stage spans,
+also inherit the current context. The result is a single trace where Layer 1
+provides the HTTP and database frame, Layer 2 provides the chat and embeddings
+spans, and Layer 3 enriches those spans with the attributes Spring AI does not
+set and adds pipeline spans and custom metrics. No explicit context passing is
+needed between layers - `Span.current()` and `span.makeCurrent()` handle the
 composition automatically.
 
 ## Installation
 
 Add the following dependencies to your `build.gradle`. The project uses Spring
-Boot 4.0.3 with the Spring AI BOM for version management:
+Boot 4.0.7 with the Spring AI BOM for version management:
 
 ```groovy showLineNumbers title="build.gradle"
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '4.0.3'
+    id 'checkstyle'
+    id 'org.springframework.boot' version '4.0.7'
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -400,9 +516,12 @@ java {
     }
 }
 
+// Spring Boot 4.0.7 manages OpenTelemetry 1.55.0; 1.62.0 fixes GHSA-rcgg-9c38-7xpx
+ext['opentelemetry.version'] = '1.65.0'
+
 dependencyManagement {
     imports {
-        mavenBom "org.springframework.ai:spring-ai-bom:2.0.0-M2"
+        mavenBom "org.springframework.ai:spring-ai-bom:2.0.0"
     }
 }
 
@@ -410,11 +529,12 @@ dependencies {
     // Web (reactive)
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
-    // Observability
+    // Observability. The OpenTelemetry Java agent is the only exporter: the app
+    // supplies no SDK and no OTLP exporter of its own.
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'io.micrometer:micrometer-tracing-bridge-otel'
-    implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
     implementation 'io.opentelemetry:opentelemetry-api'
+    implementation 'io.opentelemetry.instrumentation:opentelemetry-micrometer-1.5:2.31.1-alpha'
 
     // Spring AI - LLM providers
     implementation 'org.springframework.ai:spring-ai-starter-model-openai'
@@ -438,13 +558,15 @@ dependencies {
 Key dependency groups:
 
 - **Observability bridge**: `micrometer-tracing-bridge-otel` connects Spring
-  AI's Micrometer observations to OpenTelemetry. `opentelemetry-exporter-otlp`
-  sends telemetry to the Collector. `opentelemetry-api` provides the manual
-  tracer/meter API for Layer 3.
+  AI's Micrometer observations to OpenTelemetry. `opentelemetry-micrometer-1.5`
+  supplies `OpenTelemetryMeterRegistry`, which publishes Micrometer meters
+  through the agent. `opentelemetry-api` provides the manual tracer/meter API
+  for Layer 3. There is no `opentelemetry-exporter-otlp` and no OpenTelemetry
+  SDK: the agent owns both.
 - **Spring AI providers**: Each `spring-ai-starter-model-{provider}` dependency
   brings in the ChatModel implementation for that provider. You can include
   multiple providers for fallback support.
-- **Spring AI BOM**: The `spring-ai-bom:2.0.0-M2` import manages version
+- **Spring AI BOM**: The `spring-ai-bom:2.0.0` import manages version
   alignment across all Spring AI dependencies.
 - **Dual database drivers**: R2DBC for reactive conversation persistence, JDBC
   for pgvector RAG and Spring AI tool methods (which use `JdbcTemplate`).
@@ -458,7 +580,7 @@ it as a JVM argument:
 
 ```bash showLineNumbers title="Local development agent setup"
 curl -L -o opentelemetry-javaagent.jar \
-  https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.25.0/opentelemetry-javaagent.jar
+  https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.31.1/opentelemetry-javaagent.jar
 
 java -javaagent:opentelemetry-javaagent.jar \
   -jar build/libs/ai-customer-support-0.0.1-SNAPSHOT.jar
@@ -466,17 +588,20 @@ java -javaagent:opentelemetry-javaagent.jar \
 
 ## Spring AI OpenTelemetry Configuration
 
-This section covers every configuration surface in the application: Spring Boot
-OTLP export settings, provider-specific Spring AI configuration, application
-properties for LLM routing, and the provider resolution logic that maps
-configuration strings to Spring AI bean names.
+This section covers every configuration surface in the application: the
+Actuator and observation settings in `application.yml`, provider-specific
+Spring AI configuration, application properties for LLM routing, and the
+provider resolution logic that maps configuration strings to Spring AI bean
+names.
 
 ### Spring Boot OpenTelemetry Configuration
 
-The `management:` block in `application.yml` configures how Spring Boot exports
-telemetry to the OpenTelemetry Collector. This was introduced in the
-[Three-Layer Architecture](#layer-2-spring-ai-observations-micrometer-bridge)
-section - here is the full breakdown of each setting:
+Export is configured on the agent, not in `application.yml`. Set
+`OTEL_SERVICE_NAME`, `OTEL_EXPORTER_OTLP_ENDPOINT`,
+`OTEL_EXPORTER_OTLP_HEADERS` and `OTEL_TRACES_SAMPLER` as environment
+variables and the agent applies them to traces, metrics and logs alike. The
+`management:` block only controls Actuator, and `spring.ai.chat.observations`
+only controls content capture:
 
 ```yaml showLineNumbers title="src/main/resources/application.yml"
 management:
@@ -484,42 +609,71 @@ management:
     web:
       exposure:
         include: health,info,metrics
-  otlp:
-    tracing:
-      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318}/v1/traces
-    metrics:
-      export:
-        url: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318}/v1/metrics
-  tracing:
-    sampling:
-      probability: 1.0
+
+spring:
+  ai:
+    chat:
+      observations:
+        include-input: false
+        include-output: false
 ```
 
 - **`management.endpoints.web.exposure.include`** - Exposes Actuator endpoints
   for health checks, application info, and Micrometer metrics. These are useful
   for Kubernetes liveness/readiness probes and debugging metric registration.
-- **`management.otlp.tracing.endpoint`** - The OTLP HTTP endpoint for trace
-  export. Defaults to `http://localhost:4318/v1/traces` for local development.
-  In Docker Compose, the `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable
-  overrides this to point at the Collector container.
-- **`management.otlp.metrics.export.url`** - The OTLP HTTP endpoint for metric
-  export. Uses the same base URL as traces but with the `/v1/metrics` path.
-- **`management.tracing.sampling.probability`** - Controls the sampling rate.
-  `1.0` means 100% of traces are sampled - appropriate for development and
-  low-traffic production. For high-traffic services, reduce this to `0.1` (10%)
-  or use the Collector's tail-sampling processor for more intelligent sampling.
+- **`spring.ai.chat.observations.include-input`** and **`include-output`** -
+  Keep prompt and completion text out of the Micrometer observations. Leave
+  both `false`; Layer 3 records scrubbed content instead, and only when
+  `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true`.
+- **Sampling** - Use the agent's `OTEL_TRACES_SAMPLER` and
+  `OTEL_TRACES_SAMPLER_ARG`, or the Collector's tail-sampling processor. The
+  example leaves the agent's default parent-based always-on sampler in place.
 
 ### Provider Configuration
 
 Spring AI auto-configures a ChatModel bean for each provider that has a starter
-dependency on the classpath. Each provider requires its own configuration block
-under `spring.ai`. The application supports OpenAI, Anthropic, and Ollama - you
-configure the one you want to use and set `app.llm.provider` to select it at
-runtime.
+dependency on the classpath. Each provider gets its own configuration block
+under `spring.ai` in `application.yml`. The application supports Ollama,
+OpenAI and Anthropic. Ollama is the default; pick another by setting
+`LLM_PROVIDER` and the matching API key.
 
 <div class="mdx-code-block">
 <Tabs>
-<TabItem value="openai" label="OpenAI" default>
+<TabItem value="ollama" label="Ollama" default>
+
+```yaml showLineNumbers title="src/main/resources/application.yml"
+spring:
+  ai:
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      chat:
+        # Reasoning models otherwise spend the whole token budget on thinking and
+        # return empty content.
+        think: ${OLLAMA_THINK:false}
+        options:
+          model: ${LLM_MODEL_CAPABLE:qwen3.5:9B}
+      embedding:
+        options:
+          model: ${EMBEDDING_MODEL:embeddinggemma}
+    vectorstore:
+      pgvector:
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+        dimensions: ${EMBEDDING_DIMENSIONS:768}
+        initialize-schema: false
+```
+
+Ollama is the default provider, reached at `OLLAMA_BASE_URL`. Keep
+`think: false`: with thinking on, `qwen3.5:9B` spends the whole token budget
+reasoning and returns empty content, which shows up as a chat span with output
+tokens and no completion. `embeddinggemma` produces 768-dimension vectors,
+which is what the pgvector column is sized for.
+
+To run without a local Ollama on the host, start the bundled one with
+`docker compose --profile ollama up -d`.
+
+</TabItem>
+<TabItem value="openai" label="OpenAI">
 
 ```yaml showLineNumbers title="src/main/resources/application.yml"
 spring:
@@ -535,11 +689,13 @@ spring:
           model: ${EMBEDDING_MODEL:text-embedding-3-small}
 ```
 
-OpenAI is the default provider. The `api-key` is read from the `OPENAI_API_KEY`
-environment variable. The `chat.options.model` sets the default model for
-ChatModel calls - this can be overridden per-request via
-`ChatOptions.builder()`. The `embedding.options.model` configures the embedding
-model used by the pgvector VectorStore for RAG retrieval.
+Select OpenAI with `LLM_PROVIDER=openai` and set `OPENAI_API_KEY`. The
+`chat.options.model` sets the default model for ChatModel calls - this can be
+overridden per-request via `ChatOptions.builder()`. The
+`embedding.options.model` configures the embedding model used by the pgvector
+VectorStore for RAG retrieval. `text-embedding-3-small` is 1536-dimensional,
+so set `EMBEDDING_DIMENSIONS=1536` and re-embed the knowledge base when you
+switch to it.
 
 </TabItem>
 <TabItem value="anthropic" label="Anthropic">
@@ -554,13 +710,13 @@ spring:
           model: ${LLM_MODEL_CAPABLE:claude-sonnet-4-6}
 ```
 
-Anthropic is configured as either the primary or fallback provider. Note that
-Anthropic does not provide an embedding model through Spring AI, so the
-application uses OpenAI embeddings for RAG even when Anthropic is the primary
-chat provider.
+Select Anthropic with `LLM_PROVIDER=anthropic` and set `ANTHROPIC_API_KEY`.
+Anthropic does not provide an embedding model through Spring AI, so
+`EMBEDDING_PROVIDER` stays on Ollama or OpenAI even when Anthropic is the
+primary chat provider.
 
 </TabItem>
-<TabItem value="ollama" label="Ollama">
+<TabItem value="ollama-profile" label="Ollama profile">
 
 ```yaml showLineNumbers title="src/main/resources/application-ollama.yml"
 spring:
@@ -573,29 +729,13 @@ spring:
       - org.springframework.ai.model.openai.autoconfigure.OpenAiAudioTranscriptionAutoConfiguration
       - org.springframework.ai.model.openai.autoconfigure.OpenAiModerationAutoConfiguration
       - org.springframework.ai.model.anthropic.autoconfigure.AnthropicChatAutoConfiguration
-  ai:
-    ollama:
-      embedding:
-        options:
-          model: embeddinggemma
-    vectorstore:
-      pgvector:
-        dimensions: 768
-
-app:
-  llm:
-    provider: ollama
-    model-capable: qwen3:latest
-    model-fast: gemma3:4b
-    fallback-provider: ollama
-    fallback-model: gemma3:12b
 ```
 
-The Ollama profile (`application-ollama.yml`) disables OpenAI and Anthropic
-auto-configuration since those providers are not needed when running locally. It
-also switches the embedding model to `embeddinggemma` and reduces pgvector
-dimensions to 768 to match the local embedding model's output size. Activate
-this profile with `SPRING_PROFILES_ACTIVE=ollama`.
+The `ollama` profile does one thing: it switches off the OpenAI and Anthropic
+auto-configurations so the app starts without their API keys. Models and
+dimensions stay in `application.yml`, which already defaults to Ollama.
+Activate the profile with `SPRING_PROFILES_ACTIVE=ollama`, which is what
+`.env.example` ships.
 
 </TabItem>
 </Tabs>
@@ -625,82 +765,103 @@ YAML configuration provides defaults that environment variables can override:
 ```yaml showLineNumbers title="src/main/resources/application.yml"
 app:
   llm:
-    provider: ${LLM_PROVIDER:openai}
-    model-capable: ${LLM_MODEL_CAPABLE:gpt-4.1}
-    model-fast: ${LLM_MODEL_FAST:gpt-4.1-mini}
-    fallback-provider: ${FALLBACK_PROVIDER:anthropic}
-    fallback-model: ${FALLBACK_MODEL:claude-haiku-4-5-20251001}
+    provider: ${LLM_PROVIDER:ollama}
+    model-capable: ${LLM_MODEL_CAPABLE:qwen3.5:9B}
+    model-fast: ${LLM_MODEL_FAST:qwen3.5:9B}
+    fallback-provider: ${FALLBACK_PROVIDER:ollama}
+    fallback-model: ${FALLBACK_MODEL:qwen3.5:9B}
     max-tokens: ${DEFAULT_MAX_TOKENS:1024}
     temperature: ${DEFAULT_TEMPERATURE:0.3}
 ```
 
-- **`provider`** - The primary LLM provider (`openai`, `anthropic`, or
-  `ollama`). Determines which ChatModel bean is used for all LLM calls.
+- **`provider`** - The primary LLM provider (`ollama`, `openai`, or
+  `anthropic`). Determines which ChatModel bean is used for all LLM calls.
 - **`model-capable`** - The high-quality model used for response generation and
   complex tasks. Maps to `config.modelCapable()` in Java.
 - **`model-fast`** - The faster, cheaper model used for intent classification
   and simple tasks. Maps to `config.modelFast()` in Java.
 - **`fallback-provider`** / **`fallback-model`** - The provider and model to use
-  when the primary provider fails after all retries are exhausted.
+  when the primary provider fails after all retries are exhausted. The
+  defaults point back at Ollama, so an all-local run still exercises the
+  fallback path.
 - **`max-tokens`** / **`temperature`** - Default generation parameters applied
   to every LLM call via `ChatOptions`.
 
 ### Provider Resolution
 
-The `LlmConfig` class resolves the provider string from configuration to the
-correct Spring AI `ChatModel` bean. Spring AI auto-configures a ChatModel bean
-for each provider on the classpath - `LlmConfig.resolveChatModel()` maps the
-provider name to the Spring-managed bean name:
+The `Providers` class resolves the provider string from configuration to the
+correct Spring AI `ChatModel` bean, and separately supplies the
+`server.address`/`server.port` values `GenAiTracingObservationHandler` puts on
+every chat and embeddings span:
 
-```java showLineNumbers title="src/main/java/com/example/support/llm/LlmConfig.java"
-@Configuration
-public class LlmConfig {
+```java showLineNumbers title="src/main/java/com/example/support/llm/Providers.java"
+@Component
+public class Providers {
 
-    public static final Map<String, String> PROVIDER_SERVERS = Map.of(
+    private static final Map<String, String> SERVERS = Map.of(
         "openai", "api.openai.com",
-        "anthropic", "api.anthropic.com",
-        "google", "generativelanguage.googleapis.com",
-        "ollama", "localhost"
+        "anthropic", "api.anthropic.com"
     );
 
-    public static final Map<String, Integer> PROVIDER_PORTS = Map.of(
-        "openai", 443,
-        "anthropic", 443,
-        "google", 443,
-        "ollama", 11434
+    private static final Map<String, Long> PORTS = Map.of(
+        "openai", 443L,
+        "anthropic", 443L
     );
 
-    public static ChatModel resolveChatModel(
-        String provider, Map<String, ChatModel> chatModels
-    ) {
+    private final String ollamaHost;
+    private final long ollamaPort;
+
+    public Providers(@Value("${spring.ai.ollama.base-url:http://localhost:11434}") String ollamaBaseUrl) {
+        URI uri = URI.create(ollamaBaseUrl);
+        this.ollamaHost = uri.getHost() != null ? uri.getHost() : "localhost";
+        this.ollamaPort = uri.getPort() > 0 ? uri.getPort() : 11434;
+    }
+
+    public String serverAddress(String provider) {
+        if ("ollama".equals(provider)) {
+            return ollamaHost;
+        }
+        return SERVERS.getOrDefault(provider, "unknown");
+    }
+
+    public long serverPort(String provider) {
+        if ("ollama".equals(provider)) {
+            return ollamaPort;
+        }
+        return PORTS.getOrDefault(provider, 443L);
+    }
+
+    public static ChatModel chatModel(String provider, Map<String, ChatModel> chatModels) {
         String beanName = switch (provider) {
             case "openai" -> "openAiChatModel";
             case "anthropic" -> "anthropicChatModel";
             case "ollama" -> "ollamaChatModel";
-            default -> throw new IllegalArgumentException(
-                "Unknown LLM provider: " + provider);
+            default -> throw new IllegalArgumentException("Unknown LLM provider: " + provider);
         };
-        var model = chatModels.get(beanName);
+        ChatModel model = chatModels.get(beanName);
         if (model == null) {
             throw new IllegalStateException(
-                "ChatModel bean '" + beanName + "' not found. "
-                + "Available: " + chatModels.keySet());
+                "ChatModel bean '" + beanName + "' not found. Available: " + chatModels.keySet());
         }
         return model;
     }
 }
 ```
 
-The `PROVIDER_SERVERS` and `PROVIDER_PORTS` maps provide OpenTelemetry
-`server.address` and `server.port` span attributes for each provider. These are
-standard OTel attributes that help correlate LLM spans with network-level
-telemetry. The `resolveChatModel()` method uses a switch expression to map the
-provider string (`"openai"`, `"anthropic"`, `"ollama"`) to the Spring AI bean
-name (`"openAiChatModel"`, `"anthropicChatModel"`, `"ollamaChatModel"`). If the
-provider string does not match any known provider, it throws an
-`IllegalArgumentException`. If the bean exists but was not auto-configured (for
-example, missing API key), it throws an `IllegalStateException` listing the
-available beans for debugging.
+`SERVERS` and `PORTS` only list `openai` and `anthropic` - `ollama` resolves
+its host and port dynamically from `spring.ai.ollama.base-url` instead of a
+static map, since a local Ollama instance is not reachable at a fixed public
+address. The class Javadoc states the provider key doubles as the
+`gen_ai.provider.name` value for every provider this example supports; adding
+a provider not in that list (see
+[the Gemini FAQ answer](#how-do-i-add-a-new-llm-provider-eg-google-gemini))
+means adding it to `SERVERS`/`PORTS` and to the `chatModel()` switch. The
+static `chatModel()` factory maps the provider string (`"openai"`,
+`"anthropic"`, `"ollama"`) to the Spring AI bean name (`"openAiChatModel"`,
+`"anthropicChatModel"`, `"ollamaChatModel"`). If the provider string does not
+match any known provider, it throws an `IllegalArgumentException`. If the bean
+exists but was not auto-configured (for example, missing API key), it throws
+an `IllegalStateException` listing the available beans for debugging.
 
 ### Environment Variables
 
@@ -715,28 +876,44 @@ DB_NAME=support
 DB_USER=postgres
 DB_PASSWORD=postgres
 
-LLM_PROVIDER=openai
-LLM_MODEL_CAPABLE=gpt-4.1
-LLM_MODEL_FAST=gpt-4.1-mini
-FALLBACK_PROVIDER=anthropic
-FALLBACK_MODEL=claude-haiku-4-5-20251001
+SPRING_PROFILES_ACTIVE=ollama
+LLM_PROVIDER=ollama
+LLM_MODEL_CAPABLE=qwen3.5:9B
+LLM_MODEL_FAST=qwen3.5:9B
+FALLBACK_PROVIDER=ollama
+FALLBACK_MODEL=qwen3.5:9B
 OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_THINK=false
+EMBEDDING_MODEL=embeddinggemma
+EMBEDDING_DIMENSIONS=768
 DEFAULT_TEMPERATURE=0.3
 DEFAULT_MAX_TOKENS=1024
 
 OPENAI_API_KEY=
 ANTHROPIC_API_KEY=
-GOOGLE_API_KEY=
 
 OTEL_SERVICE_NAME=ai-customer-support
 OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental
+OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=false
+
+SCOUT_CLIENT_ID=
+SCOUT_CLIENT_SECRET=
+SCOUT_TOKEN_URL=
+SCOUT_ENDPOINT=
+SCOUT_ENVIRONMENT=
 ```
 
-The `OTEL_SERVICE_NAME` and `OTEL_EXPORTER_OTLP_ENDPOINT` variables are used by
-both the Java Agent (Layer 1) and Spring Boot Actuator (Layer 2). The Java Agent
-reads them directly; Spring Boot references them via `${...}` placeholders in
-`application.yml`. This means a single environment variable controls both
-layers.
+Copy it to `.env` and fill in the Scout values from your tenant. The API key
+lines stay blank unless you switch `LLM_PROVIDER` away from `ollama`.
+
+The `OTEL_*` variables are read by the Java Agent, which is the only exporter.
+`OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental` makes the agent's
+own GenAI instrumentation emit the current attribute names rather than the
+older `gen_ai.system` form, matching what Layers 2 and 3 emit.
+`OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT` gates prompt and
+completion capture and is also read directly by `LlmService`. Nothing in
+`application.yml` reads these; Spring Boot's own OTLP export is not in use.
 
 ## Custom LLM Instrumentation
 
@@ -746,218 +923,302 @@ attributes, error classification, and content capture to every LLM call.
 
 ### The GenAI Span
 
-The `generateOnce()` method creates a `gen_ai.chat {model}` span for each LLM
-call. This span follows the
-[OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/)
-and carries all the attributes needed to understand model usage, performance,
-and cost.
+Spring AI 2.0.0's `ChatModel` observation is what makes the `chat {model}`
+span exist for every `chatModel.call()` invocation (see
+[Layer 2](#layer-2-spring-ai-observations-micrometer-bridge)). `LlmService`
+does not open its own span for the LLM call. Two components, registered as
+Spring beans, take over building and tagging that span: a
+`ChatModelObservationConvention` that supplies the KeyValues Spring AI tags
+onto the span, and a Micrometer `ObservationHandler` that creates the span
+itself and adds the attributes that need real types instead of strings.
 
-Here is the full method with annotations for each section:
+**GenAiChatObservationConvention** extends Spring AI's own
+`DefaultChatModelObservationConvention`. Spring AI 2.0.0 still emits the
+deprecated `gen_ai.system` attribute by default, so this convention replaces
+it with `gen_ai.provider.name`, and drops the token counts and finish reasons
+from its high-cardinality output because the handler below sets those as typed
+span attributes instead of tags:
 
-```java showLineNumbers title="src/main/java/com/example/support/llm/LlmService.java"
-private LlmResponse generateOnce(
-    ChatModel chatModel, String providerName, String model,
-    String systemPrompt, String userPrompt, String stage,
-    List<ToolCallback> toolCallbacks
-) {
-    String spanName = "gen_ai.chat " + model;
-    long start = System.nanoTime();
+```java showLineNumbers title="src/main/java/com/example/support/telemetry/GenAiChatObservationConvention.java"
+@Component
+public class GenAiChatObservationConvention extends DefaultChatModelObservationConvention {
 
-    Span span = tracer.spanBuilder(spanName)
-        .setAttribute("gen_ai.operation.name", "chat")
-        .setAttribute("gen_ai.provider.name", providerName)
-        .setAttribute("gen_ai.request.model", model)
-        .setAttribute("server.address",
-            LlmConfig.PROVIDER_SERVERS.getOrDefault(providerName, "unknown"))
-        .setAttribute("server.port",
-            (long) LlmConfig.PROVIDER_PORTS.getOrDefault(providerName, 443))
-        .setAttribute("gen_ai.request.temperature", config.temperature())
-        .setAttribute("gen_ai.request.max_tokens", (long) config.maxTokens())
-        .startSpan();
+    private static final Set<String> TYPED_ON_SPAN = Set.of(
+        GenAi.USAGE_INPUT_TOKENS, GenAi.USAGE_OUTPUT_TOKENS, GenAi.RESPONSE_FINISH_REASONS);
 
-    if (stage != null && !stage.isEmpty()) {
-        span.setAttribute("support.stage", stage);
+    @Override
+    public KeyValues getLowCardinalityKeyValues(ChatModelObservationContext context) {
+        return KeyValues.of(
+            KeyValue.of(GenAi.OPERATION_NAME, context.getOperationMetadata().operationType()),
+            KeyValue.of(GenAi.PROVIDER_NAME, context.getOperationMetadata().provider()),
+            requestModel(context),
+            responseModel(context));
     }
 
-    try (Scope ignored = span.makeCurrent()) {
-        // ... content capture, prompt building, ChatModel call ...
-
-        var generation = response.getResult();
-        var metadata = generation.getMetadata();
-        var usage = response.getMetadata().getUsage();
-
-        String content = generation.getOutput().getText();
-        int inputTokens = usage != null ? (int) usage.getPromptTokens() : 0;
-        int outputTokens = usage != null
-            ? (int) usage.getCompletionTokens() : 0;
-        String responseModel = response.getMetadata().getModel() != null
-            ? response.getMetadata().getModel() : model;
-        String finishReason = metadata.getFinishReason() != null
-            ? metadata.getFinishReason() : "";
-        double costUsd = pricing.calculateCost(
-            responseModel, inputTokens, outputTokens);
-        double duration = (System.nanoTime() - start) / 1_000_000_000.0;
-
-        span.setAttribute("gen_ai.response.model", responseModel);
-        span.setAttribute("gen_ai.usage.input_tokens", (long) inputTokens);
-        span.setAttribute("gen_ai.usage.output_tokens", (long) outputTokens);
-        span.setAttribute("gen_ai.usage.cost_usd", costUsd);
-        if (!finishReason.isEmpty()) {
-            span.setAttribute("gen_ai.response.finish_reasons", finishReason);
-        }
-
-        // ... metric recording, return ...
-    } catch (Exception e) {
-        // ... error handling ...
-    } finally {
-        span.end();
+    @Override
+    public KeyValues getHighCardinalityKeyValues(ChatModelObservationContext context) {
+        List<KeyValue> kept = super.getHighCardinalityKeyValues(context)
+            .stream()
+            .filter(keyValue -> !TYPED_ON_SPAN.contains(keyValue.getKey()))
+            .toList();
+        return KeyValues.of(kept.toArray(new KeyValue[0]));
     }
 }
 ```
 
-The span is structured in three phases:
+`requestModel()` and `responseModel()` are inherited from
+`DefaultChatModelObservationConvention` - the override only replaces the
+provider attribute and filters what becomes a tag.
 
-**Request attributes** (set before `startSpan()`): These describe what the
-application asked for - the operation type, provider, model, server address,
-temperature, and max tokens. Setting them on the builder ensures they are
-available from the start of the span, which matters for streaming scenarios
-where the span may be visible before the response arrives.
+**GenAiTracingObservationHandler** is a Micrometer `ObservationHandler`
+registered at `Ordered.HIGHEST_PRECEDENCE`, so it runs ahead of Micrometer
+Tracing's own `DefaultTracingObservationHandler` and takes over span creation
+for chat, embedding, and tool-calling observations:
 
-**Response attributes** (set after `chatModel.call()`): These describe what the
-LLM returned - the actual model that responded (which may differ from the
-requested model after provider routing), token counts, cost, and finish reason.
-The `gen_ai.response.model` attribute is particularly important for fallback
-scenarios where the response model differs from `gen_ai.request.model`.
+```java showLineNumbers title="src/main/java/com/example/support/telemetry/GenAiTracingObservationHandler.java"
+@Component
+@Order(Ordered.HIGHEST_PRECEDENCE)
+public class GenAiTracingObservationHandler extends DefaultTracingObservationHandler {
 
-**Custom attributes**: The `support.stage` attribute is a domain-specific
-addition that links the LLM span to the pipeline stage that triggered it
-(`classify_intent`, `generate_response`, etc.). This is not part of the GenAI
-semantic conventions but is valuable for filtering and grouping spans by
-business context.
+    @Override
+    public boolean supportsContext(Observation.Context context) {
+        return context instanceof ChatModelObservationContext
+            || context instanceof EmbeddingModelObservationContext
+            || context instanceof ToolCallingObservationContext;
+    }
+
+    @Override
+    public void onStart(Observation.Context context) {
+        io.micrometer.tracing.Span parent = getParentSpan(context);
+        io.micrometer.tracing.Span.Builder builder = getTracer().spanBuilder().name(getSpanName(context));
+        if (!(context instanceof ToolCallingObservationContext)) {
+            builder = builder.kind(io.micrometer.tracing.Span.Kind.CLIENT);
+        }
+        if (parent != null) {
+            builder = builder.setParent(parent.context());
+        }
+        io.micrometer.tracing.Span span = builder.start();
+        getTracingContext(context).setSpan(span);
+        applyStartAttributes(context, otel(span));
+    }
+
+    @Override
+    public void onStop(Observation.Context context) {
+        if (context instanceof ChatModelObservationContext chat) {
+            applyResponseAttributes(chat, otel(getRequiredSpan(context)));
+        }
+        super.onStop(context);
+    }
+
+    @Override
+    public void onError(Observation.Context context) {
+        Throwable error = context.getError();
+        if (error != null) {
+            otel(getRequiredSpan(context)).setAttribute(GenAi.ERROR_TYPE, error.getClass().getSimpleName());
+        }
+        super.onError(context);
+    }
+
+    private static Span otel(io.micrometer.tracing.Span span) {
+        return span instanceof OtelSpan ? OtelSpan.toOtel(span) : Span.getInvalid();
+    }
+}
+```
+
+`onStart` builds the span with `SpanKind.CLIENT` (tool-call spans are the one
+exception), then calls `applyStartAttributes()` to set `gen_ai.agent.name`,
+`gen_ai.conversation.id`, and `server.address`/`server.port`. `onStop` calls
+`applyResponseAttributes()`, which reads the actual token usage and finish
+reasons off the `ChatResponse`, sets them as typed attributes, computes cost
+through `Pricing.calculateCost()`, records it as both
+`base14.gen_ai.cost_usd` and a `base14.gen_ai.cost` counter, and - only when
+content capture is enabled - adds the gated inference event:
+
+```java showLineNumbers title="src/main/java/com/example/support/telemetry/GenAiTracingObservationHandler.java"
+private void applyResponseAttributes(ChatModelObservationContext context, Span span) {
+    ChatResponse response = context.getResponse();
+    if (response == null) {
+        return;
+    }
+
+    Usage usage = response.getMetadata().getUsage();
+    long inputTokens = usage != null && usage.getPromptTokens() != null ? usage.getPromptTokens() : 0;
+    long outputTokens = usage != null && usage.getCompletionTokens() != null ? usage.getCompletionTokens() : 0;
+    span.setAttribute(GenAi.USAGE_INPUT_TOKENS, inputTokens);
+    span.setAttribute(GenAi.USAGE_OUTPUT_TOKENS, outputTokens);
+
+    List<String> finishReasons = response.getResults().stream()
+        .map(generation -> generation.getMetadata().getFinishReason())
+        .filter(reason -> reason != null && !reason.isBlank())
+        .toList();
+    if (!finishReasons.isEmpty()) {
+        span.setAttribute(AttributeKey.stringArrayKey(GenAi.RESPONSE_FINISH_REASONS), finishReasons);
+    }
+
+    String model = responseModel(context, response);
+    double cost = pricing.calculateCost(model, (int) inputTokens, (int) outputTokens);
+    span.setAttribute(GenAi.COST_USD, cost);
+    costCounter.add(cost, Attributes.of(
+        AttributeKey.stringKey(GenAi.OPERATION_NAME), context.getOperationMetadata().operationType(),
+        AttributeKey.stringKey(GenAi.PROVIDER_NAME), context.getOperationMetadata().provider(),
+        AttributeKey.stringKey(GenAi.REQUEST_MODEL), model));
+
+    if (captureContent) {
+        span.addEvent(GenAi.INFERENCE_DETAILS_EVENT, contentAttributes(context, response));
+    }
+}
+```
+
+`Pricing` (`src/main/java/com/example/support/llm/Pricing.java`) loads a
+pricing table and exposes `calculateCost(String model, int inputTokens, int
+outputTokens)` - it is a plain `@Component`, not a `PricingService`. Note that
+`applyResponseAttributes()` never touches `base14.support.stage`: that attribute
+belongs to the pipeline-stage spans (`classify_intent`, `escalation_check`,
+`generate_response`), which each set it on their own span through
+`IntentClassifier`, `EscalationRouter`, and `ResponseGenerator` - the chat span
+never carries it.
+
+`otel(span)` bridges from Micrometer's `Span` abstraction to the real OTel
+`io.opentelemetry.api.trace.Span` (via `OtelSpan.toOtel()`), which is what lets
+`applyStartAttributes()` and `applyResponseAttributes()` call
+`setAttribute()`/`addEvent()` directly - the real OTel API, not a Micrometer
+`Observation` method.
 
 ### Error Handling on Spans
 
-When an LLM call fails, the span records both the OpenTelemetry error status and
-a classified error type. The `catch` block in `generateOnce()` sets the span
-status to `ERROR` and adds an `error.type` attribute with a categorized error
-string:
+When an LLM call fails, Spring AI's chat observation stops with an error.
+`GenAiTracingObservationHandler.onError()` sets `error.type` on the span
+before delegating to `DefaultTracingObservationHandler.onError()`, which
+records the exception and marks the span `ERROR`. `LlmService` never touches
+span status directly - it owns the metrics around the call instead.
+
+`generateOnce()` records `gen_ai.client.operation.duration` on both success
+and failure, adding `error.type` only in the failure branch:
 
 ```java showLineNumbers title="src/main/java/com/example/support/llm/LlmService.java"
 } catch (Exception e) {
-    span.setStatus(StatusCode.ERROR, e.getMessage());
-    span.setAttribute("error.type", classifyError(e));
-    errorCounter.add(1, Attributes.of(
-        AttributeKey.stringKey("gen_ai.provider.name"), providerName,
-        AttributeKey.stringKey("gen_ai.request.model"), model,
-        AttributeKey.stringKey("error.type"), classifyError(e)
-    ));
+    operationDuration.record(elapsedSeconds(start), Attributes.of(
+        AttributeKey.stringKey(GenAi.OPERATION_NAME), "chat",
+        AttributeKey.stringKey(GenAi.PROVIDER_NAME), provider,
+        AttributeKey.stringKey(GenAi.REQUEST_MODEL), model,
+        AttributeKey.stringKey(GenAi.ERROR_TYPE), errorType(e)));
     throw e;
-} finally {
-    span.end();
 }
 ```
 
-The `classifyError()` method maps exception messages to standardized error
-categories. This avoids high-cardinality error strings in your telemetry backend
-and enables meaningful alerting on error type:
+`generateWithRetry()` calls `generateOnce()` in a loop and records
+`base14.gen_ai.retry.count` before each retry, then `base14.gen_ai.error.count`
+once every attempt for that provider has failed:
 
 ```java showLineNumbers title="src/main/java/com/example/support/llm/LlmService.java"
-static String classifyError(Exception e) {
-    if (e == null) return "unknown_error";
-    String msg = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
-    if (msg.contains("rate limit") || msg.contains("429"))
-        return "rate_limit";
-    if (msg.contains("timeout") || msg.contains("timed out")
-        || msg.contains("deadline"))
-        return "timeout";
-    if (msg.contains("401") || msg.contains("403")
-        || msg.contains("auth") || msg.contains("api key"))
-        return "auth_error";
-    if (msg.contains("400") || msg.contains("422")
-        || msg.contains("invalid"))
-        return "invalid_request";
-    if (msg.contains("500") || msg.contains("502")
-        || msg.contains("503") || msg.contains("server"))
-        return "server_error";
-    if (msg.contains("connect") || msg.contains("dns")
-        || msg.contains("network") || msg.contains("reset"))
-        return "network_error";
-    return "unknown_error";
+} catch (Exception e) {
+    lastError = e;
+    if (attempt < MAX_ATTEMPTS - 1) {
+        retryCounter.add(1, Attributes.builder()
+            .put(GenAi.PROVIDER_NAME, provider)
+            .put(GenAi.ERROR_TYPE, errorType(e))
+            .put(GenAi.RETRY_ATTEMPT, attempt + 1L)
+            .build());
+        sleep(backoffWithJitter(attempt));
+    }
+}
+// after the loop, once MAX_ATTEMPTS is exhausted:
+errorCounter.add(1, Attributes.of(
+    AttributeKey.stringKey(GenAi.PROVIDER_NAME), provider,
+    AttributeKey.stringKey(GenAi.REQUEST_MODEL), model,
+    AttributeKey.stringKey(GenAi.ERROR_TYPE), errorType(lastError)));
+```
+
+`errorType()` is deliberately simple - it is the exception's own class name,
+the same value `GenAiTracingObservationHandler.onError()` puts on the span,
+so span attributes and metric labels agree:
+
+```java showLineNumbers title="src/main/java/com/example/support/llm/LlmService.java"
+static String errorType(Throwable error) {
+    return error != null ? error.getClass().getSimpleName() : "unknown";
 }
 ```
 
-The classification produces one of seven values: `rate_limit`, `timeout`,
-`auth_error`, `invalid_request`, `server_error`, `network_error`, or
-`unknown_error`. These categories are intentionally coarse - they produce
-low-cardinality metric labels that work well with alerting rules. For example,
-you can alert on `error.type = rate_limit` to detect when your API key is
-hitting quota limits, or on `error.type = auth_error` to detect expired or
-revoked credentials.
+This is lower cardinality than a raw exception message, but it is not a
+curated taxonomy - a `WebClientResponseException` and a
+`ResourceAccessException` both show up as their Java class name.
+`generate()` covers the provider-fallback case: when every retry for the
+primary provider fails, it records `base14.gen_ai.fallback.count` and a
+`provider_fallback` event on the parent conversation span before calling the
+fallback provider.
 
 ### Span Events (Content Capture)
 
-The `generateOnce()` method optionally records prompt and completion content as
-span events. Content capture is gated behind the
-`OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT` environment variable and is
-disabled by default:
+A single `gen_ai.client.inference.operation.details` event carries prompt and
+completion content on the `chat {model}` span. Content capture is gated behind
+the `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT` environment variable
+and is disabled by default. `GenAiTracingObservationHandler` reads it as a
+constructor-injected `@Value`, and `applyResponseAttributes()` (shown above)
+only calls `contentAttributes()` when it is `true`:
 
-```java showLineNumbers title="src/main/java/com/example/support/llm/LlmService.java"
-this.captureContent = "true".equalsIgnoreCase(
-    System.getenv("OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT"));
-```
+```java showLineNumbers title="src/main/java/com/example/support/telemetry/GenAiTracingObservationHandler.java"
+public GenAiTracingObservationHandler(
+    Tracer tracer, Telemetry telemetry, Pricing pricing, Providers providers,
+    ConversationScope conversations, PiiFilter piiFilter,
+    @Value("${OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT:false}") boolean captureContent
+) {
+    super(tracer);
+    // ... assigns pricing, providers, conversations, piiFilter, captureContent ...
+}
 
-When enabled, three span events are recorded on each LLM call:
+private Attributes contentAttributes(ChatModelObservationContext context, ChatResponse response) {
+    List<Message> messages = context.getRequest().getInstructions();
+    String system = joinText(messages, true);
+    String input = joinText(messages, false);
+    String output = response.getResults().stream()
+        .map(generation -> generation.getOutput().getText())
+        .filter(text -> text != null && !text.isBlank())
+        .collect(Collectors.joining("\n"));
 
-```java showLineNumbers title="src/main/java/com/example/support/llm/LlmService.java"
-try (Scope ignored = span.makeCurrent()) {
-    if (captureContent) {
-        span.addEvent("gen_ai.user.message", Attributes.of(
-            AttributeKey.stringKey("gen_ai.prompt"),
-            truncate(piiFilter.scrub(userPrompt), 1000)
-        ));
-        if (systemPrompt != null && !systemPrompt.isEmpty()) {
-            span.addEvent("gen_ai.user.message", Attributes.of(
-                AttributeKey.stringKey("gen_ai.system_instructions"),
-                truncate(systemPrompt, 500)
-            ));
-        }
+    AttributesBuilder attributes = Attributes.builder()
+        .put(GenAi.INPUT_MESSAGES, truncate(piiFilter.scrub(input), INPUT_MAX_CHARS))
+        .put(GenAi.OUTPUT_MESSAGES, truncate(piiFilter.scrub(output), OUTPUT_MAX_CHARS));
+    if (!system.isBlank()) {
+        attributes.put(GenAi.SYSTEM_INSTRUCTIONS, truncate(piiFilter.scrub(system), SYSTEM_MAX_CHARS));
     }
-
-    var prompt = buildPrompt(systemPrompt, userPrompt, model, toolCallbacks);
-    ChatResponse response = chatModel.call(prompt);
-
-    // ... response processing ...
-
-    if (captureContent) {
-        span.addEvent("gen_ai.assistant.message", Attributes.of(
-            AttributeKey.stringKey("gen_ai.completion"),
-            truncate(piiFilter.scrub(content), 2000)
-        ));
-    }
-
-    // ...
+    return attributes.build();
 }
 ```
 
-Each span event captures a different part of the conversation:
+`joinText()` splits the request's `Instructions` into system and non-system
+text by `MessageType`, and the resulting event is added with the real OTel
+`span.addEvent(GenAi.INFERENCE_DETAILS_EVENT, contentAttributes(...))` - not a
+Micrometer `Observation` call, because `span` here is already the OTel span
+returned by `otel()`.
 
-| Event Name                 | Attribute                    | Content       | Max Length |
-| -------------------------- | ---------------------------- | ------------- | ---------- |
-| `gen_ai.user.message`      | `gen_ai.prompt`              | User input    | 1000 chars |
-| `gen_ai.user.message`      | `gen_ai.system_instructions` | System prompt | 500 chars  |
-| `gen_ai.assistant.message` | `gen_ai.completion`          | LLM response  | 2000 chars |
+One event captures the whole exchange:
 
-Two safety measures protect sensitive data in span events:
+| Event Name | Attribute | Content | Max Length |
+| --- | --- | --- | --- |
+| `gen_ai.client.inference.operation.details` | `gen_ai.input.messages` | User input | 1000 chars |
+| `gen_ai.client.inference.operation.details` | `gen_ai.system_instructions` | System prompt | 500 chars |
+| `gen_ai.client.inference.operation.details` | `gen_ai.output.messages` | LLM response | 2000 chars |
 
-1. **PII filtering** - User input and LLM responses pass through
+This is the only event that can carry content. Five others carry no text and
+are always on: `gen_ai.evaluation.result` from the PII scan and the escalation
+check, `tool_execution_failed` when a tool returns an error,
+`rag_retrieval_degraded` when retrieval fails and the turn continues,
+`provider_fallback` when the primary provider is exhausted, and
+`tool_loop_limit_reached` when the tool loop hits `MAX_TOOL_ROUNDS`. Each is
+covered in the section that emits it.
+
+Two safety measures protect sensitive data in the event:
+
+1. **PII filtering** - Input, output, and system instructions all pass through
    `piiFilter.scrub()` before recording. This replaces patterns like email
-   addresses, phone numbers, and credit card numbers with redaction markers. The
-   system prompt is not PII-filtered because it is developer-authored content
-   that should not contain user data.
-2. **Truncation** - All content is truncated to prevent span events from
-   becoming excessively large. User prompts are capped at 1000 characters,
-   system prompts at 500, and completions at 2000. These limits balance
-   debuggability with storage costs.
+   addresses, phone numbers, and credit card numbers with redaction markers.
+   Nothing is exempt, including the system prompt, since it can still
+   reference user-supplied context injected earlier in the pipeline.
+2. **Truncation** - All content is truncated to prevent the event from
+   becoming excessively large. User input is capped at 1000 characters, system
+   instructions at 500, and the response at 2000. These limits balance
+   debuggability with storage costs. `gen_ai.system_instructions` is omitted
+   entirely when there is no system prompt.
 
 Content capture is off by default for good reason: prompt content may contain
 PII, proprietary data, or information subject to compliance requirements (GDPR,
@@ -971,26 +1232,43 @@ OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true
 
 ### GenAI Semantic Conventions Reference
 
-The following table summarizes all GenAI attributes set on `gen_ai.chat` spans.
+The following table summarizes all GenAI attributes set on `chat` spans.
 These follow the
-[OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-spans/):
+[OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-spans/).
+`gen_ai.provider.name` comes from the custom `GenAiChatObservationConvention`,
+which replaces Spring AI's deprecated `gen_ai.system`; the typed
+`gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens`, and
+`gen_ai.response.finish_reasons` come from `GenAiTracingObservationHandler`,
+not from Spring AI's default convention, because the custom convention
+filters them out of its KeyValues so the handler can set them with the
+correct types instead of strings:
 
-| Attribute                        | Example Value       | Source                              |
-| -------------------------------- | ------------------- | ----------------------------------- |
-| `gen_ai.operation.name`          | `"chat"`            | Hardcoded                           |
-| `gen_ai.provider.name`           | `"openai"`          | `config.provider()`                 |
-| `gen_ai.request.model`           | `"gpt-4.1"`         | Method parameter                    |
-| `gen_ai.request.temperature`     | `0.3`               | `config.temperature()`              |
-| `gen_ai.request.max_tokens`      | `1024`              | `config.maxTokens()`                |
-| `gen_ai.response.model`          | `"gpt-4.1"`         | `response.getMetadata().getModel()` |
-| `gen_ai.usage.input_tokens`      | `150`               | `usage.getPromptTokens()`           |
-| `gen_ai.usage.output_tokens`     | `380`               | `usage.getCompletionTokens()`       |
-| `gen_ai.usage.cost_usd`          | `0.00234`           | `pricing.calculateCost()`           |
-| `gen_ai.response.finish_reasons` | `"stop"`            | `metadata.getFinishReason()`        |
-| `server.address`                 | `"api.openai.com"`  | `LlmConfig.PROVIDER_SERVERS`        |
-| `server.port`                    | `443`               | `LlmConfig.PROVIDER_PORTS`          |
-| `support.stage`                  | `"classify_intent"` | Method parameter (custom)           |
-| `error.type`                     | `"rate_limit"`      | `classifyError()` (on error only)   |
+| Attribute | Example Value | Source |
+| --- | --- | --- |
+| `gen_ai.operation.name` | `"chat"` | `GenAiChatObservationConvention` |
+| `gen_ai.provider.name` | `"openai"` | `GenAiChatObservationConvention` (replaces `gen_ai.system`) |
+| `gen_ai.request.model` | `"gpt-4.1"` | `GenAiChatObservationConvention` |
+| `gen_ai.request.temperature` | `0.3` | Spring AI default convention (kept via `super` call) |
+| `gen_ai.request.max_tokens` | `1024` | Spring AI default convention (kept via `super` call) |
+| `gen_ai.response.model` | `"gpt-4.1"` | `GenAiChatObservationConvention` |
+| `gen_ai.usage.input_tokens` | `150` | `GenAiTracingObservationHandler` (typed span attribute) |
+| `gen_ai.usage.output_tokens` | `380` | `GenAiTracingObservationHandler` (typed span attribute) |
+| `gen_ai.response.finish_reasons` | `["stop"]` | `GenAiTracingObservationHandler` (typed string array) |
+| `base14.gen_ai.cost_usd` | `0.00234` | `GenAiTracingObservationHandler` |
+| `server.address` | `"api.openai.com"` | `GenAiTracingObservationHandler` (via `Providers`) |
+| `server.port` | `443` | `GenAiTracingObservationHandler` (via `Providers`) |
+| `error.type` | `"WebClientResponseException"` | `GenAiTracingObservationHandler.onError()` (exception class name) |
+
+`base14.support.stage` is not on this table because it never appears on the chat
+span - it belongs to the pipeline-stage spans (`classify_intent`,
+`escalation_check`, `generate_response`) covered under
+[Pipeline Observability](#pipeline-observability). `GenAiTracingObservationHandler`
+sets `SpanKind.CLIENT` on both the chat span and the `embeddings {model}` span
+it creates for `EmbeddingModelObservationContext`; the one exception is the
+tool-calling span, which `onStart()` leaves at the builder's default kind.
+Token counts are read once per call, straight off the `ChatResponse`, and set
+as the typed span attributes above; this example does not add a separate
+token-usage metric alongside them.
 
 ## Token and Cost Tracking
 
@@ -1003,244 +1281,227 @@ metrics and span attributes for every LLM call.
 
 ### GenAI Metrics Definition
 
-Six metrics are defined in the `LlmService` constructor using the OpenTelemetry
-`Meter` API. These metrics follow the naming patterns from the OpenTelemetry
-GenAI semantic conventions:
+Four metrics are defined in the `LlmService` constructor, through
+`Telemetry.meter()`, plus a fifth - the cost counter - defined in
+`GenAiTracingObservationHandler`. All of them use the `GenAi` constants class
+rather than string literals for their names:
 
 ```java showLineNumbers title="src/main/java/com/example/support/llm/LlmService.java"
-this.tracer = GlobalOpenTelemetry.getTracer("ai-customer-support");
-Meter meter = GlobalOpenTelemetry.getMeter("ai-customer-support");
-
-this.tokenUsage = meter.histogramBuilder("gen_ai.client.token.usage")
-    .setUnit("{token}").build();
-this.operationDuration = meter.histogramBuilder("gen_ai.client.operation.duration")
-    .setUnit("s").build();
-this.costCounter = meter.counterBuilder("gen_ai.client.cost")
-    .ofDoubles().setUnit("usd").build();
-this.retryCounter = meter.counterBuilder("gen_ai.client.retry.count")
+var meter = telemetry.meter();
+this.operationDuration = meter.histogramBuilder(GenAi.OPERATION_DURATION_METRIC)
+    .setUnit("s")
+    .setDescription("Duration of GenAI operations")
     .build();
-this.fallbackCounter = meter.counterBuilder("gen_ai.client.fallback.count")
+this.retryCounter = meter.counterBuilder(GenAi.RETRY_METRIC)
+    .setUnit("{retry}")
+    .setDescription("Retry attempts, excluding the initial attempt")
     .build();
-this.errorCounter = meter.counterBuilder("gen_ai.client.error.count")
+this.fallbackCounter = meter.counterBuilder(GenAi.FALLBACK_METRIC)
+    .setUnit("{fallback}")
+    .setDescription("Number of fallback triggers")
+    .build();
+this.errorCounter = meter.counterBuilder(GenAi.ERROR_METRIC)
+    .setUnit("{error}")
+    .setDescription("Number of LLM call errors by type")
     .build();
 ```
 
-Each metric serves a specific observability purpose:
+There is no token-usage histogram in this app - token counts are only ever
+set as typed span attributes by `GenAiTracingObservationHandler`, not
+recorded as a separate metric. Each of the five metrics serves a specific
+observability purpose:
 
-- **`gen_ai.client.token.usage`** - Histogram of token counts per LLM call.
-  Recorded twice per successful call: once with `gen_ai.token.type = "input"`
-  and once with `gen_ai.token.type = "output"`. Histograms capture the
-  distribution, so you can compute p50, p95, and p99 token usage for capacity
-  planning and anomaly detection.
 - **`gen_ai.client.operation.duration`** - Histogram of LLM call duration in
-  seconds. Captures end-to-end latency including network round-trip, model
-  inference, and any tool-calling loops. Use this to track model performance
-  degradation over time.
-- **`gen_ai.client.cost`** - Monotonic counter of estimated cost in USD.
-  Incremented on every successful call. Use this for real-time cost dashboards
-  and budget alerting.
-- **`gen_ai.client.retry.count`** - Counter of retry attempts. Incremented when
-  an LLM call fails and is retried (not on the first attempt). A rising retry
-  rate signals provider instability.
-- **`gen_ai.client.fallback.count`** - Counter of fallback activations.
-  Incremented when the primary provider fails all retries and the application
-  switches to the fallback provider.
-- **`gen_ai.client.error.count`** - Counter of LLM call errors. Carries
-  `error.type` as a label for classification (`rate_limit`, `timeout`,
-  `auth_error`, etc.).
-
-All metrics carry a common set of labels (attributes) for grouping and
-filtering:
-
-```java showLineNumbers title="src/main/java/com/example/support/llm/LlmService.java"
-private static Attributes providerModelAttrs(String provider, String model) {
-    return Attributes.of(
-        AttributeKey.stringKey("gen_ai.operation.name"), "chat",
-        AttributeKey.stringKey("gen_ai.provider.name"), provider,
-        AttributeKey.stringKey("gen_ai.request.model"), model
-    );
-}
-
-private static Attributes withTokenType(Attributes base, String tokenType) {
-    return base.toBuilder()
-        .put(AttributeKey.stringKey("gen_ai.token.type"), tokenType)
-        .build();
-}
-```
+  seconds, recorded on both success and failure in `generateOnce()`. Captures
+  end-to-end latency including network round-trip and model inference. Use
+  this to track model performance degradation over time.
+- **`base14.gen_ai.cost`** - Monotonic double counter of estimated cost in
+  USD, recorded by `GenAiTracingObservationHandler` alongside the
+  `base14.gen_ai.cost_usd` span attribute. Use this for real-time cost
+  dashboards and budget alerting.
+- **`base14.gen_ai.retry.count`** - Counter of retry attempts, incremented in
+  `generateWithRetry()` before each retry (not after the final attempt). A
+  rising retry rate signals provider instability.
+- **`base14.gen_ai.fallback.count`** - Counter of fallback activations,
+  incremented in `generate()` when the primary provider fails all retries and
+  the application switches to the fallback provider.
+- **`base14.gen_ai.error.count`** - Counter of LLM call errors, incremented
+  once in `generateWithRetry()` after every attempt for a provider has
+  failed. Carries `error.type` as a label - the failing exception's simple
+  class name, not a curated category.
 
 ### Metrics Reference
 
-| Metric Name                        | Type          | Unit      | Labels                                                                                       | Recorded In           |
-| ---------------------------------- | ------------- | --------- | -------------------------------------------------------------------------------------------- | --------------------- |
-| `gen_ai.client.token.usage`        | Histogram     | `{token}` | `gen_ai.operation.name`, `gen_ai.provider.name`, `gen_ai.request.model`, `gen_ai.token.type` | `generateOnce()`      |
-| `gen_ai.client.operation.duration` | Histogram     | `s`       | `gen_ai.operation.name`, `gen_ai.provider.name`, `gen_ai.request.model`                      | `generateOnce()`      |
-| `gen_ai.client.cost`               | DoubleCounter | `usd`     | `gen_ai.operation.name`, `gen_ai.provider.name`, `gen_ai.request.model`                      | `generateOnce()`      |
-| `gen_ai.client.retry.count`        | LongCounter   | -         | `gen_ai.operation.name`, `gen_ai.provider.name`, `gen_ai.request.model`                      | `generateWithRetry()` |
-| `gen_ai.client.fallback.count`     | LongCounter   | -         | -                                                                                            | `generate()`          |
-| `gen_ai.client.error.count`        | LongCounter   | -         | `gen_ai.provider.name`, `gen_ai.request.model`, `error.type`                                 | `generateOnce()`      |
+| Metric Name | Type | Unit | Labels | Recorded In |
+| --- | --- | --- | --- | --- |
+| `gen_ai.client.operation.duration` | Histogram | `s` | `gen_ai.operation.name`, `gen_ai.provider.name`, `gen_ai.request.model`, `error.type` (on failure) | `generateOnce()` |
+| `base14.gen_ai.cost` | DoubleCounter | `usd` | `gen_ai.operation.name`, `gen_ai.provider.name`, `gen_ai.request.model` | `GenAiTracingObservationHandler` |
+| `base14.gen_ai.retry.count` | LongCounter | `{retry}` | `gen_ai.provider.name`, `error.type`, `base14.retry.attempt` | `generateWithRetry()` |
+| `base14.gen_ai.fallback.count` | LongCounter | `{fallback}` | `gen_ai.provider.name`, `base14.gen_ai.fallback.provider` | `generate()` |
+| `base14.gen_ai.error.count` | LongCounter | `{error}` | `gen_ai.provider.name`, `gen_ai.request.model`, `error.type` | `generateWithRetry()` |
 
 ### Cost Calculation
 
-The `Pricing` class loads model pricing data at application startup and
-calculates per-call costs based on input and output token counts. This decouples
-cost calculation from the LLM call path - pricing data can be updated without
-redeploying the application.
+The `Pricing` class loads per-million-token rates from the classpath
+`pricing.json` once, in its constructor, and calculates per-call costs from
+input and output token counts. Models the file does not list cost `0.0`
+rather than an assumed rate:
 
 ```java showLineNumbers title="src/main/java/com/example/support/llm/Pricing.java"
 @Component
 public class Pricing {
 
     private static final Logger log = LoggerFactory.getLogger(Pricing.class);
-    private static final double FALLBACK_INPUT = 3.0;
-    private static final double FALLBACK_OUTPUT = 15.0;
     private static final double PER_MILLION = 1_000_000.0;
+    private static final Pattern DATE_SUFFIX = Pattern.compile("-\\d{4}-\\d{2}-\\d{2}$|-\\d{8}$");
+    private static final Pattern DASH_MINOR = Pattern.compile("-(\\d+)-(\\d+)$");
 
-    private Map<String, ModelPricing> models = Map.of();
+    private final Map<String, ModelPricing> models;
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     record PricingFile(String version, Map<String, ModelPricing> models) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record ModelPricing(
-        String provider, double input, double output
-    ) {}
+    public record ModelPricing(String provider, double input, double output) {}
 
-    @PostConstruct
-    void loadPricing() {
-        var objectMapper = new ObjectMapper();
-        String pricingFile = System.getenv("PRICING_FILE");
-        try {
-            InputStream stream;
-            if (pricingFile != null
-                && Files.exists(Path.of(pricingFile))) {
-                stream = Files.newInputStream(Path.of(pricingFile));
-                log.info("Loaded pricing from {}", pricingFile);
-            } else {
-                stream = getClass().getClassLoader()
-                    .getResourceAsStream("pricing.json");
-                if (stream == null) {
-                    log.warn("No pricing.json found, "
-                        + "using fallback pricing");
-                    return;
-                }
-                log.info("Loaded pricing from classpath");
+    public Pricing() {
+        this.models = load();
+    }
+
+    private static Map<String, ModelPricing> load() {
+        try (InputStream stream = Pricing.class.getClassLoader().getResourceAsStream("pricing.json")) {
+            if (stream == null) {
+                log.warn("pricing.json not on the classpath, every model costs 0.0");
+                return Map.of();
             }
-            var file = objectMapper.readValue(stream, PricingFile.class);
-            this.models = file.models();
-            log.info("Loaded pricing v{} with {} models",
-                file.version(), models.size());
+            PricingFile file = new ObjectMapper().readValue(stream, PricingFile.class);
+            log.info("Loaded pricing {} with {} models", file.version(), file.models().size());
+            return file.models();
         } catch (IOException e) {
-            log.warn("Failed to load pricing.json: {}",
-                e.getMessage());
+            log.warn("Failed to read pricing.json: {}", e.getMessage());
+            return Map.of();
         }
     }
 
-    public double calculateCost(
-        String model, int inputTokens, int outputTokens
-    ) {
-        var pricing = models.get(model);
-        double inputRate =
-            pricing != null ? pricing.input() : FALLBACK_INPUT;
-        double outputRate =
-            pricing != null ? pricing.output() : FALLBACK_OUTPUT;
-        return (inputTokens * inputRate
-            + outputTokens * outputRate) / PER_MILLION;
+    static String normalizeModel(String model) {
+        String stripped = DATE_SUFFIX.matcher(model).replaceAll("");
+        return DASH_MINOR.matcher(stripped).replaceAll("-$1.$2");
+    }
+
+    public double calculateCost(String model, int inputTokens, int outputTokens) {
+        ModelPricing pricing = models.get(model);
+        if (pricing == null) {
+            pricing = models.get(normalizeModel(model));
+        }
+        if (pricing == null) {
+            return 0.0;
+        }
+        return (inputTokens * pricing.input() + outputTokens * pricing.output()) / PER_MILLION;
     }
 
     public boolean hasModel(String model) {
-        return models.containsKey(model);
+        return models.containsKey(model) || models.containsKey(normalizeModel(model));
     }
 }
 ```
 
 Key design decisions in the pricing implementation:
 
-- **`@PostConstruct` loading** - Pricing data is loaded once at startup, not on
-  every LLM call. This avoids file I/O in the hot path.
-- **External file override** - The `PRICING_FILE` environment variable allows
-  deploying updated pricing without rebuilding the application. If not set, the
-  classpath `pricing.json` is used.
-- **Fallback rates** - If a model is not found in the pricing table, fallback
-  rates of $3.00/M input and $15.00/M output are used. These are intentionally
-  high to make unknown models visible in cost dashboards.
+- **Constructor loading** - Pricing data is loaded once, when the bean is
+  constructed, not on every LLM call. This avoids file I/O in the hot path.
+- **`normalizeModel()`** - Provider APIs return dated or dash-minor model IDs
+  such as `claude-sonnet-4-20250514` or `claude-haiku-4-5`; this strips the
+  date suffix and turns a dash-minor version into a dotted one so it matches
+  the plain keys in `pricing.json`.
+- **No fallback rate** - If a model is not in the pricing table, even after
+  normalizing, `calculateCost()` returns `0.0` rather than guessing a rate.
+  `base14.gen_ai.cost_usd` reading exactly `0` on a trace is a visible signal
+  that a model is missing from `pricing.json`, rather than a plausible-looking
+  but wrong number.
 - **Per-million pricing** - Rates are stored as dollars per million tokens (the
-  standard unit used by LLM providers), and the `calculateCost()` method divides
-  by 1,000,000 to produce the actual cost per call.
+  standard unit used by LLM providers), and `calculateCost()` divides by
+  1,000,000 to produce the actual cost per call.
 
 ### How Metrics Are Recorded
 
 Metrics are recorded at three points in the call chain, each capturing a
 different aspect of LLM operations.
 
-**Successful calls in `generateOnce()`** - Token usage, duration, and cost are
-recorded after a successful ChatModel call:
+**Successful and failed calls in `generateOnce()`** - operation duration is
+recorded either way; cost is computed once and handed back through
+`LlmResponse` rather than recorded as a metric here:
 
 ```java showLineNumbers title="src/main/java/com/example/support/llm/LlmService.java"
-var attrs = providerModelAttrs(providerName, responseModel);
-tokenUsage.record(inputTokens, withTokenType(attrs, "input"));
-tokenUsage.record(outputTokens, withTokenType(attrs, "output"));
-operationDuration.record(duration, attrs);
-costCounter.add(costUsd, attrs);
+operationDuration.record(elapsedSeconds(start), Attributes.of(
+    AttributeKey.stringKey(GenAi.OPERATION_NAME), "chat",
+    AttributeKey.stringKey(GenAi.PROVIDER_NAME), provider,
+    AttributeKey.stringKey(GenAi.REQUEST_MODEL), model));
 
-return new LlmResponse(content, responseModel, providerName,
-    inputTokens, outputTokens, costUsd, finishReason);
+return new LlmResponse(
+    generation.getOutput().getText(), responseModel, provider,
+    inputTokens, outputTokens,
+    pricing.calculateCost(responseModel, inputTokens, outputTokens), finishReason);
 ```
 
-The token histogram is recorded twice - once for input tokens and once for
-output tokens - with the `gen_ai.token.type` label distinguishing them. This
-allows separate analysis of prompt size versus completion size.
+This app does not record a separate token-usage histogram in `LlmService` -
+token counts come off `usage.getPromptTokens()`/`getCompletionTokens()` here,
+and are set again, as typed span attributes, by
+`GenAiTracingObservationHandler`.
 
-**Retries in `generateWithRetry()`** - The retry counter is incremented on each
-retry attempt (not on the first attempt):
+**Retries in `generateWithRetry()`** - the retry counter fires before each
+retry, not after the attempt that finally succeeds or the last attempt that
+fails:
 
 ```java showLineNumbers title="src/main/java/com/example/support/llm/LlmService.java"
-for (int attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    try {
-        return generateOnce(chatModel, providerName, model,
-            systemPrompt, userPrompt, stage, toolCallbacks);
-    } catch (Exception e) {
-        // ...
-        if (attempt > 0) {
-            retryCounter.add(1,
-                providerModelAttrs(providerName, model));
-        }
-        // ...
+} catch (Exception e) {
+    lastError = e;
+    if (attempt < MAX_ATTEMPTS - 1) {
+        retryCounter.add(1, Attributes.builder()
+            .put(GenAi.PROVIDER_NAME, provider)
+            .put(GenAi.ERROR_TYPE, errorType(e))
+            .put(GenAi.RETRY_ATTEMPT, attempt + 1L)
+            .build());
+        sleep(backoffWithJitter(attempt));
     }
 }
 ```
 
-**Fallbacks in `generate()`** - The fallback counter is incremented when the
-primary provider exhausts all retries and the application switches to the
-fallback:
+**Fallbacks in `generate()`** - the fallback counter and a `provider_fallback`
+event on the parent conversation span both fire once the primary provider's
+retries are exhausted:
 
 ```java showLineNumbers title="src/main/java/com/example/support/llm/LlmService.java"
-log.warn("Primary provider {} failed, falling back to {}",
-    config.provider(), config.fallbackProvider());
-fallbackCounter.add(1);
+fallbackCounter.add(1, Attributes.of(
+    AttributeKey.stringKey(GenAi.PROVIDER_NAME), config.provider(),
+    AttributeKey.stringKey(GenAi.FALLBACK_PROVIDER), config.fallbackProvider()));
+conversations.recordOnConversation(GenAi.FALLBACK_EVENT, Attributes.builder()
+    .put(GenAi.FALLBACK_TRIGGERED, true)
+    .put(GenAi.PROVIDER_NAME, config.provider())
+    .put(GenAi.FALLBACK_PROVIDER, config.fallbackProvider())
+    .build());
 ```
 
-**Errors in `generateOnce()`** - The error counter is incremented in the catch
-block with the classified error type as a label:
+`gen_ai.provider.name` on both the counter and the event is the provider that
+failed; `base14.gen_ai.fallback.provider` is the one that took over.
+
+**Errors in `generateWithRetry()`** - once every attempt for a provider has
+failed, the error counter fires once, using the same `errorType()` helper the
+retry counter uses:
 
 ```java showLineNumbers title="src/main/java/com/example/support/llm/LlmService.java"
-} catch (Exception e) {
-    span.setStatus(StatusCode.ERROR, e.getMessage());
-    span.setAttribute("error.type", classifyError(e));
-    errorCounter.add(1, Attributes.of(
-        AttributeKey.stringKey("gen_ai.provider.name"), providerName,
-        AttributeKey.stringKey("gen_ai.request.model"), model,
-        AttributeKey.stringKey("error.type"), classifyError(e)
-    ));
-    throw e;
-}
+errorCounter.add(1, Attributes.of(
+    AttributeKey.stringKey(GenAi.PROVIDER_NAME), provider,
+    AttributeKey.stringKey(GenAi.REQUEST_MODEL), model,
+    AttributeKey.stringKey(GenAi.ERROR_TYPE), errorType(lastError)));
 ```
 
-Cost is recorded in two places - as a span attribute (`gen_ai.usage.cost_usd`)
+Cost is recorded in two places - as a span attribute (`base14.gen_ai.cost_usd`)
 for per-request visibility in traces, and as a metric counter
-(`gen_ai.client.cost`) for aggregated dashboards and alerting. The span
-attribute lets you see the cost of a single request when investigating a trace.
-The metric counter lets you build a real-time cost dashboard that sums cost
-across all requests, grouped by provider and model.
+(`base14.gen_ai.cost`) for aggregated dashboards and alerting - both set by
+`GenAiTracingObservationHandler`, not `LlmService`. The span attribute lets
+you see the cost of a single request when investigating a trace. The metric
+counter lets you build a real-time cost dashboard that sums cost across all
+requests, grouped by provider and model.
 
 ## Pipeline Observability
 
@@ -1261,19 +1522,21 @@ private PipelineResult runPipeline(
     String userMessage, UUID conversationId, List<Message> history
 ) {
     long startNanos = System.nanoTime();
-    Span span = tracer.spanBuilder("support_conversation")
-        .setAttribute("support.conversation_id", conversationId.toString())
+    Span span = telemetry.tracer().spanBuilder("support_conversation")
+        .setAttribute(GenAi.CONVERSATION_ID, conversationId.toString())
+        .setAttribute(GenAi.AGENT_NAME, ConversationScope.AGENT_NAME)
         .startSpan();
+    conversations.begin(conversationId.toString(), span);
 
     try (Scope ignored = span.makeCurrent()) {
         // 1. Classify intent (fast model)
         IntentResult intent = intentClassifier.classify(userMessage);
-        span.setAttribute("support.intent", intent.intent().name());
-        span.setAttribute("support.confidence", intent.confidence());
+        span.setAttribute("base14.support.intent", intent.intent().name());
+        span.setAttribute("base14.support.confidence", intent.confidence());
 
         // 2. Retrieve RAG context
         var ragDocs = contextRetriever.retrieve(userMessage);
-        span.setAttribute("support.rag_matches", ragDocs.size());
+        span.setAttribute("base14.support.rag_matches", ragDocs.size());
 
         // 3. Generate response (capable model)
         String conversationHistory =
@@ -1281,15 +1544,15 @@ private PipelineResult runPipeline(
         LlmResponse response = responseGenerator.generate(
             userMessage, intent, ragDocs, conversationHistory);
 
-        // 4. PII scrub
-        String content = piiFilter.scrub(response.content());
+        // 4. PII scrub, which also emits the pii_scan evaluation event
+        String content = piiFilter.evaluate(response.content());
 
         // 5. Check escalation
         int turns = history.size() / 2 + 1;
         EscalationDecision escalation =
             escalationRouter.evaluate(intent, turns, 0);
         span.setAttribute(
-            "support.should_escalate", escalation.shouldEscalate());
+            "base14.support.should_escalate", escalation.shouldEscalate());
 
         // 6. Record domain metrics
         if (!ragDocs.isEmpty()) {
@@ -1314,9 +1577,9 @@ private PipelineResult runPipeline(
         // Record totals
         int totalTokens = intent.inputTokens() + intent.outputTokens()
             + response.inputTokens() + response.outputTokens();
-        span.setAttribute("support.total_turns", (long) turns);
-        span.setAttribute("support.total_tokens", (long) totalTokens);
-        span.setAttribute("support.total_cost_usd", response.costUsd());
+        span.setAttribute("base14.support.total_turns", (long) turns);
+        span.setAttribute("base14.support.total_tokens", (long) totalTokens);
+        span.setAttribute("base14.support.total_cost_usd", response.costUsd());
 
         return new PipelineResult(
             content, intent, escalation,
@@ -1325,11 +1588,13 @@ private PipelineResult runPipeline(
             response.costUsd(), conversationId);
 
     } catch (Exception e) {
+        span.recordException(e);
+        span.setAttribute(GenAi.ERROR_TYPE, e.getClass().getSimpleName());
         span.setStatus(StatusCode.ERROR, e.getMessage());
-        throw new RuntimeException(
-            "Pipeline failed: " + e.getMessage(), e);
+        throw new IllegalStateException("Pipeline failed: " + e.getMessage(), e);
 
     } finally {
+        conversations.end();
         span.end();
     }
 }
@@ -1345,13 +1610,15 @@ created by `intentClassifier.classify()`, `contextRetriever.retrieve()`, and the
 other stages automatically becomes a child of `support_conversation`.
 
 The parent span accumulates summary attributes as each stage completes:
-`support.intent` and `support.confidence` after classification,
-`support.rag_matches` after retrieval, `support.should_escalate` after the
-escalation check, and `support.total_turns`, `support.total_tokens`, and
-`support.total_cost_usd` at the end. This means you can filter traces by intent,
-escalation status, or token count without expanding the span tree.
+`base14.support.intent` and `base14.support.confidence` after classification,
+`base14.support.rag_matches` after retrieval,
+`base14.support.should_escalate` after the escalation check, and
+`base14.support.total_turns`, `base14.support.total_tokens` and
+`base14.support.total_cost_usd` at the end. This means you can filter traces
+by intent, escalation status, or token count without expanding the span
+tree.
 
-Each pipeline stage creates its own child span with a `support.stage` attribute.
+Each pipeline stage creates its own child span with a `base14.support.stage` attribute.
 Here are the four stage spans.
 
 **IntentClassifier** - The `classify_intent` span wraps a fast-model LLM call
@@ -1360,28 +1627,26 @@ sub-category, and extracted entities:
 
 ```java showLineNumbers title="src/main/java/com/example/support/pipeline/IntentClassifier.java"
 public IntentResult classify(String userMessage) {
-    Span span = tracer.spanBuilder("classify_intent")
-        .setAttribute("support.stage", "classify")
+    Span span = telemetry.tracer().spanBuilder("classify_intent")
+        .setAttribute("base14.support.stage", "classify")
         .startSpan();
 
     try (Scope ignored = span.makeCurrent()) {
-        LlmResponse response = llmService.generateFast(
-            SYSTEM_PROMPT, userMessage, "classify");
+        LlmResponse response = llmService.generateFast(SYSTEM_PROMPT, userMessage);
         IntentResult result = parseResponse(response);
 
-        span.setAttribute("support.intent", result.intent().name());
-        span.setAttribute("support.confidence", result.confidence());
-        span.setAttribute(
-            "support.sub_category", result.subCategory());
+        span.setAttribute("base14.support.intent", result.intent().name());
+        span.setAttribute("base14.support.confidence", result.confidence());
+        span.setAttribute("base14.support.sub_category", result.subCategory());
         if (!result.entities().isEmpty()) {
-            span.setAttribute(
-                "support.entities",
-                String.join(",", result.entities()));
+            span.setAttribute("base14.support.entities", String.join(",", result.entities()));
         }
 
         return result;
 
     } catch (Exception e) {
+        span.recordException(e);
+        span.setAttribute(GenAi.ERROR_TYPE, e.getClass().getSimpleName());
         span.setStatus(StatusCode.ERROR, e.getMessage());
         return IntentResult.fallback();
 
@@ -1391,6 +1656,13 @@ public IntentResult classify(String userMessage) {
 }
 ```
 
+The catch block does three things, in this order: `recordException` attaches
+the stack trace as an exception event, `error.type` gives you a low-cardinality
+value to group by, and `setStatus(ERROR)` marks the span failed. Classification
+then degrades to `IntentResult.fallback()` rather than failing the request, so
+the trace shows an errored `classify_intent` span under a successful
+`support_conversation`.
+
 The `parseResponse()` method parses the LLM's JSON output, strips any markdown
 code fences, and extracts the intent, confidence, sub-category, and entities
 fields. If JSON parsing fails (malformed response, unexpected format), it falls
@@ -1398,38 +1670,42 @@ back to `Intent.QUERY` with a confidence of 0.3 and a sub-category of
 `"parse_error"` - the pipeline continues with a degraded classification rather
 than failing entirely.
 
-**ContextRetriever** - The `rag_retrieval` span wraps the vector similarity
-search:
+**ContextRetriever** - The `retrieval kb_articles` span wraps the vector
+similarity search:
 
 ```java showLineNumbers title="src/main/java/com/example/support/pipeline/ContextRetriever.java"
+private static final String DATA_SOURCE_ID = "kb_articles";
+
 public List<Document> retrieve(String userMessage) {
-    Span span = tracer.spanBuilder("rag_retrieval")
-        .setAttribute("support.stage", "retrieve")
+    Span span = telemetry.tracer().spanBuilder("retrieval " + DATA_SOURCE_ID)
+        .setSpanKind(SpanKind.CLIENT)
+        .setAttribute(GenAi.OPERATION_NAME, "retrieval")
+        .setAttribute(GenAi.DATA_SOURCE_ID, DATA_SOURCE_ID)
+        .setAttribute(GenAi.AGENT_NAME, ConversationScope.AGENT_NAME)
+        .setAttribute(GenAi.CONVERSATION_ID, conversations.conversationId())
         .startSpan();
 
     try (Scope ignored = span.makeCurrent()) {
         List<Document> results = vectorStore.similaritySearch(
-            SearchRequest.builder()
-                .query(userMessage)
-                .topK(TOP_K)
-                .build()
-        );
+            SearchRequest.builder().query(userMessage).topK(TOP_K).build());
 
-        span.setAttribute("support.matches_found", results.size());
+        span.setAttribute("app.retrieval.matches", results.size());
         if (!results.isEmpty()) {
             Double topScore = results.getFirst().getScore();
             if (topScore != null) {
-                span.setAttribute(
-                    "support.top_similarity", topScore);
+                span.setAttribute("app.retrieval.top_similarity", topScore);
             }
         }
-
         return results;
 
     } catch (Exception e) {
-        span.setStatus(
-            io.opentelemetry.api.trace.StatusCode.ERROR,
-            e.getMessage());
+        span.recordException(e);
+        span.setAttribute(GenAi.ERROR_TYPE, e.getClass().getSimpleName());
+        span.setStatus(StatusCode.ERROR, e.getMessage());
+        conversations.recordOnConversation(GenAi.RETRIEVAL_DEGRADED_EVENT, Attributes.of(
+            AttributeKey.stringKey(GenAi.DATA_SOURCE_ID), DATA_SOURCE_ID,
+            AttributeKey.stringKey(GenAi.ERROR_TYPE), e.getClass().getSimpleName()));
+        log.error("Knowledge base retrieval failed, continuing without context: {}", e.getMessage());
         return List.of();
 
     } finally {
@@ -1438,54 +1714,45 @@ public List<Document> retrieve(String userMessage) {
 }
 ```
 
-Like the classifier, the retriever returns an empty list on failure rather than
-propagating the exception - the pipeline generates a response without RAG
-context rather than failing the entire request.
+`retrieval kb_articles` is not a pipeline-stage span, so it never carries
+`base14.support.stage`; `DATA_SOURCE_ID` supplies `gen_ai.data_source.id`
+instead, and the match count and top similarity score are app-specific
+attributes under the `app.retrieval.*` namespace. Like the classifier, the
+retriever returns an empty list on failure rather than propagating the
+exception - the pipeline generates a response without RAG context rather than
+failing the entire request. On failure it also records a
+`rag_retrieval_degraded` event on the parent `support_conversation` span
+(`conversations.recordOnConversation(...)`), not on the retrieval span itself,
+because the retrieval span is about to end.
 
 **ResponseGenerator** - The `generate_response` span wraps the capable-model LLM
 call that produces the final customer-facing response:
 
 ```java showLineNumbers title="src/main/java/com/example/support/pipeline/ResponseGenerator.java"
-public LlmResponse generate(
-    String userMessage, IntentResult intent,
-    List<Document> ragContext, String conversationHistory
-) {
-    Span span = tracer.spanBuilder("generate_response")
-        .setAttribute("support.stage", "generate")
-        .setAttribute("support.rag_matches_used", ragContext.size())
+public LlmResponse generate(String userMessage, IntentResult intent,
+                            List<Document> ragContext, String conversationHistory) {
+    Span span = telemetry.tracer().spanBuilder("generate_response")
+        .setAttribute("base14.support.stage", "generate")
+        .setAttribute("base14.support.rag_matches_used", ragContext.size())
         .startSpan();
 
     try (Scope ignored = span.makeCurrent()) {
-        String ragSection =
-            contextRetriever.formatContext(ragContext);
-        String historySection =
-            conversationHistory != null
-                && !conversationHistory.isEmpty()
-                ? "Previous conversation:\n"
-                    + conversationHistory + "\n"
-                : "";
+        String historySection = conversationHistory != null && !conversationHistory.isEmpty()
+            ? "Previous conversation:\n" + conversationHistory + "\n"
+            : "";
 
         String systemPrompt = SYSTEM_PROMPT_TEMPLATE.formatted(
             intent.intent().name(),
             intent.confidence() * 100,
-            ragSection,
+            contextRetriever.formatContext(ragContext),
             historySection
         );
 
-        LlmResponse response = llmService.generateCapable(
-            systemPrompt, userMessage, "generate",
-            toolCallbacks);
-
-        span.setAttribute("gen_ai.usage.input_tokens",
-            (long) response.inputTokens());
-        span.setAttribute("gen_ai.usage.output_tokens",
-            (long) response.outputTokens());
-        span.setAttribute("gen_ai.usage.cost_usd",
-            response.costUsd());
-
-        return response;
+        return llmService.generateCapable(systemPrompt, userMessage, toolCallbacks);
 
     } catch (Exception e) {
+        span.recordException(e);
+        span.setAttribute(GenAi.ERROR_TYPE, e.getClass().getSimpleName());
         span.setStatus(StatusCode.ERROR, e.getMessage());
         throw e;
 
@@ -1495,37 +1762,37 @@ public LlmResponse generate(
 }
 ```
 
+Note what this span does not set. Token counts and cost belong to the `chat`
+span that Spring AI's observation creates inside `generateCapable()`, and
+repeating them here would double-count them in any query that sums over
+spans. `generate_response` carries only the stage marker and the RAG context
+size, which is set at span creation time so it survives a failed LLM call.
+
 The response generator does not catch-and-continue like the classifier and
-retriever - a failed response generation is a hard failure that propagates up to
-the parent span. The `rag_matches_used` attribute is set at span creation time
-so it appears even if the LLM call fails, which helps diagnose whether failures
-correlate with RAG context size.
+retriever - a failed response generation is a hard failure that propagates up
+to the parent span after being recorded.
 
 **EscalationRouter** - The `escalation_check` span wraps the rule-based
 escalation evaluation:
 
 ```java showLineNumbers title="src/main/java/com/example/support/pipeline/EscalationRouter.java"
-public EscalationDecision evaluate(
-    IntentResult intent, int conversationTurns, int toolErrors
-) {
-    Span span = tracer.spanBuilder("escalation_check")
-        .setAttribute("support.stage", "route")
-        .setAttribute("support.conversation_turns",
-            (long) conversationTurns)
+private static final String EVALUATION_NAME = "escalation_check";
+
+public EscalationDecision evaluate(IntentResult intent, int conversationTurns, int toolErrors) {
+    Span span = telemetry.tracer().spanBuilder("escalation_check")
+        .setAttribute("base14.support.stage", "route")
+        .setAttribute("base14.support.conversation_turns", (long) conversationTurns)
         .startSpan();
 
     try (Scope ignored = span.makeCurrent()) {
-        EscalationDecision decision =
-            checkTriggers(intent, conversationTurns, toolErrors);
+        EscalationDecision decision = checkTriggers(intent, conversationTurns, toolErrors);
 
-        span.setAttribute("support.should_escalate",
-            decision.shouldEscalate());
+        span.setAttribute("base14.support.should_escalate", decision.shouldEscalate());
         if (decision.shouldEscalate()) {
-            span.setAttribute("support.escalation_reason",
-                decision.reason());
-            span.setAttribute("support.escalation_priority",
-                decision.priority().name());
+            span.setAttribute("base14.support.escalation_reason", decision.reason());
+            span.setAttribute("base14.support.escalation_priority", decision.priority().name());
         }
+        span.addEvent(GenAi.EVALUATION_RESULT_EVENT, evaluationAttributes(intent, decision));
 
         return decision;
 
@@ -1533,7 +1800,29 @@ public EscalationDecision evaluate(
         span.end();
     }
 }
+
+private static Attributes evaluationAttributes(IntentResult intent, EscalationDecision decision) {
+    AttributesBuilder attributes = Attributes.builder()
+        .put(GenAi.EVALUATION_NAME, EVALUATION_NAME)
+        .put(GenAi.EVALUATION_SCORE_VALUE, intent.confidence())
+        .put(GenAi.EVALUATION_SCORE_LABEL, decision.shouldEscalate() ? "escalate" : "handled");
+    if (decision.shouldEscalate()) {
+        attributes.put(GenAi.EVALUATION_EXPLANATION, decision.summary());
+    }
+    return attributes.build();
+}
 ```
+
+The `gen_ai.evaluation.result` event is the part that matters for
+observability. The GenAI conventions model any automated judgement about a
+model's output as an evaluation event, with `gen_ai.evaluation.name` naming
+the check, `gen_ai.evaluation.score.value` as a number and
+`gen_ai.evaluation.score.label` as the verdict. Here the name is
+`escalation_check`, the score is the classifier's confidence, and the label is
+`escalate` or `handled`. Every turn emits one, escalated or not, so the
+escalation rate is a count over labels rather than a count of missing events.
+`gen_ai.evaluation.explanation` carries the decision summary and is only set
+when the turn escalates.
 
 The `checkTriggers()` method evaluates five rules in priority order:
 
@@ -1585,8 +1874,8 @@ The rules are ordered by urgency. An explicit escalation request or a
 low-confidence complaint triggers HIGH priority - these go to the front of the
 human agent queue. Tool errors indicate the AI cannot fulfil the request and get
 MEDIUM priority. Low confidence and long conversations get LOW priority as soft
-suggestions. The span records `support.escalation_reason` and
-`support.escalation_priority` only when escalation triggers, keeping clean
+suggestions. The span records `base14.support.escalation_reason` and
+`base14.support.escalation_priority` only when escalation triggers, keeping clean
 traces for normal conversations.
 
 ### Tool Calling
@@ -1602,36 +1891,62 @@ Here is an example tool method from `OrderTools` - the `getOrderStatus` tool
 that looks up an order by ID:
 
 ```java showLineNumbers title="src/main/java/com/example/support/tools/OrderTools.java"
-@Tool(description = "Look up order status and tracking info "
-    + "by order ID (e.g. ORD-12345)")
+@Tool(description = "Look up order status and tracking info by order ID (e.g. ORD-12345)")
 public Map<String, Object> getOrderStatus(
-    @ToolParam(description = "Order ID, e.g. ORD-12345")
-    String orderId
+    @ToolParam(description = "Order ID, e.g. ORD-12345") String orderId
 ) {
     log.info("Tool call: getOrderStatus({})", orderId);
-    metrics.recordToolCall("getOrderStatus", true);
     var rows = jdbc.queryForList(
         """
-        SELECT o.order_id, o.status, o.tracking_number,
-               o.estimated_delivery, o.total_amount,
-               o.created_at, c.name as customer_name
-        FROM orders o
-            JOIN customers c ON o.customer_id = c.id
+        SELECT o.order_id, o.status, o.tracking_number, o.estimated_delivery,
+               o.total_amount, o.created_at, c.name as customer_name
+        FROM orders o JOIN customers c ON o.customer_id = c.id
         WHERE o.order_id = ?
         """, orderId);
 
     if (rows.isEmpty()) {
-        return Map.of("error", "Order not found: " + orderId);
+        return toolTelemetry.failure("getOrderStatus", "order_not_found", "Order not found: " + orderId);
     }
+    toolTelemetry.success("getOrderStatus");
     return rows.getFirst();
 }
 ```
 
-Every `@Tool` method calls `metrics.recordToolCall()` with the tool name and
-success status, feeding the `support.tool_calls` counter metric. The JDBC query
-runs under the OpenTelemetry Java Agent's auto-instrumentation, so the database
-call appears as a child span of the `gen_ai.chat` span without any manual
-instrumentation.
+The tool method itself records nothing. Both outcomes go through the injected
+`ToolTelemetry` bean, which is where the observability lives:
+
+```java showLineNumbers title="src/main/java/com/example/support/tools/ToolTelemetry.java"
+public void success(String toolName) {
+    metrics.recordToolCall(toolName, true);
+}
+
+public Map<String, Object> failure(String toolName, String errorType, String message) {
+    ToolFailedException error = new ToolFailedException(message);
+    Span span = Span.current();
+    span.recordException(error);
+    span.setAttribute(GenAi.ERROR_TYPE, errorType);
+    span.setStatus(StatusCode.ERROR, message);
+
+    conversations.recordOnConversation(GenAi.TOOL_FAILED_EVENT, Attributes.of(
+        AttributeKey.stringKey(GenAi.TOOL_NAME), toolName,
+        AttributeKey.stringKey(GenAi.ERROR_TYPE), errorType));
+    metrics.recordToolCall(toolName, false);
+
+    return Map.of("error", message);
+}
+```
+
+`Span.current()` inside a tool method is the `execute_tool {tool_name}` span
+that Spring AI's tool observation opened, so `failure()` marks that span
+errored without creating one of its own. A tool that returns an error map to
+the model is not an exception anywhere in the call stack, and without this the
+span would be reported as successful. `failure()` also adds a
+`tool_execution_failed` event to the parent `support_conversation` span, so a
+turn where the model recovered from a bad tool result still carries the
+evidence, and increments the `base14.support.tool_calls` counter with
+`base14.support.tool_success=false`. The JDBC query runs under the Java Agent's
+auto-instrumentation, so the database call appears as a child of the
+`execute_tool` span with no manual work.
 
 Tool callbacks are assembled in the `ResponseGenerator` constructor using Spring
 AI's `MethodToolCallbackProvider`:
@@ -1647,37 +1962,88 @@ this.toolCallbacks = List.of(
 
 This scans the `orderTools` and `productTools` beans for `@Tool`-annotated
 methods and builds `ToolCallback` instances for each one. The callbacks are then
-passed to `LlmService.generateCapable()`, which constructs
-`ToolCallingChatOptions` when tools are present:
+passed to `LlmService.generateCapable()`, which attaches them to the options
+it builds from the model's own defaults:
 
 ```java showLineNumbers title="src/main/java/com/example/support/llm/LlmService.java"
+ChatOptions defaults = chatModel.getDefaultOptions();
+ChatOptions.Builder builder = defaults != null ? defaults.mutate() : ToolCallingChatOptions.builder();
+builder.model(model)
+    .temperature(config.temperature())
+    .maxTokens(config.maxTokens());
+
 if (toolCallbacks != null && !toolCallbacks.isEmpty()) {
-    var options = ToolCallingChatOptions.builder()
-        .model(model)
-        .temperature(config.temperature())
-        .maxTokens(config.maxTokens())
-        .toolCallbacks(toolCallbacks)
-        .build();
-    return new Prompt(messages, options);
+    if (builder instanceof ToolCallingChatOptions.Builder toolBuilder) {
+        toolBuilder.toolCallbacks(toolCallbacks);
+    } else {
+        log.warn("Dropping {} tool callbacks: {} does not build tool calling options",
+            toolCallbacks.size(), builder.getClass().getName());
+    }
 }
 ```
 
-The `ToolCallingChatOptions` extends the standard `ChatOptions` with tool
-callback support. Spring AI handles the multi-turn tool-calling loop internally
-— the LLM requests a tool call, Spring AI executes the matching `@Tool` method,
-sends the result back to the LLM, and the LLM produces its final response. All
-of this happens within the single `chatModel.call(prompt)` invocation.
+The options start from `chatModel.getDefaultOptions().mutate()` because each
+provider's ChatModel expects its own `ChatOptions` subtype; a generic builder
+would drop the provider-specific settings from `application.yml`, including
+Ollama's `think: false`.
+
+Spring AI 2.0 no longer runs the tool loop inside `chatModel.call()`. The
+caller gets a response with tool calls on it and is expected to execute them.
+`LlmService.generateOnce()` runs that loop itself, through
+`ToolCallingManager`, which is the part that keeps the framework's
+`execute_tool` observation:
+
+```java showLineNumbers title="src/main/java/com/example/support/llm/LlmService.java"
+int toolRounds = 0;
+while (response.hasToolCalls()) {
+    if (toolRounds >= MAX_TOOL_ROUNDS) {
+        log.warn("Tool call loop hit the limit of {} rounds, asking for a plain answer",
+            MAX_TOOL_ROUNDS);
+        conversations.recordOnConversation(GenAi.TOOL_LOOP_LIMIT_EVENT, Attributes.of(
+            AttributeKey.longKey(GenAi.TOOL_LOOP_ROUNDS), (long) toolRounds));
+        // Breaking here would leave the caller with a tool-call-only message and no
+        // text, so ask the model once more with the tools taken away.
+        response = chatModel.call(
+            toolFreePrompt(chatModel, prompt.getInstructions(), model));
+        break;
+    }
+    ToolExecutionResult toolResult = toolCallingManager.executeToolCalls(prompt, response);
+    if (toolResult.returnDirect()) {
+        break;
+    }
+    prompt = new Prompt(toolResult.conversationHistory(), prompt.getOptions());
+    response = chatModel.call(prompt);
+    toolRounds++;
+}
+```
+
+Three things follow from this for the trace shape.
+
+- Each round is a separate `chatModel.call()`, so a turn that used tools has
+  several `chat {model}` spans, not one. They are siblings under
+  `generate_response`, and so are the `execute_tool` spans that
+  `executeToolCalls()` produces between them.
+- `MAX_TOOL_ROUNDS` is 8. A model that keeps asking for tools hits the limit
+  and the conversation span gets a `tool_loop_limit_reached` event carrying
+  `base14.tool.rounds`. Alert on that event: it means a turn cost eight round
+  trips and still had no answer.
+- The limit is not a `break`. Breaking would hand the caller a message that
+  contains tool calls and no text, so the code makes one more call with
+  `toolFreePrompt()`, which is the same options with the callbacks emptied.
+  That final call shows up as one more `chat` span with no `execute_tool`
+  siblings after it, which is how you recognise a truncated tool loop in a
+  trace.
 
 The application exposes six tools across two classes:
 
-| Tool              | Class        | Description                                   |
-| ----------------- | ------------ | --------------------------------------------- |
-| `getOrderStatus`  | OrderTools   | Look up order status and tracking by order ID |
-| `getOrderHistory` | OrderTools   | Get recent orders by customer email           |
-| `initiateReturn`  | OrderTools   | Initiate a return for a delivered order       |
-| `getReturnStatus` | OrderTools   | Check return status by return ID              |
-| `searchProducts`  | ProductTools | Search product catalog by name or category    |
-| `getProductInfo`  | ProductTools | Get product details by SKU                    |
+| Tool | Class | Description |
+| --- | --- | --- |
+| `getOrderStatus` | OrderTools | Look up order status and tracking by order ID |
+| `getOrderHistory` | OrderTools | Get recent orders by customer email |
+| `initiateReturn` | OrderTools | Initiate a return for a delivered order |
+| `getReturnStatus` | OrderTools | Check return status by return ID |
+| `searchProducts` | ProductTools | Search product catalog by name or category |
+| `getProductInfo` | ProductTools | Get product details by SKU |
 
 ### RAG Retrieval
 
@@ -1808,9 +2174,10 @@ public String formatContext(List<Document> documents) {
 
 This produces a numbered list of articles injected into the system prompt, so
 the LLM can reference specific knowledge base content in its response. The top
-similarity score is recorded as both a span attribute (`support.top_similarity`
-on the `rag_retrieval` span) and a metric (`support.rag.similarity` histogram)
-for tracking retrieval quality over time.
+similarity score is recorded as both a span attribute
+(`app.retrieval.top_similarity` on the `retrieval kb_articles` span) and a
+metric (`base14.support.rag.similarity` histogram) for tracking retrieval quality
+over time.
 
 ## Retry and Fallback Observability
 
@@ -1823,107 +2190,117 @@ The `generateWithRetry()` method handles the retry loop for a single provider:
 
 ```java showLineNumbers title="src/main/java/com/example/support/llm/LlmService.java"
 private LlmResponse generateWithRetry(
-    ChatModel chatModel, String providerName, String model,
-    String systemPrompt, String userPrompt, String stage,
-    List<ToolCallback> toolCallbacks
+    ChatModel chatModel, String provider, String model,
+    String systemPrompt, String userPrompt, List<ToolCallback> toolCallbacks
 ) {
     Exception lastError = null;
-    for (int attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
         try {
-            return generateOnce(
-                chatModel, providerName, model,
-                systemPrompt, userPrompt, stage,
-                toolCallbacks);
+            return generateOnce(chatModel, provider, model, systemPrompt, userPrompt, toolCallbacks);
         } catch (Exception e) {
             lastError = e;
-            log.warn("LLM call failed (attempt {}/{}): "
-                + "provider={} model={} error={}",
-                attempt + 1, MAX_RETRIES,
-                providerName, model, e.getMessage());
-            if (attempt > 0) {
-                retryCounter.add(1,
-                    providerModelAttrs(providerName, model));
-            }
-            if (attempt < MAX_RETRIES - 1) {
+            log.warn("LLM call failed (attempt {}/{}): provider={} model={} error={}",
+                attempt + 1, MAX_ATTEMPTS, provider, model, e.getMessage());
+            if (attempt < MAX_ATTEMPTS - 1) {
+                // The attribute name comes from _shared/test-vectors/chat-with-retry.json.
+                retryCounter.add(1, Attributes.builder()
+                    .put(GenAi.PROVIDER_NAME, provider)
+                    .put(GenAi.ERROR_TYPE, errorType(e))
+                    .put(GenAi.RETRY_ATTEMPT, attempt + 1L)
+                    .build());
                 sleep(backoffWithJitter(attempt));
             }
         }
     }
-    log.error("All {} retries exhausted for provider={}",
-        MAX_RETRIES, providerName, lastError);
+
+    errorCounter.add(1, Attributes.of(
+        AttributeKey.stringKey(GenAi.PROVIDER_NAME), provider,
+        AttributeKey.stringKey(GenAi.REQUEST_MODEL), model,
+        AttributeKey.stringKey(GenAi.ERROR_TYPE), errorType(lastError)));
+    log.error("All {} attempts failed for provider={}", MAX_ATTEMPTS, provider, lastError);
     return null;
 }
 ```
 
-The retry loop makes up to `MAX_RETRIES` (3) attempts. On failure, it records
-the retry attempt to the `gen_ai.client.retry.count` counter (skipping the first
-attempt since that is not a retry). The backoff uses exponential delay with
-jitter:
+The loop makes up to `MAX_ATTEMPTS` (3) attempts. The counter fires only when
+another attempt will follow, so three failures produce two increments and the
+counter means retries rather than failures. Each increment carries
+`error.type` and `base14.retry.attempt`, which is what lets you tell a
+provider that is rate-limiting from one that is timing out, and lets you see
+whether retries usually succeed on the second try or burn all three.
+`base14.gen_ai.error.count` is incremented once when the provider is
+exhausted, not once per attempt.
+
+The backoff uses exponential delay with jitter:
 
 ```java showLineNumbers title="src/main/java/com/example/support/llm/LlmService.java"
-private long backoffWithJitter(int attempt) {
-    long base = Math.min(
-        MIN_BACKOFF_MS * (1L << attempt), MAX_BACKOFF_MS);
-    long jitter = ThreadLocalRandom.current()
-        .nextLong(0, base / 4 + 1);
-    return base + jitter;
+private static long backoffWithJitter(int attempt) {
+    long base = Math.min(MIN_BACKOFF_MS * (1L << attempt), MAX_BACKOFF_MS);
+    return base + ThreadLocalRandom.current().nextLong(0, base / 4 + 1);
 }
 ```
 
-This produces delays of approximately 1s, 2s, and 4s for attempts 0, 1, and 2,
+This produces delays of approximately 1s and 2s before attempts 2 and 3,
 capped at 10s, with up to 25% random jitter added to prevent thundering-herd
 retries across concurrent requests. The method returns `null` after exhausting
-all retries rather than throwing - this signals the caller to try the fallback
-provider.
+all attempts rather than throwing - this signals the caller to try the
+fallback provider.
 
 The `generate()` method orchestrates the primary-to-fallback flow:
 
 ```java showLineNumbers title="src/main/java/com/example/support/llm/LlmService.java"
-public LlmResponse generate(
-    String systemPrompt, String userPrompt,
-    String model, String stage,
-    List<ToolCallback> toolCallbacks
-) {
-    var resp = generateWithRetry(
-        primaryModel, config.provider(), model,
-        systemPrompt, userPrompt, stage, toolCallbacks);
-    if (resp != null) {
-        return resp;
+public LlmResponse generate(String systemPrompt, String userPrompt, String model,
+                            List<ToolCallback> toolCallbacks) {
+    LlmResponse response = generateWithRetry(
+        primaryModel, config.provider(), model, systemPrompt, userPrompt, toolCallbacks);
+    if (response != null) {
+        return response;
     }
 
-    log.warn("Primary provider {} failed, falling back to {}",
-        config.provider(), config.fallbackProvider());
-    fallbackCounter.add(1);
+    log.warn("Primary provider {} failed, falling back to {}", config.provider(), config.fallbackProvider());
+    fallbackCounter.add(1, Attributes.of(
+        AttributeKey.stringKey(GenAi.PROVIDER_NAME), config.provider(),
+        AttributeKey.stringKey(GenAi.FALLBACK_PROVIDER), config.fallbackProvider()));
+    conversations.recordOnConversation(GenAi.FALLBACK_EVENT, Attributes.builder()
+        .put(GenAi.FALLBACK_TRIGGERED, true)
+        .put(GenAi.PROVIDER_NAME, config.provider())
+        .put(GenAi.FALLBACK_PROVIDER, config.fallbackProvider())
+        .build());
 
-    resp = generateWithRetry(
-        fallbackModel, config.fallbackProvider(),
-        config.fallbackModel(),
-        systemPrompt, userPrompt, stage, toolCallbacks);
-    if (resp != null) {
-        return resp;
+    response = generateWithRetry(fallbackModel, config.fallbackProvider(), config.fallbackModel(),
+        systemPrompt, userPrompt, toolCallbacks);
+    if (response != null) {
+        return response;
     }
 
-    throw new RuntimeException(
-        "All LLM providers failed after retries");
+    throw new IllegalStateException("All LLM providers failed after retries");
 }
 ```
 
-The flow is: try the primary provider with up to 3 retries. If all fail (
-`generateWithRetry` returns `null`), increment `gen_ai.client.fallback.count`
-and try the fallback provider with another 3 retries. If both providers fail,
-throw a `RuntimeException` that propagates up to the pipeline's catch block and
+The flow is: try the primary provider for up to three attempts. If all fail
+(`generateWithRetry` returns `null`), record the fallback and try the fallback
+provider for another three. If both providers fail, throw an
+`IllegalStateException` that propagates up to the pipeline's catch block and
 sets the parent span status to ERROR.
+
+The fallback is recorded twice on purpose. `base14.gen_ai.fallback.count`
+carries both `gen_ai.provider.name` and `base14.gen_ai.fallback.provider`, so
+the metric answers "how often did we leave provider X, and for whom". The
+`provider_fallback` event goes on the `support_conversation` span, with
+`gen_ai.fallback.triggered=true` alongside the same pair, so a single trace
+shows which turn switched providers. The metric is for the dashboard, the
+event is for the trace you open when the dashboard moves.
 
 In telemetry, retries and fallbacks surface through three metrics defined in the
 LLM metrics section:
 
-- `gen_ai.client.retry.count` - incremented on each retry attempt (not the
+- `base14.gen_ai.retry.count` - incremented on each retry attempt (not the
   initial attempt), labeled with `gen_ai.provider.name` and
   `gen_ai.request.model`. A steady increase indicates provider instability.
-- `gen_ai.client.fallback.count` - incremented once per fallback activation. Any
+- `base14.gen_ai.fallback.count` - incremented once per fallback activation. Any
   non-zero value means the primary provider failed completely for at least one
   request.
-- `gen_ai.client.error.count` - incremented on every failed `generateOnce()`
+- `base14.gen_ai.error.count` - incremented on every failed `generateOnce()`
   call, labeled with `error.type` (rate_limit, timeout, auth_error,
   invalid_request, server_error, network_error, unknown_error). This gives
   visibility into why retries are happening.
@@ -1949,37 +2326,36 @@ public class SupportMetrics {
     private final LongCounter toolCallCount;
     private final DoubleHistogram ragSimilarity;
 
-    public SupportMetrics() {
-        Meter meter = GlobalOpenTelemetry.getMeter(
-            "ai-customer-support");
+    public SupportMetrics(Telemetry telemetry) {
+        Meter meter = telemetry.meter();
 
         this.conversationDuration = meter
-            .histogramBuilder("support.conversation.duration")
+            .histogramBuilder("base14.support.conversation.duration")
             .setUnit("s")
             .setDescription("Duration of customer support "
                 + "conversations")
             .build();
 
         this.conversationTurns = meter
-            .histogramBuilder("support.conversation.turns")
+            .histogramBuilder("base14.support.conversation.turns")
             .setUnit("{turn}")
             .setDescription("Number of turns in customer "
                 + "support conversations")
             .build();
 
         this.escalationCount = meter
-            .counterBuilder("support.escalation.count")
+            .counterBuilder("base14.support.escalation.count")
             .setDescription(
                 "Number of escalated conversations")
             .build();
 
         this.toolCallCount = meter
-            .counterBuilder("support.tool_calls")
+            .counterBuilder("base14.support.tool_calls")
             .setDescription("Number of tool calls made")
             .build();
 
         this.ragSimilarity = meter
-            .histogramBuilder("support.rag.similarity")
+            .histogramBuilder("base14.support.rag.similarity")
             .setDescription("Top similarity score from "
                 + "RAG retrieval")
             .build();
@@ -1989,8 +2365,8 @@ public class SupportMetrics {
         double seconds, String intent, boolean escalated
     ) {
         conversationDuration.record(seconds, Attributes.of(
-            AttributeKey.stringKey("support.intent"), intent,
-            AttributeKey.booleanKey("support.escalated"),
+            AttributeKey.stringKey("base14.support.intent"), intent,
+            AttributeKey.booleanKey("base14.support.escalated"),
                 escalated
         ));
     }
@@ -1999,24 +2375,24 @@ public class SupportMetrics {
         int turns, String intent, boolean resolved
     ) {
         conversationTurns.record(turns, Attributes.of(
-            AttributeKey.stringKey("support.intent"), intent,
-            AttributeKey.booleanKey("support.resolved"), resolved
+            AttributeKey.stringKey("base14.support.intent"), intent,
+            AttributeKey.booleanKey("base14.support.resolved"), resolved
         ));
     }
 
     public void recordEscalation(String reason, String priority) {
         escalationCount.add(1, Attributes.of(
-            AttributeKey.stringKey("support.escalation_reason"),
+            AttributeKey.stringKey("base14.support.escalation_reason"),
                 reason,
-            AttributeKey.stringKey("support.escalation_priority"),
+            AttributeKey.stringKey("base14.support.escalation_priority"),
                 priority
         ));
     }
 
     public void recordToolCall(String toolName, boolean success) {
         toolCallCount.add(1, Attributes.of(
-            AttributeKey.stringKey("support.tool_name"), toolName,
-            AttributeKey.booleanKey("support.tool_success"), success
+            AttributeKey.stringKey("base14.support.tool_name"), toolName,
+            AttributeKey.booleanKey("base14.support.tool_success"), success
         ));
     }
 
@@ -2024,7 +2400,7 @@ public class SupportMetrics {
         double similarity, String intent
     ) {
         ragSimilarity.record(similarity, Attributes.of(
-            AttributeKey.stringKey("support.intent"), intent
+            AttributeKey.stringKey("base14.support.intent"), intent
         ));
     }
 }
@@ -2032,26 +2408,28 @@ public class SupportMetrics {
 
 Each metric is recorded at a specific point in the pipeline:
 
-- `support.conversation.duration` and `support.conversation.turns` - recorded at
-  the end of `SupportPipeline.runPipeline()`, after all stages complete.
+- `base14.support.conversation.duration` and
+  `base14.support.conversation.turns` - recorded at the end of
+  `SupportPipeline.runPipeline()`, after all stages complete.
   Duration is measured from the start of `runPipeline()` in seconds. Turns are
   calculated as `history.size() / 2 + 1` (each turn is a user-assistant pair).
-- `support.escalation.count` - recorded in `SupportPipeline.runPipeline()`
+- `base14.support.escalation.count` - recorded in `SupportPipeline.runPipeline()`
   immediately after the escalation check, only when
   `escalation.shouldEscalate()` returns true.
-- `support.tool_calls` - recorded inside each `@Tool` method in `OrderTools` and
-  `ProductTools`. Every tool call increments the counter with the tool name and
-  success status.
-- `support.rag.similarity` - recorded in `SupportPipeline.runPipeline()` after
-  RAG retrieval, using the top document's similarity score.
+- `base14.support.tool_calls` - recorded through `ToolTelemetry` from each
+  `@Tool` method in `OrderTools` and `ProductTools`. Every tool call
+  increments the counter with the tool name and success status.
+- `base14.support.rag.similarity` - recorded in
+  `SupportPipeline.runPipeline()` after RAG retrieval, using the top
+  document's similarity score.
 
-| Metric                          | Type      | Unit     | Labels                                                     | Business Purpose                                                    |
-| ------------------------------- | --------- | -------- | ---------------------------------------------------------- | ------------------------------------------------------------------- |
-| `support.conversation.duration` | Histogram | `s`      | `support.intent`, `support.escalated`                      | Track resolution time by intent type and escalation status          |
-| `support.conversation.turns`    | Histogram | `{turn}` | `support.intent`, `support.resolved`                       | Detect long conversations that may need UX improvements             |
-| `support.escalation.count`      | Counter   | -        | `support.escalation_reason`, `support.escalation_priority` | Monitor escalation rate and reasons for human handoff               |
-| `support.tool_calls`            | Counter   | -        | `support.tool_name`, `support.tool_success`                | Track which tools the LLM uses and their success rate               |
-| `support.rag.similarity`        | Histogram | -        | `support.intent`                                           | Monitor retrieval quality - low scores indicate knowledge base gaps |
+| Metric | Type | Unit | Labels | Business Purpose |
+| --- | --- | --- | --- | --- |
+| `base14.support.conversation.duration` | Histogram | `s` | `base14.support.intent`, `base14.support.escalated` | Track resolution time by intent type and escalation status |
+| `base14.support.conversation.turns` | Histogram | `{turn}` | `base14.support.intent`, `base14.support.resolved` | Detect long conversations that may need UX improvements |
+| `base14.support.escalation.count` | Counter | - | `base14.support.escalation_reason`, `base14.support.escalation_priority` | Monitor escalation rate and reasons for human handoff |
+| `base14.support.tool_calls` | Counter | - | `base14.support.tool_name`, `base14.support.tool_success` | Track which tools the LLM uses and their success rate |
+| `base14.support.rag.similarity` | Histogram | - | `base14.support.intent` | Monitor retrieval quality - low scores indicate knowledge base gaps |
 
 ## PII and Security
 
@@ -2089,80 +2467,91 @@ public class PiiFilter {
     );
 
     public String scrub(String text) {
-        if (text == null || text.isEmpty()) return text;
-
+        if (text == null || text.isEmpty()) {
+            return text;
+        }
         String result = text;
-        boolean piiFound = false;
-
-        for (var pii : PATTERNS) {
+        for (PiiPattern pii : PATTERNS) {
             var matcher = pii.pattern().matcher(result);
             if (matcher.find()) {
-                piiFound = true;
-                log.warn("PII detected (type={}), redacting",
-                    pii.name());
                 result = matcher.replaceAll(REDACTED);
             }
         }
-
-        if (piiFound) {
-            Span current = Span.current();
-            current.addEvent("support.pii_detected",
-                Attributes.of(
-                    AttributeKey.booleanKey(
-                        "support.pii_redacted"), true
-                ));
-        }
-
         return result;
     }
 }
 ```
 
-When PII is detected and redacted, the filter adds a `support.pii_detected` span
-event to the current active span with `support.pii_redacted = true`. This
-provides an audit trail in traces - you can see that PII was present and
-scrubbed without the trace containing the actual PII data.
+`scrub()` only rewrites text. The telemetry is in `evaluate()`, which scans
+first and reports the scan as a GenAI evaluation event on the current span:
+
+```java showLineNumbers title="src/main/java/com/example/support/filter/PiiFilter.java"
+private static final String EVALUATION_NAME = "pii_scan";
+
+/** Scrubs the text and records the result as a GenAI evaluation on the current span. */
+public String evaluate(String text) {
+    List<String> detected = detect(text);
+    if (!detected.isEmpty()) {
+        log.warn("PII detected (types={}), redacting", detected);
+    }
+
+    AttributesBuilder attributes = Attributes.builder()
+        .put(GenAi.EVALUATION_NAME, EVALUATION_NAME)
+        .put(GenAi.EVALUATION_SCORE_VALUE, detected.isEmpty() ? 1.0 : 0.0)
+        .put(GenAi.EVALUATION_SCORE_LABEL, detected.isEmpty() ? "pass" : "fail");
+    if (!detected.isEmpty()) {
+        attributes.put(GenAi.EVALUATION_EXPLANATION, "Redacted " + String.join(", ", detected));
+    }
+    Span.current().addEvent(GenAi.EVALUATION_RESULT_EVENT, attributes.build());
+
+    return detected.isEmpty() ? text : scrub(text);
+}
+```
+
+This is the same `gen_ai.evaluation.result` event the escalation check emits,
+with `gen_ai.evaluation.name` set to `pii_scan`. Score `1.0` and label `pass`
+mean the text was clean; `0.0` and `fail` mean something was redacted, and
+`gen_ai.evaluation.explanation` names the categories that matched, such as
+`Redacted email, phone`. One event per turn either way, so the PII rate is a
+ratio over labels rather than a count of a rare event. The event never
+contains the matched text.
 
 The filter is applied at two points in the pipeline:
 
-1. **Response content** - `PiiFilter.scrub()` is called on the LLM response in
-   `SupportPipeline.runPipeline()` before returning content to the client:
+1. **Response content** - `PiiFilter.evaluate()` is called on the LLM response
+   in `SupportPipeline.runPipeline()` before returning content to the client.
+   This is the call that puts the `pii_scan` event on the
+   `support_conversation` span:
 
    ```java showLineNumbers title="src/main/java/com/example/support/pipeline/SupportPipeline.java"
    // 4. PII scrub
-   String content = piiFilter.scrub(response.content());
+   String content = piiFilter.evaluate(response.content());
    ```
 
-2. **Span events** - In `LlmService.generateOnce()`, the PII filter scrubs
-   prompt and completion content before writing it to span events:
+2. **Span events** - In `GenAiTracingObservationHandler.contentAttributes()`,
+   the PII filter scrubs input, output, and system content before it is
+   written to the single `gen_ai.client.inference.operation.details` event:
 
-   ```java showLineNumbers title="src/main/java/com/example/support/llm/LlmService.java"
-   if (captureContent) {
-       span.addEvent("gen_ai.user.message", Attributes.of(
-           AttributeKey.stringKey("gen_ai.prompt"),
-               truncate(piiFilter.scrub(userPrompt), 1000)
-       ));
-       // ...
-   }
-   ```
-
-   ```java showLineNumbers title="src/main/java/com/example/support/llm/LlmService.java"
-   if (captureContent) {
-       span.addEvent("gen_ai.assistant.message", Attributes.of(
-           AttributeKey.stringKey("gen_ai.completion"),
-               truncate(piiFilter.scrub(content), 2000)
-       ));
-   }
+   ```java showLineNumbers title="src/main/java/com/example/support/telemetry/GenAiTracingObservationHandler.java"
+   .put(GenAi.INPUT_MESSAGES, truncate(piiFilter.scrub(input), INPUT_MAX_CHARS))
+   .put(GenAi.OUTPUT_MESSAGES, truncate(piiFilter.scrub(output), OUTPUT_MAX_CHARS));
+   // ...
+   span.addEvent(GenAi.INFERENCE_DETAILS_EVENT, contentAttributes(context, response));
    ```
 
 Content capture itself is gated by the
 `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT` environment variable. The
-application checks this at startup:
+handler receives it as a constructor-injected `@Value`, resolved once by
+Spring at startup:
 
-```java showLineNumbers title="src/main/java/com/example/support/llm/LlmService.java"
-this.captureContent = "true".equalsIgnoreCase(
-    System.getenv(
-        "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT"));
+```java showLineNumbers title="src/main/java/com/example/support/telemetry/GenAiTracingObservationHandler.java"
+public GenAiTracingObservationHandler(
+    /* ... */
+    @Value("${OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT:false}") boolean captureContent
+) {
+    // ...
+    this.captureContent = captureContent;
+}
 ```
 
 When this variable is unset or set to anything other than `"true"`, no prompt or
@@ -2172,8 +2561,9 @@ approach where PII filtering is the second layer after the content capture gate.
 Additional security practices in the application:
 
 - **API keys via environment variables** - Provider API keys (`OPENAI_API_KEY`,
-  `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`) are injected via environment variables,
-  never hardcoded in source or configuration files.
+  `ANTHROPIC_API_KEY`) are injected via environment variables, never hardcoded
+  in source or configuration files. `.env.example` ships them blank, and the
+  default Ollama configuration needs neither.
 - **Content truncation limits** - Prompts are truncated to 1000 characters,
   system instructions to 500 characters, and completions to 2000 characters
   before writing to span events. This prevents large payloads from inflating
@@ -2193,35 +2583,51 @@ Additional security practices in the application:
 <Tabs>
 <TabItem value="development" label="Development" default>
 
-In development, run directly with Gradle without the Java Agent. Spring AI's
-Micrometer observations and your manual OpenTelemetry spans still work - the
-Java Agent just adds the automatic HTTP/JDBC layer on top.
-
-Set your environment variables and start the application:
+The defaults need no API key: copy `.env.example` to `.env`, pull the two
+models, and run.
 
 ```bash showLineNumbers
-# Set environment variables
-export OPENAI_API_KEY=sk-...
-export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
-export OTEL_SERVICE_NAME=ai-customer-support
+ollama pull qwen3.5:9B
+ollama pull embeddinggemma
+cp .env.example .env
 
-# Run with Spring Boot
 ./gradlew bootRun
 ```
 
-For local development with Ollama (no API key needed):
+`.env.example` sets `SPRING_PROFILES_ACTIVE=ollama`, `LLM_PROVIDER=ollama` and
+`FALLBACK_PROVIDER=ollama`, pointing at `http://localhost:11434`. To use a
+hosted provider instead, set `LLM_PROVIDER` and the matching key in `.env`:
 
 ```bash showLineNumbers
-SPRING_PROFILES_ACTIVE=ollama ./gradlew bootRun
+LLM_PROVIDER=openai
+LLM_MODEL_CAPABLE=gpt-4.1
+LLM_MODEL_FAST=gpt-4.1-mini
+OPENAI_API_KEY=sk-...
 ```
 
-Console output shows Spring AI observations and your manual spans. If you add a
-`debug` exporter to a local collector, you will see full span details in the
-collector logs.
+The example's own `make` targets run Gradle inside the `gradle:9.2.1-jdk25`
+image, because Gradle 9.2 does not run on every host JDK:
 
-Without the Java Agent, you get Layer 2 (Spring AI Micrometer observations) and
-Layer 3 (manual OpenTelemetry API spans) but not Layer 1 (auto HTTP/JDBC spans).
-This is fine for development - the two manual layers provide full GenAI context.
+```bash showLineNumbers
+make lint    # checkstyleMain checkstyleTest
+make build   # bootJar
+make test
+make check   # all three
+```
+
+Running `bootRun` without the Java Agent is not a reduced version of the
+instrumentation - it is no instrumentation. `OpenTelemetryConfig` publishes
+`GlobalOpenTelemetry.get()`, which without the agent is the no-op
+implementation, so Layer 2 and Layer 3 both write into a tracer and meter that
+discard everything. To see telemetry from a host run, attach the agent:
+
+```bash showLineNumbers
+curl -L -o opentelemetry-javaagent.jar \
+  https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.31.1/opentelemetry-javaagent.jar
+
+java -javaagent:opentelemetry-javaagent.jar \
+  -jar build/libs/ai-customer-support-0.0.1-SNAPSHOT.jar
+```
 
 </TabItem>
 <TabItem value="production" label="Production">
@@ -2237,16 +2643,17 @@ java -javaagent:/path/to/opentelemetry-javaagent.jar \
   -Dotel.traces.exporter=otlp \
   -Dotel.metrics.exporter=otlp \
   -Dotel.logs.exporter=otlp \
+  -Dotel.semconv-stability.opt-in=gen_ai_latest_experimental \
   -jar app.jar
 ```
 
-Configure sampling to control trace volume in high-traffic environments:
+Configure sampling to control trace volume in high-traffic environments. The
+agent owns sampling, so this is an environment variable rather than a Spring
+property:
 
-```yaml showLineNumbers title="application-production.yml"
-management:
-  tracing:
-    sampling:
-      probability: 0.1 # 10% sampling for high-traffic
+```bash showLineNumbers
+export OTEL_TRACES_SAMPLER=parentbased_traceidratio
+export OTEL_TRACES_SAMPLER_ARG=0.1  # 10% sampling for high-traffic
 ```
 
 Set resource attributes to identify the deployment in your observability
@@ -2273,23 +2680,40 @@ downloads the Java Agent into the runtime image:
 ```dockerfile showLineNumbers title="Dockerfile"
 FROM gradle:9.2.1-jdk25 AS builder
 
+ARG OTEL_AGENT_VERSION=2.31.1
+
 WORKDIR /app
+
+# Fetched here rather than with ADD so the layer caches and the download retries.
+RUN curl -fsSL --retry 5 --retry-all-errors --retry-delay 5 \
+    -o /app/opentelemetry-javaagent.jar \
+    "https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${OTEL_AGENT_VERSION}/opentelemetry-javaagent.jar"
+
 COPY build.gradle settings.gradle ./
-COPY gradle ./gradle
+COPY config/checkstyle ./config/checkstyle
+COPY --from=shared pricing.json /app/_shared/pricing.json
+COPY --from=shared test-vectors /app/_shared/test-vectors
 COPY src ./src
 
-RUN gradle build -x test --no-daemon
+RUN gradle bootJar --no-daemon
 
 FROM eclipse-temurin:25-jre
 
+# curl is here only so the container healthcheck has something to call.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN groupadd --gid 10001 app \
+    && useradd --uid 10001 --gid 10001 --create-home app
+
 WORKDIR /app
 
-ADD https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.25.0/opentelemetry-javaagent.jar /app/opentelemetry-javaagent.jar
+COPY --from=builder --chown=app:app /app/opentelemetry-javaagent.jar /app/opentelemetry-javaagent.jar
 
-COPY --from=shared pricing.json /app/pricing.json
+COPY --from=builder --chown=app:app /app/build/libs/ai-customer-support-0.0.1-SNAPSHOT.jar /app/app.jar
 
-COPY --from=builder /app/build/libs/ai-customer-support-0.0.1-SNAPSHOT.jar /app/app.jar
-
+USER app
 EXPOSE 8080
 
 ENTRYPOINT ["java", \
@@ -2297,9 +2721,15 @@ ENTRYPOINT ["java", \
   "-jar", "/app/app.jar"]
 ```
 
-The `compose.yml` wires together the application, database, and collector:
+The agent version is an `ARG`, so a rebuild pins it rather than picking up
+whatever the URL serves today. `curl --retry 5 --retry-all-errors` in a `RUN`
+gives a cached, retried download, which `ADD` does not. The runtime image adds
+a uid 10001 `app` user and switches to it before the entrypoint, so the JVM
+does not run as root.
 
-```yaml showLineNumbers title="compose.yml"
+The `compose.yaml` wires together the application, database, and collector:
+
+```yaml showLineNumbers title="compose.yaml"
 services:
   app:
     build:
@@ -2309,6 +2739,7 @@ services:
     ports:
       - "8080:8080"
     environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-ollama}
       SPRING_R2DBC_URL: r2dbc:postgresql://postgres:5432/support
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/support
       DB_HOST: postgres
@@ -2316,45 +2747,37 @@ services:
       DB_NAME: support
       DB_USER: postgres
       DB_PASSWORD: postgres
-      LLM_PROVIDER: ${LLM_PROVIDER:-openai}
-      LLM_MODEL_CAPABLE: ${LLM_MODEL_CAPABLE:-gpt-4.1}
-      LLM_MODEL_FAST: ${LLM_MODEL_FAST:-gpt-4.1-mini}
-      FALLBACK_PROVIDER: ${FALLBACK_PROVIDER:-anthropic}
-      FALLBACK_MODEL: ${FALLBACK_MODEL:-claude-haiku-4-5-20251001}
+      LLM_PROVIDER: ${LLM_PROVIDER:-ollama}
+      LLM_MODEL_CAPABLE: ${LLM_MODEL_CAPABLE:-qwen3.5:9B}
+      LLM_MODEL_FAST: ${LLM_MODEL_FAST:-qwen3.5:9B}
+      FALLBACK_PROVIDER: ${FALLBACK_PROVIDER:-ollama}
+      FALLBACK_MODEL: ${FALLBACK_MODEL:-qwen3.5:9B}
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      OLLAMA_THINK: ${OLLAMA_THINK:-false}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
       DEFAULT_TEMPERATURE: ${DEFAULT_TEMPERATURE:-0.3}
       DEFAULT_MAX_TOKENS: ${DEFAULT_MAX_TOKENS:-1024}
-      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-text-embedding-3-small}
-      EMBEDDING_DIMENSIONS: ${EMBEDDING_DIMENSIONS:-1536}
-      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-openai}
-      PRICING_FILE: /app/pricing.json
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-embeddinggemma}
+      EMBEDDING_DIMENSIONS: ${EMBEDDING_DIMENSIONS:-768}
       OTEL_SERVICE_NAME: ai-customer-support
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
       OTEL_TRACES_EXPORTER: otlp
       OTEL_METRICS_EXPORTER: otlp
       OTEL_LOGS_EXPORTER: otlp
+      OTEL_SEMCONV_STABILITY_OPT_IN: gen_ai_latest_experimental
       OTEL_INSTRUMENTATION_COMMON_DEFAULT_ENABLED: "true"
       OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT: ${OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT:-false}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       postgres:
         condition: service_healthy
       otel-collector:
         condition: service_started
     healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--no-verbose",
-          "--tries=1",
-          "--spider",
-          "http://localhost:8080/api/health",
-        ]
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/api/health"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -2379,7 +2802,7 @@ services:
       retries: 5
 
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.146.0
+    image: otel/opentelemetry-collector-contrib:0.158.0
     command: ["--config=/etc/otel-collector-config.yaml"]
     ports:
       - "4317:4317"
@@ -2388,17 +2811,35 @@ services:
     volumes:
       - ./config/otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
     environment:
-      SCOUT_CLIENT_ID: ${SCOUT_CLIENT_ID:-}
-      SCOUT_CLIENT_SECRET: ${SCOUT_CLIENT_SECRET:-}
+      SCOUT_CLIENT_ID: ${SCOUT_CLIENT_ID:-unset}
+      SCOUT_CLIENT_SECRET: ${SCOUT_CLIENT_SECRET:-unset}
       SCOUT_TOKEN_URL: ${SCOUT_TOKEN_URL:-https://auth.base14.io/oauth/token}
       SCOUT_ENDPOINT: ${SCOUT_ENDPOINT:-https://collector.base14.io}
       SCOUT_ENVIRONMENT: ${SCOUT_ENVIRONMENT:-development}
     healthcheck:
       test: ["NONE"]
 
+  ollama:
+    image: ollama/ollama:latest
+    profiles: [ollama]
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
 volumes:
   pgdata:
+  ollama_data:
 ```
+
+Two things in here are worth calling out. `extra_hosts` plus
+`OLLAMA_BASE_URL: http://host.docker.internal:11434` is how the container
+reaches an Ollama running on the host, which is the default path; the
+`ollama` service under `profiles: [ollama]` only starts when you ask for it
+with `docker compose --profile ollama up -d`, for hosts with no local Ollama.
+The collector's `SCOUT_CLIENT_ID` and `SCOUT_CLIENT_SECRET` default to
+`unset` rather than empty, because the collector refuses to start on an empty
+client id; put the real values in `.env`.
 
 Start the stack and verify:
 
@@ -2584,14 +3025,16 @@ dependencies. This bridge is what connects Spring AI's Micrometer observations
 to OpenTelemetry. Without it, Spring AI creates observations but they never
 become OpenTelemetry spans.
 
-Check that sampling is not set to zero:
+Also confirm the app is running under the agent. Without it,
+`GlobalOpenTelemetry.get()` returns a no-op and the bridge writes into a
+tracer that discards spans:
 
-```yaml showLineNumbers title="application.yml"
-management:
-  tracing:
-    sampling:
-      probability: 1.0 # Must be > 0; 1.0 for development
+```bash showLineNumbers
+docker compose logs app | grep "opentelemetry-javaagent"
 ```
+
+Check that sampling is not set to zero. Sampling is the agent's, so look at
+`OTEL_TRACES_SAMPLER` and `OTEL_TRACES_SAMPLER_ARG`, not `application.yml`.
 
 ### Duplicate spans from Java Agent and Spring AI
 
@@ -2647,29 +3090,44 @@ var options = ChatOptions.builder()
     .build();
 ```
 
-Each `@Tool` method should call `SupportMetrics.recordToolCall()` to record the
-tool invocation in your custom metrics. Without this call, the tool executes but
-no `support.tool.calls` metric is emitted.
+Each `@Tool` method should report its outcome through `ToolTelemetry`,
+`success()` on the good path and `failure()` when it returns an error map.
+Without these the tool executes but no `base14.support.tool_calls` metric is emitted,
+and a tool that returned an error to the model leaves an `execute_tool` span
+marked OK.
+
+### Verifying the full pipeline
+
+`scripts/verify-scout.sh` drives the API and then checks the collector and the
+application logs for the spans, metrics and events this guide describes:
+
+```bash showLineNumbers
+./scripts/verify-scout.sh
+# or: make verify-scout
+```
+
+It reports PASS or FAIL per check, so it is the quickest way to tell whether a
+change broke the telemetry rather than the application.
 
 ## Performance Considerations
 
 Three-layer instrumentation adds measurable but minimal overhead to each
 request:
 
-| Layer                | Latency Overhead        | Memory      | CPU        |
-| -------------------- | ----------------------- | ----------- | ---------- |
-| Java Agent           | 1-3ms per span          | ~50MB heap  | &lt;1%     |
-| Spring AI Micrometer | &lt;1ms per observation | Negligible  | Negligible |
-| Manual OTel API      | &lt;0.5ms per span      | Negligible  | Negligible |
-| Combined             | 2-5ms per request       | ~60MB total | 1-2%       |
+| Layer | Latency Overhead | Memory | CPU |
+| --- | --- | --- | --- |
+| Java Agent | 1-3ms per span | ~50MB heap | &lt;1% |
+| Spring AI Micrometer | &lt;1ms per observation | Negligible | Negligible |
+| Manual OTel API | &lt;0.5ms per span | Negligible | Negligible |
+| Combined | 2-5ms per request | ~60MB total | 1-2% |
 
 For an AI application where LLM calls take 500ms-5s each, the 2-5ms
 instrumentation overhead is negligible - well under 1% of total request latency.
 
 Five practices to optimize instrumentation performance in production:
 
-1. **Use sampling for high-traffic services.** Set
-   `management.tracing.sampling.probability` to 0.1-0.5 in production. A 10%
+1. **Use sampling for high-traffic services.** Set the agent's
+   `OTEL_TRACES_SAMPLER_ARG` to 0.1-0.5 in production. A 10%
    sample rate captures enough data for trend analysis while reducing trace
    volume by 90%. For AI applications with relatively low request volume
    (compared to CRUD APIs), you may keep 1.0 sampling.
@@ -2717,29 +3175,37 @@ Yes. Each layer is independent:
 - **Layer 2 only (Spring AI Micrometer)**: Add `micrometer-tracing-bridge-otel`
   to dependencies. You get ChatModel and VectorStore spans with model names and
   token counts.
-- **Layer 3 only (Manual OTel API)**: Use `GlobalOpenTelemetry.getTracer()`. You
-  get full GenAI semantic conventions, custom metrics, and pipeline context.
+- **Layer 3 only (Manual OTel API)**: Inject a `Tracer`/`Meter` pair (through
+  `Telemetry`). You get full GenAI semantic conventions, custom metrics, and
+  pipeline context.
 - **Layer 1 + 2**: Auto HTTP/JDBC spans plus Spring AI observations. Good
   coverage without any manual instrumentation code.
 - **Layer 2 + 3**: Spring AI observations plus manual GenAI spans. Full AI
   context without the Java Agent JAR.
 
 The full three-layer stack provides the most complete traces, but any
-combination works.
+combination works. One constraint applies to all of them in this example:
+something has to supply the SDK. The app ships none, so Layers 2 and 3 only
+produce telemetry when the agent is attached. Drop the agent and you need an
+`opentelemetry-sdk` plus exporter on the classpath instead.
 
 ### What Spring AI versions are compatible?
 
-This guide uses Spring AI 2.0.0-M2 with Spring Boot 4.0.3. The key requirement
-is that Spring AI must emit Micrometer observations (available since Spring AI
-1.0.0-M1). The `micrometer-tracing-bridge-otel` dependency must match your
-Spring Boot version's Micrometer version - Spring Boot's dependency management
-BOM handles this automatically.
+This guide uses Spring AI 2.0.0 with Spring Boot 4.0.7 and the OpenTelemetry
+Java agent 2.31.1. The key requirement is that Spring AI must emit Micrometer
+observations (available since Spring AI 1.0.0-M1). Two details are specific to
+2.0: the default convention still emits the deprecated `gen_ai.system`, which
+is why `GenAiChatObservationConvention` exists, and tool execution moved out
+of `chatModel.call()` to the caller, which is why `LlmService` drives the
+`ToolCallingManager` loop itself. The `micrometer-tracing-bridge-otel`
+dependency must match your Spring Boot version's Micrometer version - the
+dependency management BOM handles this automatically.
 
 ### How do I reduce trace volume in production?
 
 Four approaches, from least to most aggressive:
 
-1. **Sampling**: Set `management.tracing.sampling.probability` to 0.1-0.5.
+1. **Sampling**: Set the agent's `OTEL_TRACES_SAMPLER_ARG` to 0.1-0.5.
 2. **Collector filtering**: The `filter/noisy` processor drops health checks,
    actuator endpoints, and HikariCP housekeeping spans.
 3. **Head-based sampling at the collector**: Add a `probabilistic_sampler`
@@ -2749,13 +3215,18 @@ Four approaches, from least to most aggressive:
 
 ### Can I use the OpenTelemetry Java Agent with Spring AI at the same time?
 
-No. The Java Agent instruments at the bytecode level (HTTP clients, JDBC
-drivers) while Spring AI observations operate at the application framework level
-(ChatModel, VectorStore). They share the same OpenTelemetry context, so their
-spans appear as parent-child in the same trace. The only overlap is HTTP client
-spans - the Java Agent creates an HTTP span for the outbound LLM API call, and
-Spring AI creates a ChatModel observation span. Both carry useful but different
-information (network timing vs. model metadata).
+Yes, and this example does. The Java Agent instruments at the bytecode level
+(HTTP clients, JDBC drivers) while Spring AI observations operate at the
+application framework level (ChatModel, VectorStore). They share the same
+OpenTelemetry context because `OpenTelemetryConfig` hands the agent's
+`GlobalOpenTelemetry.get()` to the Micrometer bridge, so their spans appear as
+parent and child in one trace. The only overlap is HTTP client spans - the
+agent creates an HTTP span for the outbound LLM API call, and Spring AI
+creates a ChatModel observation span. Both carry useful but different
+information (network timing against model metadata). The one thing to watch is
+metrics: `OpenTelemetryMeterRegistry` would republish the JVM, process, system
+and disk meters the agent already reports, which is why the bean installs a
+`MeterFilter.deny` for those prefixes.
 
 ### How do I add a new LLM provider (e.g., Google Gemini)?
 
@@ -2765,21 +3236,29 @@ Add the Spring AI starter for the provider to `build.gradle`:
 implementation 'org.springframework.ai:spring-ai-starter-model-vertex-ai-gemini'
 ```
 
-Then register the ChatModel bean and add a case in
-`LlmConfig.resolveChatModel()` to map the provider name to the bean. The
-three-layer instrumentation works automatically - the Java Agent captures the
-HTTP call to Google's API, Spring AI emits a ChatModel observation, and
-`LlmService.generateOnce()` creates the GenAI span with the correct
-`gen_ai.provider.name` attribute.
+Then register the ChatModel bean and add a case for it in
+`Providers.chatModel()`, which is the static factory this app uses to turn a
+provider key into a `ChatModel` bean - it currently only switches on
+`"openai"`, `"anthropic"`, and `"ollama"`, and throws
+`IllegalArgumentException` for anything else, so a new provider needs a case
+added there too, along with a `SERVERS`/`PORTS` entry if it is not
+`ollama`-style dynamically configured. The three-layer instrumentation then
+works automatically - the Java Agent captures the HTTP call to Google's API,
+Spring AI's `ChatModel` observation produces the `chat {model}` span, and
+`GenAiChatObservationConvention` plus `GenAiTracingObservationHandler` tag and
+enrich it exactly as they do for the existing providers. Set
+`gen_ai.provider.name` to `gcp.gemini` for this provider, not `google` - your
+own config key (for example `LLM_PROVIDER=google`) can stay whatever you like,
+but it is never the value that should reach telemetry.
 
 ### How do I track costs across multiple providers?
 
 The `LlmService` loads pricing data from `pricing.json`, which maps model names
 to per-token input and output costs. Each `generateOnce()` call calculates cost
 using `pricing.calculateCost(responseModel, inputTokens, outputTokens)` and
-records it to both the span attribute (`gen_ai.usage.cost_usd`) and the
-`gen_ai.client.cost` metric counter. To add a new model, add its pricing to
-`pricing.json`. To aggregate costs, query the `gen_ai.client.cost` metric
+records it to both the span attribute (`base14.gen_ai.cost_usd`) and the
+`base14.gen_ai.cost` metric counter. To add a new model, add its pricing to
+`pricing.json`. To aggregate costs, query the `base14.gen_ai.cost` metric
 grouped by `gen_ai.provider.name` and `gen_ai.request.model`.
 
 ### How should I handle PII in production telemetry?
@@ -2815,9 +3294,9 @@ differs.
 If spans appear but lack `gen_ai.*` attributes, the issue is in Layer 3 (manual
 instrumentation). Check these in order:
 
-1. **Verify `GlobalOpenTelemetry.getTracer()` returns a real tracer.** If the
-   Java Agent is not loaded or the SDK is not initialized, it returns a no-op
-   tracer that creates spans silently discarded.
+1. **Verify the injected `OpenTelemetry` bean (`Telemetry.tracer()`) returns a
+   real tracer.** If the SDK is not initialized, it returns a no-op tracer
+   that creates spans that are silently discarded.
 2. **Check that `span.setAttribute()` calls use the correct attribute names.**
    The GenAI semantic conventions use underscores (`gen_ai.request.model`), not
    dots or hyphens.
@@ -2870,7 +3349,8 @@ and JDBC database drivers:
 ```groovy showLineNumbers title="build.gradle"
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '4.0.3'
+    id 'checkstyle'
+    id 'org.springframework.boot' version '4.0.7'
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -2887,9 +3367,12 @@ repositories {
     mavenCentral()
 }
 
+// Spring Boot 4.0.7 manages OpenTelemetry 1.55.0; 1.62.0 fixes GHSA-rcgg-9c38-7xpx
+ext['opentelemetry.version'] = '1.65.0'
+
 dependencyManagement {
     imports {
-        mavenBom "org.springframework.ai:spring-ai-bom:2.0.0-M2"
+        mavenBom "org.springframework.ai:spring-ai-bom:2.0.0"
     }
 }
 
@@ -2897,11 +3380,12 @@ dependencies {
     // Web (reactive)
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
-    // Observability
+    // Observability. The OpenTelemetry Java agent is the only exporter: the app
+    // supplies no SDK and no OTLP exporter of its own.
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'io.micrometer:micrometer-tracing-bridge-otel'
-    implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
     implementation 'io.opentelemetry:opentelemetry-api'
+    implementation 'io.opentelemetry.instrumentation:opentelemetry-micrometer-1.5:2.31.1-alpha'
 
     // Spring AI - LLM providers
     implementation 'org.springframework.ai:spring-ai-starter-model-openai'
@@ -2923,6 +3407,17 @@ dependencies {
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.projectreactor:reactor-test'
+    testImplementation 'io.opentelemetry:opentelemetry-sdk'
+    testImplementation 'io.opentelemetry:opentelemetry-sdk-testing'
+}
+
+// pricing.json and the shared test vectors live at the repo root. The Docker
+// builder stage copies them to <project>/_shared; a host build reads them from
+// ../../_shared.
+def sharedDir = [file("$projectDir/_shared"), file("$projectDir/../../_shared")].find { it.isDirectory() }
+
+tasks.named('processResources') {
+    from(new File(sharedDir, 'pricing.json'))
 }
 
 bootJar {
@@ -2936,56 +3431,69 @@ tasks.named('test') {
 
 ### LlmService.java (abbreviated)
 
-The core LLM call method that creates GenAI spans with semantic convention
-attributes, records token usage and cost metrics, and handles content capture
-with PII filtering. See the
-[Custom LLM Instrumentation](#custom-llm-instrumentation) section for the full
-walkthrough.
+The core LLM call method. It does not create its own span - Spring AI's
+`ChatModel` observation produces the `chat {model}` span, and
+`GenAiChatObservationConvention` plus `GenAiTracingObservationHandler` tag,
+create, and enrich it, including the gated content-capture event. This method
+only records the operation-duration metric that sits outside a single model
+call, and drives the tool-calling loop, which Spring AI 2.0 leaves to the
+caller. See the [Custom LLM Instrumentation](#custom-llm-instrumentation)
+section for the full walkthrough.
 
 ```java showLineNumbers title="src/main/java/com/example/support/llm/LlmService.java"
 private LlmResponse generateOnce(
-    ChatModel chatModel, String providerName, String model,
-    String systemPrompt, String userPrompt, String stage,
-    List<ToolCallback> toolCallbacks
+    ChatModel chatModel, String provider, String model,
+    String systemPrompt, String userPrompt, List<ToolCallback> toolCallbacks
 ) {
-    String spanName = "gen_ai.chat " + model;
     long start = System.nanoTime();
-
-    Span span = tracer.spanBuilder(spanName)
-        .setAttribute("gen_ai.operation.name", "chat")
-        .setAttribute("gen_ai.provider.name", providerName)
-        .setAttribute("gen_ai.request.model", model)
-        .setAttribute("gen_ai.request.temperature", config.temperature())
-        .setAttribute("gen_ai.request.max_tokens", (long) config.maxTokens())
-        .startSpan();
-
-    try (Scope ignored = span.makeCurrent()) {
-        // ... prompt building and content capture (see Custom LLM Instrumentation section)
-
+    try {
+        Prompt prompt = buildPrompt(chatModel, systemPrompt, userPrompt, model, toolCallbacks);
         ChatResponse response = chatModel.call(prompt);
 
-        // Extract token usage, cost, finish reason
-        // ... see Custom LLM Instrumentation section
+        // Spring AI 2.0 leaves tool execution to the caller. Running it through the
+        // ToolCallingManager keeps the framework's execute_tool observation.
+        int toolRounds = 0;
+        while (response.hasToolCalls()) {
+            if (toolRounds >= MAX_TOOL_ROUNDS) {
+                conversations.recordOnConversation(GenAi.TOOL_LOOP_LIMIT_EVENT, Attributes.of(
+                    AttributeKey.longKey(GenAi.TOOL_LOOP_ROUNDS), (long) toolRounds));
+                response = chatModel.call(
+                    toolFreePrompt(chatModel, prompt.getInstructions(), model));
+                break;
+            }
+            ToolExecutionResult toolResult = toolCallingManager.executeToolCalls(prompt, response);
+            if (toolResult.returnDirect()) {
+                break;
+            }
+            prompt = new Prompt(toolResult.conversationHistory(), prompt.getOptions());
+            response = chatModel.call(prompt);
+            toolRounds++;
+        }
 
-        span.setAttribute("gen_ai.response.model", responseModel);
-        span.setAttribute("gen_ai.usage.input_tokens", (long) inputTokens);
-        span.setAttribute("gen_ai.usage.output_tokens", (long) outputTokens);
-        span.setAttribute("gen_ai.usage.cost_usd", costUsd);
+        var generation = response.getResult();
+        var usage = response.getMetadata().getUsage();
+        int inputTokens = usage != null && usage.getPromptTokens() != null ? usage.getPromptTokens() : 0;
+        int outputTokens = usage != null && usage.getCompletionTokens() != null ? usage.getCompletionTokens() : 0;
+        String responseModel = /* response.getMetadata().getModel(), falling back to model */ model;
+        String finishReason = generation.getMetadata().getFinishReason();
 
-        // Record metrics
-        tokenUsage.record(inputTokens, withTokenType(attrs, "input"));
-        tokenUsage.record(outputTokens, withTokenType(attrs, "output"));
-        operationDuration.record(duration, attrs);
-        costCounter.add(costUsd, attrs);
+        operationDuration.record(elapsedSeconds(start), Attributes.of(
+            AttributeKey.stringKey(GenAi.OPERATION_NAME), "chat",
+            AttributeKey.stringKey(GenAi.PROVIDER_NAME), provider,
+            AttributeKey.stringKey(GenAi.REQUEST_MODEL), model));
 
-        return new LlmResponse(content, responseModel, providerName,
-            inputTokens, outputTokens, costUsd, finishReason);
+        return new LlmResponse(
+            generation.getOutput().getText(), responseModel, provider,
+            inputTokens, outputTokens,
+            pricing.calculateCost(responseModel, inputTokens, outputTokens), finishReason);
+
     } catch (Exception e) {
-        span.setStatus(StatusCode.ERROR, e.getMessage());
-        errorCounter.add(1, /* ... */);
+        operationDuration.record(elapsedSeconds(start), Attributes.of(
+            AttributeKey.stringKey(GenAi.OPERATION_NAME), "chat",
+            AttributeKey.stringKey(GenAi.PROVIDER_NAME), provider,
+            AttributeKey.stringKey(GenAi.REQUEST_MODEL), model,
+            AttributeKey.stringKey(GenAi.ERROR_TYPE), errorType(e)));
         throw e;
-    } finally {
-        span.end();
     }
 }
 ```
@@ -3003,25 +3511,26 @@ private PipelineResult runPipeline(
     String userMessage, UUID conversationId, List<Message> history
 ) {
     long startNanos = System.nanoTime();
-    Span span = tracer.spanBuilder("support_conversation")
-        .setAttribute("support.conversation_id", conversationId.toString())
+    Span span = telemetry.tracer().spanBuilder("support_conversation")
+        .setAttribute(GenAi.CONVERSATION_ID, conversationId.toString())
+        .setAttribute(GenAi.AGENT_NAME, ConversationScope.AGENT_NAME)
         .startSpan();
 
     try (Scope ignored = span.makeCurrent()) {
         // 1. Classify intent (fast model)
         IntentResult intent = intentClassifier.classify(userMessage);
-        span.setAttribute("support.intent", intent.intent().name());
+        span.setAttribute("base14.support.intent", intent.intent().name());
 
         // 2. Retrieve RAG context
         var ragDocs = contextRetriever.retrieve(userMessage);
-        span.setAttribute("support.rag_matches", ragDocs.size());
+        span.setAttribute("base14.support.rag_matches", ragDocs.size());
 
         // 3. Generate response (capable model)
         LlmResponse response = responseGenerator.generate(
             userMessage, intent, ragDocs, conversationHistory);
 
-        // 4. PII scrub
-        String content = piiFilter.scrub(response.content());
+        // 4. PII scrub, which also emits the pii_scan evaluation event
+        String content = piiFilter.evaluate(response.content());
 
         // 5. Check escalation
         EscalationDecision escalation = escalationRouter.evaluate(intent, turns, 0);
@@ -3035,17 +3544,17 @@ private PipelineResult runPipeline(
             response.costUsd(), conversationId);
     } catch (Exception e) {
         span.setStatus(StatusCode.ERROR, e.getMessage());
-        throw new RuntimeException("Pipeline failed: " + e.getMessage(), e);
+        throw new IllegalStateException("Pipeline failed: " + e.getMessage(), e);
     } finally {
         span.end();
     }
 }
 ```
 
-### compose.yml
+### compose.yaml
 
 See the [Docker Compose tab](#running-your-application) above for the full
-`compose.yml` and `Dockerfile`.
+`compose.yaml` and `Dockerfile`.
 
 ### otel-collector-config.yaml
 

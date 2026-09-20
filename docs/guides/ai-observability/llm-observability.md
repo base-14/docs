@@ -146,16 +146,16 @@ POST /campaigns/{id}/run                           8.4s  [auto: FastAPI]
 │  ├─ invoke_agent research                       80ms   [custom: agent]
 │  │  └─ db.query SELECT ... tsvector             45ms   [auto: SQLAlchemy]
 │  ├─ invoke_agent enrich                          2.1s  [custom: agent]
-│  │  └─ gen_ai.chat claude-sonnet-4               2.0s  [custom: LLM]
+│  │  └─ chat claude-sonnet-4               2.0s  [custom: LLM]
 │  │     └─ HTTP POST api.anthropic.com            1.9s  [auto: httpx]
 │  ├─ invoke_agent score                           1.8s  [custom: agent]
-│  │  └─ gen_ai.chat claude-sonnet-4               1.7s  [custom: LLM]
+│  │  └─ chat claude-sonnet-4               1.7s  [custom: LLM]
 │  │     └─ HTTP POST api.anthropic.com            1.7s  [auto: httpx]
 │  ├─ invoke_agent draft                           3.2s  [custom: agent]
-│  │  └─ gen_ai.chat claude-sonnet-4               3.1s  [custom: LLM]
+│  │  └─ chat claude-sonnet-4               3.1s  [custom: LLM]
 │  │     └─ HTTP POST api.anthropic.com            3.1s  [auto: httpx]
 │  └─ invoke_agent evaluate                        1.1s  [custom: agent]
-│     └─ gen_ai.chat claude-sonnet-4               1.0s  [custom: LLM]
+│     └─ chat claude-sonnet-4               1.0s  [custom: LLM]
 │        └─ HTTP POST api.anthropic.com            0.9s  [auto: httpx]
 └─ db.query INSERT prospects                       8ms   [auto: SQLAlchemy]
 ```
@@ -170,7 +170,7 @@ Three types of spans work together:
   like campaign ID
 
 The auto-instrumented `httpx` span captures the raw HTTP call to
-`api.anthropic.com`. The custom `gen_ai.chat` span wraps it, adding LLM-specific
+`api.anthropic.com`. The custom `chat` span wraps it, adding LLM-specific
 context: which model, how many tokens, what it cost. The custom `invoke_agent`
 span wraps both, adding business context: which agent, which campaign. All three
 are children of the same trace.
@@ -363,7 +363,10 @@ standard APM.
 
 The OpenTelemetry GenAI semantic conventions define standard attributes for LLM
 operations. Using them ensures your telemetry works with any
-OpenTelemetry-compatible backend.
+OpenTelemetry-compatible backend. The conventions are in Development status
+with no tagged release, so attribute and span names can still change; this
+guide follows the open-telemetry/semantic-conventions-genai repository as of
+September 2026.
 
 The following example shows a provider-agnostic `generate` function with full
 GenAI span instrumentation. Each LLM provider returns token counts differently —
@@ -385,7 +388,7 @@ async def generate(
 ) -> str:
     """Generate LLM completion with full OTel instrumentation."""
     with tracer.start_as_current_span(
-        f"gen_ai.chat {model}"
+        f"chat {model}"
     ) as span:
         # Required attributes (GenAI semconv)
         span.set_attribute("gen_ai.operation.name", "chat")
@@ -596,32 +599,38 @@ async def call_google(
 
 ### Prompt and Completion Events
 
-Record prompts and completions as span events for debugging. Always scrub PII
-before recording (see [PII and Security](#pii-and-security)):
+Record prompts and completions as one span event per call for debugging.
+Always scrub PII before recording (see
+[PII and Security](#pii-and-security)):
 
 ```python showLineNumbers title="llm.py - recording events"
-# Before calling the LLM
-span.add_event(
-    "gen_ai.user.message",
-    attributes={
-        "gen_ai.prompt": scrub_prompt(prompt)[:1000],
-        "gen_ai.system_instructions": scrub_prompt(system)[:500],
-    },
-)
-
-# After receiving the response
-span.add_event(
-    "gen_ai.assistant.message",
-    attributes={
-        "gen_ai.completion": scrub_completion(
-            response.content
-        )[:2000],
-    },
-)
+# After receiving the response, one event carries both sides of the call
+if os.environ.get(
+    "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT"
+) == "true":
+    span.add_event(
+        "gen_ai.client.inference.operation.details",
+        attributes={
+            "gen_ai.input.messages": scrub_prompt(
+                prompt
+            )[:1000],
+            "gen_ai.output.messages": scrub_completion(
+                response.content
+            )[:2000],
+            "gen_ai.system_instructions": scrub_prompt(
+                system
+            )[:500],
+        },
+    )
 ```
 
-> **Note**: Truncate prompts and completions to keep span sizes reasonable. 1000
-> characters for prompts and 2000 for completions is a practical limit.
+> **Note**: `gen_ai.client.inference.operation.details` replaced the removed
+> `gen_ai.user.message` and `gen_ai.assistant.message` events; it is one event
+> per call, gated on `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true`
+> and off by default. Truncate prompts and completions to keep span sizes
+> reasonable: 1000 characters for `gen_ai.input.messages`, 2000 for
+> `gen_ai.output.messages`, 500 for `gen_ai.system_instructions`, which is
+> omitted when the system prompt is empty.
 
 ### Error Handling
 
@@ -676,7 +685,7 @@ operation_duration = meter.create_histogram(
 )
 
 cost_counter = meter.create_counter(
-    name="gen_ai.client.cost",
+    name="base14.gen_ai.cost",
     description="Cost of GenAI operations in USD",
     unit="usd",
 )
@@ -807,20 +816,20 @@ if campaign_id:
 cost_counter.add(cost, cost_attrs)
 
 # Also record on span for per-request visibility
-span.set_attribute("gen_ai.usage.cost_usd", cost)
+span.set_attribute("base14.gen_ai.cost_usd", cost)
 ```
 
 This enables queries like:
 
 ```text showLineNumbers title="Example queries in base14 Scout"
 # Cost by agent
-sum(gen_ai.client.cost) by (gen_ai.agent.name)
+sum(base14.gen_ai.cost) by (gen_ai.agent.name)
 
 # Token usage by model
 sum(gen_ai.client.token.usage) by (gen_ai.request.model)
 
 # Cost per campaign
-sum(gen_ai.client.cost) by (campaign_id)
+sum(base14.gen_ai.cost) by (campaign_id)
 ```
 
 ## Agent Pipeline Observability
@@ -978,7 +987,7 @@ tracer = trace.get_tracer("gen_ai.evaluation")
 meter = metrics.get_meter("gen_ai.evaluation")
 
 evaluation_score = meter.create_histogram(
-    name="gen_ai.evaluation.score",
+    name="base14.gen_ai.evaluation.score",
     description="Quality evaluation scores (0-1 normalized)",
     unit="1",
 )
@@ -1114,24 +1123,24 @@ Always scrub before recording span events:
 ```python showLineNumbers title="llm.py - PII-safe events"
 from my_app.pii import scrub_pii
 
-# Record prompt with PII scrubbed and truncated
-span.add_event(
-    "gen_ai.user.message",
-    attributes={
-        "gen_ai.prompt": scrub_pii(prompt)[:1000],
-        "gen_ai.system_instructions": scrub_pii(system)[:500],
-    },
-)
-
-# Record completion with PII scrubbed and truncated
-span.add_event(
-    "gen_ai.assistant.message",
-    attributes={
-        "gen_ai.completion": scrub_pii(
-            response.content
-        )[:2000],
-    },
-)
+# One event, scrubbed and truncated, gated on content capture
+if os.environ.get(
+    "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT"
+) == "true":
+    span.add_event(
+        "gen_ai.client.inference.operation.details",
+        attributes={
+            "gen_ai.input.messages": scrub_pii(prompt)[
+                :1000
+            ],
+            "gen_ai.output.messages": scrub_pii(
+                response.content
+            )[:2000],
+            "gen_ai.system_instructions": scrub_pii(
+                system
+            )[:500],
+        },
+    )
 ```
 
 ### Security Considerations
@@ -1157,6 +1166,7 @@ span.add_event(
 OTEL_SERVICE_NAME=my-ai-service
 OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
 OTEL_ENABLED=true
+OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental
 SCOUT_ENVIRONMENT=development
 
 # LLM Provider
@@ -1256,6 +1266,7 @@ services:
       - OTEL_SERVICE_NAME=my-ai-service
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
       - OTEL_ENABLED=true
+      - OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - SCOUT_ENVIRONMENT=${SCOUT_ENVIRONMENT:-development}
     depends_on:
@@ -1318,17 +1329,17 @@ from tenacity import (
 meter = metrics.get_meter("gen_ai.client")
 
 retry_counter = meter.create_counter(
-    name="gen_ai.client.retry.count",
+    name="base14.gen_ai.retry.count",
     description="Number of retry attempts",
     unit="{retry}",
 )
 fallback_counter = meter.create_counter(
-    name="gen_ai.client.fallback.count",
+    name="base14.gen_ai.fallback.count",
     description="Number of fallback triggers",
     unit="{fallback}",
 )
 error_counter = meter.create_counter(
-    name="gen_ai.client.error.count",
+    name="base14.gen_ai.error.count",
     description="Number of errors by type",
     unit="{error}",
 )
@@ -1388,7 +1399,7 @@ except Exception as e:
             1,
             {
                 "gen_ai.provider.name": provider,
-                "gen_ai.fallback.provider": (
+                "base14.gen_ai.fallback.provider": (
                     fallback_provider
                 ),
                 "error.type": type(e).__name__,
@@ -1436,7 +1447,7 @@ logging.getLogger("opentelemetry").setLevel(
 
 #### Issue: LLM spans not appearing in traces
 
-The custom `gen_ai.chat` span exists but is not connected to the HTTP request
+The custom `chat` span exists but is not connected to the HTTP request
 trace.
 
 **Solutions:**
@@ -1444,7 +1455,7 @@ trace.
 1. Ensure `setup_telemetry()` is called **before** creating the FastAPI app
 2. Verify `HTTPXClientInstrumentor().instrument()` is called during setup - this
    creates the parent HTTP span that the custom span nests under
-3. Check that the `gen_ai.chat` span is created inside an async context where
+3. Check that the `chat` span is created inside an async context where
    the trace context is propagated
 
 #### Issue: Token counts are zero
@@ -1514,9 +1525,11 @@ Long prompts and completions increase span payload size. Always truncate:
 
 ```python showLineNumbers title="Truncation"
 span.add_event(
-    "gen_ai.user.message",
+    "gen_ai.client.inference.operation.details",
     attributes={
-        "gen_ai.prompt": scrub_pii(prompt)[:1000],
+        "gen_ai.input.messages": scrub_pii(prompt)[
+            :1000
+        ],
     },
 )
 ```
@@ -1524,14 +1537,19 @@ span.add_event(
 #### 3. Disable Prompt Recording in High-Volume Scenarios
 
 If you process thousands of LLM calls per minute and do not need prompt data in
-traces, skip the event recording:
+traces, leave `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT` unset -
+content capture is off by default, and this skips the event recording:
 
 ```python showLineNumbers title="Conditional recording"
-if settings.record_prompts:
+if os.environ.get(
+    "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT"
+) == "true":
     span.add_event(
-        "gen_ai.user.message",
+        "gen_ai.client.inference.operation.details",
         attributes={
-            "gen_ai.prompt": scrub_pii(prompt)[:1000],
+            "gen_ai.input.messages": scrub_pii(prompt)[
+                :1000
+            ],
         },
     )
 ```
@@ -1559,16 +1577,18 @@ thread, so export does not block request handling.
 
 ### How do I track cost across multiple LLM providers?
 
-Use the `gen_ai.client.cost` counter metric with `gen_ai.provider.name` and
+Use the `base14.gen_ai.cost` counter metric with `gen_ai.provider.name` and
 `gen_ai.request.model` attributes. Define a pricing dictionary per model and
 calculate cost from token counts. This gives you `sum(cost) by (provider)` in
 your dashboards.
 
 ### Can I see the actual prompts and completions in traces?
 
-Yes, if you record them as `gen_ai.user.message` and `gen_ai.assistant.message`
-span events. Always scrub PII first. You can disable prompt recording in
-production for compliance.
+Yes, if you set `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true` and
+record the `gen_ai.client.inference.operation.details` event, which carries
+`gen_ai.input.messages` and `gen_ai.output.messages`. Always scrub PII first.
+Content capture is off by default, so leave the variable unset in production
+for compliance.
 
 ### How does this compare to LangSmith?
 
@@ -1586,7 +1606,7 @@ this guide) that wraps all providers with the same span structure. The
 
 ### How do I monitor LLM evaluation quality over time?
 
-Record `gen_ai.evaluation.score` as a histogram metric with
+Record `base14.gen_ai.evaluation.score` as a histogram metric with
 `gen_ai.evaluation.name` and `gen_ai.evaluation.score.label` attributes. This
 lets you track pass rates, score distributions, and quality trends per
 evaluation type in your dashboards.
@@ -1607,9 +1627,9 @@ handles this.
 
 ### Can I track which agent is the most expensive?
 
-Yes. Set `gen_ai.agent.name` as an attribute on both the `gen_ai.chat` span and
-the `gen_ai.client.cost` metric. This enables
-`sum(gen_ai.client.cost) by (gen_ai.agent.name)` in your dashboards.
+Yes. Set `gen_ai.agent.name` as an attribute on both the `chat` span and
+the `base14.gen_ai.cost` metric. This enables
+`sum(base14.gen_ai.cost) by (gen_ai.agent.name)` in your dashboards.
 
 ### How do I add observability to an existing AI app?
 

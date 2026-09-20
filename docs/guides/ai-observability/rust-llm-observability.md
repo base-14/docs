@@ -163,9 +163,9 @@ POST /api/reports                                  6.8s  [HTTP: tower-http]
 │  ├─ pipeline_stage retrieve                     45ms   [custom: pipeline]
 │  │  └─ db.query SELECT data_points              12ms   [SQLx]
 │  ├─ pipeline_stage analyze                       2.1s  [custom: pipeline]
-│  │  └─ gen_ai.chat gpt-4.1-mini                 2.0s  [custom: LLM]
+│  │  └─ chat gpt-4.1-mini                        2.0s  [custom: LLM]
 │  ├─ pipeline_stage generate                      4.3s  [custom: pipeline]
-│  │  └─ gen_ai.chat gpt-4.1                      4.2s  [custom: LLM]
+│  │  └─ chat gpt-4.1                             4.2s  [custom: LLM]
 │  └─ pipeline_stage format                        5ms   [custom: pipeline]
 └─ db.query INSERT reports                          8ms  [SQLx]
 ```
@@ -180,7 +180,7 @@ Three types of spans work together:
   like report ID and trace ID correlation
 
 The HTTP span captures the incoming request. The pipeline span orchestrates
-stages. Each `gen_ai.chat` span wraps an LLM call, adding provider, model,
+stages. Each `chat` span wraps an LLM call, adding provider, model,
 token, and cost context. All are children of the same trace - giving you full
 visibility from HTTP entry to LLM completion.
 
@@ -433,11 +433,13 @@ Rust has no auto-instrumentation libraries for LLM SDKs. You create manual spans
 following the
 [OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/).
 This gives you the same standardized telemetry that Python and Node.js
-auto-instrumentors produce.
+auto-instrumentors produce. The conventions are in Development status with no
+tagged release, so names can still change; this guide follows the
+open-telemetry/semantic-conventions-genai repository as of September 2026.
 
 ### GenAI Span Attributes
 
-Every LLM call gets a `gen_ai.chat` span with these attributes:
+Every LLM call gets a `chat` span with these attributes:
 
 | Attribute                        | Type   | Description                         |
 | -------------------------------- | ------ | ----------------------------------- |
@@ -469,11 +471,11 @@ pub async fn generate_once(
     provider_name: &str,
     req: &GenerateRequest,
 ) -> anyhow::Result<GenerateResponse> {
-    let span_display_name = format!("gen_ai.chat {}", req.model);
+    let span_display_name = format!("chat {}", req.model);
     let start = std::time::Instant::now();
 
     let span = tracing::info_span!(
-        "gen_ai.chat",
+        "chat",
         otel.name = %span_display_name,
         gen_ai.operation.name = "chat",
         gen_ai.provider.name = %provider_name,
@@ -486,30 +488,12 @@ pub async fn generate_once(
         gen_ai.response.model = tracing::field::Empty,
         gen_ai.usage.input_tokens = tracing::field::Empty,
         gen_ai.usage.output_tokens = tracing::field::Empty,
-        gen_ai.usage.cost_usd = tracing::field::Empty,
+        base14.gen_ai.cost_usd = tracing::field::Empty,
         gen_ai.response.finish_reasons = tracing::field::Empty,
         report.stage = %req.stage,
         otel.status_code = tracing::field::Empty,
         error.type = tracing::field::Empty,
     );
-
-    // Record prompt and system instructions as span events
-    {
-        let mut user_event_attrs = vec![KeyValue::new(
-            "gen_ai.prompt",
-            truncate(&req.prompt, 1000),
-        )];
-        if !req.system.is_empty() {
-            user_event_attrs.push(KeyValue::new(
-                "gen_ai.system_instructions",
-                truncate(&req.system, 500),
-            ));
-        }
-        span.add_event(
-            "gen_ai.user.message",
-            user_event_attrs,
-        );
-    }
 
     // Execute LLM call within the span
     let result = provider
@@ -540,7 +524,7 @@ pub async fn generate_once(
                 resp.output_tokens as i64,
             );
             span.record(
-                "gen_ai.usage.cost_usd",
+                "base14.gen_ai.cost_usd",
                 resp.cost_usd,
             );
             if !resp.finish_reason.is_empty() {
@@ -550,14 +534,34 @@ pub async fn generate_once(
                 );
             }
 
-            // Record completion as a span event
-            span.add_event(
-                "gen_ai.assistant.message",
-                vec![KeyValue::new(
-                    "gen_ai.completion",
-                    truncate(&resp.content, 2000),
-                )],
-            );
+            // One event per call, gated on content capture
+            if std::env::var(
+                "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT",
+            )
+            .as_deref()
+                == Ok("true")
+            {
+                let mut event_attrs = vec![
+                    KeyValue::new(
+                        "gen_ai.input.messages",
+                        truncate(&req.prompt, 1000),
+                    ),
+                    KeyValue::new(
+                        "gen_ai.output.messages",
+                        truncate(&resp.content, 2000),
+                    ),
+                ];
+                if !req.system.is_empty() {
+                    event_attrs.push(KeyValue::new(
+                        "gen_ai.system_instructions",
+                        truncate(&req.system, 500),
+                    ));
+                }
+                span.add_event(
+                    "gen_ai.client.inference.operation.details",
+                    event_attrs,
+                );
+            }
 
             Ok(resp)
         }
@@ -596,7 +600,9 @@ Key patterns:
 - **`.instrument(span.clone())`** executes the async LLM call within the span
   context, so the span duration matches the actual API call
 - **`span.add_event()`** uses `opentelemetry::KeyValue` (not `tracing` fields)
-  to record prompt and completion content as structured span events
+  to record prompt and completion content as one
+  `gen_ai.client.inference.operation.details` event per call, gated on
+  `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true`
 - **`otel.name`** overrides the span display name in your trace viewer to show
   the model name
 
@@ -696,7 +702,7 @@ pub static GEN_AI_OPERATION_DURATION: LazyLock<Histogram<f64>> =
 pub static GEN_AI_COST: LazyLock<Counter<f64>> =
     LazyLock::new(|| {
         METER
-            .f64_counter("gen_ai.client.cost")
+            .f64_counter("base14.gen_ai.cost")
             .with_description(
                 "Estimated cost of LLM operations in USD",
             )
@@ -707,7 +713,7 @@ pub static GEN_AI_COST: LazyLock<Counter<f64>> =
 pub static GEN_AI_RETRY_COUNT: LazyLock<Counter<u64>> =
     LazyLock::new(|| {
         METER
-            .u64_counter("gen_ai.client.retry.count")
+            .u64_counter("base14.gen_ai.retry.count")
             .with_description("Number of LLM call retries")
             .with_unit("{retry}")
             .build()
@@ -716,7 +722,7 @@ pub static GEN_AI_RETRY_COUNT: LazyLock<Counter<u64>> =
 pub static GEN_AI_FALLBACK_COUNT: LazyLock<Counter<u64>> =
     LazyLock::new(|| {
         METER
-            .u64_counter("gen_ai.client.fallback.count")
+            .u64_counter("base14.gen_ai.fallback.count")
             .with_description(
                 "Number of LLM fallback activations",
             )
@@ -727,7 +733,7 @@ pub static GEN_AI_FALLBACK_COUNT: LazyLock<Counter<u64>> =
 pub static GEN_AI_ERROR_COUNT: LazyLock<Counter<u64>> =
     LazyLock::new(|| {
         METER
-            .u64_counter("gen_ai.client.error.count")
+            .u64_counter("base14.gen_ai.error.count")
             .with_description("Number of LLM call errors")
             .with_unit("{error}")
             .build()
@@ -813,7 +819,7 @@ pub fn calculate_cost(
 }
 ```
 
-This feeds the `gen_ai.client.cost` counter metric for per-model and
+This feeds the `base14.gen_ai.cost` counter metric for per-model and
 per-provider cost dashboards.
 
 ## Pipeline Observability
@@ -1003,7 +1009,7 @@ pub async fn analyze(
 ```
 
 The resulting trace shows clear parent-child relationships: `pipeline report` →
-`pipeline_stage analyze` → `gen_ai.chat gpt-4.1-mini`. Each stage is
+`pipeline_stage analyze` → `chat gpt-4.1-mini`. Each stage is
 independently timed and attributed.
 
 ### Trace ID Correlation
@@ -1161,8 +1167,8 @@ pub async fn generate(
 }
 ```
 
-Each retry creates a new `gen_ai.chat` span, so you see every attempt in the
-trace. The `gen_ai.client.retry.count` and `gen_ai.client.fallback.count`
+Each retry creates a new `chat` span, so you see every attempt in the
+trace. The `base14.gen_ai.retry.count` and `base14.gen_ai.fallback.count`
 metrics let you build reliability dashboards and alert on degradation.
 
 ## HTTP Instrumentation
@@ -1357,7 +1363,7 @@ impl OpenAIProvider {
             );
         Self {
             client: Client::with_config(config),
-            provider_name: "google".to_string(),
+            provider_name: "gcp.gemini".to_string(),
         }
     }
 
@@ -1619,21 +1625,19 @@ fn truncate(s: &str, max: usize) -> String {
     }
 }
 
-// Usage in span events
+// Usage in one span event per call
 span.add_event(
-    "gen_ai.user.message",
-    vec![KeyValue::new(
-        "gen_ai.prompt",
-        truncate(&req.prompt, 1000),
-    )],
-);
-
-span.add_event(
-    "gen_ai.assistant.message",
-    vec![KeyValue::new(
-        "gen_ai.completion",
-        truncate(&resp.content, 2000),
-    )],
+    "gen_ai.client.inference.operation.details",
+    vec![
+        KeyValue::new(
+            "gen_ai.input.messages",
+            truncate(&req.prompt, 1000),
+        ),
+        KeyValue::new(
+            "gen_ai.output.messages",
+            truncate(&resp.content, 2000),
+        ),
+    ],
 );
 ```
 
@@ -1663,6 +1667,7 @@ Run with console output and debug logging:
 ```bash showLineNumbers title="Terminal"
 export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 export OTEL_SERVICE_NAME=ai-report-generator
+export OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental
 export LLM_PROVIDER=openai
 export OPENAI_API_KEY=sk-...
 export DATABASE_URL=postgres://postgres:postgres@localhost:5432/report_generator
@@ -1681,6 +1686,7 @@ Set environment-specific configuration:
 export SCOUT_ENVIRONMENT=production
 export OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
 export OTEL_SERVICE_NAME=ai-report-generator
+export OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental
 export RUST_LOG=info,tower_http=info
 
 cargo run --release
@@ -1715,6 +1721,7 @@ services:
       - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
       - OTEL_SERVICE_NAME=ai-report-generator
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental
       - SCOUT_ENVIRONMENT=${SCOUT_ENVIRONMENT:-development}
     depends_on:
       postgres:
@@ -2028,14 +2035,21 @@ truncate(&req.system, 500)
 
 #### 5. Conditional Span Recording
 
-Skip detailed span events in high-throughput scenarios:
+Skip detailed span events in high-throughput scenarios. Content capture is
+already off by default - leave
+`OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT` unset:
 
 ```rust showLineNumbers title="Conditional recording"
-if config.record_prompt_events {
+if std::env::var(
+    "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT",
+)
+.as_deref()
+    == Ok("true")
+{
     span.add_event(
-        "gen_ai.user.message",
+        "gen_ai.client.inference.operation.details",
         vec![KeyValue::new(
-            "gen_ai.prompt",
+            "gen_ai.input.messages",
             truncate(&req.prompt, 1000),
         )],
     );
@@ -2073,7 +2087,7 @@ record and how to handle provider-specific response formats.
 
 ### How do I track costs across multiple LLM providers?
 
-Use the `gen_ai.client.cost` counter metric with `gen_ai.provider.name` and
+Use the `base14.gen_ai.cost` counter metric with `gen_ai.provider.name` and
 `gen_ai.request.model` dimensions. Load pricing from a configuration file and
 calculate cost per call based on input/output token counts. The metric
 dimensions let you build per-provider and per-model cost dashboards.

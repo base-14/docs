@@ -538,10 +538,14 @@ example collapses them - see
 
 #### The chat model span
 
-`on_chat_model_start` opens a `chat {model}` CLIENT span. The model and
-provider come from the run metadata (`ls_model_name`, `ls_provider`), which
-is how the handler gets the real model name that auto-instrumentation reports
-as `unknown`.
+`on_chat_model_start` opens a `chat {model}` CLIENT span. The `gen_ai.*`
+attributes it sets follow the OpenTelemetry GenAI semantic conventions, which
+are still in Development status as of September 2026, with no tagged release,
+so the names can still change; see
+[open-telemetry/semantic-conventions-genai](https://github.com/open-telemetry/semantic-conventions-genai).
+The model and provider come from the run metadata (`ls_model_name`,
+`ls_provider`), which is how the handler gets the real model name that
+auto-instrumentation reports as `unknown`.
 
 ```python showLineNumbers title="src/runbook_assistant/telemetry/callback.py"
     def _start_llm(self, run_id, parent_run_id, metadata, messages) -> None:
@@ -584,7 +588,7 @@ provider-aware: Ollama reports `done_reason`, while cloud providers use
         self._metrics.record_duration(attrs, time.perf_counter() - state.start)
         cost = calculate_cost(model, in_tok, out_tok)
         if cost:
-            span.set_attribute("gen_ai.usage.cost_usd", cost)
+            span.set_attribute("base14.gen_ai.cost_usd", cost)
             self._metrics.add_cost(attrs, cost)
         self._end(run_id)
 ```
@@ -691,11 +695,11 @@ class GenAIMetrics:
             description="Duration of GenAI operations",
         )
         self._cost = meter.create_counter(
-            "gen_ai.client.cost", unit="usd",
+            "base14.gen_ai.cost", unit="usd",
             description="Cost of GenAI operations in USD",
         )
         self._errors = meter.create_counter(
-            "gen_ai.client.error.count", unit="{error}",
+            "base14.gen_ai.error.count", unit="{error}",
             description="GenAI errors by type",
         )
 
@@ -729,7 +733,7 @@ def calculate_cost(model: str, input_tokens: int, output_tokens: int) -> float:
 ```
 
 With `gen_ai.request.model` and `gen_ai.provider.name` on the metric points,
-a dashboard query like `sum(gen_ai.client.cost) by (gen_ai.request.model)`
+a dashboard query like `sum(base14.gen_ai.cost) by (gen_ai.request.model)`
 gives per-model spend, and the token histogram splits input from output via
 `gen_ai.token.type`.
 
@@ -803,7 +807,7 @@ rather than an error status. Because every `_error` path pops the `run_id`
 from the map, a failed run never orphans a span or leaks a stored context.
 
 Record the error on the metric side too. Spans tell you about one failed
-request; the `gen_ai.client.error.count` counter tells you the rate, and it
+request; the `base14.gen_ai.error.count` counter tells you the rate, and it
 survives sampling:
 
 ```python showLineNumbers title="src/runbook_assistant/telemetry/callback.py"
@@ -1244,7 +1248,7 @@ the exact mapping.
 ### How do I track LLM cost with LangChain and OpenTelemetry?
 
 Read `usage_metadata` in `on_llm_end` for token counts, multiply by a
-per-model price table, and record a `gen_ai.client.cost` counter alongside the
+per-model price table, and record a `base14.gen_ai.cost` counter alongside the
 `gen_ai.client.token.usage` histogram. Attach `gen_ai.request.model` and
 `gen_ai.provider.name` so you can group cost by model.
 

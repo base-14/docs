@@ -344,6 +344,7 @@ SCORE_PROMPT_VERSION=v1
 # OpenTelemetry
 OTLP_ENDPOINT=http://otel-collector:4318
 OTEL_SDK_DISABLED=false
+OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental
 SCOUT_ENVIRONMENT=production
 ```
 
@@ -434,6 +435,7 @@ services:
     environment:
       - OTLP_ENDPOINT=http://otel-collector:4318
       - OTEL_SDK_DISABLED=false
+      - OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental
       - LLM_PROVIDER=${LLM_PROVIDER:-openai}
       - LLM_MODEL=${LLM_MODEL:-gpt-4.1-nano}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
@@ -542,7 +544,10 @@ def create_llm(
 
 The `generate_structured` function is the core instrumented LLM call. It
 requests JSON output matching a Pydantic schema and retries with self-correction
-if validation fails:
+if validation fails. The `gen_ai.*` attributes it sets follow the OpenTelemetry
+GenAI semantic conventions, which are still in Development status as of
+September 2026, with no tagged release, so the names can still change; see
+[open-telemetry/semantic-conventions-genai](https://github.com/open-telemetry/semantic-conventions-genai).
 
 ````python showLineNumbers title="src/content_quality/services/llm.py"
 import json
@@ -704,19 +709,19 @@ operation_duration = meter.create_histogram(
 )
 
 cost_counter = meter.create_counter(
-    name="gen_ai.client.cost",
+    name="base14.gen_ai.cost",
     description="Cost of GenAI operations",
     unit="usd",
 )
 
 error_counter = meter.create_counter(
-    name="gen_ai.client.error.count",
+    name="base14.gen_ai.error.count",
     description="GenAI operation errors",
     unit="1",
 )
 
 retry_counter = meter.create_counter(
-    name="gen_ai.client.retry.count",
+    name="base14.gen_ai.retry.count",
     description="GenAI operation retries",
     unit="1",
 )
@@ -760,7 +765,7 @@ from content_quality.services.llm import generate_structured
 from content_quality.services.prompts import load_prompt
 
 evaluation_score = metrics.get_meter("gen_ai.client").create_histogram(
-    name="gen_ai.evaluation.score",
+    name="base14.gen_ai.evaluation.score",
     description="Content quality evaluation score",
     unit="1",
 )
@@ -1080,6 +1085,7 @@ uv run uvicorn content_quality.main:app --reload --host 0.0.0.0 --port 8000
 
 ```bash showLineNumbers
 OTEL_SDK_DISABLED=false \
+OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental \
 LLM_PROVIDER=anthropic \
 LLM_MODEL=claude-sonnet-4-5-20250929 \
 OTLP_ENDPOINT=http://collector:4318 \
@@ -1226,7 +1232,7 @@ is unmeasurable. `BatchSpanProcessor` exports in a background thread.
 
 ### How do I track cost across multiple LLM providers?
 
-Use the `gen_ai.client.cost` counter metric with `gen_ai.provider.name` and
+Use the `base14.gen_ai.cost` counter metric with `gen_ai.provider.name` and
 `gen_ai.request.model` attributes. Define pricing per model and calculate from
 token counts.
 

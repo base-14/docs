@@ -403,6 +403,7 @@ FALLBACK_MODEL=gpt-4.1-mini
 # OpenTelemetry
 OTLP_ENDPOINT=http://otel-collector:4318
 OTEL_SDK_DISABLED=false
+OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental
 SCOUT_ENVIRONMENT=production
 ```
 
@@ -494,6 +495,7 @@ services:
       - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/sales
       - OTLP_ENDPOINT=http://otel-collector:4318
       - OTEL_SDK_DISABLED=false
+      - OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental
       - LLM_PROVIDER=${LLM_PROVIDER:-anthropic}
       - LLM_MODEL=${LLM_MODEL:-claude-sonnet-4-20250514}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
@@ -613,7 +615,11 @@ class AgentState(TypedDict, total=False):
 
 Create a wrapper function that adds an OTel span around each LangGraph node.
 Every node execution becomes a child span of the pipeline span, carrying the
-agent name and business context:
+agent name and business context. The `gen_ai.*` attributes below follow the
+OpenTelemetry GenAI semantic conventions, which are still in Development
+status as of September 2026, with no tagged release, so the names can still
+change; see
+[open-telemetry/semantic-conventions-genai](https://github.com/open-telemetry/semantic-conventions-genai).
 
 ```python showLineNumbers title="src/sales_intelligence/graph.py"
 from opentelemetry import trace
@@ -879,16 +885,16 @@ POST /campaigns/{id}/run                           8.4s  [auto: FastAPI]
 │  │  └─ tool.search_prospects                    45ms   [custom: tool]
 │  │     └─ db.query SELECT ... tsvector          40ms   [auto: SQLAlchemy]
 │  ├─ invoke_agent enrich                          2.1s  [custom: agent]
-│  │  └─ gen_ai.chat claude-sonnet-4               2.0s  [custom: LLM]
+│  │  └─ chat claude-sonnet-4                    2.0s  [custom: LLM]
 │  │     └─ HTTP POST api.anthropic.com            1.9s  [auto: httpx]
 │  ├─ invoke_agent score                           1.8s  [custom: agent]
-│  │  └─ gen_ai.chat claude-sonnet-4               1.7s  [custom: LLM]
+│  │  └─ chat claude-sonnet-4                    1.7s  [custom: LLM]
 │  │     └─ HTTP POST api.anthropic.com            1.7s  [auto: httpx]
 │  ├─ invoke_agent draft                           3.2s  [custom: agent]
-│  │  └─ gen_ai.chat claude-sonnet-4               3.1s  [custom: LLM]
+│  │  └─ chat claude-sonnet-4                    3.1s  [custom: LLM]
 │  │     └─ HTTP POST api.anthropic.com            3.1s  [auto: httpx]
 │  └─ invoke_agent evaluate                        1.1s  [custom: agent]
-│     └─ gen_ai.chat claude-sonnet-4               1.0s  [custom: LLM]
+│     └─ chat claude-sonnet-4                    1.0s  [custom: LLM]
 │        └─ HTTP POST api.anthropic.com            0.9s  [auto: httpx]
 └─ db.query INSERT prospects                       8ms   [auto: SQLAlchemy]
 ```
@@ -992,7 +998,7 @@ async def generate(
     server_address = PROVIDER_SERVERS.get(provider, "")
 
     with tracer.start_as_current_span(
-        f"gen_ai.chat {model}"
+        f"chat {model}"
     ) as span:
         span.set_attribute(
             "gen_ai.operation.name", "chat"
@@ -1082,13 +1088,13 @@ operation_duration = meter.create_histogram(
 )
 
 cost_counter = meter.create_counter(
-    name="gen_ai.client.cost",
+    name="base14.gen_ai.cost",
     description="Cost of GenAI operations in USD",
     unit="usd",
 )
 
 error_counter = meter.create_counter(
-    name="gen_ai.client.error.count",
+    name="base14.gen_ai.error.count",
     description="GenAI operation errors",
     unit="1",
 )
@@ -1172,7 +1178,7 @@ tracer = trace.get_tracer("gen_ai.evaluation")
 meter = metrics.get_meter("gen_ai.evaluation")
 
 evaluation_score = meter.create_histogram(
-    name="gen_ai.evaluation.score",
+    name="base14.gen_ai.evaluation.score",
     description="Quality evaluation scores",
     unit="1",
 )
@@ -1306,6 +1312,7 @@ uv run uvicorn sales_intelligence.main:app \
 
 ```bash showLineNumbers
 OTEL_SDK_DISABLED=false \
+OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental \
 LLM_PROVIDER=anthropic \
 LLM_MODEL=claude-sonnet-4-20250514 \
 OTLP_ENDPOINT=http://collector:4318 \
@@ -1504,9 +1511,9 @@ like `routing.decision` and `routing.qualified_count`. See
 
 ### How do I track cost across multiple providers?
 
-Use the `gen_ai.client.cost` counter metric with `gen_ai.provider.name` and
+Use the `base14.gen_ai.cost` counter metric with `gen_ai.provider.name` and
 `gen_ai.request.model` attributes. Define pricing per model and calculate from
-token counts. This enables `sum(gen_ai.client.cost) by (gen_ai.agent.name)` in
+token counts. This enables `sum(base14.gen_ai.cost) by (gen_ai.agent.name)` in
 your dashboards.
 
 ### Can I see prompts and completions in traces?
