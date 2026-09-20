@@ -130,7 +130,7 @@ extension ecosystem.
 
 **System Requirements:**
 
-- **Java:** 21+ (LTS recommended, 17+ supported)
+- **Java:** 21+ (25 LTS recommended, 17+ supported)
 - **Quarkus:** 3.15+ (built-in OpenTelemetry support)
 - **GraalVM:** 21+ for native compilation (optional but recommended)
 - **Maven or Gradle:** Build tool for dependency management
@@ -145,6 +145,8 @@ extension ecosystem.
 | 3.8-3.14        | 17+          | 2.0+                    | ⚠️ Limited   | Legacy      |
 | 3.0-3.7         | 17+          | 1.x                     | ⚠️ Limited   | EOL         |
 | 2.x             | 11+          | Not supported           | ❌ None      | EOL         |
+
+Verified with Temurin 25.0.4 and collector 0.161.0 on 2026-09-20.
 
 **Instrumented Components:**
 

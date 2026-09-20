@@ -113,7 +113,7 @@ This guide demonstrates how to:
 
 Before starting, ensure you have:
 
-- **PHP 8.1 or later** (PHP 8.3+ recommended for best performance)
+- **PHP 8.1 or later** (PHP 8.5+ recommended for best performance)
   - The `opentelemetry` PECL extension requires build tools (gcc, make,
     autoconf)
 - **Symfony 5.4 or later** installed
@@ -1352,7 +1352,7 @@ instrumentation hooks at the C level, keeping PHP-side overhead low.
 ### Which Symfony versions are supported?
 
 OpenTelemetry supports Symfony 5.4+ with PHP 8.1+. Symfony 7.x or 8.x with
-PHP 8.3+ is recommended. The `opentelemetry-auto-symfony` package hooks into
+PHP 8.5+ is recommended. The `opentelemetry-auto-symfony` package hooks into
 Symfony's HTTP kernel, which has been stable across major versions.
 
 ### Are Doctrine ORM queries traced automatically?

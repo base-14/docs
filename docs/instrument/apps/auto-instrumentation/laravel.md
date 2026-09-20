@@ -108,7 +108,7 @@ This comprehensive guide demonstrates how to:
 Before starting, ensure you have:
 
 - **PHP 8.0 or later** (PHP 8.1+ recommended for best performance and compatibility)
-  - For production deployments, PHP 8.2+ is recommended
+  - For production deployments, PHP 8.5+ is recommended
   - JIT support in PHP 8.0+ improves instrumentation performance
 - **Laravel 8.0 or later** installed
   - Laravel 10.x or 11.x is recommended for optimal OpenTelemetry support
@@ -466,7 +466,7 @@ OTEL_RESOURCE_ATTRIBUTES=environment=demo,host.name=${HOSTNAME},cloud.provider=a
 For containerized Laravel applications, configure OpenTelemetry in your Docker setup:
 
 ```dockerfile showLineNumbers title="Dockerfile"
-FROM php:8.2-fpm-alpine
+FROM php:8.5-fpm-alpine
 
 # Install system dependencies
 RUN apk add --no-cache \
@@ -1317,7 +1317,7 @@ performance impact is minimal and acceptable for most production workloads.
 ### Which Laravel versions are supported?
 
 OpenTelemetry supports Laravel 8.0+ with PHP 8.0+. Laravel 10.x or 11.x with
-PHP 8.2+ is recommended for optimal compatibility and performance. See the
+PHP 8.5+ is recommended for optimal compatibility and performance. See the
 [Prerequisites](#prerequisites) section for detailed version compatibility.
 
 ### Can I use OpenTelemetry with Laravel queues and job workers?
@@ -1479,7 +1479,7 @@ SCOUT_TOKEN_URL=https://your-tenant.base14.io/oauth/token
 #### Dockerfile
 
 ```dockerfile title="Dockerfile"
-FROM php:8.2-fpm-alpine
+FROM php:8.5-fpm-alpine
 
 # Install dependencies
 RUN apk add --no-cache \

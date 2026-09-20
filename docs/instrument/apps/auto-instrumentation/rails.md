@@ -116,6 +116,7 @@ Before starting, ensure you have:
 
 - **Ruby 3.1 or later** (CRuby), **JRuby 9.3.2.0+**, or **TruffleRuby 22.1+**
   - Ruby 3.0 requires pinned gem versions - see the [Legacy Guide](./rails-legacy.md#ruby-30--rails-61)
+  - Ruby 4.0 is recommended for new applications
   - JRuby users should use the latest stable release
 - **Rails 6.0 or later** installed
   - Rails 7.0+ is recommended for optimal OpenTelemetry support
@@ -523,7 +524,7 @@ HOST_TYPE=container
 For containerized Rails applications, configure OpenTelemetry in your Docker setup:
 
 ```docker showLineNumbers title="Dockerfile"
-FROM ruby:3.2-alpine
+FROM ruby:4.0-alpine
 
 WORKDIR /app
 
@@ -1393,7 +1394,7 @@ high-traffic apps.
 OpenTelemetry supports Rails 6.0+ with Ruby 3.1+ (latest gems). Ruby 3.0
 requires pinned gem versions - see the
 [Legacy Guide](./rails-legacy.md#ruby-30--rails-61). Rails 7.0+ with
-Ruby 3.1+ is recommended for optimal compatibility and performance. See
+Ruby 4.0 is recommended for optimal compatibility and performance. See
 the [Prerequisites](#prerequisites) section for detailed version
 compatibility.
 

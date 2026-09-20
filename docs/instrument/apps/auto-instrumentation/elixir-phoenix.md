@@ -61,7 +61,7 @@ telemetry data to Scout Collector for visualization.
 
 Before starting, ensure you have:
 
-- Elixir 1.13 or later installed
+- Elixir 1.13 or later installed (1.20 on OTP 29 is recommended)
 - Phoenix application set up
 - Access to package installation (Mix)
 - Scout collector endpoint
