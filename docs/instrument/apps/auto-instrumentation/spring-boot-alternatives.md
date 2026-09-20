@@ -226,7 +226,7 @@ export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
 Add the agent to your Docker image:
 
 ```docker title="Dockerfile" showLineNumbers
-FROM eclipse-temurin:21-jre-jammy
+FROM eclipse-temurin:25-jre-jammy
 
 WORKDIR /app
 
