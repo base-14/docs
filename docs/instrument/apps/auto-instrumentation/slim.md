@@ -938,7 +938,7 @@ x-mongo-env: &mongo-env
 
 services:
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.144.0
+    image: otel/opentelemetry-collector-contrib:0.161.0
     ports:
       - "4317:4317"
       - "4318:4318"

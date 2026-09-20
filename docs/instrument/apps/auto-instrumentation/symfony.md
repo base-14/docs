@@ -336,7 +336,7 @@ x-db-env: &db-env
 
 services:
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.148.0
+    image: otel/opentelemetry-collector-contrib:0.161.0
     container_name: symfony-otel-collector
     ports:
       - "4317:4317"

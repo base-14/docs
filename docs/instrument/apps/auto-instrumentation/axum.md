@@ -104,7 +104,7 @@ This comprehensive guide demonstrates how to:
 Before starting, ensure you have:
 
 - **Rust 1.80 or later** (stable toolchain recommended)
-  - For best performance and compatibility, Rust 1.92+ is recommended
+  - For best performance and compatibility, Rust 1.98+ is recommended
   - Edition 2021 or 2024 required
 - **Axum 0.7 or later** web framework
   - Axum 0.8.8+ is recommended for optimal OpenTelemetry support
@@ -120,11 +120,13 @@ Before starting, ensure you have:
 
 | Component             | Minimum Version | Recommended Version |
 | --------------------- | --------------- | ------------------- |
-| Rust                  | 1.80.0          | 1.92.0+             |
+| Rust                  | 1.80.0          | 1.98.0+             |
 | Axum                  | 0.7.0           | 0.8.8+              |
 | OpenTelemetry         | 0.27.0          | 0.32+               |
 | tracing-opentelemetry | 0.28.0          | 0.33+               |
 | SQLx                  | 0.7.0           | 0.8.6+              |
+
+Verified with Rust 1.98.1 and collector 0.161.0 on 2026-09-20.
 
 ## Required Packages
 
@@ -577,7 +579,7 @@ setup:
 
 ```dockerfile showLineNumbers title="Dockerfile"
 # Build stage
-FROM rust:1.80-alpine AS builder
+FROM rust:1.98-alpine AS builder
 
 WORKDIR /app
 
@@ -1402,7 +1404,7 @@ impact is negligible for most production workloads.
 
 ### Which Rust versions are supported?
 
-OpenTelemetry Rust supports Rust 1.80+ with edition 2021 or 2024. Rust 1.92+ is
+OpenTelemetry Rust supports Rust 1.80+ with edition 2021 or 2024. Rust 1.98+ is
 recommended for optimal compatibility and performance. See the
 [Prerequisites](#prerequisites) section for detailed version compatibility.
 
@@ -1505,7 +1507,7 @@ instrumentation:
 name = "rust-axum-otel"
 version = "1.0.0"
 edition = "2024"
-rust-version = "1.92"
+rust-version = "1.98"
 
 [dependencies]
 axum = { version = "0.8.8", features = ["macros"] }

@@ -390,7 +390,7 @@ receivers:
 
 Azure Flex Server's server certificate chains to the Microsoft Root
 CA included in standard `ca-certificates` bundles. The
-`otel/opentelemetry-collector-contrib:0.151.0` image's default trust
+`otel/opentelemetry-collector-contrib:0.161.0` image's default trust
 store accepts it without any custom `ca_file` configuration. Do not
 set `insecure_skip_verify: true` - that would bypass the cert
 verification you want on a public-internet connection.

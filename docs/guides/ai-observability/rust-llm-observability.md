@@ -122,7 +122,7 @@ This guide demonstrates how to:
 
 Before starting, ensure you have:
 
-- **Rust 1.85 or later** installed (1.92+ recommended for edition 2024 support)
+- **Rust 1.85 or later** installed (1.98+ recommended for edition 2024 support)
 - **An LLM API key** from at least one provider (OpenAI, Anthropic, or Google)
 - **Scout Collector** configured and accessible from your application
   - See
@@ -138,7 +138,7 @@ Before starting, ensure you have:
 
 | Component             | Minimum Version | Recommended |
 | --------------------- | --------------- | ----------- |
-| Rust                  | 1.85            | 1.92+       |
+| Rust                  | 1.85            | 1.98+       |
 | opentelemetry         | 0.28            | 0.32+       |
 | opentelemetry_sdk     | 0.28            | 0.32+       |
 | opentelemetry-otlp    | 0.28            | 0.32+       |
@@ -148,6 +148,8 @@ Before starting, ensure you have:
 | async-openai          | 0.25+           | 0.33+       |
 | Axum                  | 0.7+            | 0.8+        |
 | SQLx                  | 0.7+            | 0.8+        |
+
+Verified with Rust 1.98.1 and collector 0.161.0 on 2026-09-20.
 
 ## The Unified Trace
 
@@ -1762,7 +1764,7 @@ services:
       retries: 5
 
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.146.1
+    image: otel/opentelemetry-collector-contrib:0.161.0
     command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
       - ./config/otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
@@ -1868,7 +1870,7 @@ service:
 Multi-stage build for minimal production images:
 
 ```dockerfile showLineNumbers title="Dockerfile"
-FROM rust:1.92-alpine AS builder
+FROM rust:1.98-alpine AS builder
 
 WORKDIR /build
 RUN apk add --no-cache musl-dev openssl-dev \

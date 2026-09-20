@@ -298,7 +298,7 @@ x-otel-env: &otel-env
 
 services:
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.148.0
+    image: otel/opentelemetry-collector-contrib:0.161.0
     container_name: micronaut-otel-collector
     command: ["--config=/etc/otelcol-contrib/config.yaml"]
     ports:

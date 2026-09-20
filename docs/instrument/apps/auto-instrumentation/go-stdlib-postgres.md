@@ -114,7 +114,7 @@ Before starting, ensure you have:
 - **PostgreSQL 14 or later**. The example uses Postgres 18.
 - **Docker and Docker Compose v2** for local multi-service testing.
 - **OpenTelemetry Collector** (Contrib distribution) running locally or
-  remotely. The example bundles `otel/opentelemetry-collector-contrib:0.149.0`.
+  remotely. The example bundles `otel/opentelemetry-collector-contrib:0.161.0`.
 - **Base14 Scout credentials** (`SCOUT_ENDPOINT`, `SCOUT_CLIENT_ID`,
   `SCOUT_CLIENT_SECRET`, `SCOUT_TOKEN_URL`) if you want to forward telemetry
   to Scout. Skip these for local-only development.

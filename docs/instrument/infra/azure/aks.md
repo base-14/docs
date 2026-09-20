@@ -125,7 +125,7 @@ Prefer raw Helm releases? See the
 
 ## Collector image version
 
-This guide pins `otel/opentelemetry-collector-contrib:0.152.1` on every
+This guide pins `otel/opentelemetry-collector-contrib:0.161.0` on every
 `OpenTelemetryCollector` CR. Contrib versions that change config behavior
 for the components used here:
 
@@ -167,7 +167,7 @@ helm upgrade --install opentelemetry-operator open-telemetry/opentelemetry-opera
   --namespace opentelemetry-operator-system \
   --create-namespace \
   --set "manager.collectorImage.repository=otel/opentelemetry-collector-contrib" \
-  --set "manager.collectorImage.tag=0.152.1" \
+  --set "manager.collectorImage.tag=0.161.0" \
   --wait --timeout 5m
 
 kubectl wait --for=condition=Available \
@@ -232,7 +232,7 @@ metadata:
   namespace: otel
 spec:
   mode: daemonset
-  image: otel/opentelemetry-collector-contrib:0.152.1
+  image: otel/opentelemetry-collector-contrib:0.161.0
   resources:
     requests:
       cpu: 100m
@@ -430,7 +430,7 @@ metadata:
 spec:
   mode: deployment
   replicas: 1
-  image: otel/opentelemetry-collector-contrib:0.152.1
+  image: otel/opentelemetry-collector-contrib:0.161.0
   resources:
     requests:
       cpu: 50m
@@ -563,7 +563,7 @@ metadata:
 spec:
   mode: deployment
   replicas: 1
-  image: otel/opentelemetry-collector-contrib:0.152.1
+  image: otel/opentelemetry-collector-contrib:0.161.0
   resources:
     requests:
       cpu: 50m

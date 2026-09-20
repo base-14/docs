@@ -115,7 +115,7 @@ attributes so you can group across them in Scout.
 ## Collector image version
 
 This guide uses upstream Helm chart `opentelemetry-collector` v0.153.0 and
-pins the image to `otel/opentelemetry-collector-contrib:0.151.0` on every
+pins the image to `otel/opentelemetry-collector-contrib:0.161.0` on every
 release. Contrib versions that change config behavior for the components
 used here:
 
@@ -751,7 +751,7 @@ docker run -d --name otel-aks-control-plane \
   -p 13133:13133 \
   -p 8888:8888 \
   -v "$PWD/config/otel-collector-control-plane.yaml:/etc/otel/config.yaml:ro" \
-  otel/opentelemetry-collector-contrib:0.151.0 \
+  otel/opentelemetry-collector-contrib:0.161.0 \
   --config=/etc/otel/config.yaml
 # Note: remap -p 8888 if your host already runs Prometheus or another otelcol.
 ```

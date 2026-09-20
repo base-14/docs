@@ -107,7 +107,7 @@ This comprehensive guide demonstrates how to:
 
 Before starting, ensure you have:
 
-- **Rust 1.92 or later** (stable toolchain recommended)
+- **Rust 1.98 or later** (stable toolchain recommended)
   - Edition 2024 required
 - **Actix Web 4.12 or later** web framework
 - **Cargo** for dependency management
@@ -122,12 +122,14 @@ Before starting, ensure you have:
 
 | Component             | Minimum Version | Recommended Version |
 | --------------------- | --------------- | ------------------- |
-| Rust                  | 1.80.0          | 1.92.0+             |
+| Rust                  | 1.80.0          | 1.98.0+             |
 | Actix Web             | 4.0.0           | 4.12+               |
 | tracing-actix-web     | 0.7.0           | 0.7+                |
 | OpenTelemetry         | 0.27.0          | 0.32+               |
 | tracing-opentelemetry | 0.28.0          | 0.33+               |
 | SQLx                  | 0.7.0           | 0.8.6+              |
+
+Verified with Rust 1.98.1 and collector 0.161.0 on 2026-09-20.
 
 ## Required Packages
 
@@ -138,7 +140,7 @@ Add the following dependencies to your `Cargo.toml`:
 name = "actix-postgres"
 version = "1.0.0"
 edition = "2024"
-rust-version = "1.92"
+rust-version = "1.98"
 
 [[bin]]
 name = "api"
@@ -501,7 +503,7 @@ For containerized Actix Web applications:
 
 ```dockerfile showLineNumbers title="Dockerfile"
 # Build stage
-FROM rust:1.92-alpine AS builder
+FROM rust:1.98-alpine AS builder
 WORKDIR /app
 RUN apk add --no-cache musl-dev openssl-dev pkgconfig
 
@@ -541,7 +543,7 @@ Actix Web applications with background workers require a separate Dockerfile
 for the worker binary:
 
 ```dockerfile showLineNumbers title="Dockerfile.worker"
-FROM rust:1.92-alpine AS builder
+FROM rust:1.98-alpine AS builder
 WORKDIR /app
 RUN apk add --no-cache musl-dev openssl-dev pkgconfig
 
@@ -632,7 +634,7 @@ services:
       retries: 5
 
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.144.0
+    image: otel/opentelemetry-collector-contrib:0.161.0
     command: ["--config=/etc/otel-config.yaml"]
     volumes:
       - ./config/otel-config.yaml:/etc/otel-config.yaml:ro
@@ -1593,7 +1595,7 @@ Actix Web uses the `ResponseError` trait, and authentication uses
 ### Which Rust versions are supported?
 
 OpenTelemetry Rust supports Rust 1.80+ with edition 2021 or 2024. Rust
-1.92+ is recommended for optimal compatibility and performance.
+1.98+ is recommended for optimal compatibility and performance.
 
 ### Can I use OpenTelemetry with async Rust and Tokio?
 
