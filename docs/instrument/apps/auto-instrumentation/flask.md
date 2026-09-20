@@ -832,7 +832,7 @@ def post_worker_init(worker):
 
 ```dockerfile title="Dockerfile" showLineNumbers
 # Stage 1: Build dependencies
-FROM python:3.13-slim AS builder
+FROM python:3.14-slim AS builder
 
 WORKDIR /app
 
@@ -848,7 +848,7 @@ COPY requirements.txt .
 RUN pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels -r requirements.txt
 
 # Stage 2: Runtime image
-FROM python:3.13-slim
+FROM python:3.14-slim
 
 WORKDIR /app
 

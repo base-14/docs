@@ -107,7 +107,7 @@ This documentation is designed for:
 
 Before starting, ensure you have:
 
-- **Python 3.9 or later** installed (Python 3.13+ recommended for best
+- **Python 3.10 or later** installed (Python 3.14+ recommended for best
   performance)
 - **FastAPI 0.100.0 or later** installed in your project (0.115.6+ recommended)
 - **Scout Collector** configured and accessible from your application
@@ -122,12 +122,14 @@ Before starting, ensure you have:
 
 | Component                         | Minimum Version | Recommended Version | Notes                                                  |
 | --------------------------------- | --------------- | ------------------- | ------------------------------------------------------ |
-| **Python**                        | 3.9             | 3.13+               | Python 3.13+ offers best performance and type system   |
-| **FastAPI**                       | 0.100.0         | 0.115.6+            | Full Pydantic v2 and modern dependency injection       |
-| **OpenTelemetry SDK**             | 1.20.0          | 1.29+               | Core SDK for traces and metrics                        |
-| **OpenTelemetry Instrumentation** | 0.41b0          | 0.50b0+             | FastAPI auto-instrumentation                           |
-| **SQLAlchemy** (optional)         | 1.4+            | 2.0.36+             | For database instrumentation                           |
-| **Pydantic**                      | 2.0+            | 2.10+               | Included with FastAPI, v2 required for modern patterns |
+| **Python**                        | 3.10            | 3.14+               | Python 3.14+ offers best performance and type system   |
+| **FastAPI**                       | 0.100.0         | 0.133.1+            | Full Pydantic v2 and modern dependency injection       |
+| **OpenTelemetry SDK**             | 1.20.0          | 1.39+               | Core SDK for traces and metrics                        |
+| **OpenTelemetry Instrumentation** | 0.41b0          | 0.60b1+             | FastAPI auto-instrumentation                           |
+| **SQLAlchemy** (optional)         | 1.4+            | 2.0.47+             | For database instrumentation                           |
+| **Pydantic**                      | 2.0+            | 2.12.5+             | Included with FastAPI, v2 required for modern patterns |
+
+Verified with Python 3.14.7 and collector 0.158.0 on 2026-09-20.
 
 ### Supported Libraries
 
@@ -393,7 +395,7 @@ opentelemetry-instrument uvicorn app.main:app --host 0.0.0.0 --port 8000
 **Docker deployment:**
 
 ```dockerfile title="Dockerfile" showLineNumbers
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 WORKDIR /app
 
@@ -919,7 +921,7 @@ JWT_EXPIRE_MINUTES=60
 Build a production-ready Docker image:
 
 ```dockerfile title="Dockerfile" showLineNumbers
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 WORKDIR /app
 
@@ -1695,7 +1697,7 @@ production applications.
 
 ### Which Python and FastAPI versions are supported?
 
-- **Python**: 3.9+ minimum (Python 3.13+ recommended for best performance)
+- **Python**: 3.10+ minimum (Python 3.14+ recommended for best performance)
 - **FastAPI**: 0.100.0+ (0.115.6+ recommended for Pydantic v2)
 - **OpenTelemetry**: SDK 1.20+ (1.29+ recommended, always use latest stable)
 

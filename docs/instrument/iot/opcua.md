@@ -243,6 +243,15 @@ config.
   INFO. Quiet it with
   `logging.getLogger("asyncua").setLevel(logging.WARNING)` so the bridge's
   own records are the signal.
+- **`TypeError: issubclass() arg 1 must be a class` on connect.** asyncua
+  1.1.8 builds its binary serializer from `dataclasses.fields()` and hands
+  each field's `type` straight to `issubclass()`. Python 3.14 evaluates
+  annotations lazily
+  ([PEP 649](https://peps.python.org/pep-0649/)), so those types arrive as
+  strings and the secure channel never opens. Upgrade to asyncua 2.0.1,
+  which resolves the annotations before the type check. No bridge code
+  changes are needed. Failing pair: asyncua 1.1.8 on Python 3.14.7. Working
+  pair: asyncua 2.0.1 on Python 3.14.7. Confirmed 2026-09-20.
 - **Nothing reaches Scout.** Confirm the Collector picked up the four
   `SCOUT_*` values; the debug exporter prints to stdout regardless, which
   separates a bridge problem from an export problem.

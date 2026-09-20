@@ -108,11 +108,11 @@ This comprehensive guide demonstrates how to:
 
 Before starting, ensure you have:
 
-- **Python 3.9 or later** installed
-  - Python 3.11+ is recommended for best performance
-  - Python 3.13 is fully supported
+- **Python 3.10 or later** installed
+  - Python 3.14+ is recommended for best performance
+  - Python 3.14 is fully supported
 - **Celery 5.3 or later** installed
-  - Celery 5.4+ is recommended for optimal OpenTelemetry support
+  - Celery 5.6+ is recommended for optimal OpenTelemetry support
 - **Message broker** configured (RabbitMQ or Redis)
 - **Scout Collector** configured and accessible
   - See
@@ -125,11 +125,13 @@ Before starting, ensure you have:
 
 | Component        | Minimum Version | Recommended Version |
 | ---------------- | --------------- | ------------------- |
-| Python           | 3.9.0           | 3.11.0+             |
-| Celery           | 5.3.0           | 5.4.0+              |
-| RabbitMQ         | 3.8.0           | 3.13.0+             |
-| Redis            | 6.0.0           | 7.0.0+              |
-| opentelemetry-\* | 1.20.0          | 1.27+               |
+| Python           | 3.10.0          | 3.14.0+             |
+| Celery           | 5.3.0           | 5.6.0+              |
+| RabbitMQ         | 3.8.0           | 4.0.0+              |
+| Redis            | 6.0.0           | 7.1.0+              |
+| opentelemetry-\* | 1.20.0          | 1.40+               |
+
+Verified with Python 3.14.7 and collector 0.158.0 on 2026-09-20.
 
 ## Required Packages
 
@@ -473,7 +475,7 @@ AWS_REGION=us-east-1
 ### Docker Production Configuration
 
 ```dockerfile showLineNumbers title="Dockerfile"
-FROM python:3.13-slim
+FROM python:3.14-slim
 
 RUN groupadd -r celeryuser && useradd -r -g celeryuser -m celeryuser
 
@@ -1151,8 +1153,8 @@ high-frequency tasks (>1000/second), consider using sampling.
 
 ### Which Celery versions are supported?
 
-OpenTelemetry supports Celery 5.3+ with Python 3.9+. Celery 5.4+ with Python
-3.11+ is recommended for optimal compatibility and performance.
+OpenTelemetry supports Celery 5.3+ with Python 3.10+. Celery 5.6+ with Python
+3.14+ is recommended for optimal compatibility and performance.
 
 ### How do I trace tasks across multiple services?
 
@@ -1283,7 +1285,7 @@ celery-demo/
 [project]
 name = "celery-demo"
 version = "0.1.0"
-requires-python = ">=3.11"
+requires-python = ">=3.14"
 
 dependencies = [
     "fastapi>=0.124.0",
