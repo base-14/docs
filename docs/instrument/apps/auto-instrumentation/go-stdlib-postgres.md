@@ -109,7 +109,8 @@ This documentation is designed for:
 Before starting, ensure you have:
 
 - **Go 1.22 or later** for `ServeMux` pattern routing (`GET /api/x/{id}`).
-  Go 1.26+ recommended for the latest runtime metrics integration.
+  Go 1.27+ recommended for the latest runtime metrics integration.
+  Verified with Go 1.27.1 on 2026-09-20.
 - **PostgreSQL 14 or later**. The example uses Postgres 18.
 - **Docker and Docker Compose v2** for local multi-service testing.
 - **OpenTelemetry Collector** (Contrib distribution) running locally or
@@ -185,7 +186,7 @@ go get go.opentelemetry.io/otel \
 ```go title="app/go.mod" showLineNumbers
 module stdlib-articles
 
-go 1.26.1
+go 1.27.1
 
 require (
  github.com/exaring/otelpgx v0.10.0
@@ -213,7 +214,7 @@ After updating `go.mod`, run `go mod tidy && go mod download`.
 ```
 
 ```dockerfile title="app/Dockerfile" showLineNumbers
-FROM golang:1.26-alpine AS builder
+FROM golang:1.27-alpine AS builder
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
@@ -481,12 +482,12 @@ no extra setup needed there.
 
 ### Distroless multi-stage Dockerfile
 
-The example builds a static binary on `golang:1.26-alpine` and ships it on
+The example builds a static binary on `golang:1.27-alpine` and ships it on
 `gcr.io/distroless/static-debian12:nonroot`. The runtime image has no
 shell, no package manager, and a non-root UID by default:
 
 ```dockerfile title="app/Dockerfile" showLineNumbers
-FROM golang:1.26-alpine AS builder
+FROM golang:1.27-alpine AS builder
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download

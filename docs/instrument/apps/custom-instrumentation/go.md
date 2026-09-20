@@ -55,7 +55,7 @@ This guide demonstrates how to:
 
 Before starting, ensure you have:
 
-- **Go 1.21 or later** installed (Go 1.24+ recommended for forward compatibility)
+- **Go 1.21 or later** installed (Go 1.27+ recommended for forward compatibility)
 - A Go project initialized with `go mod init`
 - Basic understanding of OpenTelemetry concepts (traces, spans, attributes)
 
@@ -1205,7 +1205,7 @@ docker compose up --build
 curl http://localhost:8080/api/users
 ```
 
-### Go 1.25 + Chi + In-Memory Example
+### Go 1.27 + Chi + In-Memory Example
 
 **[chi-inmemory](https://github.com/base-14/examples/tree/main/go/chi-inmemory)**
 
@@ -1213,7 +1213,7 @@ A modern Go application showcasing the latest OpenTelemetry features:
 
 **Stack:**
 
-- Go 1.25 (latest) with OpenTelemetry v1.38.0
+- Go 1.27 (latest) with OpenTelemetry v1.46.0
 - Chi router for lightweight HTTP routing
 - In-memory storage (no external database)
 - Native OpenTelemetry instrumentation
@@ -1229,7 +1229,7 @@ A modern Go application showcasing the latest OpenTelemetry features:
 
 **Key Features:**
 
-- **Modern Go Patterns**: Demonstrates latest Go 1.25 features and
+- **Modern Go Patterns**: Demonstrates latest Go 1.27 features and
   OpenTelemetry v1.38.0
 - **Lightweight Setup**: No database dependencies, focuses on HTTP
   instrumentation

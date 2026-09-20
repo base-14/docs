@@ -142,7 +142,7 @@ OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 python main.py
 ```go title="go.mod" showLineNumbers
 module hello-world-go
 
-go 1.25.0
+go 1.27.1
 
 require (
     go.opentelemetry.io/otel v1.42.0

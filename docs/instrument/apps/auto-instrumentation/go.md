@@ -103,7 +103,7 @@ This documentation is designed for:
 
 Before starting, ensure you have:
 
-- **Go 1.21 or later** (1.22+ recommended for production)
+- **Go 1.21 or later** (1.27 recommended for production)
 - **Web framework** (Echo, Fiber, Chi, Gin, or standard `net/http`)
 - **Scout Collector** configured and accessible
   - See
@@ -118,17 +118,19 @@ Before starting, ensure you have:
 
 | Component                        | Minimum Version | Recommended Version |
 | -------------------------------- | --------------- | ------------------- |
-| Go                               | 1.20            | 1.22+               |
-| go.opentelemetry.io/otel         | 1.20.0          | 1.32+               |
-| go.opentelemetry.io/contrib      | 1.20.0          | 1.32+               |
-| Echo (labstack/echo)             | 4.10.0          | 4.13.0+             |
-| Fiber (gofiber/fiber)            | 2.50.0          | 2.52.0+             |
-| Chi (go-chi/chi)                 | 5.0.0           | 5.1.0+              |
-| GORM                             | 1.25.0          | 1.25.12+            |
+| Go                               | 1.20            | 1.27+               |
+| go.opentelemetry.io/otel         | 1.20.0          | 1.46+               |
+| go.opentelemetry.io/contrib      | 1.20.0          | 1.46+               |
+| Echo (labstack/echo)             | 4.10.0          | 4.15.0+             |
+| Fiber (gofiber/fiber)            | 2.50.0          | 2.52.15+            |
+| Chi (go-chi/chi)                 | 5.0.0           | 5.3.0+              |
+| GORM                             | 1.25.0          | 1.31.0+             |
 | sqlx (jmoiron/sqlx)              | 1.3.0           | 1.4.0+              |
 | Redis (go-redis/redis)           | 9.0.0           | 9.7.0+              |
-| Asynq (hibiken/asynq)            | 0.24.0          | 0.24.1+             |
+| Asynq (hibiken/asynq)            | 0.24.0          | 0.26.0+             |
 | River (riverqueue/river)         | 0.11.0          | 0.14.0+             |
+
+Verified with Go 1.27.1 and collector 0.158.0 on 2026-09-20.
 
 ## Installation
 
@@ -1067,7 +1069,7 @@ export DEPLOYMENT_ENV=development
 ### Docker Deployment
 
 ```dockerfile showLineNumbers title="Dockerfile"
-FROM golang:1.22-alpine AS builder
+FROM golang:1.27-alpine AS builder
 
 WORKDIR /app
 
@@ -1389,7 +1391,7 @@ query becomes a span with the SQL recorded on it. Set `DisableQuery: true` in
 ```bash showLineNumbers title="go.mod"
 module github.com/example/go-api
 
-go 1.22
+go 1.27
 
 require (
  github.com/labstack/echo/v4 v4.13.0
