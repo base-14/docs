@@ -131,7 +131,7 @@ Before starting, ensure you have:
 | Redis            | 6.0.0           | 7.1.0+              |
 | opentelemetry-\* | 1.20.0          | 1.40+               |
 
-Verified with Python 3.14.7 and collector 0.158.0 on 2026-09-20.
+Verified with Python 3.14.7 and collector 0.161.0 on 2026-09-20.
 
 ## Required Packages
 

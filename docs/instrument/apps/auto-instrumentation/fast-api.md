@@ -129,7 +129,7 @@ Before starting, ensure you have:
 | **SQLAlchemy** (optional)         | 1.4+            | 2.0.47+             | For database instrumentation                           |
 | **Pydantic**                      | 2.0+            | 2.12.5+             | Included with FastAPI, v2 required for modern patterns |
 
-Verified with Python 3.14.7 and collector 0.158.0 on 2026-09-20.
+Verified with Python 3.14.7 and collector 0.161.0 on 2026-09-20.
 
 ### Supported Libraries
 

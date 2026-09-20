@@ -159,7 +159,7 @@ Before starting, ensure you have:
 | OpenTelemetry.Instrumentation.Runtime | 1.10 | 1.18.0 |
 | Entity Framework Core | 8.0 | 10.0.11 |
 | Npgsql.EntityFrameworkCore.PostgreSQL | 8.0 | 10.0.3 |
-| OTel Collector contrib | 0.140 | 0.151.0 |
+| OTel Collector contrib | 0.140 | 0.161.0 |
 
 > Aspire requires .NET 8 minimum. .NET Framework 4.8 is **not** supported.
 > The OpenTelemetry instrumentation packages do not always release lockstep
@@ -363,7 +363,7 @@ var articlesDb = postgres.AddDatabase("articles");
 var collector = builder.AddContainer(
         "otel-collector",
         "otel/opentelemetry-collector-contrib",
-        "0.151.0")
+        "0.161.0")
     .WithBindMount("../config/otel-collector.yaml", "/etc/otel-collector.yaml")
     .WithArgs("--config=/etc/otel-collector.yaml")
     .WithHttpEndpoint(port: 4317, targetPort: 4317, name: "grpc")

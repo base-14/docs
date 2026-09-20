@@ -153,7 +153,7 @@ Before starting, ensure you have:
 | @opentelemetry/instrumentation-pg | 0.74 | 0.74.0 |
 | pg | 8.0 | 8.23.0 |
 | Zod | 4.0 | 4.6.5 |
-| OTel Collector contrib | 0.158.0 | 0.158.0 |
+| OTel Collector contrib | 0.158.0 | 0.161.0 |
 
 ## Installation
 

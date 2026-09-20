@@ -161,7 +161,7 @@ Before starting, ensure you have:
 | OpenTelemetry API | 1.40.0 | 1.65.0 |
 | opentelemetry-micrometer-1.5 | 2.0.0 | 2.31.1-alpha |
 | PostgreSQL (pgvector) | 15 | 18 |
-| OTel Collector contrib | 0.158.0 | 0.158.0 |
+| OTel Collector contrib | 0.158.0 | 0.161.0 |
 
 ## The Unified Trace
 

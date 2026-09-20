@@ -137,7 +137,7 @@ Before starting, ensure you have:
 | @opentelemetry/exporter-metrics-otlp-http    | 0.200.0         | 0.219.0     |
 | @opentelemetry/exporter-logs-otlp-http       | 0.200.0         | 0.219.0     |
 | web-vitals                                   | 4.0.0           | 5.3.0       |
-| opentelemetry-collector-contrib              | 0.120.0         | 0.153.0     |
+| opentelemetry-collector-contrib              | 0.120.0         | 0.161.0     |
 
 Angular 21 and later ship **zoneless** by default (`ng new` no longer adds
 zone.js). The setup below assumes zoneless; the zone.js opt-in is a three-line

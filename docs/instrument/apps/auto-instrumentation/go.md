@@ -130,7 +130,7 @@ Before starting, ensure you have:
 | Asynq (hibiken/asynq)            | 0.24.0          | 0.26.0+             |
 | River (riverqueue/river)         | 0.11.0          | 0.14.0+             |
 
-Verified with Go 1.27.1 and collector 0.158.0 on 2026-09-20.
+Verified with Go 1.27.1 and collector 0.161.0 on 2026-09-20.
 
 ## Installation
 
