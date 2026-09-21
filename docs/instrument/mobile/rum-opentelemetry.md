@@ -208,24 +208,28 @@ A main-thread block / jank event.
 
 A network request.
 
-:::warning Span name and dual keys
+:::warning Span name and latency source
 The span name must be exactly `http.request` (not `http`), or no network data
-is recorded. Send **both** keys in each pair below with the **same value** -
-different views read different names. Request latency is taken from the span's
-own start/end time, so set those correctly.
+is recorded. Every latency figure (average, p50/p95/p99, the response-time
+chart) is read from `http.duration_ms`. The span's own start/end time is
+**not** used, so a span that is opened and closed after the request completes
+is fine as long as `http.duration_ms` is set.
 :::
 
 - **Resource:** standard set
 - **Span:** standard identity, plus:
 
-| Attribute(s) | Description |
-| ------------ | ----------- |
-| `url.full` **and** `http.url` | Full URL (same value in both) |
-| `http.request.method` **and** `http.method` | Method (same value in both) |
-| `http.response.status_code` **and** `http.status_code` | Status (same value in both) |
-| `http.duration_ms` | Latency in ms |
+| Attribute | Description |
+| --------- | ----------- |
+| `url.full` | Full URL. The legacy `http.url` is read only when `url.full` is absent. |
+| `http.request.method` | Method. The legacy `http.method` is read only when absent. |
+| `http.response.status_code` | Status code. The legacy `http.status_code` is read only when absent. |
+| `http.duration_ms` | Latency in ms, request start to response or error. Required; without it latency shows as 0 ms. |
 | `http.response.body.size` | Response body size |
 | `http.error` | Error flag/message, if the request failed |
+
+You do not need to send both naming conventions. Send the semantic-convention
+name; the legacy `http.*` names remain accepted for SDKs that predate them.
 
 **Powers:** network dashboard (top endpoints, error rate, latency
 p50/p95/p99); session timeline.
@@ -444,7 +448,8 @@ screen-performance and stability coverage.
 | A view is empty | Resource keys on the span, or span keys on the resource. `service.version` / `os.*` / `device.*` are `[R]`; `session.*` / `user.*` / `screen.name` / per-span fields are `[S]`. |
 | Crash **Affected Users** empty | The panel reads `user.id` / `user.anonymous_id`. Set them on crash spans too. |
 | Every startup looks ~1000x too fast | `app_startup.duration` sent in seconds - it must be **milliseconds**. |
-| No network data / partial network views | Only one HTTP naming convention sent. Send both `url.full` + `http.url`, `http.request.method` + `http.method`, `http.response.status_code` + `http.status_code`, and set the span's own duration. |
+| No network data / partial network views | Span named `http` instead of `http.request`, or `url.full` / `http.request.method` / `http.response.status_code` missing (the legacy `http.url` / `http.method` / `http.status_code` names are accepted as fallbacks). |
+| Network latency shows 0 ms | `http.duration_ms` missing or zero. Latency is never taken from the span's own duration. |
 | Crashes don't group (one row each) | Unstable `error.message` / `crash.reason` containing timestamps or ids. Keep titles stable. |
 | No network data at all | Span named `http` instead of `http.request`. |
 | Session never registers | Missing or unparseable `session.start_time`. Send valid ISO-8601. |
