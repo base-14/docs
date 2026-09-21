@@ -58,6 +58,21 @@ exporters:
       insecure_skip_verify: true
 ```
 
+## Limits
+
+Attribute values are capped at 10,000 characters on ingest. The cap applies
+to span, log record, metric data point, and resource attributes.
+
+Values longer than the cap are truncated. The span, log record or data point
+is still stored and no error is returned, so oversized values are shortened
+silently rather than rejected.
+
+In practice this is reached most often by `db.statement` on ORM-generated
+SQL, and by attributes carrying serialised payloads or encoded blobs.
+
+The cap is configurable per tenant - contact your base14 account team if you
+need a higher limit.
+
 ## Related Guides
 
 - [Docker Compose Setup](./docker-compose-example.md) - Quick local development

@@ -479,6 +479,16 @@ routing telemetry between pipelines inside the collector. The common ones
 are `spanmetrics`, which derives metrics from traces, and `forward`, which
 chains processing stages.
 
+### Is there a size limit on attribute values?
+
+Yes. Scout caps attribute values at 10,000 characters on ingest, covering
+span, log record, metric data point, and resource attributes. Oversized
+values are truncated rather than rejected, so the span or record is still
+stored and no error is returned.
+
+The limit is configurable per tenant. Contact your base14 account team if
+your workload needs a higher cap.
+
 ## Related Guides
 
 - [OTTL Functions Reference](../../operate/filters-and-transformations/ottl-functions-reference.md)
