@@ -73,7 +73,7 @@ does. [Check out Scout RUM](https://base14.io/scout/rum).
 | Jailbreak / root detection | `device.is_jail_broken` resource attribute (`"true"`/`"false"`) | Path probes — `/Applications/Cydia.app` etc. on iOS, `Build.TAGS=test-keys` + su-binary + Magisk packages on Android |
 | Battery discharge rate (Android) | `device.battery.discharge_rate` runtime attribute (µA, sampled every 60 s) | `BatteryManager.BATTERY_PROPERTY_CURRENT_NOW` |
 | NDK build-id (Android) | `ndk.build_id` resource attribute (40-char SHA1) | Parses `.note.gnu.build-id` ELF section from `libscout_signal_handler.so` (works whether the `.so` is extracted to `nativeLibraryDir` or loaded directly from inside the APK) |
-| `app_crash` + `native_crash` carry the crashed session | `crash.previous_session_id`, `crash.session_started_at`, `crash.last_screen` | Persisted across the crash boundary via the marker file (`app_crash`), NDK signal-handler globals (Android `native_crash`), and `KSCrash.userInfo` (iOS `native_crash`) |
+| `app_unclean_exit` + `native_crash` carry the session that died | `crash.previous_session_id`, `crash.session_started_at`, `crash.last_screen` | Persisted across the crash boundary via the session marker (`app_unclean_exit` — not a crash, reported once per session and only for sampled sessions), NDK signal-handler globals (Android `native_crash`), and `KSCrash.userInfo` (iOS `native_crash`) |
 | Scroll depth | `display.scroll.max_depth`, `max_depth_scroll_top`, `max_scroll_height`, `max_scroll_height_time_ms` on `screen_view` | `RN.ScrollView` lazy-getter wrap (RN) + `window.scroll` listener (web) |
 | Web vitals | `web_vital` span with `name`, `value`, `rating` (LCP, INP, CLS, FCP, TTFB) | `web-vitals` library on web |
 | CSP violations | `error` span with `error.csp.violated_directive`, `blocked_uri`, `disposition` | `securitypolicyviolation` event listener (web) |
@@ -359,13 +359,14 @@ Every option you can pass to `Scout.initialize()`:
 | Field | Type | Default | Description |
 |---|---|---|---|
 | `sessionTimeoutMinutes` | `number` | `30` | Inactivity before new session |
-| `sessionSampleRate` | `number (0-100)` | `1` | Per-session binary sampling rate. Default is `1` (1% of sessions) to bound telemetry volume for production. Error / crash / ANR / UI-hang spans bypass this gate (controlled by `alwaysCaptureErrors`) so failures are always captured regardless of sampling. Below `100`, full sessions are dropped (never partial) so traces stay coherent. |
+| `sessionSampleRate` | `number (0-100)` | `1` | Per-session binary sampling rate. Default is `1` (1% of sessions) to bound telemetry volume for production. Error / crash / ANR / UI-hang spans bypass this gate (controlled by `alwaysCaptureErrors`) so failures are always captured regardless of sampling. Below `100`, full sessions are dropped (never partial) so traces stay coherent. `app_unclean_exit` is not crash-class: it follows the sampling decision of the session it describes. |
 
 ### Thresholds
 
 | Field | Type | Default | Min | Description |
 |---|---|---|---|---|
 | `longTaskThresholdMs` | `number` | `100` | `20` | JS task duration that qualifies as a `long_task` span. Below `20` is clamped up. |
+| `frozenFrameMaxMs` | `number` | `10000` | `700` | Cap for `frozen_frame.duration`. A longer frame is reported at the cap with `frozen_frame.capped: true`. |
 | `anrThresholdMs` | `number` | `5000` | `1000` | Main-thread / JS-thread block duration that fires an `anr` span. Below `1000` is clamped up. Watchdog polls every `threshold/10` ms (min 200 ms). |
 | `iosHangThresholdMs` | `number` | `250` | `50` | iOS-only sub-ANR threshold that fires a `ui_hang` span. Set to `0` to disable. Catches micro-stutters (tap → 300 ms freeze → recover) that the 5 s ANR threshold misses. |
 | `maxTombstoneBytes` | `number` | `131072` | `4096` | Android-only cap on `crash.tombstone` payload size for `ApplicationExitInfo` crashes. Some tombstones are multi-MB; this prevents span-payload bloat. |
@@ -389,9 +390,10 @@ to `true`** except `captureConsole` / `capturePrintStatements`.
 | `enableStartupTracking` | `true` | `app_startup` span (cold + warm start measurement). |
 | `enableConnectivityTracking` | `true` | `network.connection.type`, `network.cellular.carrier_name` resource attrs and changes on network transitions. |
 | `enablePerformanceMetrics` | `true` | `react_native.memory.usage` metric, generic perf samples. |
-| `enableLongTaskDetection` | `true` | `long_task` spans (use `longTaskThresholdMs` to tune sensitivity instead of disabling). |
+| `enableLongTaskDetection` | `true` | `long_task` spans (use `longTaskThresholdMs` to tune sensitivity instead of disabling). Web: tasks overlapping time the page was hidden / frozen / suspended are dropped. |
+| `enableUncleanExitDetection` | `true` (web: `false` inside an embedded WebView) | Session marker that reports the previous session as `app_unclean_exit` when it ended without a clean shutdown. Not a crash. Web defaults it off when the UA is an Android System WebView or an iOS WKWebView, because the host closes the page without any unload signal; pass `true`/`false` to override. |
 | `enableAnrDetection` | `true` | `anr` spans, iOS hang watchdog, Android ANR detector. |
-| `enableFrameMetrics` | `true` | `react_native.frame.refresh_rate` / `slow_frames_rate` / `freeze_rate` metrics + `frozen_frame` spans + `view.slow_frames_json` attribute. |
+| `enableFrameMetrics` | `true` | `react_native.frame.refresh_rate` / `slow_frames_rate` / `freeze_rate` metrics + `frozen_frame` spans + `view.slow_frames_json` attribute. Frames spanning a background `AppState` are ignored; `frozen_frame.duration` is capped at `frozenFrameMaxMs`. |
 | `enableMemoryMetrics` | `true` | RN-only process memory polling. |
 | `enableCpuMetrics` | `true` | `react_native.cpu.usage` gauge. Android reads `/proc/<pid>/stat` and computes percentage via wall-clock delta; iOS uses Mach `thread_info` summed across all task threads. Sampled every 10 s. |
 | `enableWebVitals` | `true` | Web-only LCP / INP / CLS / FCP / TTFB spans. |
@@ -489,7 +491,7 @@ arrays of those.
 
 Not strictly an attribute, but related: every breadcrumb you record lands in
 a ring buffer that gets serialized onto every subsequent `error` /
-`app_crash` / `native_crash` span. Useful for "what did the user do in the
+`app_unclean_exit` / `native_crash` span. Useful for "what did the user do in the
 20 actions before this crash?"
 
 ```ts

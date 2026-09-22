@@ -61,11 +61,11 @@ does. [Check out Scout RUM](https://base14.io/scout/rum).
 | Click tracking | `user_interaction` span (`type=click`, target selector, x/y, composed-path) | Capture-phase `click` listener |
 | Frustration signals | `user_interaction.action.frustration.type` (`rage_click` / `dead_click` / `error_click`) | DOM mutation observer + error correlation |
 | Fetch / XHR | `http.request` span with method / `url.full` / `http.response.status_code` / `http.duration_ms` / phase breakdown (DNS / connect / SSL / TTFB / download / redirect) / `network.protocol.name` / GraphQL operation parse / third-party provider classification (Stripe / CloudFront / Google Fonts / …) | Global `fetch` + `XMLHttpRequest` wrap + `PerformanceResourceTiming` |
-| Errors | `error` span with `error.id`, `error.type`, `error.message`, `error.stack_trace`, `error.fingerprint`, `error.causes_json`, `breadcrumbs` | `window.onerror` + `unhandledrejection` + `ErrorBoundary` |
-| `app_crash` (catch-all) | Emitted on next launch if the previous session didn't exit cleanly (`pagehide` never fired) | Session marker in `localStorage` |
+| Errors | `error` span with `error.id`, `error.type`, `error.message`, `error.stack_trace`, `error.fingerprint`, `error.causes_json`, `error.origin` (`app`, or `sdk` for a failure inside the SDK bundle — flagged `sdk_internal`, reported once per page, excluded from `error.count`), `breadcrumbs` | `window.onerror` + `unhandledrejection` + `ErrorBoundary` |
+| `app_unclean_exit` | Emitted on the next launch when the previous session ended without `pagehide` (tab discard, force-quit, OS shutdown). **Not a crash**: it never affects crash-free rate or `view.crash.count`. One report per session, only for sessions that were sampled. Off by default inside an embedded WebView — see [Embedded in a native WebView](#embedded-in-a-native-webview) | Session marker in `localStorage` (`enableUncleanExitDetection`) |
 | Core Web Vitals | `web_vital` spans for LCP / INP / CLS / FCP / TTFB plus sub-parts (input_delay, processing_duration, presentation_delay for INP; load_delay, load_time, render_delay for LCP; layout-shift rects for CLS) | `web-vitals` library |
-| Long tasks | `long_task` span with `long_task.duration`, blocking_duration, render_start, style_and_layout_start, first_ui_event_timestamp, `scripts_json` | `PerformanceObserver('longtask')` + `long-animation-frame` (Chrome 123+) |
-| Frozen frames | `frozen_frame` span (≥ 700 ms blocks) | Same `PerformanceObserver` |
+| Long tasks | `long_task` span with `long_task.duration`, blocking_duration, render_start, style_and_layout_start, first_ui_event_timestamp, `scripts_json`. Tasks overlapping time the page was hidden, frozen or suspended are dropped | `PerformanceObserver('long-animation-frame')` where available (Chrome 123+), else `'longtask'` — never both, so one stall is one span |
+| Frozen frames | `frozen_frame` span for blocks ≥ 700 ms. Background / suspended time is excluded, and `frozen_frame.duration` is capped at `frozenFrameMaxMs` (default 10 s; `frozen_frame.capped: true` when clamped) | Same `PerformanceObserver` |
 | Scroll depth | `display.scroll.max_depth`, `max_scroll_height`, `max_scroll_height_time_ms` on `screen_view` | `window.scroll` listener with rAF coalescing |
 | CSP violations | `error` span with `error.csp.violated_directive`, `blocked_uri`, `disposition` | `securitypolicyviolation` event listener |
 | Page lifecycle | `app_paused` / `app_resumed` spans + `view.page_states_json` + `view.in_foreground_periods_json` | `visibilitychange` + `freeze` / `resume` events |
@@ -252,6 +252,10 @@ volume in production. Error / crash / ANR / UI-hang spans bypass this gate
 captured regardless of sampling. Below `100`, full sessions are dropped
 (never partial) so traces stay coherent.
 
+`app_unclean_exit` is not crash-class and does not bypass sampling: it is
+reported only when the session it describes was itself sampled, so it stays
+proportional to the rest of the data.
+
 For development bump it to `100`:
 
 ```ts
@@ -260,6 +264,25 @@ Scout.initialize({
   sessionSampleRate: 100,
 });
 ```
+
+## Embedded in a native WebView
+
+A page hosted by a native app's WebView (Android System WebView, iOS
+WKWebView) is closed by the host without any unload signal: `pagehide` never
+fires, and on Android JS timers keep running after `visibilitychange: hidden`.
+The SDK detects that environment from the user agent (Android `wv` token, iOS
+UA without `Safari/`) and defaults `enableUncleanExitDetection` to `false`
+there, so routine closes are not filed as unclean exits. Pass the flag
+explicitly to override the heuristic either way.
+
+If the native app also runs Scout, hand the page the host's session so both
+report as one flow — `Scout.setWebViewBridge({ sessionId, anonymousId })` —
+and the page's own unclean-exit marker becomes redundant.
+
+Web builds are tested down to Chrome / Android System WebView 87 (Android
+8.1). Nothing newer than that floor is called at runtime: for example CLS and
+INP tracking (which needs `Array.prototype.at`, Chrome 92) is skipped on older
+engines while LCP, FCP and TTFB still report.
 
 ## Full reference
 
