@@ -503,7 +503,7 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       OTEL_EXPORTER_OTLP_PROTOCOL: ${OTEL_EXPORTER_OTLP_PROTOCOL:-http/protobuf}
       OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT: ${OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT:-false}
-      OTEL_RESOURCE_ATTRIBUTES: service.namespace=examples,deployment.environment=${SCOUT_ENVIRONMENT:-development},environment=${SCOUT_ENVIRONMENT:-development}
+      OTEL_RESOURCE_ATTRIBUTES: service.namespace=examples,deployment.environment.name=${SCOUT_ENVIRONMENT:-development},environment=${SCOUT_ENVIRONMENT:-development}
 ```
 
 ```mdx-code-block
