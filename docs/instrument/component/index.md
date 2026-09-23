@@ -172,6 +172,7 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 | Component     | Guide                                           | Key Metrics                                    |
 | ------------- | ----------------------------------------------- | ---------------------------------------------- |
 | Docker Engine | [Docker Engine](./collecting-docker-telemetry)  | CPU, memory, block I/O, network per container  |
+| containerd    | [containerd](./collecting-containerd-telemetry) | CRI errors, image pull failures, container lifecycle latency, CPU and memory per container |
 
 ### Java Application Servers
 
@@ -208,7 +209,7 @@ Each component exposes metrics through one of four methods:
    prometheus_varnish_exporter, Redpanda via its native
    `/public_metrics` endpoint, Materialize via its native
    `/metrics/public` endpoint, Trino via its native `/metrics`
-   endpoint)
+   endpoint, containerd via its native `/v1/metrics` endpoint)
 3. **JMX Scraper** - a standalone process connects to the application's
    JMX port via RMI, converts MBeans to OpenTelemetry metrics, and
    exports OTLP to the Collector (Tomcat, ActiveMQ, Jetty, WildFly).
