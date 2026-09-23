@@ -65,7 +65,7 @@ and a fallback to a different provider.
 | [Spring AI LLM Observability](./spring-ai-llm-observability)                                    | End-to-end guide (Java): Three-layer instrumentation (Java Agent + Spring AI + manual OTel), GenAI semantic conventions, tool calling, RAG, domain metrics, Docker deployment |
 | [LangGraph Instrumentation](../../instrument/apps/auto-instrumentation/langgraph)         | Framework-specific: LangGraph node wrapping, conditional edge routing, tool-calling nodes, state management, pipeline traces                                                  |
 | [LlamaIndex Instrumentation](../../instrument/apps/auto-instrumentation/llamaindex)       | Framework-specific: LlamaIndex structured output, self-correction loops, multi-provider LLM factory, YAML prompt management                                                   |
-| [Vercel AI SDK Instrumentation](../../instrument/apps/auto-instrumentation/vercel-ai-sdk) | Framework-specific: Vercel AI SDK v6 LanguageModelV3Middleware, multi-stage pipeline spans, concurrent stage execution, Bun + Hono + pgvector                                 |
+| [Vercel AI SDK Instrumentation](../../instrument/apps/auto-instrumentation/vercel-ai-sdk) | Framework-specific: AI SDK 7 agent spans via @ai-sdk/otel, run ids, per-run cost and subagent fan-out, plus the v6 middleware path                                            |
 
 ## What Gets Instrumented
 
