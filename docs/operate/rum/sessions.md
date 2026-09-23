@@ -1,11 +1,10 @@
 ---
-title: RUM Sessions
+title: RUM Sessions - Event Timelines for Individual User Sessions
 sidebar_label: Sessions
 sidebar_position: 6
 description:
-  Inspect individual user sessions with RUM in base14 Scout. Review session
-  and device details, and a chronological event timeline of screen views,
-  taps, network calls, errors, and crashes.
+  Inspect individual user sessions with RUM in base14 Scout. Review device
+  details and a timeline of screens, taps, network calls, errors, and crashes.
 keywords:
   [
     rum,
@@ -14,10 +13,20 @@ keywords:
     event timeline,
     mobile sessions,
     user interaction,
+    screen views,
+    tap events,
+    network calls,
+    session details,
+    device details,
+    session id,
+    session sampling,
+    scout rum,
     base14,
     scout,
   ]
 ---
+
+# RUM Sessions
 
 The **Sessions** tab lists individual user sessions so you can go from an
 aggregate stat straight to the exact session that produced it.
@@ -135,6 +144,30 @@ noisy session down to just, say, `http.request` and `app_crash` events.
 1. Sort the **Session List** by **Duration**
 2. Open the timeline and filter to `http.request` and `long_task` events
 3. Look for slow requests or repeated long tasks clustered together
+
+---
+
+## FAQ
+
+### Why does a crashed session have no timeline?
+
+Because the session was not sampled. Crash, error, and ANR spans are exported
+by default, but screen views, network calls, and interactions are recorded only
+when `session.sampled` is true. An unsampled session that crashed shows the
+crash without the events that led to it.
+
+### What is the difference between Session Attributes and Resource Attributes?
+
+Session Attributes describe this session: its ID, sample rate, lifecycle state,
+start time, and the user when one is identified. Resource Attributes are the
+static context attached to every event in it, such as app version, device
+model, OS, and SDK version.
+
+### What does `session.sample_rate` tell me?
+
+It is the app's configured sampling percentage, 1% by default, while
+`session.sampled` tells you whether this particular session was kept. Read the
+two together before drawing conclusions from a session count.
 
 ---
 

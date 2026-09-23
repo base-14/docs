@@ -1,11 +1,10 @@
 ---
-title: k8X Nodes
+title: k8X Nodes - Conditions, Pod Capacity, Taints, and Kubelet
 sidebar_label: Nodes
 sidebar_position: 4
 description:
   Inspect Kubernetes node health with k8X in base14 Scout. Track node
-  conditions, pod capacity, CPU and memory utilization, taints, kubelet
-  versions, and the pods scheduled on each node.
+  conditions, pod capacity, CPU and memory use, taints, and kubelet versions.
 keywords:
   [
     k8x,
@@ -13,13 +12,21 @@ keywords:
     kubernetes nodes,
     node conditions,
     node pressure,
+    memory pressure,
+    disk pressure,
     pod capacity,
-    taints,
-    kubelet,
+    node taints,
+    kubelet version,
+    node cpu,
+    node memory,
+    scheduled pods,
+    scout k8x,
     base14,
     scout,
   ]
 ---
+
+# k8X Nodes
 
 import ThemedImage from '@theme/ThemedImage';
 
@@ -166,6 +173,28 @@ explain a node behaving differently from its peers.
 2. Compare **CPU %** and **Mem %** across the filtered set
 3. Open an outlier and check **Host** to confirm the machine type, then
    **Pods on this Node** for what it is actually running
+
+---
+
+## FAQ
+
+### Why does a node with low CPU usage still refuse new pods?
+
+Because the scheduler reasons about requests, not usage. The **Committed**
+section shows requests against allocatable, so a node can sit at 30% CPU usage
+with its CPU requests fully committed and legitimately reject new pods.
+
+### Why are Role, Zone, Kubelet, and Age all showing `—`?
+
+Those four columns come from node object snapshots. When all of them are `—`
+across every row, the `k8sobjects` receiver is not collecting `nodes`. A single
+`—` in Role just means a worker node with no role label.
+
+### Why does the Pods column show a bare count instead of `31/58`?
+
+The collector is not reporting pod capacity. Add `pods` to
+`allocatable_types_to_report` in the `k8s_cluster` receiver, and the column
+starts showing running pods against allocatable pods.
 
 ---
 

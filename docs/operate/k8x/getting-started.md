@@ -1,24 +1,32 @@
 ---
-title: Getting Started with k8X
+title: Getting Started with k8X - Clusters, Filters, and Thresholds
 sidebar_label: Getting Started
 sidebar_position: 1
 description:
-  What k8X is in base14 Scout and how to navigate it. Select your clusters,
-  set a time range, and use the filters sidebar shared by every k8X tab to
-  monitor Kubernetes cluster, node, namespace, and workload health.
+  Navigate k8X in base14 Scout. Select clusters, set a time range, and use the
+  filters sidebar shared by every k8X tab to monitor Kubernetes health.
 keywords:
   [
     k8x,
     kubernetes monitoring,
     kubernetes observability,
     cluster health,
+    fleet observability,
     opentelemetry kubernetes,
     k8s cluster receiver,
+    kubeletstats,
+    k8sobjects,
+    health thresholds,
+    cluster selector,
+    filters sidebar,
     getting started,
+    scout k8x,
     base14,
     scout,
   ]
 ---
+
+# Getting Started with k8X
 
 import ThemedImage from '@theme/ThemedImage';
 import ThemedVideo from '@site/src/components/ThemedVideo';
@@ -457,8 +465,8 @@ whole cluster and a second replica would double-count everything.
 - [Workloads](./workloads.md) - Pods, Deployments, DaemonSets, StatefulSets,
   and ReplicaSets
 - [Events](./events.md) - Kubernetes events across the fleet
-- [Kubernetes Helm setup](../../instrument/collector-setup/kubernetes-helm-setup.md)
-  — Deploy the collector
+- Deploy the collector with
+  [Kubernetes Helm setup](../../instrument/collector-setup/kubernetes-helm-setup.md)
 - [K8s Cluster](../../instrument/component/k8s-cluster.md) - Cluster-scoped
   metrics and events
 - [Kubelet Stats](../../instrument/component/kubelet-stats.md) - Per-node pod

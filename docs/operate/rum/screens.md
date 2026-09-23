@@ -1,25 +1,32 @@
 ---
-title: RUM Screens
+title: RUM Screens - Load Time, Frame Rendering, Jank, and Memory
 sidebar_label: Screens
 sidebar_position: 7
 description:
-  Measure per-screen performance in your Flutter apps with RUM in base14
-  Scout. Track load times, frame rendering, memory and CPU usage, jank, and
-  crashes by screen.
+  Measure per-screen performance with RUM in base14 Scout. Track load times,
+  frame rendering, memory and CPU usage, jank, and crashes by screen.
 keywords:
   [
     rum,
     screens,
     screen performance,
-    load time,
+    screen load time,
     frame rendering,
+    frame build time,
+    raster time,
     jank,
+    dropped frames,
     memory usage,
+    cpu usage,
+    views over time,
     mobile performance,
+    scout rum,
     base14,
     scout,
   ]
 ---
+
+# RUM Screens
 
 The **Screens** tab measures per-screen performance across your app, so you
 can find the slowest or jankiest screens without knowing what to look for
@@ -123,6 +130,31 @@ none in range.
 2. Open the screen and compare **Frame Build Time** vs. **Frame Raster Time**
    to narrow down whether it's widget/layout work or GPU work
 3. Check **Long Tasks (Jank Events)** for the specific sessions and times
+
+---
+
+## FAQ
+
+### What is the difference between frame build time and frame raster time?
+
+Build time is how long the widget and layout work took, and raster time is how
+long the GPU took to draw the result. Sustained spikes in either show up as
+jank, but they point at different fixes: build time at your widget tree, raster
+time at what you are asking the GPU to draw.
+
+### What is a long task?
+
+A long task is a long-running piece of work on the UI thread, which is the
+usual mechanical cause of jank. The **Long Tasks (Jank Events)** table lists
+individual occurrences with the user and session involved, so you can open the
+exact session and see what ran.
+
+### Avg Load looks fine but P95 Load is bad. Where do I look?
+
+Open the screen and read **Slowest Loads**, which lists individual slow loads
+with their time, duration, user, and session. A healthy average with a bad tail
+usually means a subset of devices, networks, or accounts, and the session links
+are how you find which.
 
 ---
 

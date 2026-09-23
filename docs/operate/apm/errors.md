@@ -1,10 +1,10 @@
 ---
-title: Errors
+title: APM Errors - Grouped Exceptions, Stack Traces, and Alerts
 sidebar_label: Errors
-sidebar_position: 4
+sidebar_position: 6
 description:
-  Triage grouped exceptions, inspect occurrence trends and stack traces, and
-  jump from an APM error occurrence to its exact trace.
+  Triage grouped exceptions, inspect occurrence trends and stack traces,
+  and jump from an APM error to its exact trace.
 keywords:
   [
     apm,
@@ -13,16 +13,26 @@ keywords:
     error tracking,
     error inbox,
     issues,
+    stack trace,
+    grouped errors,
+    error rate,
+    error alert,
+    occurrence trend,
+    exception monitoring,
+    opentelemetry,
+    scout apm,
     base14,
     scout,
   ]
 ---
 
+# Errors
+
 The Errors tab groups exceptions into issues so a recurring failure appears as
 one item with a count and trend rather than thousands of separate events. The
 tab is available when your deployment has enabled the error rollup.
 
-![Errors Tab](/img/apm/errors/errors-issues.png)
+![Issues list grouping exceptions by type with trend, count, service, and last-seen columns](/img/apm/errors/errors-issues.png)
 
 ---
 
@@ -47,7 +57,7 @@ Each issue shows:
 
 ## Issue Detail
 
-![Error Detail](/img/apm/errors/errors-detail.png)
+![Issue detail drawer with summary, occurrences chart, stack trace, and recent occurrences](/img/apm/errors/errors-detail.png)
 
 The drawer contains:
 
@@ -83,3 +93,59 @@ When the issue is backed by the error rollup, the Occurrences chart menu can
 open a Grafana alert-rule draft scoped by the issue's numeric error key. The
 error message is not placed in the alert URL or labels. Review the query and
 threshold before saving; the action requires Grafana alerting permissions.
+
+---
+
+## Use Cases
+
+### Triage a New Exception
+
+1. Sort the Issues list by last seen to surface what started recently.
+2. Open the issue and read the stack trace and its occurrence chart.
+3. Select a recent occurrence to see the failing span in its full trace.
+
+### Work Through the Loudest Errors First
+
+1. Sort by count over the range you care about.
+2. Check each issue's trend: a flat high count is background noise, a rising
+   one is a regression.
+3. Use the service column to decide which team owns the fix.
+
+### Alert on an Issue You Cannot Fix Today
+
+1. Open the issue and use the Occurrences chart menu.
+2. Review the generated query and threshold in the Grafana alert draft.
+3. Save it so the issue's return is reported rather than rediscovered.
+
+---
+
+## FAQ
+
+### How are exceptions grouped into issues?
+
+An issue groups occurrences of the same exception type and representative
+message, so a failure that fired ten thousand times appears as one row with a
+count and a trend. The grouped count and the occurrences chart come from the
+error rollup.
+
+### Why is there no stack trace on an older issue?
+
+Stack traces and recent occurrences are read from raw spans, which have a
+shorter retention limit than the rollup behind the count and chart. If the
+selected range starts before that limit, APM moves the query start to the
+retention floor, and a fully expired range returns no raw events at all.
+
+### Does an error alert include the exception message?
+
+No. The alert draft is scoped by the issue's numeric error key, and the error
+message is not placed in the alert URL or its labels. Review the query and
+threshold before saving; the action needs Grafana alerting permissions.
+
+---
+
+## Related Guides
+
+- [Getting Started](./getting-started.md) - Scope, filters, and trace limits
+- [Services](./services.md) - The error rate an issue contributes to
+- [Traces](./traces.md) - The request around a failing span
+- [logX](../logx/index.md) - Logs from the same service

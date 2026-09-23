@@ -1,24 +1,31 @@
 ---
-title: k8X Namespaces
+title: k8X Namespaces - Resource Commitment, Requests, and Quotas
 sidebar_label: Namespaces
 sidebar_position: 5
 description:
   Track Kubernetes namespace resource commitment with k8X in base14 Scout.
-  Compare CPU and memory used against requested, spot over-committed
-  namespaces, and watch resource quotas approach their limits.
+  Compare CPU and memory used against requested, and watch resource quotas.
 keywords:
   [
     k8x,
     namespaces,
     kubernetes namespaces,
     resource requests,
+    resource limits,
     resource quotas,
     over-committed,
+    under-utilized,
+    namespace cpu,
+    namespace memory,
     capacity planning,
+    multi-tenant clusters,
+    scout k8x,
     base14,
     scout,
   ]
 ---
+
+# k8X Namespaces
 
 import ThemedImage from '@theme/ThemedImage';
 
@@ -122,6 +129,29 @@ boundary: at the limit, new pods are rejected outright rather than queued.
 2. Check **Quota** for admission headroom
 3. Confirm on [Nodes](./nodes.md) that the cluster has uncommitted capacity -
    a namespace can be within quota while every node is fully requested
+
+---
+
+## FAQ
+
+### What does over-committed mean, and is it an error?
+
+It means the namespace is using more of a resource than it requested. That is
+legal and bursty workloads do it routinely, but it is fragile: the scheduler
+places pods by requests, so those pods are relying on headroom nobody owns and
+are the first evicted or throttled when the node fills.
+
+### Should I reduce usage or raise requests?
+
+Usually raise requests to match observed use. The usage is real work; the
+requests are the promise the scheduler acts on, and closing the gap is what
+makes the namespace schedulable under pressure.
+
+### Why is the Quota column `—` for a namespace I know has quotas?
+
+If **Quota** is `—` everywhere, including namespaces with quotas you
+configured, the `k8sobjects` receiver is not collecting `resourcequotas`. A `—`
+on a single namespace just means that namespace has no quota.
 
 ---
 

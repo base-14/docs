@@ -1,24 +1,32 @@
 ---
-title: k8X Overview
+title: k8X Overview - Fleet Health, Pod Phases, and Warning Events
 sidebar_label: Overview
 sidebar_position: 2
 description:
-  Read the k8X Overview tab in base14 Scout, the health dashboard for your
-  whole Kubernetes fleet. Track reporting clusters, node readiness, pod
-  phases, unhealthy workloads, and recent warning events.
+  Read the k8X Overview tab in base14 Scout. Track reporting clusters, node
+  readiness, pod phases, unhealthy workloads, and recent warning events.
 keywords:
   [
     k8x,
     overview,
     kubernetes health,
+    fleet health,
     cluster health,
     pod status,
+    pod phases,
+    node readiness,
     unhealthy workloads,
     warning events,
+    cluster cpu utilization,
+    cluster memory utilization,
+    stat cards,
+    scout k8x,
     base14,
     scout,
   ]
 ---
+
+# k8X Overview
 
 import ThemedImage from '@theme/ThemedImage';
 
@@ -188,6 +196,29 @@ rather than showing an empty table.
    `Running`; one that does not drain is a rollout that did not complete
 3. Check **Unhealthy workloads** for the workload you deployed, and its
    **Since** value against your deploy time
+
+---
+
+## FAQ
+
+### What does "reporting" mean on the Clusters card?
+
+A cluster counts as reporting when it emitted node metrics in the last 150
+seconds, which is two and a half scrape intervals at the standard 60-second
+cadence. A cluster that stops reporting is almost always a collector problem
+rather than a cluster problem.
+
+### What do the `▲` and `—` markers on a stat card mean?
+
+A `▲` marks a state worth acting on, such as nodes not ready or failed pods.
+A `—` means no data arrived for that card at all, which is a different problem
+from a healthy zero.
+
+### Why does a card show a retry button instead of a number?
+
+Each card loads independently, so one failed query does not blank the page.
+When a card cannot load it says so and becomes a retry button rather than a
+link into its tab.
 
 ---
 

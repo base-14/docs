@@ -1,10 +1,10 @@
 ---
-title: Services and Operations
+title: APM Services and Operations - RED Metrics and Occurrences
 sidebar_label: Services
-sidebar_position: 2
+sidebar_position: 3
 description:
-  Compare service RED metrics, inspect server operations, and open individual
-  span occurrences in the APM Services view.
+  Compare service RED metrics, inspect server operations, and open
+  individual span occurrences in the APM Services view.
 keywords:
   [
     apm,
@@ -15,16 +15,25 @@ keywords:
     throughput,
     error rate,
     p99 latency,
+    service latency,
+    slow operations,
+    span occurrences,
+    service detail,
+    filter sidebar,
+    opentelemetry,
+    scout apm,
     base14,
     scout,
   ]
 ---
 
+# Services and Operations
+
 The Services tab compares every instrumented service over the selected time
 range. Start here to find unusual throughput, latency, or failures, then drill
 into the service and operation responsible.
 
-![Services Tab](/img/apm/services/services-table.png)
+![Services table listing each service with throughput, P99 latency, and error rate](/img/apm/services/services-table.png)
 
 ---
 
@@ -47,7 +56,7 @@ when enabled.
 - Use topbar search to filter by service name.
 - Click a row to open **Service Detail**.
 
-![Service Sparklines](/img/apm/services/services-sparklines.png)
+![Synchronized throughput, latency, and error rate sparklines on one service row](/img/apm/services/services-sparklines.png)
 
 ---
 
@@ -65,7 +74,7 @@ route.
 
 Active filters also appear as chips above the page and are stored in the URL.
 
-![Filter Sidebar](/img/apm/services/services-filter-sidebar.png)
+![Filter sidebar faceting services by span name, kind, status, HTTP status, and route](/img/apm/services/services-filter-sidebar.png)
 
 ---
 
@@ -81,7 +90,7 @@ Clicking a service opens its detail page. It contains:
 The charts and Spans table load independently. A slow table query therefore
 does not prevent aggregate charts from appearing.
 
-![Service Detail](/img/apm/service-detail/service-detail-summary.png)
+![Service detail page with throughput, latency percentile, and error rate charts](/img/apm/service-detail/service-detail-summary.png)
 
 ### Spans Table
 
@@ -97,7 +106,7 @@ Each operation row contains:
 Sort by a heading to find the busiest, slowest, or least reliable operation.
 Use **Load more** or page controls to browse additional rows.
 
-![Service Operations](/img/apm/service-detail/service-detail-transactions.png)
+![Spans table listing server operations with average latency, throughput, and failed rate](/img/apm/service-detail/service-detail-transactions.png)
 
 ---
 
@@ -142,3 +151,62 @@ The Throughput, Latency, and Error rate chart menus can open Grafana's alert
 editor with the service, environment, query, reducer, and a suggested threshold
 already filled in. Review the draft before saving it. Availability depends on
 your Grafana permissions and alerting configuration.
+
+---
+
+## Use Cases
+
+### Morning Health Check
+
+1. Leave **SERVICE** on **All** and sort the table by error rate.
+2. Scan the sparklines for a service whose trend has moved since yesterday.
+3. Open that service and check which operation carries the change.
+
+### Find the Operation Behind a Latency Spike
+
+1. Drag across the spike in the service's Latency chart to narrow the range.
+2. Sort the Spans table by average latency.
+3. Open the slowest operation and pick a **Slowest** occurrence to see its
+   trace in traceX.
+
+### Confirm a Deploy Made Things Worse
+
+1. Find the release in the sparklines, if deployment annotations are enabled
+   for your deployment.
+2. Compare throughput, P99 latency, and error rate either side of the marker.
+3. If the error rate moved, continue in [Errors](./errors.md) to see which
+   exception is new.
+
+---
+
+## FAQ
+
+### What do throughput, P99 latency, and error rate actually measure here?
+
+They are the RED metrics for a service's server spans over the selected range.
+Throughput is the current request rate, P99 latency is the 99th-percentile
+server-span duration, and error rate is the share of server spans whose status
+is Error. Each is drawn with its trend across the window.
+
+### Why does an operation show no occurrences when its charts have data?
+
+Occurrence search starts at the end of the selected range and covers a
+configured initial window, one hour by default, while the charts read rollups
+across the whole range. Use **Search 30m earlier** to widen the raw query. It
+stops at the start of the range or at the administrator's raw-trace retention
+limit, whichever comes first.
+
+### How do I get from a slow service to the request that caused it?
+
+Open the service, find the operation in its Spans table, then open that
+operation and pick a **Slowest** or **Failed** occurrence. The occurrence
+carries its trace ID into traceX, which opens the exact trace and span.
+
+---
+
+## Related Guides
+
+- [Getting Started](./getting-started.md) - Scope, filters, and trace limits
+- [Service Map](./service-map.md) - The dependencies behind a slow service
+- [Errors](./errors.md) - The exceptions behind an error rate
+- [Traces](./traces.md) - One request end to end
