@@ -55,13 +55,13 @@ configurations and best practices for .NET OpenTelemetry instrumentation.
 
 :::tip TL;DR
 
-Add the `OpenTelemetry.Extensions.Hosting` and
-`OpenTelemetry.AutoInstrumentation` NuGet packages, then wire up
-`builder.Services.AddOpenTelemetry()` in `Program.cs` to register ASP.NET
-Core, Entity Framework Core, and HttpClient instrumentation in one call.
-Configure the OTLP exporter with your Scout collector endpoint and set
-`OTEL_SERVICE_NAME` - no additional code is needed for HTTP request traces,
-database spans, or outbound call tracking.
+Add `OpenTelemetry.Extensions.Hosting`, the OTLP exporter and the ASP.NET
+Core, HttpClient and SqlClient instrumentation packages, then call
+`builder.Services.AddOpenTelemetry()` in `Program.cs`. Set `OTEL_SERVICE_NAME`
+and point the OTLP exporter at your Scout collector. If you cannot change the
+code, use the `OpenTelemetry.AutoInstrumentation` package instead, as described
+in [Zero-Code Instrumentation](#zero-code-instrumentation). Use one path or the
+other, not both.
 
 :::
 
@@ -124,12 +124,13 @@ Before starting, ensure you have:
 
 ### Compatibility Matrix
 
-| Component         | Minimum Version | Recommended Version |
-| ----------------- | --------------- | ------------------- |
-| .NET SDK          | 6.0.0           | 10.0+               |
-| ASP.NET Core      | 6.0.0           | 10.0+               |
-| OpenTelemetry     | 1.7.0           | 1.11+               |
-| Entity Framework  | 6.0.0           | 10.0+               |
+| Component                                       | Minimum Version | Recommended Version |
+| ----------------------------------------------- | --------------- | ------------------- |
+| .NET SDK                                        | 6.0.0           | 10.0+               |
+| ASP.NET Core                                    | 6.0.0           | 10.0+               |
+| OpenTelemetry                                   | 1.7.0           | 1.11+               |
+| Entity Framework                                | 6.0.0           | 10.0+               |
+| `OpenTelemetry.AutoInstrumentation` (zero-code) | 1.17.0          | 1.17.0+             |
 
 ## Required Packages
 
@@ -432,6 +433,128 @@ public static WebApplicationBuilder AddTelemetry(this WebApplicationBuilder buil
 > in the Scout Dashboard. Navigate to the Traces section to view request flows,
 > identify performance bottlenecks, and analyze distributed transactions across
 > your .NET services.
+
+## Zero-Code Instrumentation
+
+Zero-code instrumentation adds traces, metrics and logs to an ASP.NET Core app
+without changing its code. A CLR profiler loads the OpenTelemetry SDK and the
+instrumentation libraries at startup, and you configure it with environment
+variables.
+
+Use it when you cannot change the application code, or when a service runs on
+an older runtime such as .NET 8. Otherwise, use the SDK setup in
+[Configuration](#configuration). Do not combine the two in one service.
+
+The steps below come from the
+[`dotnet8-sqlserver-hello`](https://github.com/base-14/examples/tree/main/csharp/dotnet8-sqlserver-hello)
+example, an ASP.NET Core 8.0.22 Minimal API on SQL Server with no
+OpenTelemetry code.
+
+### Add the Package
+
+```xml showLineNumbers title="HelloSqlServer.csproj"
+<ItemGroup>
+  <PackageReference Include="Microsoft.Data.SqlClient" Version="7.1.0" />
+  <PackageReference Include="OpenTelemetry.AutoInstrumentation" Version="1.17.0" />
+</ItemGroup>
+```
+
+`dotnet publish` copies `instrument.sh`, the profiler and the instrumentation
+assemblies into the publish folder.
+
+Publish with a runtime identifier. Without one, the publish folder gets the
+native profiler for every platform.
+
+### Start the App Through instrument.sh
+
+`instrument.sh` sets the profiler environment variables and starts the app:
+
+```dockerfile showLineNumbers title="Dockerfile"
+FROM mcr.microsoft.com/dotnet/sdk:8.0.416 AS build
+WORKDIR /src
+
+COPY HelloSqlServer.csproj global.json ./
+RUN dotnet restore
+
+COPY . .
+ARG TARGETARCH
+RUN case "$TARGETARCH" in \
+      amd64) RID=linux-x64 ;; \
+      arm64) RID=linux-arm64 ;; \
+      *) echo "unsupported TARGETARCH: $TARGETARCH" && exit 1 ;; \
+    esac \
+    && dotnet publish -c Release -r "$RID" --self-contained false -o /app/publish /p:UseAppHost=false
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0.22 AS runtime
+WORKDIR /app
+
+COPY --from=build /app/publish .
+RUN chmod +x instrument.sh
+
+EXPOSE 8080
+ENTRYPOINT ["./instrument.sh", "dotnet", "HelloSqlServer.dll"]
+```
+
+To install the profiler once for several apps on a host, use the project's
+install script instead of the package. See the
+[automatic instrumentation getting started guide](https://opentelemetry.io/docs/zero-code/dotnet/).
+
+### Configure with Environment Variables
+
+```yaml showLineNumbers title="compose.yaml (api service, excerpt)"
+api:
+  environment:
+    OTEL_SERVICE_NAME: dotnet8-sqlserver-hello
+    OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+    OTEL_RESOURCE_ATTRIBUTES: deployment.environment.name=${SCOUT_ENVIRONMENT:-development},environment=${SCOUT_ENVIRONMENT:-development}
+    OTEL_DOTNET_AUTO_LOGS_INCLUDE_FORMATTED_MESSAGE: "true"
+```
+
+- The default protocol is `http/protobuf`, so the endpoint is the collector's
+  port 4318.
+- `OTEL_DOTNET_AUTO_LOGS_INCLUDE_FORMATTED_MESSAGE` sends the rendered log
+  message as the record body.
+- Custom `ActivitySource` and `Meter` names are not collected unless you list
+  them in `OTEL_DOTNET_AUTO_TRACES_ADDITIONAL_SOURCES` and
+  `OTEL_DOTNET_AUTO_METRICS_ADDITIONAL_SOURCES`.
+
+All settings are in the
+[configuration reference](https://opentelemetry.io/docs/zero-code/dotnet/configuration/).
+
+### What It Emits
+
+Recorded from the collector's debug output on the example:
+
+| Signal | What you get |
+| --- | --- |
+| Traces | A server span per request, named by route, such as `GET /api/hello/{name}`. A client span per SQL command, named by the query summary, such as `INSERT dbo.Greetings`, with `db.query.text` parameters replaced by `?`. |
+| Metrics | `http.server.request.duration`, `kestrel.*`, `db.client.operation.duration`, `process.runtime.dotnet.*` and `process.*`. Exported every 60 seconds by default. |
+| Logs | Every `ILogger` record, with the trace id and span id of the request. |
+
+The resource carries `telemetry.distro.name=opentelemetry-dotnet-instrumentation`
+and `process.runtime.version`.
+
+### Limits
+
+- The project marks every instrumentation Experimental. Span and metric names
+  can change between releases.
+- ARM64 support is experimental. The example was verified on linux/arm64.
+- On .NET 8 the profiler logs a warning that support ends on 2026-11-10.
+- Keep `InvariantGlobalization` off. Microsoft.Data.SqlClient fails to open a
+  connection when it is on.
+
+The profiler writes its own logs to `/var/log/opentelemetry/dotnet/`. Lines
+reading `Export succeeded` confirm it reaches the collector.
+
+### Zero-Code or SDK
+
+| | Zero-code | SDK in code |
+| --- | --- | --- |
+| Code changes | None. | `AddOpenTelemetry()` in `Program.cs`. |
+| Configuration | `OTEL_` environment variables. | Code and environment variables. |
+| Custom spans and metrics | Only sources listed in the additional sources variables. | Any source you register. |
+| Stability | Experimental instrumentations. | Stable and beta packages you pin. |
+| Startup | Through `instrument.sh` or profiler variables. | Normal `dotnet` start. |
 
 ## Production Configuration
 
@@ -1351,6 +1474,12 @@ OpenTelemetry adds approximately 1-2ms of latency per request in typical ASP.NET
 Core applications. With proper configuration (batch processor), the performance
 impact is minimal and acceptable for most production workloads.
 
+### Can I instrument ASP.NET Core without changing code?
+
+Yes. Add the `OpenTelemetry.AutoInstrumentation` package, start the app through
+`instrument.sh` and configure it with `OTEL_` environment variables. See
+[Zero-Code Instrumentation](#zero-code-instrumentation).
+
 ### Which .NET versions are supported?
 
 OpenTelemetry supports .NET 6.0+ with full support. .NET 8.0+ is recommended for
@@ -1462,6 +1591,9 @@ resources to maximize your observability:
 
 Here's a complete working example of an ASP.NET Core application with
 OpenTelemetry instrumentation:
+
+For the zero-code version on .NET 8, see
+[`csharp/dotnet8-sqlserver-hello`](https://github.com/base-14/examples/tree/main/csharp/dotnet8-sqlserver-hello).
 
 ### Project File
 
