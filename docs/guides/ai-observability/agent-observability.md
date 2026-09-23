@@ -710,6 +710,15 @@ for latency.
 - [Vercel AI SDK Instrumentation](../../instrument/apps/auto-instrumentation/vercel-ai-sdk.md)
   \- TypeScript multi-stage agent pipelines
 
+### Runnable Examples
+
+- [nodejs/ai-learning-path-planner](https://github.com/base-14/examples/tree/main/nodejs/ai-learning-path-planner)
+  \- a lead agent fanning out to researcher subagents on the Vercel AI SDK, with
+  cost per run and tool-definition token metrics
+- [csharp/agent-rebooking](https://github.com/base-14/examples/tree/main/csharp/agent-rebooking)
+  \- an agent handoff over MCP with a human approval gate, covered by
+  [Agent Approval Gates](./agent-approval-gates.md)
+
 ### Scout Platform Features
 
 - [Monitor AI agents in Scout](https://base14.io/scout/llm-observability) -
@@ -731,12 +740,15 @@ for latency.
 
 - [LLM Observability][llm-o11y] - the Python end-to-end foundation this guide
   builds on
+- [Agent Approval Gates][approval-gates] - human-in-the-loop agents, span pairs
+  and wait histograms
 - [LangGraph Instrumentation][langgraph] - framework-specific agent tracing
 - [Scout MCP Setup][scout-mcp] - run and observe an MCP server with Scout
 - [OpenTelemetry Collector Setup][collector] - full collector configuration
 - [Scout Exporter][scout-exporter] - configure base14 Scout authentication
 
 [llm-o11y]: ./llm-observability.md
+[approval-gates]: ./agent-approval-gates.md
 [langgraph]: ../../instrument/apps/auto-instrumentation/langgraph.md
 [scout-mcp]: ../../scout-mcp/setup.md
 [collector]: ../../instrument/collector-setup/otel-collector-config.md
