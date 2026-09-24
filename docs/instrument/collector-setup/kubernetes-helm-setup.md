@@ -98,7 +98,7 @@ daemon mounts Linux host paths that Windows pods do not support.
 
 ### Enabling it
 
-Add this to the `values.yaml` you already use:
+Set this in your `values.yaml`, then install as shown above:
 
 ```yaml showLineNumbers title="values.yaml"
 scout:
@@ -106,20 +106,13 @@ scout:
     enabled: true
 ```
 
-Then upgrade:
+The Windows daemon shares your Scout endpoint and credentials with the other
+collectors, so there is nothing further to configure.
 
-```bash
-helm repo update
-helm upgrade scout base14/scout-collector --version 0.6.0 \
---namespace scout -f values.yaml
-```
-
-Your Scout endpoint and credentials are inherited from the configuration you
-already have. There is one exception: if your values inject the Scout secret
-through an environment variable rather than setting `scout.apiKey` directly,
-each collector needs its own copy, because Helm replaces lists rather than
-merging them. Look for `SCOUT_API_KEY` under `agent-collector.extraEnvs`; if it
-is there, add the same entry under `windowsDaemon.extraEnvs`.
+The exception is `extraEnvs`, which is per-collector: Helm replaces lists rather
+than merging them. If you supply the Scout secret through an environment
+variable rather than setting `scout.apiKey`, add the same entry under
+`windowsDaemon.extraEnvs` as well as `agent-collector.extraEnvs`.
 
 ### What it collects
 
