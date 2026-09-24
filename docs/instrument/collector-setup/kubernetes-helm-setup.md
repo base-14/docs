@@ -59,7 +59,7 @@ helm repo add base14 https://charts.base14.io/
 ```
 
 ```bash
-helm install scout base14/scout-collector --version 0.5.5 \
+helm install scout base14/scout-collector --version 0.6.0 \
 --namespace scout --create-namespace -f values.yaml
 ```
 
@@ -73,7 +73,7 @@ helm repo add base14 https://charts.base14.io/
 ```
 
 ```bash
-helm install scout base14/scout-collector --version 0.5.5 \
+helm install scout base14/scout-collector --version 0.6.0 \
 --namespace scout --create-namespace -f values.yaml
 ```
 
