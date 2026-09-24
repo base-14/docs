@@ -82,6 +82,104 @@ helm install scout base14/scout-collector --version 0.6.0 \
 </Tabs>
 ```
 
+## Windows Nodes
+
+:::note
+
+Windows node support is new and should be treated as experimental. It is
+disabled by default, so enabling it is an explicit opt-in and nothing changes
+until you do.
+
+:::
+
+If your cluster has Windows node groups, the collector needs a second DaemonSet
+to run on them. A single DaemonSet cannot serve both operating systems: the
+collector image is published separately for Linux and Windows, and the Linux
+daemon mounts Linux host paths that Windows pods do not support.
+
+Chart `0.6.0` and above also keeps the Linux collectors off your Windows nodes
+automatically. On earlier versions they could be scheduled onto a Windows node,
+where they cannot start.
+
+### Enabling it
+
+Add this to the `values.yaml` you already use:
+
+```yaml showLineNumbers title="values.yaml"
+scout:
+  windowsDaemon:
+    enabled: true
+```
+
+Then upgrade:
+
+```bash
+helm repo update
+helm upgrade scout base14/scout-collector --version 0.6.0 \
+--namespace scout -f values.yaml
+```
+
+Your Scout endpoint and credentials are inherited from the configuration you
+already have. There is one exception: if your values inject the Scout secret
+through an environment variable rather than setting `scout.apiKey` directly,
+each collector needs its own copy, because Helm replaces lists rather than
+merging them. Look for `SCOUT_API_KEY` under `agent-collector.extraEnvs`; if it
+is there, add the same entry under `windowsDaemon.extraEnvs`.
+
+### What it collects
+
+Container logs from `C:\var\log\pods` and kubelet stats from the Windows
+kubelet.
+
+Host metrics, Windows Event Log and performance counters are not collected yet.
+
+Telemetry from applications *running on* Windows nodes does not need any of
+this — point your SDKs at the agent as usual. The service is named after your
+Helm release, so with the `helm install scout ...` above it is:
+
+```text
+scout-agent-collector.scout.svc:4318
+```
+
+### Windows Server version
+
+The default image targets **Windows Server 2022**. A Windows container image
+must match the host build, so on Server 2019 set the tag explicitly:
+
+```yaml showLineNumbers title="values.yaml"
+scout:
+  windowsDaemon:
+    enabled: true
+    image:
+      tag: "0.130.1-windows-2019-amd64"
+```
+
+A cluster with a mix of 2019 and 2022 nodes needs one DaemonSet per build, since
+a single pod template carries a single image. Contact support and we will help
+you configure it.
+
+### Other options
+
+```yaml showLineNumbers title="values.yaml"
+scout:
+  windowsDaemon:
+    enabled: true
+    # Windows node pools are often tainted; tolerate yours here.
+    tolerations: []
+    # Where the kubelet writes container logs, if your nodes differ.
+    hostLogPath: 'C:\var\log\pods'
+    # The collector runs as ContainerUser, which is not an administrator. If log
+    # collection fails with permission errors, set ContainerAdministrator.
+    runAsUserName: ""
+    resources:
+      requests:
+        memory: 128Mi
+        cpu: 100m
+      limits:
+        memory: 512Mi
+        cpu: 400m
+```
+
 ## Configuration Guide
 
 ## Using Otelcol style configuration
