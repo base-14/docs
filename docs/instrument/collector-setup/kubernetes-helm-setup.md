@@ -86,9 +86,8 @@ helm install scout base14/scout-collector --version 0.6.0 \
 
 :::note
 
-Windows node support is new and should be treated as experimental. It is
-disabled by default, so enabling it is an explicit opt-in and nothing changes
-until you do.
+Windows node support is experimental. It is disabled by default, so enabling
+it is an explicit opt-in.
 
 :::
 
@@ -96,10 +95,6 @@ If your cluster has Windows node groups, the collector needs a second DaemonSet
 to run on them. A single DaemonSet cannot serve both operating systems: the
 collector image is published separately for Linux and Windows, and the Linux
 daemon mounts Linux host paths that Windows pods do not support.
-
-Chart `0.6.0` and above also keeps the Linux collectors off your Windows nodes
-automatically. On earlier versions they could be scheduled onto a Windows node,
-where they cannot start.
 
 ### Enabling it
 
