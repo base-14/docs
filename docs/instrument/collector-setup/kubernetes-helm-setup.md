@@ -106,13 +106,46 @@ scout:
     enabled: true
 ```
 
-The Windows daemon shares your Scout endpoint and credentials with the other
-collectors, so there is nothing further to configure.
+That is all you need if you let the chart generate your collector
+configuration.
 
-The exception is `extraEnvs`, which is per-collector: Helm replaces lists rather
-than merging them. If you supply the Scout secret through an environment
-variable rather than setting `scout.apiKey`, add the same entry under
-`windowsDaemon.extraEnvs` as well as `agent-collector.extraEnvs`.
+### If you supply your own collector configuration
+
+If you set `scout.agent.config` or `scout.daemon.config` — as the
+[otelcol style configuration](#using-otelcol-style-configuration) below does —
+you must supply `scout.windowsDaemon.config` too. The chart cannot generate one
+for you: your configuration carries its own credentials, under value names you
+chose, and a generated configuration would use different ones. Rather than
+authenticate the Windows daemon differently from every other collector, the
+chart refuses to render and tells you so.
+
+Use the same shape as your agent configuration, with Windows receivers:
+
+```yaml showLineNumbers title="values.yaml"
+scout:
+  windowsDaemon:
+    enabled: true
+    config: |
+      extensions:
+        oauth2client:
+          client_id: {{ .Values.scout.clientId }}
+          client_secret: {{ .Values.scout.clientSecret }}
+          token_url: {{ .Values.scout.tokenUrl }}
+      receivers:
+        filelog:
+          include:
+            - 'C:\var\log\pods\*\*\*.log'
+          start_at: end
+          operators:
+            - type: container
+              id: container-parser
+      # ...exporters, processors and pipelines as in your agent configuration
+```
+
+`extraEnvs` behaves the same way: it is per-collector, and Helm replaces lists
+rather than merging them. If you supply the Scout secret through an environment
+variable, add the same entry under `windowsDaemon.extraEnvs` as well as
+`agent-collector.extraEnvs`.
 
 ### What it collects
 
