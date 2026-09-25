@@ -4,8 +4,8 @@ title:
 sidebar_label: Pydantic AI
 sidebar_position: 7.5
 description:
-  Trace Pydantic AI agents with OpenTelemetry and no Logfire. Agent, model and
-  tool spans, token metrics, content capture and prompt versions on Ollama.
+  Trace Pydantic AI agents with OpenTelemetry, without Logfire. Agent, model
+  and tool spans, token metrics, content capture and prompt versions on Ollama.
 keywords:
   [
     pydantic ai opentelemetry,
@@ -19,11 +19,11 @@ keywords:
     pydantic ai output validation retry,
     pydantic ai ollama,
     OllamaProvider tracing,
-    genai semantic conventions python,
     llm observability python,
     ai agent monitoring python,
-    invoke_agent chat execute_tool spans,
     prompt version tracing,
+    pydantic ai observability,
+    pydantic ai token usage,
   ]
 ---
 
@@ -35,7 +35,9 @@ for the run, each model request and each tool call, plus a token usage
 metric. It writes to whichever tracer and meter providers are installed, so
 it works with the plain OpenTelemetry SDK and needs no Logfire account.
 
-The examples come from a KYC (know your customer) onboarding service with two
+The examples come from
+[`ai-kyc-onboarding`](https://github.com/base-14/examples/tree/main/python/ai-kyc-onboarding),
+a KYC (know your customer) onboarding service with two
 agents on local Ollama models. An extraction agent reads one identity
 document and returns typed fields. An assessment agent calls three tools to
 check expiry, identity and sanctions, then approves, asks for documents again
@@ -80,7 +82,7 @@ does.
 - Control prompt and completion capture with an environment variable.
 - Read the `invoke_agent`, `chat` and `execute_tool` span tree.
 - Use the `gen_ai.client.token.usage` metric.
-- Recognise an output validation retry in a trace.
+- Recognize an output validation retry in a trace.
 - Carry a prompt version in run `metadata`.
 - Turn thinking off for Ollama models.
 
@@ -103,11 +105,11 @@ does.
 | `opentelemetry-instrumentation-fastapi`, `-psycopg`, `-logging` | 0.65b0 |
 | `fastapi` | 0.141.1 |
 | Python | 3.14 |
-| OTel Collector contrib | 0.161.0 |
+| OpenTelemetry Collector Contrib | 0.161.0 |
 | Example | [`ai-kyc-onboarding`](https://github.com/base-14/examples/tree/main/python/ai-kyc-onboarding) |
 
-Pydantic AI releases almost daily. Pin an exact version and re-check the
-instrumentation when you upgrade.
+Pin `pydantic-ai-slim` to an exact version and re-check the spans after each
+upgrade.
 
 ## Installation
 
@@ -234,9 +236,6 @@ shows up, check the endpoint and see [Troubleshooting](#troubleshooting).
 
 ## Configuration
 
-This section explains the parts of the Quick Start file and what the example
-adds.
-
 ```mdx-code-block
 <Tabs>
 <TabItem value="setup" label="Telemetry Setup" default>
@@ -255,8 +254,8 @@ adds.
 - **`shutdown()`** on both providers flushes what is still buffered. A
   long-running service calls it on exit.
 
-The example adds two things. It sets `include_content` from an environment
-variable, as shown in [Content Capture](#content-capture):
+The example sets `include_content` from an environment variable, as shown in
+[Content Capture](#content-capture):
 
 ```python showLineNumbers title="src/kyc_onboarding/telemetry.py (excerpt)"
 def configure_instrumentation() -> None:
@@ -265,8 +264,8 @@ def configure_instrumentation() -> None:
 
 It also wraps the OTLP span exporter in its own
 `CostAndErrorAttributingSpanExporter`. See
-[Cost and error type](#cost-and-error-type). For the tracer provider a
-Temporal worker needs, see
+[Adding Cost and Error Type](#adding-cost-and-error-type-with-a-span-exporter).
+For the tracer provider a Temporal worker needs, see
 [Pydantic AI on Temporal](./pydantic-ai-temporal.md#configuration).
 
 ```mdx-code-block
@@ -314,7 +313,7 @@ Agent(
 - **`temperature` and `max_tokens`** are recorded as
   `gen_ai.request.temperature` and `gen_ai.request.max_tokens`.
 - **The model profile** settings are explained in
-  [Thinking Off for Ollama](#thinking-off-for-ollama).
+  [Ollama Model Settings](#ollama-model-settings).
 
 ```mdx-code-block
 </TabItem>
@@ -370,7 +369,7 @@ retried.
 
 The GenAI attributes follow the OpenTelemetry GenAI semantic conventions,
 which are in Development status as of September 2026, so names can change.
-The keys worth knowing:
+The main attributes:
 
 | Attribute | On | Value |
 | --- | --- | --- |
@@ -456,8 +455,9 @@ when content capture is on. `retries={"output": 2}` allows two retries.
 After that the run raises `UnexpectedModelBehavior`, which the example's
 workflow turns into an escalation with reason `invalid_output`.
 
-The assessment agent's output function raises `ModelRetry` for the same
-effect. It sends the answer back when a required tool has not returned yet:
+The assessment agent's output function raises `ModelRetry` when a required
+tool has not returned yet. The model gets the message and makes another
+request, which also shows as an extra `chat` span:
 
 ```python showLineNumbers title="src/kyc_onboarding/agents/assessment.py (excerpt)"
 missing = missing_tool_calls(ctx)
@@ -502,12 +502,12 @@ def _prompt_version_attributes(
     return {PROMPT_VERSION_ATTRIBUTE: str(metadata[PROMPT_VERSION_METADATA_KEY])}
 ```
 
-## Cost and Error Type
+## Adding Cost and Error Type with a Span Exporter
 
 Pydantic AI records token counts but no cost. To add cost, or any attribute
-derived from Pydantic AI's own, wrap the span exporter. Pydantic AI owns its
-spans and a finished span cannot be changed, so the wrapper rebuilds each
-GenAI span it changes on the way out and passes the rest through.
+derived from Pydantic AI's own, wrap the span exporter. A finished span
+cannot be changed. The wrapper rebuilds each GenAI span it changes before
+export and passes the rest through unchanged.
 
 A wrapper can add:
 
@@ -527,7 +527,7 @@ The example's `CostAndErrorAttributingSpanExporter` does all four. It writes
 `error.type=pydantic_ai.exceptions.UsageLimitExceeded`. Use your own prefix
 for application attributes. `gen_ai.` belongs to the semantic conventions.
 
-## Thinking Off for Ollama
+## Ollama Model Settings
 
 Reasoning models on Ollama think before they answer unless told not to.
 `openai_reasoning_effort="none"` in the model settings tells the model not to
@@ -539,18 +539,17 @@ model profile matter on Ollama:
 - **`openai_chat_supports_max_completion_tokens=False`** sends the cap as
   `max_tokens`, which Ollama reads. It ignores `max_completion_tokens`.
 - **`json_schema_transformer=OpenAIJsonSchemaTransformer`** keeps `format`
-  in the output schema. `OllamaProvider` picks a profile by model name, and
-  for Gemma models that profile's JSON schema transformer removes
-  `format: date` and moves it into the field description. The model may
-  then leave date fields empty.
+  in the output schema. `OllamaProvider` picks a profile by model name. For
+  Gemma models, that profile's JSON schema transformer moves `format: date`
+  into the field description, and the model may then leave date fields
+  empty.
 
 ## Running Your Application
 
-Run `quickstart.py` as shown in [Quick Start](#quick-start), or call
-`Agent.instrument_all` at startup in your own service. The example runs both
-agents inside Temporal; see
+Run `quickstart.py` as in [Quick Start](#quick-start). For the full example,
+see
 [Running Your Application](./pydantic-ai-temporal.md#running-your-application)
-on the durable page for its commands.
+on the Temporal page.
 
 ## Troubleshooting
 
@@ -570,7 +569,8 @@ No meter provider with an exporting reader is installed. Set a
 One cause: a Gemma model on `OllamaProvider`, whose profile moves
 `format: date` out of the schema. Set
 `json_schema_transformer=OpenAIJsonSchemaTransformer` on an
-`OpenAIModelProfile`, as in [Agent and Model](#configuration).
+`OpenAIModelProfile`, as in the Agent and Model tab of
+[Configuration](#configuration).
 
 ### The model never calls a tool
 
@@ -603,15 +603,15 @@ The model uses the plain OpenAI provider with a custom base URL. Use
 - Content capture copies the whole conversation into each `chat` span, and a
   tool loop resends the conversation on every request.
 - An exporter wrapper like the one in
-  [Cost and error type](#cost-and-error-type) does one price lookup and one
-  JSON parse per GenAI span it changes.
-- Spans export from a `BatchSpanProcessor`, off the request path.
+  [Adding Cost and Error Type](#adding-cost-and-error-type-with-a-span-exporter)
+  does one price lookup and one JSON parse per GenAI span it changes.
 
 ## FAQ
 
 ### Does Pydantic AI need Logfire for OpenTelemetry tracing?
 
-No. `Agent.instrument_all(InstrumentationSettings())` writes to the global
+No, Pydantic AI does not need Logfire.
+`Agent.instrument_all(InstrumentationSettings())` writes to the global
 OpenTelemetry tracer and meter providers, so any OTLP exporter and backend
 works.
 
@@ -629,8 +629,8 @@ yourself as the example does.
 
 ### Does Pydantic AI record token usage metrics?
 
-Yes. It records the `gen_ai.client.token.usage` histogram per model request,
-split by `gen_ai.token.type`.
+Yes, Pydantic AI records the `gen_ai.client.token.usage` histogram once per
+model request, split by `gen_ai.token.type`.
 
 ### How do I see an output validation retry in a Pydantic AI trace?
 
@@ -640,20 +640,21 @@ status.
 
 ### How do I tag Pydantic AI spans with a prompt version?
 
-Pass it in `metadata` on `agent.run`. Pydantic AI records `metadata` as one
-JSON attribute on `invoke_agent`. To filter on it, copy the value into a flat
-attribute in a span exporter wrapper.
+Pass the prompt version in `metadata` on `agent.run`. Pydantic AI records
+`metadata` as one JSON attribute on `invoke_agent`. To filter on it, copy the
+value into a flat attribute in a span exporter wrapper.
 
-### How do I group all model calls of one request or case?
+### How do I group all Pydantic AI model calls for one request?
 
 Pass your ID as `conversation_id` to `agent.run`. It is recorded as
 `gen_ai.conversation.id` on every GenAI span of the run.
 
 ### Does Pydantic AI record cost?
 
-No. Pydantic AI records token counts, not cost. To add a cost attribute,
+No, Pydantic AI records token counts but not cost. To add a cost attribute,
 wrap the span exporter and compute it from the token counts and a price
-table, as in [Cost and error type](#cost-and-error-type).
+table, as in
+[Adding Cost and Error Type](#adding-cost-and-error-type-with-a-span-exporter).
 
 ### How do I run Pydantic AI agents durably with tracing?
 
