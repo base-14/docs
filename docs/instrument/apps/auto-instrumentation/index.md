@@ -42,16 +42,18 @@ your collector is working first, try the
 
 ### Python
 
-| Framework  | Guide                      | What's Instrumented                                                              |
-| ---------- | -------------------------- | -------------------------------------------------------------------------------- |
-| Django     | [Django](./django)         | HTTP requests, ORM queries, middleware, templates, Celery tasks                  |
-| Flask      | [Flask](./flask)           | HTTP requests, Jinja2 templates, SQLAlchemy                                      |
-| FastAPI    | [FastAPI](./fast-api)      | HTTP requests, async handlers, Pydantic validation                               |
-| Litestar   | [Litestar](./litestar)     | HTTP requests, asyncpg, SQLAlchemy, httpx, msgspec validation                    |
-| Celery     | [Celery](./celery)         | Task execution, retries, worker lifecycle                                        |
-| LangChain  | [LangChain](./langchain)   | Agent runs, LLM calls, tool execution, RAG retrieval, token/cost tracking       |
-| LangGraph  | [LangGraph](./langgraph)   | Agent pipelines, LLM calls, tool nodes, conditional routing, token/cost tracking |
-| LlamaIndex | [LlamaIndex](./llamaindex) | LLM calls, structured output, token/cost tracking, quality evaluation            |
+| Framework               | Guide                                             | What's Instrumented                                                               |
+| ----------------------- | ------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Django                  | [Django](./django)                                | HTTP requests, ORM queries, middleware, templates, Celery tasks                   |
+| Flask                   | [Flask](./flask)                                  | HTTP requests, Jinja2 templates, SQLAlchemy                                       |
+| FastAPI                 | [FastAPI](./fast-api)                             | HTTP requests, async handlers, Pydantic validation                                |
+| Litestar                | [Litestar](./litestar)                            | HTTP requests, asyncpg, SQLAlchemy, httpx, msgspec validation                     |
+| Celery                  | [Celery](./celery)                                | Task execution, retries, worker lifecycle                                         |
+| LangChain               | [LangChain](./langchain)                          | Agent runs, LLM calls, tool execution, RAG retrieval, token/cost tracking         |
+| LangGraph               | [LangGraph](./langgraph)                          | Agent pipelines, LLM calls, tool nodes, conditional routing, token/cost tracking  |
+| LlamaIndex              | [LlamaIndex](./llamaindex)                        | LLM calls, structured output, token/cost tracking, quality evaluation             |
+| Pydantic AI             | [Pydantic AI](./pydantic-ai)                      | Agent runs, LLM calls, tool execution, token usage, prompt versions               |
+| Pydantic AI on Temporal | [Pydantic AI on Temporal](./pydantic-ai-temporal) | Durable agent workflows, replay-safe spans, signal and update links, case metrics |
 
 ### Node.js
 
