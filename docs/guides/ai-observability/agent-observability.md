@@ -703,12 +703,30 @@ for latency.
 
 ### Framework Guides
 
+Grouped by how much telemetry the framework emits on its own.
+
+Native OpenTelemetry, enabled by configuration:
+
+- [Agent Approval Gates](./agent-approval-gates.md) \- Microsoft Agent
+  Framework and the MCP C# SDK, with a human approval gate on top
+
+Built in behind a flag or a package:
+
+- [Vercel AI SDK Instrumentation](../../instrument/apps/auto-instrumentation/vercel-ai-sdk.md)
+  \- `@ai-sdk/otel`, run ids, subagent fan-out and per-run cost
+- [Pydantic AI Instrumentation](../../instrument/apps/auto-instrumentation/pydantic-ai.md)
+  \- `Agent.instrument_all`, agent, model and tool spans without Logfire
+- [Pydantic AI on Temporal](../../instrument/apps/auto-instrumentation/pydantic-ai-temporal.md)
+  \- one trace per durable workflow across replay and worker restarts
+
+Instrumented by a callback handler or custom spans:
+
+- [LangChain Instrumentation](../../instrument/apps/auto-instrumentation/langchain.md)
+  \- zero-code auto-instrumentation, then a callback handler for GenAI spans
 - [LangGraph Instrumentation](../../instrument/apps/auto-instrumentation/langgraph.md)
   \- node wrapping, conditional routing, tool-calling nodes
 - [LlamaIndex Instrumentation](../../instrument/apps/auto-instrumentation/llamaindex.md)
   \- RAG, structured output, self-correction loops
-- [Vercel AI SDK Instrumentation](../../instrument/apps/auto-instrumentation/vercel-ai-sdk.md)
-  \- TypeScript multi-stage agent pipelines
 
 ### Runnable Examples
 
@@ -718,6 +736,10 @@ for latency.
 - [csharp/agent-rebooking](https://github.com/base-14/examples/tree/main/csharp/agent-rebooking)
   \- an agent handoff over MCP with a human approval gate, covered by
   [Agent Approval Gates](./agent-approval-gates.md)
+- [python/ai-kyc-onboarding](https://github.com/base-14/examples/tree/main/python/ai-kyc-onboarding)
+  \- a Pydantic AI agent inside a Temporal workflow, waiting on documents and
+  a reviewer, covered by
+  [Pydantic AI on Temporal](../../instrument/apps/auto-instrumentation/pydantic-ai-temporal.md)
 
 ### Scout Platform Features
 

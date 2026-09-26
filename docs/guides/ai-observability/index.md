@@ -63,9 +63,12 @@ and a fallback to a different provider.
 | [LLM Observability](./llm-observability)                                                  | End-to-end guide (Python): GenAI semantic conventions, token/cost metrics, agent pipeline spans, evaluation tracking, PII scrubbing, production deployment                    |
 | [Rust LLM Observability](./rust-llm-observability)                                        | End-to-end guide (Rust): GenAI semantic conventions, multi-provider LLM with fallback, token/cost metrics, multi-stage pipeline spans, retry observability, Docker deployment |
 | [Spring AI LLM Observability](./spring-ai-llm-observability)                                    | End-to-end guide (Java): Three-layer instrumentation (Java Agent + Spring AI + manual OTel), GenAI semantic conventions, tool calling, RAG, domain metrics, Docker deployment |
+| [LangChain Instrumentation](../../instrument/apps/auto-instrumentation/langchain)         | Framework-specific: LangChain zero-code auto-instrumentation, then a callback handler for agent, tool and retrieval spans on the GenAI conventions |
 | [LangGraph Instrumentation](../../instrument/apps/auto-instrumentation/langgraph)         | Framework-specific: LangGraph node wrapping, conditional edge routing, tool-calling nodes, state management, pipeline traces                                                  |
 | [LlamaIndex Instrumentation](../../instrument/apps/auto-instrumentation/llamaindex)       | Framework-specific: LlamaIndex structured output, self-correction loops, multi-provider LLM factory, YAML prompt management                                                   |
 | [Vercel AI SDK Instrumentation](../../instrument/apps/auto-instrumentation/vercel-ai-sdk) | Framework-specific: AI SDK 7 agent spans via @ai-sdk/otel, run ids, per-run cost and subagent fan-out, plus the v6 middleware path                                            |
+| [Pydantic AI Instrumentation](../../instrument/apps/auto-instrumentation/pydantic-ai)     | Framework-specific: Pydantic AI's built-in OpenTelemetry via `Agent.instrument_all`, agent, model and tool spans, token metrics, content capture and prompt versions, no Logfire |
+| [Pydantic AI on Temporal](../../instrument/apps/auto-instrumentation/pydantic-ai-temporal) | Framework-specific: one trace per durable Pydantic AI workflow on Temporal, across replay and worker restarts, with replay-safe logs and metrics |
 
 ## What Gets Instrumented
 
