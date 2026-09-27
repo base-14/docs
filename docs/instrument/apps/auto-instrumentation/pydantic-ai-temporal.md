@@ -36,14 +36,8 @@ worker restarts, and logs and metrics are recorded once when Temporal replays
 history. Model requests and tool calls run as Temporal activities, so a
 workflow can wait days for a person.
 
-The example is
-[`ai-kyc-onboarding`](https://github.com/base-14/examples/tree/main/python/ai-kyc-onboarding),
-a KYC (know your customer) onboarding service. Each case is a
-workflow. Documents arrive as signals, an extraction agent and an assessment
-agent decide the case on local Ollama models, and escalated cases wait for a
-reviewer's decision, sent as a Temporal update. For the agent-level spans,
-content capture and token metrics, see [Pydantic AI](./pydantic-ai.md). This
-page covers what Temporal adds.
+For the agent-level spans, content capture and token metrics, see
+[Pydantic AI](./pydantic-ai.md). This page covers what Temporal adds.
 
 :::tip TL;DR
 
@@ -74,7 +68,8 @@ does.
 ## Overview
 
 - Wire the Temporal and Pydantic AI plugins with a replay-safe tracer provider.
-- Understand why the example does not use `TracingInterceptor`.
+- Understand why the [example](#complete-example) does not use
+  `TracingInterceptor`.
 - Read the trace of a case, open or closed, with its wait spans, budgets and
   escalations.
 - Link signals and updates from their own request traces into the case trace.
@@ -964,6 +959,11 @@ that includes the document text.
   cases, waits and agent failures.
 
 ## Complete Example
+
+`ai-kyc-onboarding` is a KYC (know your customer) onboarding service where
+each case is a workflow. Documents arrive as signals, two agents on local
+Ollama models decide the case, and an escalated case waits for a reviewer's
+decision, sent as a Temporal update.
 
 ```text showLineNumbers
 ai-kyc-onboarding/

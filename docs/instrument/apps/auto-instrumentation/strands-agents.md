@@ -38,15 +38,6 @@ emits GenAI spans for the run, each event loop cycle, each model call and each
 tool call, plus `strands.*` metrics. Strands exports no logs; add the
 OpenTelemetry logging handler for those.
 
-The examples come from
-[`ai-filing-analyst`](https://github.com/base-14/examples/tree/main/python/ai-filing-analyst),
-a service that answers questions about a US-listed company's reported
-financials from SEC XBRL data. An analyst agent on local Ollama looks up
-figures and computes ratios with tools. For a ranking question it calls a
-second agent, attached as a tool, that places the company among every filer
-of a concept. A verifier checks every figure and accession number against the
-tool results before the answer is served.
-
 :::tip TL;DR
 
 Set a global tracer and meter provider before the first agent runs, and set
@@ -93,7 +84,7 @@ does.
 
 ### Signals
 
-| Signal | What Strands emits | What the example adds |
+| Signal | What Strands emits | What the [example](#complete-example) adds |
 | --- | --- | --- |
 | Traces | `invoke_agent`, `execute_event_loop_cycle`, `chat` and `execute_tool` spans with GenAI attributes. | `gen_ai.provider.name`, `server.address` and request IDs through `trace_attributes`. `error.type` and cost in a span exporter. FastAPI, httpx and psycopg spans, and one hand-written span. |
 | Metrics | `strands.event_loop.*`, `strands.tool.*` and `strands.model.time_to_first_token`. | Application counters and a duration histogram under `base14.filing.*`. `http.server.*` and `http.client.duration` from the FastAPI and httpx instrumentations. |
@@ -794,6 +785,11 @@ Strands 1.57.1 writes its own name there. Override it in `trace_attributes`.
   tokens by model and runs by outcome.
 
 ## Complete Example
+
+`ai-filing-analyst` answers questions about a US-listed company's reported
+financials from SEC XBRL data. An analyst agent on local Ollama calls tools
+and, for a ranking question, a second agent attached as a tool. A verifier
+checks every figure against the tool results before the answer is served.
 
 ```text showLineNumbers
 ai-filing-analyst/

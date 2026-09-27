@@ -34,16 +34,8 @@ Pydantic AI has OpenTelemetry instrumentation built in. Call
 for the run, each model request and each tool call, plus a token usage
 metric. It writes to whichever tracer and meter providers are installed, so
 it works with the plain OpenTelemetry SDK and needs no Logfire account.
-
-The examples come from
-[`ai-kyc-onboarding`](https://github.com/base-14/examples/tree/main/python/ai-kyc-onboarding),
-a KYC (know your customer) onboarding service with two
-agents on local Ollama models. An extraction agent reads one identity
-document and returns typed fields. An assessment agent calls three tools to
-check expiry, identity and sanctions, then approves, asks for documents again
-or escalates to a reviewer. In the example both agents run inside Temporal
-workflows; this page covers what applies to any Pydantic AI agent. For the
-durable setup, see [Pydantic AI on Temporal](./pydantic-ai-temporal.md).
+For agents that run as Temporal workflows, see
+[Pydantic AI on Temporal](./pydantic-ai-temporal.md).
 
 :::tip TL;DR
 
@@ -683,6 +675,12 @@ Give each agent the `TemporalDurability` capability and use Temporal's
   tokens and cost by model.
 
 ## Complete Example
+
+`ai-kyc-onboarding` is a KYC (know your customer) onboarding service with two
+agents on local Ollama models. An extraction agent reads an identity document
+into typed fields, and an assessment agent checks expiry, identity and
+sanctions with three tools, then approves, asks again or escalates to a
+reviewer. Both agents run inside Temporal workflows.
 
 ```text showLineNumbers
 ai-kyc-onboarding/
