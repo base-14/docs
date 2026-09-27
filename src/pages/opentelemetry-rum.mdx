@@ -1,16 +1,16 @@
 ---
 title: "OpenTelemetry RUM: real user monitoring without a vendor SDK"
 description: "OpenTelemetry RUM for web and mobile. Export browser and app telemetry as OTLP instead of a proprietary agent, and query it beside backend traces."
+keywords:
+  - opentelemetry rum
+  - real user monitoring opentelemetry
+  - otel rum
+  - opentelemetry browser monitoring
+  - opentelemetry mobile rum
+  - vendor neutral rum
+  - otlp rum
+  - datadog rum alternative
 ---
-
-import Head from "@docusaurus/Head";
-
-<Head>
-  <meta
-    name="keywords"
-    content="opentelemetry rum, real user monitoring opentelemetry, otel rum, opentelemetry browser monitoring, opentelemetry mobile rum, vendor neutral rum, otlp rum, datadog rum alternative"
-  />
-</Head>
 
 # OpenTelemetry RUM: real user monitoring without a vendor SDK
 
@@ -18,8 +18,7 @@ import Head from "@docusaurus/Head";
 > wrote them, so switching platforms means changing code in every app and
 > shipping a release to every user. OpenTelemetry RUM emits standard spans,
 > metrics, and logs over OTLP instead, so the destination is configuration
-> rather than a rewrite. base14's Flutter and React SDKs work this way, and
-> the resulting telemetry is billed as signals rather than per session.
+> rather than a rewrite. base14's Flutter and React SDKs work this way.
 
 Backend observability settled this argument years ago. You instrument with
 OpenTelemetry, you point a collector wherever you want, and changing vendor
@@ -66,56 +65,43 @@ Because the wire format is OTLP, the receiving end is your choice.
 
 `scout_flutter` covers Flutter on iOS, Android, macOS, and web.
 `@base-14/scout-react` covers React Native on iOS and Android plus React in
-the browser. Both auto-capture the full RUM event set except Session Replay
-and Profiling, with no manual tracking calls in your application code.
+the browser. Both auto-capture the RUM event set below, with no manual
+tracking calls in your application code.
 
-| Area | Captured |
-| :--- | :--- |
-| Interaction | Taps, clicks, scroll depth, rage clicks, dead clicks, error clicks |
-| Navigation | Screen and route views, load time, referrer, foreground periods |
-| Network | `fetch` and XHR with status, duration, phase breakdown, GraphQL operation, third-party classification |
-| Errors | Handled and unhandled errors with fingerprint, cause chain, and breadcrumbs |
-| Crashes | Native iOS crashes via KSCrash and MetricKit; Android via NDK signal handler and `ApplicationExitInfo` |
-| Responsiveness | ANRs with thread dumps, iOS UI hangs, long tasks, frozen frames, frame rate |
-| Web vitals | LCP, INP, CLS, FCP, TTFB with sub-part timings |
-| Context | Session and user identity, feature flags, device, OS, network, locale, ~20 accessibility flags |
+| Area           | Captured                                                                                               |
+| :------------- | :----------------------------------------------------------------------------------------------------- |
+| Interaction    | Taps, clicks, scroll depth, rage clicks, dead clicks, error clicks                                     |
+| Navigation     | Screen and route views, load time, referrer, foreground periods                                        |
+| Network        | `fetch` and XHR with status, duration, phase breakdown, GraphQL operation, third-party classification  |
+| Errors         | Handled and unhandled errors with fingerprint, cause chain, and breadcrumbs                            |
+| Crashes        | Native iOS crashes via KSCrash and MetricKit; Android via NDK signal handler and `ApplicationExitInfo` |
+| Responsiveness | ANRs with thread dumps, iOS UI hangs, long tasks, frozen frames, frame rate                            |
+| Web vitals     | LCP, INP, CLS, FCP, TTFB with sub-part timings                                                         |
+| Context        | Session and user identity, feature flags, device, OS, network, locale, ~20 accessibility flags         |
 
 Delivery is built for real networks: batched export, exponential backoff
 with jitter, an on-disk buffer that survives being offline, and a forced
 flush when the app goes to the background.
 
-## Two limitations to check before you commit
+## Session replay and profiling
 
-**Session replay is not there.** Neither SDK captures it, and neither
-captures profiling. If replay is on your requirements list, this is the
-wrong tool and the rest of the page does not matter.
+We're building session replay and profiling with design partners. If
+either matters to your team, [talk to us](https://base14.io/contact) about
+joining and shaping how they work.
 
-**RUM does sample sessions.** The SDK defaults to a 1% session sample rate,
+## Session sampling
+
+The SDK defaults to a 1% session sample rate,
 which is normal for RUM at consumer volume and is what keeps the cost of
 high-traffic apps sane. What matters is what sampling does not touch:
 crash, error, and ANR telemetry bypasses the session sample rate. So
 crash-free rate and error counts stay accurate even at 1%. You lose routine
 session detail, not failure visibility.
 
-Both are worth confirming before you start an evaluation.
+## Pricing
 
-## How the pricing model differs
-
-Most RUM is billed per session, sometimes per user, usually with session
-replay as a separate line. That model ties your monitoring bill to your
-product's success, so a traffic spike lands as an unplanned invoice for the
-platform team.
-
-Signal-based pricing bills RUM as what it is, telemetry. base14 Scout
-charges a $250/month platform fee plus $0.10 per million metrics and $0.25
-per million logs and traces. Spans from a browser cost the same as spans
-from a backend service, there is no per-seat charge, and there is no
-separate RUM tier to buy.
-
-The practical difference is which lever you pull when the bill grows. Under
-per-session pricing you reduce the number of sessions you observe. Under
-signal pricing you tune what each session emits, which is a decision about
-detail rather than coverage.
+RUM is part of base14 Scout's Enterprise plan.
+[Talk to us](https://base14.io/contact) for pricing.
 
 ## Getting started
 
@@ -163,20 +149,15 @@ instrumentation is standard and only the export destination changes.
 
 ### Does base14 Scout RUM support session replay?
 
-No. Session Replay and Profiling are the two parts of the RUM event set the
-SDKs do not capture. Everything else is covered, including clicks,
-navigation, HTTP requests, errors, native crashes, ANRs, Core Web Vitals,
-long tasks, frozen frames, and scroll depth. If session replay is a
-requirement, Scout RUM is not a fit today.
+We're building session replay and profiling with design partners.
+[Talk to us](https://base14.io/contact) if you'd like to join. Today the
+SDKs capture clicks, navigation, HTTP requests, errors, native crashes,
+ANRs, Core Web Vitals, long tasks, frozen frames and scroll depth.
 
-### How much does OpenTelemetry RUM cost with signal-based pricing?
+### How much does base14 Scout RUM cost?
 
-RUM telemetry is billed as ordinary signals rather than per session or per
-user. Under base14 Scout's pricing that is a $250/month platform fee plus
-$0.10 per million metrics and $0.25 per million logs and traces, with no
-per-seat charges. Cost tracks the volume of telemetry produced, so a session
-on a busy screen costs more than a quiet one. The Startup tier includes up
-to 50 authorized users and Enterprise raises the limit.
+RUM is part of base14 Scout's Enterprise plan.
+[Talk to us](https://base14.io/contact) for pricing.
 
 ### Does RUM session sampling cause you to miss crashes?
 
@@ -193,6 +174,6 @@ Want to see browser and backend telemetry in one trace?
 ## Related reading
 
 - [The Datadog alternative that doesn't charge per host](/datadog-alternative)
-- [New Relic alternative: observability without the seat tax](/new-relic-alternative)
+- [The New Relic alternative that doesn't charge per seat](/new-relic-alternative)
 - [Observability cost optimization: why the pricing model matters](/observability-cost-optimization)
 - [Flutter mobile observability with OpenTelemetry](/blog/flutter-mobile-observability)

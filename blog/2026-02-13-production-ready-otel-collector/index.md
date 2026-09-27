@@ -524,5 +524,5 @@ Need help hardening your collector setup?
 ## Related reading
 
 - [The Datadog Alternative That Doesn't Charge Per Host](/datadog-alternative/)
-- [New Relic Alternative: No Seat Tax, Signal-Based Pricing](/new-relic-alternative/)
-- [CloudWatch Alternative: Unified Observability Beyond AWS](/cloudwatch-alternative/)
+- [The New Relic Alternative That Doesn't Charge Per Seat](/new-relic-alternative/)
+- [The CloudWatch Alternative That Doesn't Stop at AWS](/cloudwatch-alternative/)

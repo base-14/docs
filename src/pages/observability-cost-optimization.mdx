@@ -1,16 +1,15 @@
 ---
 title: "Observability cost optimization: why the pricing model matters more than your data volume"
 description: "Cost is the #1 observability selection criterion. The fix isn't sampling - it's signal-based pricing: $250/mo + $0.10/M metrics + $0.25/M logs & traces."
+keywords:
+  - observability cost optimization
+  - reduce observability costs
+  - observability pricing comparison
+  - observability cost reduction
+  - observability TCO
+  - signal-based observability pricing
+  - observability without sampling
 ---
-
-import Head from "@docusaurus/Head";
-
-<Head>
-  <meta
-    name="keywords"
-    content="observability cost optimization, reduce observability costs, observability pricing comparison, observability cost reduction, observability TCO, signal-based observability pricing, observability without sampling"
-  />
-</Head>
 
 # Observability cost optimization: beyond volume discounts
 
@@ -266,7 +265,7 @@ Most teams don't index everything. Indexing 30% of logs and spans
 brings this down to ~$15,400/month - but 70% of your logs and
 traces become unsearchable during incidents.
 
-_Pricing as of August 2026. Published list rates at
+_Pricing as of September 2026. Published list rates at
 [datadoghq.com/pricing](https://www.datadoghq.com/pricing/),
 annual billing. Even after negotiated contracts, the structural
 gap remains._
@@ -506,12 +505,12 @@ backend and the data flows.
 
 ## Observability cost optimization at a glance
 
-| Approach                 | What it does                                   | Risk                                 |
-| :----------------------- | :--------------------------------------------- | :----------------------------------- |
-| Filter at source         | Cuts log volume 70-80%                         | Loses debug data needed in incidents |
-| Reduce cardinality       | Lowers metric costs                            | Loses per-user drill-down            |
-| Shorten retention        | Saves storage costs                            | Blinds you to slow-burn issues       |
-| Consolidate tools        | Cuts overlapping licenses                      | Migration effort required            |
+| Approach                 | What it does                                   | Risk                                                  |
+| :----------------------- | :--------------------------------------------- | :---------------------------------------------------- |
+| Filter at source         | Cuts log volume 70-80%                         | Loses debug data needed in incidents                  |
+| Reduce cardinality       | Lowers metric costs                            | Loses per-user drill-down                             |
+| Shorten retention        | Saves storage costs                            | Blinds you to slow-burn issues                        |
+| Consolidate tools        | Cuts overlapping licenses                      | Migration effort required                             |
 | **Switch pricing model** | **Up to ~$370K/year savings (see math above)** | **Migration effort, but no data or access trade-off** |
 
 ## FAQ
@@ -613,7 +612,8 @@ specific infrastructure.
 
 - [How to evaluate an observability platform](/evaluate-observability-platform)
 - [The Datadog alternative that doesn't charge per host](/datadog-alternative)
-- [New Relic alternative: observability without the seat tax](/new-relic-alternative)
-- [CloudWatch alternative: unified observability beyond AWS](/cloudwatch-alternative)
+- [The New Relic alternative that doesn't charge per seat](/new-relic-alternative)
+- [The CloudWatch alternative that doesn't stop at AWS](/cloudwatch-alternative)
+- [The GCP monitoring alternative that doesn't price metrics by type](/gcp-alternative)
 - [Observability Theatre](/blog/observability-theatre)
 - [Understanding what increases and reduces MTTR](/blog/factors-influencing-mttr)
