@@ -54,6 +54,7 @@ your collector is working first, try the
 | LlamaIndex              | [LlamaIndex](./llamaindex)                        | LLM calls, structured output, token/cost tracking, quality evaluation             |
 | Pydantic AI             | [Pydantic AI](./pydantic-ai)                      | Agent runs, LLM calls, tool execution, token usage, prompt versions               |
 | Pydantic AI on Temporal | [Pydantic AI on Temporal](./pydantic-ai-temporal) | Durable agent workflows, replay-safe spans, signal and update links, case metrics |
+| Strands Agents          | [Strands Agents](./strands-agents)                | Agent runs, LLM calls, tool execution, agents as tools, trace-correlated logs     |
 
 ### Node.js
 

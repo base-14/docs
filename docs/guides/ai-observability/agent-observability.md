@@ -718,6 +718,9 @@ Built in behind a flag or a package:
   \- `Agent.instrument_all`, agent, model and tool spans without Logfire
 - [Pydantic AI on Temporal](../../instrument/apps/auto-instrumentation/pydantic-ai-temporal.md)
   \- one trace per durable workflow across replay and worker restarts
+- [Strands Agents Instrumentation](../../instrument/apps/auto-instrumentation/strands-agents.md)
+  \- built-in agent, model and tool spans, and an agent called as a tool in
+  one trace
 
 Instrumented by a callback handler or custom spans:
 
@@ -740,6 +743,10 @@ Instrumented by a callback handler or custom spans:
   \- a Pydantic AI agent inside a Temporal workflow, waiting on documents and
   a reviewer, covered by
   [Pydantic AI on Temporal](../../instrument/apps/auto-instrumentation/pydantic-ai-temporal.md)
+- [python/ai-filing-analyst](https://github.com/base-14/examples/tree/main/python/ai-filing-analyst)
+  \- a Strands analyst agent that calls a second agent as a tool, over SEC
+  filing data, covered by
+  [Strands Agents Instrumentation](../../instrument/apps/auto-instrumentation/strands-agents.md)
 
 ### Scout Platform Features
 

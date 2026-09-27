@@ -69,6 +69,7 @@ and a fallback to a different provider.
 | [Vercel AI SDK Instrumentation](../../instrument/apps/auto-instrumentation/vercel-ai-sdk) | Framework-specific: AI SDK 7 agent spans via @ai-sdk/otel, run ids, per-run cost and subagent fan-out, plus the v6 middleware path                                            |
 | [Pydantic AI Instrumentation](../../instrument/apps/auto-instrumentation/pydantic-ai)     | Framework-specific: Pydantic AI's built-in OpenTelemetry via `Agent.instrument_all`, agent, model and tool spans, token metrics, content capture and prompt versions, no Logfire |
 | [Pydantic AI on Temporal](../../instrument/apps/auto-instrumentation/pydantic-ai-temporal) | Framework-specific: one trace per durable Pydantic AI workflow on Temporal, across replay and worker restarts, with replay-safe logs and metrics |
+| [Strands Agents Instrumentation](../../instrument/apps/auto-instrumentation/strands-agents) | Framework-specific: Strands Agents' built-in OpenTelemetry, agent, model and tool spans, an agent called as a tool, trace-correlated logs, redaction and known gaps |
 
 ## What Gets Instrumented
 
