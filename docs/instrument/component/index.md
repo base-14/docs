@@ -120,6 +120,12 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 | LiteLLM Gateway | [LiteLLM Gateway](./collecting-litellm-telemetry)      | Deployment health and cooldowns, request failures, latency split, token spend |
 | Bifrost         | [Bifrost](./collecting-bifrost-telemetry)              | LLM request outcomes, provider latency, token usage, streaming performance |
 
+### AI Agent Runtimes
+
+| Component | Guide                                         | Key Metrics                                        |
+|-----------|-----------------------------------------------|----------------------------------------------------|
+| OpenClaw  | [OpenClaw](./collecting-openclaw-telemetry)   | Run and model call latency, token usage, lane queueing, context size; traces and logs |
+
 ### Distributed Compute
 
 | Component | Guide                                   | Key Metrics                                            |

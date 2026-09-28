@@ -709,6 +709,9 @@ Native OpenTelemetry, enabled by configuration:
 
 - [Agent Approval Gates](./agent-approval-gates.md) \- Microsoft Agent
   Framework and the MCP C# SDK, with a human approval gate on top
+- [OpenClaw](../../instrument/component/openclaw.md) \- the gateway's
+  `diagnostics-otel` plugin, run, model and tool spans, metrics and
+  trace-correlated logs
 
 Built in behind a flag or a package:
 
@@ -747,6 +750,9 @@ Instrumented by a callback handler or custom spans:
   \- a Strands analyst agent that calls a second agent as a tool, over SEC
   filing data, covered by
   [Strands Agents Instrumentation](../../instrument/apps/auto-instrumentation/strands-agents.md)
+- [components/openclaw-telemetry](https://github.com/base-14/examples/tree/main/components/openclaw-telemetry)
+  \- an OpenClaw gateway on a local Ollama model exporting all three
+  signals, covered by [OpenClaw](../../instrument/component/openclaw.md)
 
 ### Scout Platform Features
 
