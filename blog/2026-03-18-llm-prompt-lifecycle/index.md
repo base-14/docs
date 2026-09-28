@@ -655,7 +655,10 @@ then manage your prompts with
   the case for eliminating tool fragmentation
 - [Understanding What Increases and Reduces MTTR][mttr],
   why faster diagnosis depends on correlated data
+- [What LLM Observability Costs][llm-cost],
+  running APM and a separate LLM tool compared with one platform
 
 [theatre]: /blog/observability-theatre
 [unified]: /blog/unified-observability
 [mttr]: /blog/factors-influencing-mttr
+[llm-cost]: /llm-observability-cost/

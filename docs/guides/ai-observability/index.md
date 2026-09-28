@@ -40,7 +40,9 @@ shows the full picture:
 
 With OpenTelemetry, a single trace shows that a slow HTTP response was caused by
 a specific LLM call in a specific agent, which also triggered 3 database queries
-and a fallback to a different provider.
+and a fallback to a different provider. Keeping APM and LLM telemetry in one
+backend also avoids paying for two stacks; see
+[LLM observability cost](/llm-observability-cost/) for the numbers.
 
 ## When to Use AI Observability
 

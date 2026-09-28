@@ -996,3 +996,5 @@ traces from every node and pod in a single platform.
 
 - [Why Unified Observability Matters](/blog/unified-observability) - Benefits
   for growing engineering teams
+- [Kubernetes Observability Cost](/kubernetes-observability-cost/) - Why
+  per-host and custom-metric pricing grows with pod count

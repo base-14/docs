@@ -673,7 +673,9 @@ signals continue to flow to DD without change:
 - DD AppSec, IAST, DBM, RUM, or CIWS preservation through the trace
   tap (Path D). These ride trace payloads and may not survive the
   alpha receiver conversion intact. Validate before relying on them.
-- Migration off Datadog. This guide is about coexistence, not exit.
+- Migration off Datadog. This guide is about coexistence, not exit. For
+  cost and migration planning, see the
+  [Datadog comparison](/datadog-alternative/).
 - Windows containers. All paths are verified on Linux only.
 - Multi-cluster federation. All paths assume a single Kubernetes
   cluster per Scout Collector instance.

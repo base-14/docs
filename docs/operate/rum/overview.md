@@ -183,3 +183,5 @@ see the trend and the worst case together.
 - [Crashes](./crashes.md) - Crash groups and symbolicated stack traces
 - [Sessions](./sessions.md) - Session list and event timelines
 - [Users](./users.md) - Per-user activity and history
+- [OpenTelemetry RUM](/opentelemetry-rum/) - Web and mobile RUM as OTLP,
+  queried beside backend traces

@@ -216,5 +216,6 @@ deployment:
 ## Closing
 
 Every production service gets traces and metrics. Mobile apps should too.
-OpenTelemetry makes it possible without locking into a vendor, and Flutter's
+OpenTelemetry makes it possible
+[without locking into a vendor RUM SDK](/opentelemetry-rum/), and Flutter's
 single-codebase model means you instrument once and cover both platforms.

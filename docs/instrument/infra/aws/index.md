@@ -48,3 +48,5 @@ per-service guides build on whichever approach you choose.
 
 - [Scout OTLP exporter](../../collector-setup/scout-exporter.md) - the
   Collector export block every AWS pipeline reuses.
+- [CloudWatch vs Scout](/cloudwatch-alternative/) - ingest, storage and
+  query charges compared, and what changes once you run beyond AWS.

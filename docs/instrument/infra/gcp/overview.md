@@ -371,3 +371,5 @@ service account `roles/monitoring.viewer` in each.
   sink and Pub/Sub subscription setup every log guide reuses.
 - [Collector setup](../../collector-setup/otel-collector-config.md) -
   deployment options for the collector itself.
+- [Google Cloud Observability vs Scout](/gcp-alternative/) - how Cloud
+  Monitoring, Logging and Trace pricing compares with signal-based pricing.

@@ -264,3 +264,4 @@ patterns I've described are common, but every team's journey is unique._
 ## Related reading
 
 - [Observability Cost Optimization: Beyond Volume Discounts](/observability-cost-optimization/)
+- [How to Evaluate an Observability Platform](/evaluate-observability-platform/)

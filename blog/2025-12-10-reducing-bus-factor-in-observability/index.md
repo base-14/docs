@@ -158,3 +158,4 @@ Want to see how this works?
 
 - [Observability Theatre](/blog/observability-theatre/)
 - [Why Unified Observability Matters](/blog/unified-observability/)
+- [Observability for Growing Engineering Teams](/observability-for-growing-teams/)
