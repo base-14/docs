@@ -35,9 +35,22 @@ app version/OS/device, and the screens most worth investigating.
 | **Crash-Free Sessions** | Percentage of sessions with no crashes |
 | **Total Sessions** | Number of user sessions in the range |
 | **Active Users** | Distinct users in the range |
-| **Avg Cold Start** | Average cold app-startup time, with a trend sparkline |
-| **Avg Warm Start** | Average warm app-startup time, with a trend sparkline |
+| **Avg Cold Start** | Average cold app-startup time, with a trend sparkline (mobile apps only) |
+| **Avg Warm Start** | Average warm app-startup time, with a trend sparkline (mobile apps only) |
 | **Total Errors** | Count of reported non-fatal errors |
+
+### Core Web Vitals
+
+Web apps, and mobile apps that embed WebViews, get a second row: **LCP**
+(Largest Contentful Paint), **INP** (Interaction to Next Paint), and **CLS**
+(Cumulative Layout Shift). Each shows the p75 across the app, colored against
+the standard good / needs-improvement / poor thresholds. A bar shows how the
+individual measurements split across those ratings. See
+[Screens](./screens.md#core-web-vitals) for the thresholds and the per-screen
+breakdown.
+
+On web apps, LCP is the page-load metric. Browsers have no cold or warm
+start, so those two tiles are not shown.
 
 Use the shared [Filters](./getting-started.md#filters) sidebar (Device, App,
 Session, Network) to scope every metric below to a specific slice of traffic.
@@ -117,7 +130,8 @@ the selected range.
 
 ### Slowest Screens
 
-Columns: **Screen**, **Avg Load**, **Views**. Ranked by average load time.
+Mobile apps: **Screen**, **Load Time p95**, **Views**, ranked by p95 load
+time. Web apps: **Screen**, **LCP p75**, **Page Loads**, ranked by p75 LCP.
 
 Click through to [Screens](./screens.md) for the full per-screen breakdown,
 including frame timing and jank.
