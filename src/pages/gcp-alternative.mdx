@@ -1,0 +1,529 @@
+---
+title: "The GCP monitoring alternative that doesn't price metrics by type"
+description: "GCP Cloud Monitoring, Logging and Trace vs base14 Scout: one metrics price including custom metrics, no byte-based metric billing, multi-cloud."
+keywords:
+  - google cloud observability alternative
+  - gcp monitoring alternative
+  - cloud monitoring alternative
+  - stackdriver alternative
+  - cloud monitoring pricing
+  - gcp observability cost
+  - cloud trace alternative
+  - cloud logging alternative
+---
+
+# The GCP monitoring alternative that doesn't price metrics by type
+
+_Last verified against published pricing on September 27, 2026._
+
+> **TL;DR:** base14 Scout is an OpenTelemetry-native observability
+> platform with signal-based pricing ($250/month + $0.10/M metrics +
+> $0.25/M logs & traces). One metrics price covers every metric,
+> custom metrics included, whatever the type or ingestion path.
+> Google charges custom metrics sent through the Monitoring API about
+> $2 per million counter points and about $20 per million histogram
+> points at list price. Google Cloud Observability's bill depends on
+> metric type and ingestion path, not only on volume. For a
+> 100-host Kubernetes team, that means anywhere from ~$7,700/month
+> to ~$37,200/month for identical infrastructure. Scout costs
+> ~$5,375/month. Standard SQL across logs, metrics and traces, no
+> per-seat charges.
+
+A platform team added histogram-based latency tracking to their
+checkout service so they could finally see p95 and p99, not just
+averages. Their Cloud Monitoring bill jumped the same month. Nobody
+added a host or hired an engineer. They instrumented what you're
+supposed to instrument, and under Google's byte-based metrics
+pricing, a histogram data point costs 10x what a counter does.
+
+If you're evaluating a Google Cloud Observability alternative, it's
+probably not because Cloud Logging, Cloud Monitoring and Cloud Trace
+don't work. It's because working out next month's bill requires
+knowing things about your own pricing configuration that most
+engineering teams never check.
+
+## Why teams look for a Google Cloud Observability alternative
+
+Google Cloud Observability (formerly Stackdriver, then Google Cloud
+Operations) is a capable suite with deep GCP integration. Cloud
+Monitoring ingests Google Cloud service metrics automatically, with
+no agent required. Cloud Profiler and Error Reporting carry no usage charge.
+For a team fully on GCP watching a modest footprint, it's a
+reasonable default. Teams outgrow it for three structural reasons.
+
+### A bill that depends on a configuration decision, not just usage
+
+Google Cloud Observability has two pricing models for metrics, and
+which one applies depends on how you route the data.
+
+Custom metrics sent through the Cloud Monitoring API, client
+libraries or the Ops Agent are billed by bytes: 8 bytes per data
+point for scalar metrics (counters, gauges) and 80 bytes per data
+point for distribution metrics (histograms, in Google's terms).
+At the first price tier ($0.2580 per MiB) that works out to about
+$1.97 per million scalar points and about $19.70 per million
+histogram points, falling to about $0.47 and $4.65 above 250,000
+MiB a month. Scout charges $0.10 per million for both. Histograms
+are the signal type teams reach for when they need latency
+percentiles.
+
+Metrics sent through Google Cloud
+[Managed Service for Prometheus](https://cloud.google.com/stackdriver/docs/managed-prometheus)
+or the OTLP Telemetry API are billed per sample, at $0.06 per million
+for the first 50 billion. A scalar point is one sample. A histogram
+point is two samples plus one per non-zero bucket. For counters and
+gauges that can undercut most dedicated observability platforms,
+Scout included. As the histogram share grows, the advantage narrows
+or reverses.
+
+To be fair to Google, this isn't a charge on every metric. Native
+Google Cloud resource metrics, GKE system metrics, Istio metrics and
+Knative metrics are non-chargeable regardless of volume. The byte
+charge applies to custom application metrics, third-party Ops Agent
+integrations, external metrics and user-defined log-based metrics.
+That is the telemetry a team leans on most during an incident: the
+business metrics and application histograms that infrastructure
+metrics can't show.
+
+Cloud Trace and Cloud Logging add their own meters, independent of
+how metrics are routed. Traces cost $0.20 per million spans after
+the first 2.5 million each month. Logs cost $0.50/GiB after the
+first 50 GiB per project each month, with retention beyond the
+30-day default at $0.01/GiB/month. Google has also announced an
+alerting charge, $0.35/month per metric reference in an alerting
+policy plus $0.50 per million points returned by alerting queries,
+starting no sooner than September 1, 2027. Customers on an active
+committed-spend contract with discounts as of May 31, 2026 are
+exempt until that contract expires, renews, is extended or is
+replaced.
+
+That makes four main meters that scale independently, plus smaller
+ones such as the Monitoring read API. In the scenario below, the
+metrics meter alone ranges from $180 to about $29,700 a month for
+the same 3B chargeable points, depending on metric type and
+ingestion path.
+
+### The GCP-only ceiling
+
+Google Cloud Observability is built for Google Cloud. It monitors
+GCP resources natively and automatically. Once your architecture
+includes AWS, Azure, on-prem infrastructure or another cloud's
+managed services, that automatic coverage stops. Managed Service
+for Prometheus and the OTLP Telemetry API accept data from anywhere,
+but outside GCP you deploy and run the collectors yourself, and
+other clouds' managed services don't report in automatically.
+Google has
+[deprecated its AWS CloudWatch metrics connector](https://docs.cloud.google.com/stackdriver/docs/release-notes).
+
+### A platform mid-migration
+
+Google is restructuring how the suite works. Cloud Trace sinks, the
+mechanism many teams built BigQuery-based trace analytics on, were
+[deprecated on February 18, 2026](https://docs.cloud.google.com/trace/docs/release-notes),
+and since August 31, 2026 they
+can't be created or edited. Google points users to Observability
+Analytics or a linked BigQuery dataset, so anyone who built on trace
+sinks has a migration on Google's schedule.
+
+Google is also moving to OpenTelemetry as its ingestion standard.
+OTLP ingestion for Cloud Trace reached general availability in
+September 2025, and
+[OTLP metrics and logs reached general availability](https://docs.cloud.google.com/stackdriver/docs/release-notes)
+in August 2026. Instrumenting with OpenTelemetry now
+means no rework later, whichever backend you choose.
+
+**Already know you want to compare?**
+[Book a cost comparison call](https://base14.io/contact) and we'll
+model your actual Cloud Monitoring, Logging and Trace usage,
+including your metrics ingestion path, against Scout pricing.
+
+## base14 Scout at a glance
+
+Scout is a [unified observability platform](https://base14.io/scout)
+built on OpenTelemetry. Logs, metrics, traces, APM and LLM telemetry
+go into a single data lake with one query surface.
+
+- **[Signal-based pricing](https://base14.io/pricing)**: $250/month
+  platform fee, $0.10 per million metrics, $0.25 per million logs
+  and traces. One metrics price for infrastructure, Kubernetes,
+  custom application and business metrics, whether counter or
+  histogram and however the data arrived.
+- **OpenTelemetry-native**: No proprietary agents and no ingestion
+  path decisions that change your bill by 10x.
+- **No backend sampling**: Every trace, metric and log line you send
+  is stored and queryable.
+- **30-day default retention**: Full-resolution data for 30 days
+  across logs, metrics and traces, in one place. Extended retention
+  is available.
+- **Standard SQL across logs, metrics and traces**. On Google,
+  metrics use PromQL, logs use the Logging query language, and logs
+  and traces meet in Observability Analytics SQL, with no single
+  surface that joins metrics to logs and traces.
+- **All features included**: [APM](https://base14.io/scout/apm),
+  logs, metrics, [traces](https://base14.io/scout/traces), LLM
+  observability, custom dashboards and alerts. No per-reference
+  alerting fees and no feature gating.
+
+## Google Cloud Observability vs base14 Scout: detailed comparison
+
+| Factor                  | Google Cloud Observability                                                                                       | base14 Scout                                          |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Pricing model           | Byte- or sample-metered metrics (path-dependent) + per-GiB logs + per-span traces                                | Signal-based ($0.10/M metrics, $0.25/M logs & traces) |
+| Base cost               | No platform fee; meters compound independently                                                                   | $250/month platform fee                               |
+| Per-seat pricing        | No (IAM-based access)                                                                                            | No                                                    |
+| Metrics pricing basis   | 8 bytes/scalar point, 80 bytes/distribution point (Monitoring API), or per sample (Managed Prometheus, OTLP)     | Flat per data point, regardless of type               |
+| Default retention       | 30 days for logs and traces; 24 months for custom, Prometheus, OTLP and core service metrics, 6 weeks for others | 30 days across all signals (extended available)       |
+| Sampling                | No backend sampling                                                                                              | No backend sampling                                   |
+| Query surface           | PromQL for metrics, Logging query language, Observability Analytics SQL for logs and traces                      | Standard SQL across logs, metrics and traces          |
+| Multi-cloud             | GCP-native; other clouds and on-prem need self-managed collectors, no automatic resource metrics                 | Any cloud, any infrastructure                         |
+| Alerting                | Per-metric-reference charge announced, no sooner than September 2027                                             | Included, no per-condition fee                        |
+| APM                     | Cloud Trace, Error Reporting and Cloud Profiler                                                                  | Included, with service map and grouped errors         |
+| RUM                     | None; Firebase for mobile, outside Cloud Observability                                                           | Web + mobile, Enterprise plan                         |
+| LLM and agent telemetry | Spans in Cloud Trace, agent and token dashboards in Application Monitoring                                       | In the same data lake as everything else              |
+| Support                 | Standard Google Cloud support tiers                                                                              | SRE partnership included                              |
+| Lock-in                 | Ingestion moving to OTLP; query, dashboard and alert layers still per product                                    | OpenTelemetry-native end to end                       |
+
+### Pricing: a bill shaped by which path your data took
+
+On Google Cloud Observability the same metric is billed as 8
+bytes, 80 bytes or one or more samples, depending on whether it's a
+counter or a histogram and whether it arrives through the Monitoring
+API or through Managed Service for Prometheus and OTLP.
+
+Custom metrics carry the highest rates. Through the Monitoring API
+a million custom counter points cost about $1.97 and a million
+histogram points about $19.70 at the first tier. Scout charges
+$0.10 per million metric points of any kind, custom or not, gauge or
+p99 histogram, however they arrive.
+
+### Retention: longer for metrics, set per product
+
+Google keeps more metric history by default. Cloud Monitoring
+[retains](https://docs.cloud.google.com/monitoring/quotas)
+custom, Prometheus and OTLP metrics, and metrics from core
+services such as Compute Engine, GKE, Cloud Storage, BigQuery and
+Cloud SQL, for 24 months, downsampled after 6 weeks. Other Google
+Cloud metrics and log-based metrics keep 6 weeks. Cloud Logging and
+Cloud Trace keep 30 days, except audit logs in the `_Required`
+bucket, which keep 400 days. Log retention beyond 30 days is
+configured and billed per log bucket. Scout keeps 30 days of
+full-resolution data for logs, metrics and traces alike, with
+extended retention on request. If
+long metric history at no extra cost matters most, that favors
+Google.
+
+### Multi-cloud: automatic coverage stops at the GCP boundary
+
+If your architecture spans GCP and anything else, Google Cloud
+Observability's automatic, agentless coverage stops at the GCP
+boundary. You can send data from other clouds through collectors
+you run, but their managed services don't report in on their own.
+Scout ingests from any OpenTelemetry source, with the same pricing
+and query surface for every environment.
+
+### Lock-in: ingestion is opening up, the analysis layer isn't
+
+Google's move to OTLP ingestion shows the industry, Google
+included, converging on OpenTelemetry for getting data in. What
+doesn't change is the analysis layer. Dashboards, alerts and saved
+queries still live in Cloud Monitoring's PromQL, Cloud Logging's
+own syntax or Observability Analytics SQL.
+Scout gives you one query surface across logs, metrics and traces.
+
+### APM and RUM
+
+Google Cloud Observability covers APM with Cloud Trace, Error
+Reporting and Cloud Profiler, plus Application Monitoring
+dashboards. RUM isn't part of Google Cloud Observability. Mobile
+teams use Firebase Crashlytics and Performance Monitoring, which are no-cost
+but sit outside Cloud Observability, so client data doesn't join
+backend traces in one place.
+
+Scout includes [APM](/operate/apm/) as an app over your
+OpenTelemetry traces and metrics: RED metrics per service and
+operation, a service map, trace drill-down, grouped errors, database
+and messaging operations, and host and node health beside each
+service. [RUM](/operate/rum/getting-started/) covers mobile apps
+(crashes, ANRs, app startup, screens, network calls and session
+timelines), and the [React and Flutter web SDKs](/opentelemetry-rum/)
+send browser telemetry, including Core Web Vitals, as spans that
+join backend traces. APM is included in the platform price. RUM is
+available on the Enterprise plan; [talk to us](https://base14.io/contact)
+for pricing. We're building session replay and code profiling with
+design partners, and teams that need them are welcome to join.
+
+## Google Cloud Observability vs base14 Scout cost comparison
+
+This uses the same scenario as our other comparisons, so the
+numbers line up.
+
+> **Scenario:** 100 hosts running Kubernetes (30 pods/host),
+> 430 GB logs/day, 7.5B trace spans/month, 7.5B metric data
+> points/month, 20 engineers, annual billing. Google has no seat or
+> annual-billing component.
+>
+> Signal volume ratio: 40% logs, 30% metrics, 30% traces (~25B
+> total signals/month).
+
+Google bills logs per GiB and standard metrics per MiB, so the
+Google table converts the scenario's 430 GB/day (12,900 GB a
+month) to 12,014 GiB. Scout bills per signal, so the Scout table
+counts log records: 40% of 25B signals is 10B records a month,
+about 1.3 KB each.
+
+> **Metrics assumption:** of the 7.5B monthly metric points, we
+> assume 3B are chargeable under Google's model: application and
+> custom business metrics plus user-defined log-based metrics. The
+> rest are native GCP and GKE system metrics, which aren't charged.
+> GKE control plane and kube state metrics are billed as Prometheus
+> samples and count in the chargeable 3B.
+> The split is an illustration, not a measurement. Check it against
+> your own metric inventory.
+
+### Google Cloud Observability estimate
+
+The three metrics rows are alternatives for the same 3B chargeable
+points. The low total uses Managed Service for Prometheus with
+scalar points and the high total uses the Monitoring API with an
+even counter and histogram mix.
+
+| Line item                                       | Calculation                                                                           | Monthly cost           |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------- | ---------------------- |
+| Log ingestion                                   | (12,014 GiB - 50 GiB free) × $0.50/GiB                                                | $5,982                 |
+| Trace ingestion                                 | (7,500M - 2.5M free) × $0.20/M spans                                                  | $1,500                 |
+| Metrics, Monitoring API, even mix               | 1.5B × 8 bytes + 1.5B × 80 bytes = 125,885 MiB, tiered at $0.2580 and $0.1510 per MiB | $29,670                |
+| Metrics, Monitoring API, all scalar (reference) | 3B × 8 bytes = 22,888 MiB at $0.2580 per MiB after 150 MiB free, not in either total  | $5,866                 |
+| Metrics, Managed Service for Prometheus, scalar | 3,000M samples × $0.06/M                                                              | $180                   |
+| Alerting                                        | Not charged before September 2027                                                     | $0                     |
+| **Monthly total range**                         |                                                                                       | **$7,662 - $37,151**   |
+| **Annual total range**                          |                                                                                       | **$91,944 - $445,812** |
+
+_Pricing as of September 2026. Published rates at
+[cloud.google.com/stackdriver/pricing](https://cloud.google.com/stackdriver/pricing).
+Assumes one project for the logging allowance. The bill for
+identical infrastructure varies about 5x with metric type mix and
+ingestion path. Cloud Profiler and Error Reporting are excluded;
+neither carries a usage charge._
+
+Google charges for these too, but they aren't in the estimate:
+
+- Histograms through Managed Service for Prometheus or OTLP, at two
+  samples plus one per non-zero bucket for each point.
+- Monitoring read API calls, at $0.50 per million time series
+  returned after the first million, including calls from tools that
+  read Cloud Monitoring data out.
+- Pub/Sub, BigQuery or Cloud Storage costs for log sinks and
+  exports.
+- Log retention beyond 30 days, at $0.01/GiB/month.
+- Uptime checks and synthetic monitors.
+- Alerting, from September 2027.
+
+### base14 Scout estimate
+
+| Line item         | Calculation       | Monthly cost |
+| ----------------- | ----------------- | ------------ |
+| Platform fee      | Flat rate         | $250         |
+| Metrics           | 7,500M × $0.10/M  | $750         |
+| Logs              | 10,000M × $0.25/M | $2,500       |
+| Traces            | 7,500M × $0.25/M  | $1,875       |
+| 30-day retention  | Included          | $0           |
+| Alerting          | Included          | $0           |
+| LLM observability | Included          | $0           |
+| SRE partnership   | Included          | $0           |
+| **Monthly total** |                   | **$5,375**   |
+| **Annual total**  |                   | **$64,500**  |
+
+Scout meters all 7.5B metric points, including the 4.5B GCP and
+GKE system metric points Google doesn't charge for. Pulling
+GCP-native metrics and logs into Scout still uses Google's
+Monitoring read API and Pub/Sub, which Google bills.
+
+Even at the low end of the Google Cloud Observability range, Scout
+costs less, and the price doesn't change with metric type or
+ingestion path.
+
+**Want the real number for your infrastructure?**
+[Talk to our team](https://base14.io/contact). We'll work from your
+actual chargeable metric inventory and ingestion path, not a
+scenario estimate.
+
+## Migration: from Google Cloud Observability to base14 Scout
+
+Google is already moving to OpenTelemetry, so this migration is
+smaller than leaving a fully proprietary agent.
+
+### Adopt or extend OpenTelemetry instrumentation
+
+If you already send OTLP to Cloud Trace, Monitoring or Logging,
+you have a head start. If not, add OpenTelemetry SDKs alongside your
+existing Ops Agent and client libraries. Both can run at once.
+
+### Point the collector at Scout
+
+Configure an
+[OpenTelemetry Collector](/instrument/collector-setup/otel-collector-config)
+to export to Scout. Keep a copy flowing to Google Cloud
+Observability during the transition; the collector supports
+multiple exporters. For GCP-native metrics and logs, see
+[GCP Cloud Monitoring to Scout](/instrument/infra/gcp/gcp-cloud-monitoring-to-scout)
+and [GCP Cloud Logging to Scout](/instrument/infra/gcp/gcp-cloud-logging-to-scout).
+
+### Run both in parallel
+
+Run both platforms side by side for 2-4 weeks. Rebuild the
+dashboards and alert policies your team relies on, and confirm
+Scout answers the questions Cloud Monitoring, Logging and Trace
+answer today, from one query surface instead of three.
+
+### Decommission the Ops Agent and trace sinks
+
+Once confident, remove the Ops Agent and scale down GCP
+observability spend. If you rely on trace sinks, this is the
+natural point to retire them instead of migrating twice. Your
+OpenTelemetry instrumentation stays yours either way.
+
+The migration takes 4-6 weeks for a mid-size team (~100 services).
+base14's onboarding team handles it hands-on during your first
+month, at no cost.
+
+## Who should switch (and who shouldn't)
+
+### Switch to base14 Scout if
+
+- **You can't predict your metrics bill.** If your Cloud Monitoring
+  cost depends on a counter and histogram mix nobody planned, byte
+  pricing works against you.
+- **You run multi-cloud or hybrid infrastructure.** GCP-only
+  coverage creates the same blind spot CloudWatch creates on AWS.
+- **You want one query surface, not three.** PromQL, the Logging
+  query language and Observability Analytics SQL each cover a
+  slice. Scout covers logs, metrics and traces in one place.
+- **You're tired of keeping up with platform changes.** Trace sinks
+  deprecated, a new analytics surface and a future alerting fee
+  each need work from your team.
+- **You value hands-on support** over platform-wide cloud support
+  tiers.
+
+### Stay on Google Cloud Observability if
+
+- **You're fully on GCP, at modest scale, and the free allotments
+  cover you.** Small projects can stay within 50 GiB of logs per
+  project, and 150 MiB of metrics and 2.5M spans per billing
+  account, each month.
+- **You already route custom metrics through Managed Service for
+  Prometheus.** Google's per-sample pricing is competitive there.
+  The case for switching is then the fragmented query surface and
+  single-cloud coverage, not price.
+- **You need long metric history without paying for it.** Cloud
+  Monitoring keeps custom, Prometheus and core service metrics for
+  24 months.
+- **You depend on GCP-specific integrations**, such as
+  Observability Analytics (BigQuery-backed SQL over logs and
+  traces), GKE's automatic system metrics or
+  Gemini Cloud Assist.
+- **You build agents on Google's agent platform** and use
+  Application Monitoring's agent and token usage dashboards.
+
+### The hybrid approach
+
+Many teams keep GCP-native services on Cloud Monitoring for
+automatic coverage, and route application telemetry, other clouds
+and LLM and agent telemetry through Scout. OpenTelemetry
+instrumentation makes running both straightforward.
+
+## FAQ
+
+### How long does migration from Google Cloud Observability take?
+
+4-6 weeks for a typical mid-size team. Faster if you already send
+OTLP to Cloud Trace, Monitoring or Logging.
+
+### Can I run base14 Scout and Google Cloud Observability in parallel?
+
+Yes. The OpenTelemetry Collector supports multiple exporters. Keep
+Cloud Monitoring for automatic GCP-native coverage while routing
+broader telemetry to Scout.
+
+### Does Google Cloud Observability charge for alerting?
+
+Not yet. Google has announced $0.35/month per metric reference in
+an alerting policy plus $0.50 per million points returned by
+alerting queries, starting no sooner than September 1, 2027.
+Customers on an active committed-spend contract with discounts as
+of May 31, 2026 are exempt until that contract expires, renews, is
+extended or is replaced. Scout
+includes alerting with no per-condition or per-reference fee.
+
+### Why does the same metric cost different amounts on Google Cloud Observability?
+
+Two things decide it: whether the metric is scalar or a
+distribution (histogram), and how it's ingested. Through the
+Monitoring API, client libraries or the Ops Agent it's billed by
+bytes, 8 per scalar point and 80 per distribution point. Through
+Managed Service for Prometheus or OTLP it's billed per sample, one
+per scalar point and two plus one per non-zero bucket for a
+histogram point.
+
+### Are Cloud Profiler and Error Reporting free on GCP?
+
+Yes, neither carries a usage charge, though Error Reporting's log
+entries count toward Cloud Logging. Scout includes APM and error
+tracking in the same signal-based pricing, in the same data lake as
+your logs, metrics and traces.
+
+### Is base14 Scout enterprise-ready?
+
+Yes. [SOC 2 Type II and ISO 27001 compliant](https://base14.io/security).
+Bring-your-own-cloud (BYOC) deployment on AWS, GCP and Azure, as
+well as managed service.
+
+### How does Scout pricing compare to Google Cloud Observability's metrics model?
+
+Scout charges $0.10 per million metric data points, custom metrics
+included, whether counter or histogram and however they arrive. On
+Google Cloud Observability, custom metrics sent through the
+Monitoring API cost about $1.97 per million counter points and about
+$19.70 per million histogram points at the first tier. Through
+Managed Service for Prometheus or OTLP they cost $0.06 per million
+samples, where a histogram point counts as several samples.
+
+### What is the best Google Cloud Observability alternative for multi-cloud teams?
+
+base14 Scout is built for teams running infrastructure across GCP,
+AWS, Azure or on-prem. Logs, metrics and traces from every
+environment land in one place with one query surface and one price
+per signal. It's OpenTelemetry-native, so the same instrumentation
+works on any cloud.
+
+### How much cheaper is base14 Scout than Google Cloud Observability?
+
+For 100 Kubernetes hosts with 430 GB of logs a day, 7.5B trace spans
+and 7.5B metric data points a month, Google Cloud Observability costs
+~$7,662 to ~$37,151 a month depending on metric type and ingestion
+path. Scout costs ~$5,375 a month ($64,500 a year) for the same
+telemetry, before the Google charges the estimate leaves out.
+
+## Start evaluating your Google Cloud Observability alternative
+
+1. **[Book a demo](https://base14.io/contact)** to see Scout against
+   your GCP telemetry.
+2. **Get a cost comparison** using your real Cloud Monitoring,
+   Logging and Trace usage, including your metric type mix and
+   ingestion path.
+3. **Run both in parallel** with OpenTelemetry instrumentation you
+   may already have.
+
+- No long-term contracts. Month-to-month.
+- Assisted onboarding included at no extra cost.
+- OpenTelemetry-native. Keep your instrumentation if you leave.
+
+---
+
+## Related reading
+
+- [How to evaluate an observability platform](/evaluate-observability-platform)
+- [The Datadog alternative that doesn't charge per host](/datadog-alternative)
+- [The New Relic alternative that doesn't charge per seat](/new-relic-alternative)
+- [The CloudWatch alternative that doesn't stop at AWS](/cloudwatch-alternative)
+- [Observability cost optimization: why the pricing model matters more than your data volume](/observability-cost-optimization)
+- [Multi-cloud design and vendor neutrality](/blog/multi-cloud-design)

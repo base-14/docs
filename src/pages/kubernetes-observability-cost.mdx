@@ -1,16 +1,13 @@
 ---
 title: "Kubernetes observability cost: why K8s breaks your Datadog bill"
 description: "Kubernetes observability cost compared across Datadog, New Relic, and signal-based pricing. See what a 50-node cluster costs."
+keywords:
+  - kubernetes observability cost
+  - kubernetes monitoring pricing
+  - k8s observability
+  - datadog kubernetes cost
+  - signal-based pricing
 ---
-
-import Head from "@docusaurus/Head";
-
-<Head>
-  <meta
-    name="keywords"
-    content="kubernetes observability cost, kubernetes monitoring pricing, k8s observability, datadog kubernetes cost, signal-based pricing"
-  />
-</Head>
 
 # Kubernetes observability cost: why K8s breaks your Datadog bill
 
@@ -173,18 +170,18 @@ logs, traces).
 Datadog's published pricing breaks down across multiple billing
 dimensions. For a 50-node K8s cluster:
 
-| Component | Rate | Monthly Cost |
-| :--- | :--- | :--- |
-| Infrastructure (Pro, 50 hosts) | [$23/host/month](https://www.datadoghq.com/pricing/) | $1,150 |
-| APM (50 hosts) | $31/host/month | $1,550 |
-| Log ingestion (150 GB/day) | $0.10/GB | $450 |
-| Log indexing (150 GB/day, 15-day) | ~$1.70/M events | $5,775 |
-| Custom metrics (50K beyond included) | $5/100 | $2,500 |
-| **Subtotal** | | **$11,425** |
-| Container monitoring add-on | varies | +$1,000-2,000 |
-| **Estimated total** | | **$12,425-$13,425** |
+| Component                            | Rate                                                 | Monthly Cost        |
+| :----------------------------------- | :--------------------------------------------------- | :------------------ |
+| Infrastructure (Pro, 50 hosts)       | [$23/host/month](https://www.datadoghq.com/pricing/) | $1,150              |
+| APM (50 hosts)                       | $31/host/month                                       | $1,550              |
+| Log ingestion (150 GB/day)           | $0.10/GB                                             | $450                |
+| Log indexing (150 GB/day, 15-day)    | ~$1.70/M events                                      | $5,775              |
+| Custom metrics (50K beyond included) | $5/100                                               | $2,500              |
+| **Subtotal**                         |                                                      | **$11,425**         |
+| Container monitoring add-on          | varies                                               | +$1,000-2,000       |
+| **Estimated total**                  |                                                      | **$12,425-$13,425** |
 
-_Pricing as of August 2026. Based on publicly listed annual billing
+_Pricing as of September 2026. Based on publicly listed annual billing
 rates. The custom metrics rate is from Datadog's
 [rate card](https://www.datadoghq.com/pricing/list/); the summary
 pricing page defers overage to contract pricing. Custom metrics count
@@ -207,12 +204,12 @@ New Relic's model is structurally different but creates its own K8s
 cost pressure. The host count doesn't directly drive the bill, but
 data ingest does:
 
-| Component | Rate | Monthly Cost |
-| :--- | :--- | :--- |
-| Full Platform users (5 engineers) | [$349/user/month](https://newrelic.com/pricing) | $1,745 |
-| Core users (3 engineers) | $49/user/month | $147 |
-| Data ingest (beyond 100GB free) | $0.40/GB | $3,600 |
-| **Estimated total** | | **$5,492** |
+| Component                         | Rate                                            | Monthly Cost |
+| :-------------------------------- | :---------------------------------------------- | :----------- |
+| Full Platform users (5 engineers) | [$349/user/month](https://newrelic.com/pricing) | $1,745       |
+| Core users (3 engineers)          | $49/user/month                                  | $147         |
+| Data ingest (beyond 100GB free)   | $0.40/GB                                        | $3,600       |
+| **Estimated total**               |                                                 | **$5,492**   |
 
 _Assumes 5 Full Platform + 3 Core users and ~9,000 GB/month of
 total ingest (about 300 GB/day) beyond the free tier. Verify at
@@ -231,13 +228,13 @@ Scout charges per signal (one metric data point, one log line, or
 one trace span) regardless of size, cardinality, or metadata
 attached. Rich Kubernetes labels don't inflate costs.
 
-| Component | Rate | Monthly Cost |
-| :--- | :--- | :--- |
-| Platform fee | $250/month | $250 |
-| Metrics (~500M signals/month) | $0.10/M | $50 |
-| Logs (~3B signals/month) | $0.25/M | $750 |
-| Traces (~2B spans/month) | $0.25/M | $500 |
-| **Estimated total** | | **$1,550** |
+| Component                     | Rate       | Monthly Cost |
+| :---------------------------- | :--------- | :----------- |
+| Platform fee                  | $250/month | $250         |
+| Metrics (~500M signals/month) | $0.10/M    | $50          |
+| Logs (~3B signals/month)      | $0.25/M    | $750         |
+| Traces (~2B spans/month)      | $0.25/M    | $500         |
+| **Estimated total**           |            | **$1,550**   |
 
 Doubling every signal volume above brings the total to about
 $2,850/month. The top of the range, around $3,350, assumes heavier
@@ -251,15 +248,15 @@ Scout, full cardinality costs the same as aggregated data.
 
 ### Side-by-side summary
 
-| | Datadog | New Relic | base14 Scout |
-| :--- | :--- | :--- | :--- |
-| 50-node K8s cluster | $12,400-13,400/mo | $5,000-7,000/mo | $1,550-3,350/mo |
-| Pricing scales with | Hosts + GB + metrics | Seats + GB | Signals only |
-| Custom metrics penalty | $5/100 beyond included | Included in GB | No penalty |
-| Trace sampling needed | Often, to control cost | Often, to control ingest | No, zero-sampling friendly architecture |
-| K8s label cardinality | Inflates custom metric cost | Inflates GB ingest cost | No cost impact |
-| Default retention | 15 days (logs) | 8-30 days | 30 days |
-| Team access | No per-seat charge | Per-seat pricing | No per-seat charge (50 users on Startup, higher on Enterprise) |
+|                        | Datadog                     | New Relic                | base14 Scout                                                   |
+| :--------------------- | :-------------------------- | :----------------------- | :------------------------------------------------------------- |
+| 50-node K8s cluster    | $12,400-13,400/mo           | $5,000-7,000/mo          | $1,550-3,350/mo                                                |
+| Pricing scales with    | Hosts + GB + metrics        | Seats + GB               | Signals only                                                   |
+| Custom metrics penalty | $5/100 beyond included      | Included in GB           | No penalty                                                     |
+| Trace sampling needed  | Often, to control cost      | Often, to control ingest | No, zero-sampling friendly architecture                        |
+| K8s label cardinality  | Inflates custom metric cost | Inflates GB ingest cost  | No cost impact                                                 |
+| Default retention      | 15 days (logs)              | 8-30 days                | 30 days                                                        |
+| Team access            | No per-seat charge          | Per-seat pricing         | No per-seat charge (50 users on Startup, higher on Enterprise) |
 
 _All estimates assume published pricing, annual billing, 50-node
 K8s cluster with moderate microservices workload. Actual costs vary

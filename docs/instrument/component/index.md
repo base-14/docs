@@ -120,6 +120,12 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 | LiteLLM Gateway | [LiteLLM Gateway](./collecting-litellm-telemetry)      | Deployment health and cooldowns, request failures, latency split, token spend |
 | Bifrost         | [Bifrost](./collecting-bifrost-telemetry)              | LLM request outcomes, provider latency, token usage, streaming performance |
 
+### AI Agent Runtimes
+
+| Component | Guide                                         | Key Metrics                                        |
+|-----------|-----------------------------------------------|----------------------------------------------------|
+| OpenClaw  | [OpenClaw](./collecting-openclaw-telemetry)   | Run and model call latency, token usage, lane queueing, context size; traces and logs |
+
 ### Distributed Compute
 
 | Component | Guide                                   | Key Metrics                                            |
@@ -131,6 +137,7 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 | Component | Guide                                         | Key Metrics                                        |
 | --------- | --------------------------------------------- | -------------------------------------------------- |
 | Airflow   | [Apache Airflow](./collecting-airflow-telemetry) | Scheduler health, task outcomes, pool and executor saturation, DAG run traces |
+| dbt       | [dbt](./collecting-dbt-telemetry)             | Run count, failed models and tests, model build time, run traces |
 | Temporal  | [Temporal](./collecting-temporal-telemetry)   | Workflow latency, task queues, persistence, shards |
 | Hatchet   | [Hatchet](./collecting-hatchet-telemetry)     | Task inflow and outcome, queue backlog, worker slot capacity, per-workflow duration |
 | Restate   | [Restate](./collecting-restate-telemetry)     | Invocation rate and outcome, partition health, invoker backlog, workflow traces |
@@ -171,6 +178,8 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 | Component     | Guide                                           | Key Metrics                                    |
 | ------------- | ----------------------------------------------- | ---------------------------------------------- |
 | Docker Engine | [Docker Engine](./collecting-docker-telemetry)  | CPU, memory, block I/O, network per container  |
+| containerd    | [containerd](./collecting-containerd-telemetry) | CRI errors, image pull failures, container lifecycle latency, CPU and memory per container |
+| K3s           | [K3s](./collecting-k3s-telemetry)               | API server errors, container start failures, certificate expiry, node headroom |
 
 ### Java Application Servers
 
@@ -207,14 +216,15 @@ Each component exposes metrics through one of four methods:
    prometheus_varnish_exporter, Redpanda via its native
    `/public_metrics` endpoint, Materialize via its native
    `/metrics/public` endpoint, Trino via its native `/metrics`
-   endpoint)
+   endpoint, containerd via its native `/v1/metrics` endpoint, K3s via
+   the kubelet's `/metrics` endpoint)
 3. **JMX Scraper** - a standalone process connects to the application's
    JMX port via RMI, converts MBeans to OpenTelemetry metrics, and
    exports OTLP to the Collector (Tomcat, ActiveMQ, Jetty, WildFly).
    See [JMX Metrics Collection Guide](../collector-setup/jmx-metrics-collection-guide.md).
 4. **Native OTLP push** - the component builds an OpenTelemetry SDK into
    its own processes and pushes to the Collector, so there is no endpoint
-   to scrape (Apache Airflow).
+   to scrape (Apache Airflow, dbt).
 
 Java applications using JMX have two collection approaches: the OTel
 JMX Scraper (remote, OTLP-native) and the Prometheus JMX Exporter

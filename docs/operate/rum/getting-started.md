@@ -1,22 +1,32 @@
 ---
-title: Getting Started with RUM
+title: Getting Started with RUM - Apps, Filters, and Session Data
 sidebar_label: Getting Started
 sidebar_position: 1
 description:
-  What RUM is in base14 Scout and how to navigate it. Select a mobile
-  application, set a time range, and use the filters sidebar shared by every
-  RUM tab to monitor real user experience in your Flutter apps.
+  Navigate RUM in base14 Scout. Select a mobile app, set a time range, and use
+  the filters sidebar shared by every RUM tab.
 keywords:
   [
     rum,
     real user monitoring,
     mobile monitoring,
+    mobile observability,
     flutter monitoring,
+    app performance,
+    session sampling,
+    crash reporting,
+    mobile telemetry,
+    opentelemetry mobile,
+    filters sidebar,
+    application selector,
     getting started,
+    scout rum,
     base14,
     scout,
   ]
 ---
+
+# Getting Started with RUM
 
 RUM (Real User Monitoring) is a mobile monitoring app built into Scout.
 It gives you visibility into how real users experience your mobile
@@ -119,6 +129,40 @@ User-identifying attributes only show up here if your app sets them - the SDK
 doesn't capture them by default. If you do set them, `beforeSend` lets you
 redact or drop specific attributes before they're exported; see
 [Security considerations](../../instrument/mobile/flutter.md#security-considerations).
+
+---
+
+## FAQ
+
+### Why are my session counts lower than my real traffic?
+
+Sessions follow the SDK's session sample rate, which defaults to 1%. Crash,
+error, and ANR telemetry bypasses that sample rate by default, so
+**Crash-Free Sessions** and **Total Errors** stay accurate even when
+**Total Sessions** represents a fraction of real traffic. See
+[Sessions](../../instrument/mobile/flutter.md#sessions) for how to change the
+rate.
+
+### What does RUM need from my app before any of this appears?
+
+RUM reads standard OpenTelemetry mobile spans and attributes, so an app has to
+be instrumented and exporting to Scout before it shows up in the Applications
+tab. [Instrument a Flutter app](../../instrument/mobile/flutter.md) is the
+quickest path, and
+[RUM with OpenTelemetry](../../instrument/mobile/rum-opentelemetry.md) lists
+the exact span names and attributes each tab reads if you instrument by hand.
+
+### Why can't I filter by user name or email?
+
+The SDK does not capture user identity by default. `user.email`, `user.name`,
+and the rest appear in the Filters sidebar only once your app sets them. If
+you do set them, `beforeSend` can redact or drop attributes before export.
+
+### Why is a crash or ANR attributed to a screen called `unknown`?
+
+RUM attributes an event to the screen that was active when it was recorded. If
+no screen was active, or the navigation observer had not reported one yet, the
+event lands under `unknown`. Crashes during startup are the usual cause.
 
 ---
 

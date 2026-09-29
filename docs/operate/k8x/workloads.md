@@ -1,26 +1,33 @@
 ---
-title: k8X Workloads
+title: k8X Workloads - Pods, Rollouts, Restarts, and Ownership
 sidebar_label: Workloads
 sidebar_position: 6
 description:
   Inspect Kubernetes pods and workloads with k8X in base14 Scout. Track pod
-  status and restarts, Deployment rollouts, DaemonSet node coverage,
-  StatefulSet storage, and ReplicaSet ownership.
+  status and restarts, Deployment rollouts, DaemonSet and StatefulSet health.
 keywords:
   [
     k8x,
     workloads,
     kubernetes pods,
+    pod status,
+    pod restarts,
+    crashloopbackoff,
     deployments,
+    rollout status,
     daemonsets,
     statefulsets,
     replicasets,
-    pod restarts,
-    crashloopbackoff,
+    owner references,
+    container detail,
+    persistent volume claims,
+    scout k8x,
     base14,
     scout,
   ]
 ---
+
+# k8X Workloads
 
 import ThemedImage from '@theme/ThemedImage';
 
@@ -299,6 +306,31 @@ StatefulSets, where the ordinal matters and the list is sorted by it.
 
 ---
 
+## FAQ
+
+### A pod is in CrashLoopBackOff. Where is the reason?
+
+In the pod's own detail panel, under Containers. Each container box shows its
+restart count, its waiting reason, and the previous termination when there was
+one, such as `Last state: OOMKilled (exit 137)`. That line is usually the whole
+answer.
+
+### Why is a pod stuck in Pending?
+
+A `Pending` pod has not been scheduled, so the reason is a scheduling
+constraint rather than anything inside the pod. The [Events](./events.md) tab
+names it, typically as a `FailedScheduling` event. A pod in `CrashLoopBackOff`
+is the opposite case: scheduled, and failing on its own.
+
+### Why does a pod with hundreds of restarts show in a neutral color?
+
+**Restarts** is the pod's lifetime counter, but its color reflects restarts
+within the selected window. A pod that restarted 400 times last month and none
+today shows a high number in neutral. Widening the time picker lights up more
+rows without changing the numbers.
+
+---
+
 ## Related Guides
 
 - [Getting Started](./getting-started.md) - Prerequisites and health
@@ -308,3 +340,5 @@ StatefulSets, where the ordinal matters and the list is sorted by it.
 - [Namespaces](./namespaces.md) - Resource commitment these workloads consume
 - [Events](./events.md) - Scheduling failures and other event detail
 - [logX](../logx/index.md) - Container logs for a pod's service
+- [APM](../apm/getting-started.md) - Application performance for the
+  services these pods run

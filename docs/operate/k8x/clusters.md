@@ -1,24 +1,31 @@
 ---
-title: k8X Clusters
+title: k8X Clusters - Capacity and Node Readiness Across Clusters
 sidebar_label: Clusters
 sidebar_position: 3
 description:
-  Compare Kubernetes clusters side by side with k8X in base14 Scout. Track
-  CPU and memory utilization, node counts, and node readiness across every
-  cluster reporting to Scout.
+  Compare Kubernetes clusters side by side with k8X in base14 Scout. Track CPU
+  and memory utilization, node counts, and node readiness.
 keywords:
   [
     k8x,
     clusters,
     kubernetes clusters,
     cluster capacity,
+    cluster comparison,
     cpu utilization,
     memory utilization,
+    node count,
     node readiness,
+    multi-cluster,
+    cluster reporting,
+    capacity planning,
+    scout k8x,
     base14,
     scout,
   ]
 ---
+
+# k8X Clusters
 
 import ThemedImage from '@theme/ThemedImage';
 
@@ -113,6 +120,29 @@ its configured service name does not match what its collector writes. See
 2. Check **Nodes not ready** for capacity that is counted but unavailable
 3. Select the target cluster and open [Namespaces](./namespaces.md) to see how
    much of the headroom is already requested by existing workloads
+
+---
+
+## FAQ
+
+### Are the CPU and memory percentages against requests or capacity?
+
+Against allocatable capacity, not against requests. A cluster can read 40% CPU
+here and still refuse new pods, because the scheduler places work by requests.
+[Namespaces](./namespaces.md) and [Nodes](./nodes.md) show the requests side.
+
+### Why does a cluster never appear in the list at all?
+
+A cluster that disappeared stopped emitting node metrics; a cluster that never
+appeared usually has a configured service name that does not match what its
+collector writes. There is no placeholder row for a silent cluster, so the
+[Overview](./overview.md) tab is the better place to notice one.
+
+### Why are there no provider or Kubernetes version columns?
+
+Provider, Kubernetes version, and agent version are not collected under the
+cluster service name, so k8X omits those columns rather than showing them
+permanently empty.
 
 ---
 

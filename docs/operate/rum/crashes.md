@@ -1,24 +1,34 @@
 ---
-title: RUM Crashes
+title: RUM Crashes - Symbolicated Stack Traces and Affected Users
 sidebar_label: Crashes
 sidebar_position: 3
 description:
-  Investigate mobile app crashes with RUM in base14 Scout. Group crashes,
-  view symbolicated stack traces and translated crash reports, and see
-  affected devices, users, app versions, and OS versions.
+  Investigate mobile app crashes with RUM in base14 Scout. Group crashes, read
+  symbolicated stack traces, and see affected users and devices.
 keywords:
   [
     rum,
     crashes,
     crash reporting,
+    crash grouping,
     symbolication,
     stack trace,
+    translated crash report,
     native crash,
+    dart exception,
+    breadcrumbs,
+    affected devices,
+    affected users,
+    dsym,
+    proguard mapping,
     mobile crash,
+    scout rum,
     base14,
     scout,
   ]
 ---
+
+# RUM Crashes
 
 The **Crashes** tab groups individual crash events into deduplicated crash
 groups so you can prioritize by impact instead of triaging one crash at a
@@ -168,6 +178,32 @@ full [session](./sessions.md) where it happened.
 2. Open a crash group and check **Occurrences by Device Model** - a spike
    concentrated on one model points at a device-specific bug (memory limits,
    OS fork behavior)
+
+---
+
+## FAQ
+
+### Why do crash frames show raw addresses instead of file names?
+
+Frames resolve to readable file, line, and symbol names only when the matching
+debug artifacts for that exact build have been uploaded: dSYMs, Dart symbols,
+NDK symbols, or ProGuard mappings. Upload them with
+[scout artifacts upload](../../scout-cli/scout-access/artifacts.md). Without
+them the frames stay as addresses or obfuscated names.
+
+### What is the difference between Kind and Type on a crash?
+
+**Kind** is the high-level badge: `Native` for a crash the platform reported,
+and `JS Error` for everything above the platform layer, such as Dart and
+app-level crashes on Flutter. **Type** is the specific classification
+underneath it, which is what to read when you want to know what actually
+failed.
+
+### What are breadcrumbs for?
+
+Breadcrumbs are the chronological trail of what the user did just before the
+crash: session start, screen navigation, taps, long tasks, and UI hangs. They
+are the fastest way to reproduce the sequence that triggered it.
 
 ---
 

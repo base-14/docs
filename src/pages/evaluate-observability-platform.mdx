@@ -1,16 +1,14 @@
 ---
 title: "How to evaluate an observability platform (without getting locked in)"
 description: "Evaluate observability platforms on what matters: pricing model, retention, sampling, lock-in. Weighted framework + vendor comparison + one-week PoC model."
+keywords:
+  - observability platform comparison
+  - evaluate observability tools
+  - how to choose observability platform
+  - observability tool evaluation
+  - observability platform checklist
+  - observability vendor comparison
 ---
-
-import Head from "@docusaurus/Head";
-
-<Head>
-  <meta
-    name="keywords"
-    content="observability platform comparison, evaluate observability tools, how to choose observability platform, observability tool evaluation, observability platform checklist, observability vendor comparison"
-  />
-</Head>
 
 # How to evaluate an observability platform (without getting locked in)
 
@@ -160,7 +158,7 @@ critical trace was discarded.
 **What to evaluate:** Does the platform sample by default? Is
 sampling configurable or mandatory? What happens to sampled data
 (discarded or archived)? Can you achieve
-[zero-sampling friendly architecture](/datadog-alternative#sampling-aggressive-vs-zero)
+[zero-sampling friendly architecture](/datadog-alternative#sampling-agent-side-vs-none)
 at your data volume without cost penalty?
 
 ### 5. Unified signals (weight: 10%)
@@ -239,7 +237,7 @@ they mean in dollars for a concrete scenario.
 | Grafana Cloud | Log volume ($0.50/GB) + metric active series + trace volume                                                        | Varies widely by usage           |
 | base14 Scout  | $250 platform + 7,500M metrics ($750) + 10,000M logs ($2,500) + 7,500M traces ($1,875)                             | ~$5,375 (all signals, all users) |
 
-_Pricing as of August 2026. Published list rates. Negotiated
+_Pricing as of September 2026. Published list rates. Negotiated
 discounts lower totals but don't change billing structures. See
 each alternative page for detailed calculation methodology._
 
@@ -256,6 +254,7 @@ cost trajectories that diverge further as you scale.
 - [Datadog alternative: real pricing for 100 K8s hosts](/datadog-alternative)
 - [New Relic alternative: the per-seat pricing problem](/new-relic-alternative)
 - [CloudWatch alternative: multi-cloud without triple-charge](/cloudwatch-alternative)
+- [Google Cloud Observability alternative: one metrics price, any ingestion path](/gcp-alternative)
 - [Why the pricing model matters more than data volume](/observability-cost-optimization)
 
 ## What base14 Scout covers
@@ -568,8 +567,9 @@ platform. No migration required.
 ## Related reading
 
 - [The Datadog alternative that doesn't charge per host](/datadog-alternative)
-- [New Relic alternative: observability without the seat tax](/new-relic-alternative)
-- [CloudWatch alternative: unified observability beyond AWS](/cloudwatch-alternative)
+- [The New Relic alternative that doesn't charge per seat](/new-relic-alternative)
+- [The CloudWatch alternative that doesn't stop at AWS](/cloudwatch-alternative)
+- [The GCP monitoring alternative that doesn't price metrics by type](/gcp-alternative)
 - [Observability cost optimization: why the pricing model matters more than your data volume](/observability-cost-optimization)
 - [Why Kubernetes breaks your observability bill](/kubernetes-observability-cost)
 - [Why two monitoring stacks cost more than one platform](/llm-observability-cost)

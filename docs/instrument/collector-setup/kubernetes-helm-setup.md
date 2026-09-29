@@ -59,7 +59,7 @@ helm repo add base14 https://charts.base14.io/
 ```
 
 ```bash
-helm install scout base14/scout-collector --version 0.5.5 \
+helm install scout base14/scout-collector --version 0.6.1 \
 --namespace scout --create-namespace -f values.yaml
 ```
 
@@ -73,13 +73,132 @@ helm repo add base14 https://charts.base14.io/
 ```
 
 ```bash
-helm install scout base14/scout-collector --version 0.5.5 \
+helm install scout base14/scout-collector --version 0.6.1 \
 --namespace scout --create-namespace -f values.yaml
 ```
 
 ```mdx-code-block
 </TabItem>
 </Tabs>
+```
+
+## Windows Nodes
+
+:::note
+
+Windows node support is experimental. It is disabled by default, so enabling
+it is an explicit opt-in.
+
+:::
+
+If your cluster has Windows node groups, the collector needs a second DaemonSet
+to run on them. A single DaemonSet cannot serve both operating systems: the
+collector image is published separately for Linux and Windows, and the Linux
+daemon mounts Linux host paths that Windows pods do not support.
+
+### Enabling it
+
+Set this in your `values.yaml`, then install as shown above:
+
+```yaml showLineNumbers title="values.yaml"
+scout:
+  windowsDaemon:
+    enabled: true
+```
+
+That is all you need if you let the chart generate your collector
+configuration.
+
+### If you supply your own collector configuration
+
+If you set `scout.agent.config` or `scout.daemon.config` — as the
+[otelcol style configuration](#using-otelcol-style-configuration) below does —
+you must supply `scout.windowsDaemon.config` too. The chart cannot generate one
+for you: your configuration carries its own credentials, under value names you
+chose, and a generated configuration would use different ones. Rather than
+authenticate the Windows daemon differently from every other collector, the
+chart refuses to render and tells you so.
+
+Use the same shape as your agent configuration, with Windows receivers:
+
+```yaml showLineNumbers title="values.yaml"
+scout:
+  windowsDaemon:
+    enabled: true
+    config: |
+      extensions:
+        oauth2client:
+          client_id: {{ .Values.scout.clientId }}
+          client_secret: {{ .Values.scout.clientSecret }}
+          token_url: {{ .Values.scout.tokenUrl }}
+      receivers:
+        filelog:
+          include:
+            - 'C:\var\log\pods\*\*\*.log'
+          start_at: end
+          operators:
+            - type: container
+              id: container-parser
+      # ...exporters, processors and pipelines as in your agent configuration
+```
+
+`extraEnvs` behaves the same way: it is per-collector, and Helm replaces lists
+rather than merging them. If you supply the Scout secret through an environment
+variable, add the same entry under `windowsDaemon.extraEnvs` as well as
+`agent-collector.extraEnvs`.
+
+### What it collects
+
+Container logs from `C:\var\log\pods` and kubelet stats from the Windows
+kubelet.
+
+Host metrics, Windows Event Log and performance counters are not collected yet.
+
+Telemetry from applications *running on* Windows nodes does not need any of
+this — point your SDKs at the agent as usual. The service is named after your
+Helm release, so with the `helm install scout ...` above it is:
+
+```text
+scout-agent-collector.scout.svc:4318
+```
+
+### Windows Server version
+
+The default image targets **Windows Server 2022**. A Windows container image
+must match the host build, so on Server 2019 set the tag explicitly:
+
+```yaml showLineNumbers title="values.yaml"
+scout:
+  windowsDaemon:
+    enabled: true
+    image:
+      tag: "0.130.1-windows-2019-amd64"
+```
+
+A cluster with a mix of 2019 and 2022 nodes needs one DaemonSet per build, since
+a single pod template carries a single image. Contact support and we will help
+you configure it.
+
+### Other options
+
+```yaml showLineNumbers title="values.yaml"
+scout:
+  windowsDaemon:
+    enabled: true
+    # Windows node pools are often tainted; tolerate yours here.
+    tolerations: []
+    # Where the kubelet writes container logs, if your nodes differ.
+    hostLogPath: 'C:\var\log\pods'
+    # The collector runs as ContainerUser, which is not an administrator. If log
+    # collection fails with permission errors, set ContainerAdministrator.
+    runAsUserName: ""
+    resources:
+      requests:
+        memory: 128Mi
+        cpu: 100m
+      limits:
+        memory: 512Mi
+        cpu: 400m
 ```
 
 ## Configuration Guide
@@ -877,3 +996,5 @@ traces from every node and pod in a single platform.
 
 - [Why Unified Observability Matters](/blog/unified-observability) - Benefits
   for growing engineering teams
+- [Kubernetes Observability Cost](/kubernetes-observability-cost/) - Why
+  per-host and custom-metric pricing grows with pod count

@@ -1,7 +1,7 @@
 {
   "$comment": "Canonical numbers for the comparison and cost pages. Change a value here, run npm run check:content, and fix whatever it reports. See scripts/check-facts.mjs.",
 
-  "pricingAsOf": "August 2026",
+  "pricingAsOf": "September 2026",
 
   "scope": ["src/pages/*.mdx"],
 
@@ -40,6 +40,17 @@
       "customMetricNextTier": 0.1,
       "xrayPerMillionTraces": 5.0,
       "dashboardEach": 3.0
+    },
+    "gcp": {
+      "logIngestPerGib": 0.5,
+      "freeLogGibPerProject": 50,
+      "logRetentionPerGibMonth": 0.01,
+      "metricFirstTierPerMib": 0.258,
+      "metricSecondTierPerMib": 0.151,
+      "freeMetricMib": 150,
+      "prometheusPerMillionSamples": 0.06,
+      "tracesPerMillionSpans": 0.2,
+      "freeTraceMillionSpans": 2.5
     }
   },
 
@@ -58,6 +69,7 @@
       "annualFiles": ["src/pages/new-relic-alternative.mdx"],
       "files": [
         "src/pages/evaluate-observability-platform.mdx",
+        "src/pages/gcp-alternative.mdx",
         "src/pages/new-relic-alternative.mdx",
         "src/pages/llm-observability-cost.mdx",
         "src/pages/observability-cost-optimization.mdx"
@@ -117,6 +129,31 @@
       "files": ["src/pages/cloudwatch-alternative.mdx"]
     },
     {
+      "id": "gcp-100-host-low",
+      "description": "Google Cloud Observability for the shared 100-host scenario, 3B chargeable metric points through Managed Service for Prometheus, one project.",
+      "components": [
+        { "label": "log ingestion", "units": 11964, "rate": 0.5 },
+        { "label": "traces", "millions": 7497.5, "rate": 0.2 },
+        { "label": "metrics via managed prometheus", "millions": 3000, "rate": 0.06 }
+      ],
+      "monthly": 7662,
+      "annual": 91944,
+      "files": ["src/pages/gcp-alternative.mdx"]
+    },
+    {
+      "id": "gcp-100-host-high",
+      "description": "The same scenario with the 3B chargeable points through standard ingestion, half scalar and half distribution.",
+      "components": [
+        { "label": "log ingestion", "units": 11964, "rate": 0.5 },
+        { "label": "traces", "millions": 7497.5, "rate": 0.2 },
+        { "label": "metrics first tier, MiB", "units": 99850, "rate": 0.258 },
+        { "label": "metrics second tier, MiB", "units": 25885, "rate": 0.151 }
+      ],
+      "monthly": 37151,
+      "annual": 445812,
+      "files": ["src/pages/gcp-alternative.mdx"]
+    },
+    {
       "id": "datadog-100-host",
       "description": "100 Kubernetes hosts with full log and span indexing.",
       "components": [
@@ -165,7 +202,7 @@
       "label": "Datadog per-host rates",
       "pattern": "\\$(\\d+)/host",
       "allowed": [23, 31],
-      "note": "Infrastructure Pro is $23/host, APM Pro $31/host, both annual billing."
+      "note": "Infrastructure Enterprise is $23/host (Pro is $15), APM $31/host, both annual billing."
     },
     {
       "label": "Datadog custom metric rate",

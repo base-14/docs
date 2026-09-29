@@ -40,7 +40,9 @@ shows the full picture:
 
 With OpenTelemetry, a single trace shows that a slow HTTP response was caused by
 a specific LLM call in a specific agent, which also triggered 3 database queries
-and a fallback to a different provider.
+and a fallback to a different provider. Keeping APM and LLM telemetry in one
+backend also avoids paying for two stacks; see
+[LLM observability cost](/llm-observability-cost/) for the numbers.
 
 ## When to Use AI Observability
 
@@ -59,12 +61,18 @@ and a fallback to a different provider.
 | Guide                                                                                     | What It Covers                                                                                                                                                                |
 | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [AI Agent Observability](./agent-observability)                                           | Framework-agnostic concepts and patterns: the agent timeline, GenAI operation types, conversation-id propagation, tool-call (`execute_tool`) instrumentation, MCP tools, multi-agent handoffs, agent metrics and evaluation |
+| [Agent Approval Gates](./agent-approval-gates)                                            | Human-in-the-loop agents (C#, Microsoft Agent Framework): approval as a linked span pair plus a wait histogram, MCP tool-call spans and `params._meta` trace context, trace context across the pause, and which span carries the error status |
 | [LLM Observability](./llm-observability)                                                  | End-to-end guide (Python): GenAI semantic conventions, token/cost metrics, agent pipeline spans, evaluation tracking, PII scrubbing, production deployment                    |
 | [Rust LLM Observability](./rust-llm-observability)                                        | End-to-end guide (Rust): GenAI semantic conventions, multi-provider LLM with fallback, token/cost metrics, multi-stage pipeline spans, retry observability, Docker deployment |
 | [Spring AI LLM Observability](./spring-ai-llm-observability)                                    | End-to-end guide (Java): Three-layer instrumentation (Java Agent + Spring AI + manual OTel), GenAI semantic conventions, tool calling, RAG, domain metrics, Docker deployment |
+| [LangChain Instrumentation](../../instrument/apps/auto-instrumentation/langchain)         | Framework-specific: LangChain zero-code auto-instrumentation, then a callback handler for agent, tool and retrieval spans on the GenAI conventions |
 | [LangGraph Instrumentation](../../instrument/apps/auto-instrumentation/langgraph)         | Framework-specific: LangGraph node wrapping, conditional edge routing, tool-calling nodes, state management, pipeline traces                                                  |
 | [LlamaIndex Instrumentation](../../instrument/apps/auto-instrumentation/llamaindex)       | Framework-specific: LlamaIndex structured output, self-correction loops, multi-provider LLM factory, YAML prompt management                                                   |
-| [Vercel AI SDK Instrumentation](../../instrument/apps/auto-instrumentation/vercel-ai-sdk) | Framework-specific: Vercel AI SDK v6 LanguageModelV3Middleware, multi-stage pipeline spans, concurrent stage execution, Bun + Hono + pgvector                                 |
+| [Vercel AI SDK Instrumentation](../../instrument/apps/auto-instrumentation/vercel-ai-sdk) | Framework-specific: AI SDK 7 agent spans via @ai-sdk/otel, run ids, per-run cost and subagent fan-out, plus the v6 middleware path                                            |
+| [Pydantic AI Instrumentation](../../instrument/apps/auto-instrumentation/pydantic-ai)     | Framework-specific: Pydantic AI's built-in OpenTelemetry via `Agent.instrument_all`, agent, model and tool spans, token metrics, content capture and prompt versions, no Logfire |
+| [Pydantic AI on Temporal](../../instrument/apps/auto-instrumentation/pydantic-ai-temporal) | Framework-specific: one trace per durable Pydantic AI workflow on Temporal, across replay and worker restarts, with replay-safe logs and metrics |
+| [Strands Agents Instrumentation](../../instrument/apps/auto-instrumentation/strands-agents) | Framework-specific: Strands Agents' built-in OpenTelemetry, agent, model and tool spans, an agent called as a tool, trace-correlated logs, redaction and known gaps |
+| [OpenClaw](../../instrument/component/collecting-openclaw-telemetry) | Agent runtime: the gateway's `diagnostics-otel` plugin, run, model and tool spans, `gen_ai.*` and `openclaw.*` metrics, trace-correlated logs and known gaps |
 
 ## What Gets Instrumented
 

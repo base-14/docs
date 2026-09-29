@@ -1,7 +1,7 @@
 ---
-title: APM
+title: base14 Scout APM - Application Performance Monitoring Overview
 sidebar_label: Overview
-sidebar_position: 1
+sidebar_position: 2
 description:
   Monitor application performance with APM in base14 Scout. Track service,
   operation, dependency, database, messaging, error, and infrastructure health.
@@ -9,78 +9,38 @@ keywords:
   [
     apm,
     application performance monitoring,
-    opentelemetry,
+    opentelemetry apm,
     red metrics,
     latency,
     error rate,
     throughput,
+    p99 latency,
     service map,
+    service dependencies,
     database monitoring,
     messaging monitoring,
+    error tracking,
+    distributed tracing,
+    span occurrences,
+    scout apm,
     base14,
     scout,
   ]
 ---
+
+# APM
 
 APM is the application performance monitoring app built into base14 Scout. It
 turns OpenTelemetry traces and metrics into service health views, dependency
 maps, grouped errors, database and messaging analysis, and links to individual
 traces.
 
-Most charts and lists read pre-aggregated data from the Scout Telemetry Data
-Lake. APM reads raw spans only after you select a specific operation, error,
-database call, or message. This keeps broad investigations fast while retaining
-trace-level drill-down when you need it.
+![Services table with throughput, P99 latency, and error rate sparklines for every instrumented service](/img/apm/getting-started/apm-overview.png)
 
-![APM Services Overview](/img/apm/getting-started/apm-overview.png)
-
----
-
-## Interface Overview
-
-| Section | Description |
-| ------- | ----------- |
-| **Topbar** | Environment group, environment, service, page-specific selectors, search, time range, and refresh |
-| **Tabs** | Services, Service Map, Traces, and the optional analysis tabs enabled for your deployment |
-| **Filter sidebar** | Faceted filtering on Services, Errors, Database Operations, and Messaging Queues |
-| **Charts** | Rate, error, latency, and resource charts that follow the current scope |
-| **Tables** | Sortable lists with scrolling or pagination and contextual drill-downs |
-| **Detail views** | Service and operation pages plus resizable issue, database, and messaging drawers |
-
-The available tabs depend on your deployment and its telemetry. Errors,
-Database Operations, Messaging Queues, and Infra can be hidden until their
-data sources and rollups are ready.
-
----
-
-## Getting Started
-
-### Select a Scope
-
-1. If shown, choose the **Production** or **Staging** environment group.
-2. Use **ENV** to select an environment, or leave it on **All**.
-3. Use **SERVICE** to focus on one service when needed.
-4. Set the time range. All time-aware charts and tables follow it.
-5. Use the page search or filter sidebar to narrow a long result set.
-
-Selections are reflected in the URL, so scoped views can be shared. Detail
-navigation also works with the browser Back button.
-
-### Start with Services
-
-The Services tab is the usual starting point. It compares each service by
-throughput, P99 latency, and error rate, with synchronized sparklines for the
-selected window.
-
-Click a service to open **Service Detail**. From its Spans table, click an
-operation to inspect aggregate statistics and real span occurrences before
-opening a trace.
-
-### Drill to a Trace
-
-Trace links open the embedded [traceX](./traces) view with the relevant
-service, environment, span, trace ID, and time context. An occurrence link
-opens the exact trace; an aggregate link opens a filtered trace search.
+Charts read pre-aggregated rollups and detail views read raw spans, and the
+two have different retention limits. See
+[Raw trace limits](./getting-started.md#raw-trace-limits) for what that means
+when a chart has data and its occurrence list does not.
 
 ---
 
@@ -88,37 +48,82 @@ opens the exact trace; an aggregate link opens a filtered trace search.
 
 | Tab | What it answers |
 | --- | --------------- |
-| [Services](./services) | Which services or server operations have abnormal traffic, latency, or failures? |
-| [Service Map](./service-map) | What calls what, and which node or connection is unhealthy? |
-| [Traces](./traces) | What happened during an individual request? |
-| [Errors](./errors) | Which exceptions are recurring, and what did their latest occurrences do? |
-| [Database Operations](./database-operations) | Which database statements or operations are slow, frequent, or failing? |
-| [Messaging Queues](./messaging-queues) | Which messaging operations are busy, slow, or failing? |
-| [Infra](./infra) | Are the hosts or Kubernetes nodes beneath the services healthy? |
+| [Services](./services.md) | Which services or server operations have abnormal traffic, latency, or failures? |
+| [Service Map](./service-map.md) | What calls what, and which node or connection is unhealthy? |
+| [Traces](./traces.md) | What happened during an individual request? |
+| [Errors](./errors.md) | Which exceptions are recurring, and what did their latest occurrences do? |
+| [Database Operations](./database-operations.md) | Which database statements or operations are slow, frequent, or failing? |
+| [Messaging Queues](./messaging-queues.md) | Which messaging operations are busy, slow, or failing? |
+| [Infra](./infra.md) | Are the hosts or Kubernetes nodes beneath the services healthy? |
+
+Services, Service Map, and Traces are always present. The other four depend on
+rollups and metrics an administrator enables per deployment.
 
 ---
 
-## Time Ranges and Raw Trace Safety
+## Use Cases
 
-- Drag across a time-series chart to apply that interval to the whole app.
-- Alert and custom annotations can be overlaid on supported charts and
-  sparklines.
-- Your administrator sets the maximum overall APM range.
-- Raw detail queries have a separate retention-style limit. They never read
-  spans older than the configured distance from the current time, even if an
-  older historical range is selected.
-- Detail views display the absolute raw interval they actually queried.
-- Span occurrence search starts with the most recent part of the selected
-  range. By default it searches one hour and, when empty, offers to search 30
-  minutes earlier. Administrators can change both window sizes.
+### Triage a Latency Regression
 
-The raw limit affects occurrence lists in operation, error, database, and
-messaging details. It does not shorten charts backed by rollup tables.
+1. Open [Services](./services.md) and sort by P99 latency to find the service
+   that moved.
+2. Open Service Detail and check its Spans table for the operation carrying
+   the increase.
+3. Open the operation and pick a slow occurrence to see the full trace in
+   traceX.
+4. If the trace spends its time in a query, continue in
+   [Database Operations](./database-operations.md).
+
+### Find Which Dependency Broke
+
+1. Open [Service Map](./service-map.md) and isolate the failing service.
+2. Inspect its unhealthy outgoing connections for call volume, latency, and
+   error rate.
+3. Open the suspect dependency's Service Detail or its logs in logX.
+
+### Decide Whether It Is the Code or the Machine
+
+1. Confirm the regression in [Services](./services.md).
+2. Open [Infra](./infra.md) and select the instances you know run that
+   service, then check CPU, memory, network, and filesystem.
+3. If the resources are healthy, the cause is in the application path, so go
+   back to the operation and its traces.
 
 ---
 
-## Table Navigation
+## FAQ
 
-Supported APM tables can use either a continuously loaded list or page
-controls, depending on plugin settings. Column headings sort server-side data,
-while **Load more** retrieves another batch where available.
+### Which APM tab should I start with?
+
+Start with Services. It compares every instrumented service by throughput,
+P99 latency, and error rate over the same window, which is the fastest way to
+see which service moved. Every other tab is reached by drilling down from
+something you found there.
+
+### Why do some APM tabs not appear in my deployment?
+
+Errors, Database Operations, Messaging Queues, and Infra depend on rollups and
+metrics an administrator enables per deployment. Until the rollup exists, the
+tab stays hidden rather than rendering an empty page. Services, Service Map,
+and Traces are always present.
+
+### Does APM read the same data as traceX?
+
+Both read the spans your instrumentation sends, but at different resolutions.
+APM aggregates them into rollups so fleet-wide views stay fast, and traceX
+reads raw spans for one request. That is why an APM chart can cover a period
+its occurrence list cannot.
+
+---
+
+## Related Guides
+
+- [Getting Started](./getting-started.md) - Scope, filters, and trace limits
+- [Services](./services.md) - Service and operation RED metrics
+- [Service Map](./service-map.md) - Dependencies and connection health
+- [Errors](./errors.md) - Grouped exceptions and stack traces
+- [traceX](../tracex/index.md) - The full trace explorer
+- [logX](../logx/index.md) - Logs for the same services
+- [k8X](../k8x/getting-started.md) - The Kubernetes fleet underneath
+- [RUM](../rum/getting-started.md) - How mobile clients experience these
+  same services

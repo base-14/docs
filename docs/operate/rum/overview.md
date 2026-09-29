@@ -1,24 +1,33 @@
 ---
-title: RUM Overview
+title: RUM Overview - Crash-Free Rate, Sessions, and App Startup
 sidebar_label: Overview
 sidebar_position: 2
 description:
-  Read the RUM Overview tab in base14 Scout, the health dashboard for one
-  mobile app. Track crash-free rate, sessions, active users, cold and warm
-  startup times, and trends broken down by app version, OS, and device.
+  Read the RUM Overview tab in base14 Scout. Track crash-free rate, sessions,
+  active users, cold and warm startup, and trends by app version.
 keywords:
   [
     rum,
     overview,
     crash-free rate,
+    crash-free sessions,
     mobile health,
     app startup,
     cold start,
     warm start,
+    active users,
+    app version comparison,
+    release monitoring,
+    anr duration,
+    top crashing screens,
+    mobile kpis,
+    scout rum,
     base14,
     scout,
   ]
 ---
+
+# RUM Overview
 
 The **Overview** tab is your health-at-a-glance dashboard for the selected
 mobile application, combining top-line stats, trend charts, breakdowns by
@@ -165,9 +174,28 @@ including frame timing and jank.
 
 ---
 
+## FAQ
+
+### Does session sampling distort the crash-free rate?
+
+No. Crash, error, and ANR telemetry bypasses the session sample rate by
+default, so **Crash-Free Sessions** and **Total Errors** stay accurate even at
+a 1% rate. Only the timeline detail around an unsampled session is missing.
+
+### How do I tell whether a new release made things worse?
+
+Expand **Detailed Breakdown** and compare the new version's line against
+previous versions in **Crashes by App Version** and **ANR Duration by App
+Version**. Both pair a time series with a Name / Min / Mean / Max table, so you
+see the trend and the worst case together.
+
+---
+
 ## Related Guides
 
 - [Getting Started](./getting-started.md) - Interface layout and shared filters
 - [Crashes](./crashes.md) - Crash groups and symbolicated stack traces
 - [Sessions](./sessions.md) - Session list and event timelines
 - [Users](./users.md) - Per-user activity and history
+- [OpenTelemetry RUM](/opentelemetry-rum/) - Web and mobile RUM as OTLP,
+  queried beside backend traces

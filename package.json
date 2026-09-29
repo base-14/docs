@@ -83,7 +83,8 @@
     "undici": "^7.29.0",
     "webpack-bundle-analyzer": {
       "ws": "^7.5.11"
-    }
+    },
+    "image-size": "^2.0.4"
   },
   "engines": {
     "node": ">=24.0"

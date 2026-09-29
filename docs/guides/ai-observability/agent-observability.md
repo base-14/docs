@@ -703,12 +703,56 @@ for latency.
 
 ### Framework Guides
 
+Grouped by how much telemetry the framework emits on its own.
+
+Native OpenTelemetry, enabled by configuration:
+
+- [Agent Approval Gates](./agent-approval-gates.md) \- Microsoft Agent
+  Framework and the MCP C# SDK, with a human approval gate on top
+- [OpenClaw](../../instrument/component/openclaw.md) \- the gateway's
+  `diagnostics-otel` plugin, run, model and tool spans, metrics and
+  trace-correlated logs
+
+Built in behind a flag or a package:
+
+- [Vercel AI SDK Instrumentation](../../instrument/apps/auto-instrumentation/vercel-ai-sdk.md)
+  \- `@ai-sdk/otel`, run ids, subagent fan-out and per-run cost
+- [Pydantic AI Instrumentation](../../instrument/apps/auto-instrumentation/pydantic-ai.md)
+  \- `Agent.instrument_all`, agent, model and tool spans without Logfire
+- [Pydantic AI on Temporal](../../instrument/apps/auto-instrumentation/pydantic-ai-temporal.md)
+  \- one trace per durable workflow across replay and worker restarts
+- [Strands Agents Instrumentation](../../instrument/apps/auto-instrumentation/strands-agents.md)
+  \- built-in agent, model and tool spans, and an agent called as a tool in
+  one trace
+
+Instrumented by a callback handler or custom spans:
+
+- [LangChain Instrumentation](../../instrument/apps/auto-instrumentation/langchain.md)
+  \- zero-code auto-instrumentation, then a callback handler for GenAI spans
 - [LangGraph Instrumentation](../../instrument/apps/auto-instrumentation/langgraph.md)
   \- node wrapping, conditional routing, tool-calling nodes
 - [LlamaIndex Instrumentation](../../instrument/apps/auto-instrumentation/llamaindex.md)
   \- RAG, structured output, self-correction loops
-- [Vercel AI SDK Instrumentation](../../instrument/apps/auto-instrumentation/vercel-ai-sdk.md)
-  \- TypeScript multi-stage agent pipelines
+
+### Runnable Examples
+
+- [nodejs/ai-learning-path-planner](https://github.com/base-14/examples/tree/main/nodejs/ai-learning-path-planner)
+  \- a lead agent fanning out to researcher subagents on the Vercel AI SDK, with
+  cost per run and tool-definition token metrics
+- [csharp/agent-rebooking](https://github.com/base-14/examples/tree/main/csharp/agent-rebooking)
+  \- an agent handoff over MCP with a human approval gate, covered by
+  [Agent Approval Gates](./agent-approval-gates.md)
+- [python/ai-kyc-onboarding](https://github.com/base-14/examples/tree/main/python/ai-kyc-onboarding)
+  \- a Pydantic AI agent inside a Temporal workflow, waiting on documents and
+  a reviewer, covered by
+  [Pydantic AI on Temporal](../../instrument/apps/auto-instrumentation/pydantic-ai-temporal.md)
+- [python/ai-filing-analyst](https://github.com/base-14/examples/tree/main/python/ai-filing-analyst)
+  \- a Strands analyst agent that calls a second agent as a tool, over SEC
+  filing data, covered by
+  [Strands Agents Instrumentation](../../instrument/apps/auto-instrumentation/strands-agents.md)
+- [components/openclaw-telemetry](https://github.com/base-14/examples/tree/main/components/openclaw-telemetry)
+  \- an OpenClaw gateway on a local Ollama model exporting all three
+  signals, covered by [OpenClaw](../../instrument/component/openclaw.md)
 
 ### Scout Platform Features
 
@@ -731,12 +775,15 @@ for latency.
 
 - [LLM Observability][llm-o11y] - the Python end-to-end foundation this guide
   builds on
+- [Agent Approval Gates][approval-gates] - human-in-the-loop agents, span pairs
+  and wait histograms
 - [LangGraph Instrumentation][langgraph] - framework-specific agent tracing
 - [Scout MCP Setup][scout-mcp] - run and observe an MCP server with Scout
 - [OpenTelemetry Collector Setup][collector] - full collector configuration
 - [Scout Exporter][scout-exporter] - configure base14 Scout authentication
 
 [llm-o11y]: ./llm-observability.md
+[approval-gates]: ./agent-approval-gates.md
 [langgraph]: ../../instrument/apps/auto-instrumentation/langgraph.md
 [scout-mcp]: ../../scout-mcp/setup.md
 [collector]: ../../instrument/collector-setup/otel-collector-config.md

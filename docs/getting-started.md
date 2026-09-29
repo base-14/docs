@@ -59,7 +59,10 @@ for a quick win and a clear next step.
 
 ## I want to explore data in Scout
 
+- [APM](/operate/apm/getting-started)
 - [traceX](/operate/tracex)
-- [LogX](/operate/logx)
+- [logX](/operate/logx)
 - [k8X](/operate/k8x/getting-started)
+- [RUM](/operate/rum/getting-started)
+- [pgX](/operate/pgx/quickstart)
 - [Create Your First Dashboard](/guides/create-your-first-dashboard)

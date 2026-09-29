@@ -1,10 +1,10 @@
 ---
-title: RUM Users
+title: RUM Users - Per-User Sessions, Errors, and Device History
 sidebar_label: Users
 sidebar_position: 9
 description:
   Explore identified users and their activity with RUM in base14 Scout. View
-  per-user sessions, errors, devices, screen performance, and session history.
+  per-user sessions, errors, devices, and screen performance.
 keywords:
   [
     rum,
@@ -12,11 +12,20 @@ keywords:
     user monitoring,
     session history,
     per-user performance,
+    user identity,
+    affected users,
+    user attributes,
+    support investigation,
     mobile users,
+    user sessions,
+    user errors,
+    scout rum,
     base14,
     scout,
   ]
 ---
+
+# RUM Users
 
 The **Users** tab lists identified users and their activity, so you can start
 from a known user (a support ticket, an account ID) and drill into exactly
@@ -97,6 +106,28 @@ The user's sessions with **Session ID**, **Started At**, **Duration**,
    on [Screens](./screens.md) for the same screen
 3. A large gap points at something specific to this user's device, network,
    or account state rather than a general regression
+
+---
+
+## FAQ
+
+### Why do most of my users not appear in the Users tab?
+
+The SDK does not capture user identity by default. A user appears here only
+once your app sets attributes such as `user.id` or `user.email`, so an app that
+never identifies its users will show little on this tab.
+
+### What does the UI Freezes stat card count?
+
+It counts the same frozen-UI events the [ANR](./anr.md) tab groups, scoped to
+this user. A high count for one user alongside normal app-wide numbers points
+at their device or network rather than a general regression.
+
+### How do I tell whether a reported problem is specific to one user?
+
+Compare that user's **Screen Performance** numbers against the app-wide numbers
+for the same screen on [Screens](./screens.md). A large gap points at something
+local to them; matching numbers mean you are looking at an app-wide issue.
 
 ---
 

@@ -412,6 +412,8 @@ in a multi-cluster (replication) deployment.
   Alert on Temporal metrics.
 - [PostgreSQL Monitoring](./postgres.md) -
   Watch the database that bounds Temporal's throughput.
+- [Pydantic AI on Temporal](../apps/auto-instrumentation/pydantic-ai-temporal.md)
+  \- Trace workflows and durable agents from the Python SDK.
 
 ## What's Next?
 

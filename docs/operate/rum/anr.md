@@ -1,23 +1,31 @@
 ---
-title: RUM ANR
+title: RUM ANR - Frozen UI Events Grouped by Screen and Thread
 sidebar_label: ANR
 sidebar_position: 5
 description:
-  Detect Application Not Responding (ANR) events in your Flutter apps with RUM
-  in base14 Scout. Group frozen-UI events by screen and analyze thread state
-  to find what blocked the main thread.
+  Detect Application Not Responding events with RUM in base14 Scout. Group
+  frozen-UI events by screen and analyze thread state to find the cause.
 keywords:
   [
     rum,
     anr,
     application not responding,
     frozen ui,
-    mobile performance,
+    ui freeze,
+    main thread blocked,
     jank,
+    mobile performance,
+    thread state,
+    unresponsive app,
+    anr duration,
+    screen attribution,
+    scout rum,
     base14,
     scout,
   ]
 ---
+
+# RUM ANR
 
 The **ANR** (Application Not Responding) tab tracks frozen-UI events - periods
 where the app's main thread was blocked and unresponsive to user input -
@@ -134,6 +142,23 @@ Use **View Session Timeline** to jump into the full
 1. Open the screen's ANR group
 2. Filter to the version containing the fix
 3. Confirm **Occurrences by App Version** drops for that version
+
+---
+
+## FAQ
+
+### What counts as an ANR?
+
+An ANR is a period where the app's main thread was blocked and could not
+respond to user input, which the user experiences as a frozen screen. RUM
+records these and groups them by the screen they happened on.
+
+### Does session sampling hide ANRs?
+
+No, not by default. ANR telemetry bypasses the session sample rate along with
+crashes and errors, so ANR counts are complete even when only a small
+percentage of sessions is sampled. Setting `alwaysCaptureErrors` to `false` in
+the SDK puts them behind the same sampling gate.
 
 ---
 

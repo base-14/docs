@@ -189,7 +189,10 @@ slow query on the same timeline—no tool-switching required.
   How pgX bridges the gap between database and application observability
 - [Understanding What Increases and Reduces MTTR][mttr] —
   Actionable strategies to cut incident resolution time
+- [How to Evaluate an Observability Platform][evaluate] —
+  The same evaluation applied to the wider platform decision
 
 [unified]: /blog/unified-observability
 [pgx-intro]: /blog/introducing-pgx
 [mttr]: /blog/factors-influencing-mttr
+[evaluate]: /evaluate-observability-platform/

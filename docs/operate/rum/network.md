@@ -1,11 +1,11 @@
 ---
-title: RUM Network
+title: RUM Network - API Response Times and Failures from the Client
 sidebar_label: Network
 sidebar_position: 8
 description:
-  Analyze API and network performance from the mobile client's perspective
-  with RUM in base14 Scout. Track response times, error rates, and failed
-  requests by endpoint.
+  Analyze API and network performance from the mobile client with RUM in
+  base14 Scout. Track response times, error rates, and failed requests by
+  endpoint.
 keywords:
   [
     rum,
@@ -14,11 +14,19 @@ keywords:
     response time,
     error rate,
     failed requests,
+    http status code,
+    endpoint latency,
     mobile network,
+    client-side latency,
+    http route,
+    connection type,
+    scout rum,
     base14,
     scout,
   ]
 ---
+
+# RUM Network
 
 The **Network** tab surfaces API and network performance from the mobile
 client's perspective - what your app actually experienced, not what your
@@ -90,8 +98,25 @@ connection type.
 
 ---
 
+## FAQ
+
+### Why are these response times worse than my backend's own numbers?
+
+Because these are measured from the mobile client, so they include DNS,
+connection setup, radio wake-up, and the round trip your server never sees. The
+gap between the two is the part of the experience only the client can report.
+
+### How do I catch an endpoint that fails consistently but quietly?
+
+Open **Failed Requests** rather than sorting **All Endpoints** by error rate. A
+low-volume endpoint failing every time can sit below the noise floor of the
+main table while still breaking a feature for everyone who reaches it.
+
+---
+
 ## Related Guides
 
 - [Getting Started](./getting-started.md) - Interface layout and shared filters
 - [Sessions](./sessions.md) - See individual `http.request` events in context
 - [Screens](./screens.md) - Screen-level performance, for issues that aren't network-bound
+- [APM Services](../apm/services.md) - The backend side of a slow endpoint

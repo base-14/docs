@@ -1,11 +1,10 @@
 ---
-title: RUM Errors
+title: RUM Errors - Non-Fatal Error Groups, Traces, and Breadcrumbs
 sidebar_label: Errors
 sidebar_position: 4
 description:
-  Track non-fatal errors in your Flutter apps with RUM in base14 Scout. Group
-  and rank errors by occurrence, inspect stack traces and breadcrumbs, and
-  prioritize fixes.
+  Track non-fatal errors in your mobile apps with RUM in base14 Scout. Group
+  and rank errors, inspect stack traces and breadcrumbs, and prioritize fixes.
 keywords:
   [
     rum,
@@ -13,11 +12,21 @@ keywords:
     non-fatal errors,
     dart errors,
     flutter errors,
+    error grouping,
+    error ranking,
+    stack trace,
+    breadcrumbs,
+    handled exceptions,
     mobile errors,
+    error triage,
+    occurrences,
+    scout rum,
     base14,
     scout,
   ]
 ---
+
+# RUM Errors
 
 The **Errors** tab surfaces non-fatal errors reported by the app, grouped and
 ranked by occurrence so you can prioritize the errors affecting the most
@@ -138,6 +147,30 @@ the error was thrown.
    (layout overflows, `setState` misuse) versus `uncaught_error`
    (application-level exceptions)
 2. Triage each category with a different owner if useful
+
+---
+
+## FAQ
+
+### What is the difference between an error and a crash in RUM?
+
+An error is non-fatal: the app caught it or survived it, and the user kept
+going. A crash terminated the app. They are separate tabs because they need
+different responses, and a spike in errors often precedes a spike in crashes.
+
+### Why is every error badged `JS Error`?
+
+On Flutter, errors come from above the platform layer, so **Kind** is always
+`JS Error`, the badge name RUM shares across platforms even though no
+JavaScript is involved. Use **Type** instead, which separates framework-level
+errors from unhandled exceptions and errors your code reported explicitly.
+
+### Which errors should I fix first?
+
+Rank by occurrences, then check how many distinct sessions and users each one
+affects. A high count concentrated in a few sessions is usually one user in a
+retry loop, while a lower count spread across many users is the more damaging
+problem.
 
 ---
 

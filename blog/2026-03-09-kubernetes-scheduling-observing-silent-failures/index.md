@@ -384,3 +384,4 @@ before they affect your users. Want to see this in action?
 
 - [Production-Ready OpenTelemetry Collector](/blog/production-ready-otel-collector/)
 - [The Cloud-Native Foundation Layer](/blog/cloud-native-foundation-layer/)
+- [What Kubernetes Does to Your Observability Bill](/kubernetes-observability-cost/)

@@ -188,6 +188,14 @@ const config: Config = {
     [
       "docusaurus-plugin-llms",
       {
+        docsDir: [
+          { path: "docs", routeBasePath: "/", label: "Documentation" },
+          {
+            path: "src/pages",
+            routeBasePath: "/",
+            label: "Comparisons and cost guides",
+          },
+        ],
         includeBlog: true,
         generateMarkdownFiles: true,
         preserveDirectoryStructure: false,
@@ -454,6 +462,10 @@ const config: Config = {
             {
               label: "CloudWatch Alternative",
               to: "/cloudwatch-alternative/",
+            },
+            {
+              label: "Google Cloud Observability Alternative",
+              to: "/gcp-alternative/",
             },
             {
               label: "Cost Optimization Guide",

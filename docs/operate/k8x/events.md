@@ -1,24 +1,32 @@
 ---
-title: k8X Events
+title: k8X Events - Scheduling Failures, Image Pulls, and Evictions
 sidebar_label: Events
 sidebar_position: 7
 description:
   Search Kubernetes events across your fleet with k8X in base14 Scout. Filter
-  by type, reason, involved object kind, and namespace to explain scheduling
-  failures, image pull errors, and pod evictions.
+  by type, reason, object kind, and namespace to explain pod failures.
 keywords:
   [
     k8x,
     kubernetes events,
     warning events,
+    event stream,
     failedscheduling,
     oomkilling,
-    event stream,
+    imagepullbackoff,
+    pod eviction,
+    event reason,
+    involved object,
     k8sobjects,
+    event volume,
+    troubleshooting kubernetes,
+    scout k8x,
     base14,
     scout,
   ]
 ---
+
+# k8X Events
 
 import ThemedImage from '@theme/ThemedImage';
 
@@ -168,6 +176,29 @@ rather than dropped, and the panel says `all clusters` when it is doing so.
    memory, not a one-off
 3. Open the pod on [Workloads](./workloads.md) and check **Containers** for
    the last terminated state, then **Mem (GiB)** against its limit
+
+---
+
+## FAQ
+
+### Why does k8X show fewer events than `kubectl get events`?
+
+Because the recommended collector pipeline drops `Normal` events before export,
+so only `Warning` events ever reach Scout. That is deliberate, not a gap: it
+keeps every bar in the volume chart meaningful.
+
+### What does a count like `×340` on one row mean?
+
+Kubernetes aggregates repeated events, so `×340` is one failure firing in a
+tight loop. Forty separate rows at `×1` are forty separate problems. The
+distinction matters more than the raw event total.
+
+### The Events tab is empty but the other tabs have data. What is wrong?
+
+Events are the one part of k8X that depends entirely on the `k8sobjects`
+receiver, so that receiver is the thing to check. A message saying no events
+were found for the selected clusters at all, in or out of the window, means
+none have ever arrived.
 
 ---
 

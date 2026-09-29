@@ -395,7 +395,10 @@ more—into a unified observability platform.
   Making metric knowledge accessible across your team
 - [Why Unified Observability Matters for Growing Engineering Teams][unified] —
   The case for consolidating your monitoring stack
+- [Observability for Growing Engineering Teams][growing] —
+  What breaks at 20, 60 and 200 engineers
 
 [cloud-native]: /blog/cloud-native-foundation-layer
 [bus-factor]: /blog/reducing-bus-factor-in-observability
 [unified]: /blog/unified-observability
+[growing]: /observability-for-growing-teams/

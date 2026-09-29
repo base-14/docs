@@ -153,8 +153,11 @@ no setup required.
   The cost of fragmented tooling and how to escape it
 * [CloudWatch Alternative][cloudwatch] —
   Why multi-cloud teams outgrow CloudWatch
+* [Google Cloud Observability Alternative][gcp] —
+  Where GCP's automatic monitoring coverage stops
 
 [cloudwatch]: /cloudwatch-alternative/
+[gcp]: /gcp-alternative/
 
 [foundation]: /blog/cloud-native-foundation-layer
 [unified]: /blog/unified-observability
