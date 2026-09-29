@@ -55,6 +55,9 @@ your collector is working first, try the
 | Pydantic AI             | [Pydantic AI](./pydantic-ai)                      | Agent runs, LLM calls, tool execution, token usage, prompt versions               |
 | Pydantic AI on Temporal | [Pydantic AI on Temporal](./pydantic-ai-temporal) | Durable agent workflows, replay-safe spans, signal and update links, case metrics |
 | Strands Agents          | [Strands Agents](./strands-agents)                | Agent runs, LLM calls, tool execution, agents as tools, trace-correlated logs     |
+| Google ADK              | [Google ADK](./google-adk)                        | Agent runs, LLM calls, tool execution, agents as tools, inference events          |
+| Microsoft Agent Framework | [Microsoft Agent Framework](./microsoft-agent-framework) | Agent runs, LLM calls, tool execution, agents as tools, message events |
+| OpenAI Agents SDK       | [OpenAI Agents SDK](./openai-agents-sdk)          | Workflows, agent runs, LLM calls, tool execution, agents as tools                 |
 
 ### Node.js
 

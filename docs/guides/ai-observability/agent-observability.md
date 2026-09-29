@@ -712,6 +712,11 @@ Native OpenTelemetry, enabled by configuration:
 - [OpenClaw](../../instrument/component/openclaw.md) \- the gateway's
   `diagnostics-otel` plugin, run, model and tool spans, metrics and
   trace-correlated logs
+- [Google ADK Instrumentation](../../instrument/apps/auto-instrumentation/google-adk.md)
+  \- agent, model and tool spans, `gen_ai.*` metrics and inference events
+- [Microsoft Agent Framework Instrumentation](../../instrument/apps/auto-instrumentation/microsoft-agent-framework.md)
+  \- agent, chat and tool spans, metrics and message events in Python, on by
+  default
 
 Built in behind a flag or a package:
 
@@ -724,6 +729,9 @@ Built in behind a flag or a package:
 - [Strands Agents Instrumentation](../../instrument/apps/auto-instrumentation/strands-agents.md)
   \- built-in agent, model and tool spans, and an agent called as a tool in
   one trace
+- [OpenAI Agents SDK Instrumentation](../../instrument/apps/auto-instrumentation/openai-agents-sdk.md)
+  \- the contrib instrumentation, workflow, agent, chat and tool spans, with
+  trace export to OpenAI turned off
 
 Instrumented by a callback handler or custom spans:
 
@@ -747,9 +755,13 @@ Instrumented by a callback handler or custom spans:
   a reviewer, covered by
   [Pydantic AI on Temporal](../../instrument/apps/auto-instrumentation/pydantic-ai-temporal.md)
 - [python/ai-filing-analyst](https://github.com/base-14/examples/tree/main/python/ai-filing-analyst)
-  \- a Strands analyst agent that calls a second agent as a tool, over SEC
-  filing data, covered by
-  [Strands Agents Instrumentation](../../instrument/apps/auto-instrumentation/strands-agents.md)
+  \- an analyst agent that calls a second agent as a tool, over SEC filing
+  data, on Strands, Google ADK, Microsoft Agent Framework or the OpenAI Agents
+  SDK, covered by
+  [Strands Agents](../../instrument/apps/auto-instrumentation/strands-agents.md),
+  [Google ADK](../../instrument/apps/auto-instrumentation/google-adk.md),
+  [Microsoft Agent Framework](../../instrument/apps/auto-instrumentation/microsoft-agent-framework.md)
+  and [OpenAI Agents SDK](../../instrument/apps/auto-instrumentation/openai-agents-sdk.md)
 - [components/openclaw-telemetry](https://github.com/base-14/examples/tree/main/components/openclaw-telemetry)
   \- an OpenClaw gateway on a local Ollama model exporting all three
   signals, covered by [OpenClaw](../../instrument/component/openclaw.md)
