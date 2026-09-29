@@ -31,7 +31,8 @@ This integration provisions **users only**.
 - **Groups are not provisioned.** Entra ID groups do not become Scout Console
   roles, teams, or organizations.
 - **Sign-in is configured separately.** Provisioning creates and maintains
-  accounts. It does not configure single sign-on.
+  accounts. It does not configure single sign-on. See
+  [Entra ID Single Sign-On](./sso-entra-id.md).
 
 :::
 
@@ -258,5 +259,7 @@ If provisioning still fails after working through the steps above,
 
 ## Related Guides
 
+- [Entra ID Single Sign-On](./sso-entra-id.md) - Let provisioned users sign
+  in with their Microsoft accounts
 - [User Management and Access Control](./user-management.md) - Assign roles
   and manage users in Scout Console
