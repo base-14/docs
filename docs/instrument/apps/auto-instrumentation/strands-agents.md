@@ -380,7 +380,7 @@ them onto every span of that agent's run, not only `invoke_agent`. Strands
 applies them after its own attributes, so a key you set replaces Strands'
 value for it:
 
-```python showLineNumbers title="agents.py (condensed)"
+```python showLineNumbers title="frameworks/strands.py (condensed)"
 def _attributes(request: QuestionRequest, config: AgentConfig, prompt: Prompt, model_id: str) -> dict[str, str | int]:
     server = urlsplit(config.ollama_base_url)
     return {
@@ -408,21 +408,21 @@ conventions own `gen_ai.*`.
 
 `agent.as_tool(name, description)` wraps an agent as a tool of another agent:
 
-```python showLineNumbers title="agents.py (condensed)"
+```python showLineNumbers title="frameworks/strands.py (condensed)"
 ranking = Agent(
     name="ranking",
     model=models(config.ranking_model),
-    tools=list(ranking_tools(context)),
-    hooks=[budget, collector],
+    tools=strands_tools(tools.ranking),
+    hooks=[budget_hook],
     trace_attributes=_attributes(request, config, config.ranking_prompt, config.ranking_model),
     callback_handler=None,
 )
 analyst = Agent(
     name="analyst",
     model=models(config.analyst_model),
-    tools=[*analyst_tools(context), ranking.as_tool(name="rank_among_filers", description=RANKING_TOOL_DESCRIPTION)],
+    tools=[*strands_tools(tools.analyst), ranking.as_tool(name="rank_among_filers", description=RANKING_TOOL_DESCRIPTION)],
     structured_output_model=FilingAnswer,
-    hooks=[budget, collector, RankingCounter(collector), RankingReport(collector)],
+    hooks=[budget_hook, RankingHook(collector)],
     trace_attributes=_attributes(request, config, config.analyst_prompt, config.analyst_model),
     callback_handler=None,
 )
@@ -436,7 +436,7 @@ agent itself fails or is cancelled, the outer span ends with error status.
 
 The outer agent reads only the inner agent's reply text. A small model can
 drop facts from that reply, such as the frame or the accession number. The
-example's `RankingReport` hook, on `AfterToolCallEvent`, appends the frame's
+example's `RankingHook`, on `AfterToolCallEvent`, appends the frame's
 facts to the reply as the tool returned them, and replaces the reply with a
 fixed line when the frames fetch failed.
 
@@ -471,21 +471,19 @@ call or tool that stalls does not see it. The example wraps the run in
 outright.
 
 `limits` counts one agent only. The example counts model and tool calls across
-both agents with a hook shared by both:
+both agents with a hook shared by both, around a plain `CallBudget` counter:
 
-```python showLineNumbers title="budget.py (condensed)"
-class CallBudget(HookProvider):
+```python showLineNumbers title="frameworks/strands.py (condensed)"
+class BudgetHook(HookProvider):
     def register_hooks(self, registry: HookRegistry, **kwargs: Any) -> None:
         registry.add_callback(BeforeModelCallEvent, self._on_model_call)
         registry.add_callback(BeforeToolCallEvent, self._on_tool_call)
 
     def _on_model_call(self, event: BeforeModelCallEvent) -> None:
-        exceeded = self._count(model=True)
-        if exceeded is not None:
-            raise exceeded
+        self._budget.count_model()  # raises past the budget
 
     def _on_tool_call(self, event: BeforeToolCallEvent) -> None:
-        exceeded = self._count(model=False)
+        exceeded = self._budget.count_tool()
         if exceeded is not None:
             trace.get_current_span().set_attribute("error.type", BUDGET_ERROR_TYPE)
             event.cancel_tool = str(exceeded)
@@ -501,21 +499,22 @@ Strands logs through standard `logging` and exports nothing. The
 `LoggingHandler` in [Configuration](#configuration) sends every record to the
 collector with the trace ID and span ID of the span it was written under.
 
-To print the IDs in console lines too, instrument logging without its
-`basicConfig`, which does nothing once the root logger has a handler:
+To print the IDs in console lines too, add a console handler to the root
+logger first, then instrument logging. The instrumentation's own
+`basicConfig` does nothing once the root logger has a handler:
 
 ```python showLineNumbers title="telemetry.py (condensed)"
 from opentelemetry.instrumentation.logging import LoggingInstrumentor
 from opentelemetry.instrumentation.logging.constants import DEFAULT_LOGGING_FORMAT
 
-LoggingInstrumentor().instrument(
-    set_logging_format=False,
-    inject_trace_context=True,
-    enable_log_auto_instrumentation=False,
-)
 console = logging.StreamHandler()
 console.setFormatter(logging.Formatter(DEFAULT_LOGGING_FORMAT))
 logging.getLogger().addHandler(console)
+LoggingInstrumentor().instrument(
+    set_logging_format=True,
+    inject_trace_context=True,
+    enable_log_auto_instrumentation=False,
+)
 ```
 
 The instrumentation adds `otelTraceID` and similar fields to every record. The
@@ -799,8 +798,9 @@ ai-filing-analyst/
 |   `-- verify-scout.sh          checks the run's telemetry in the collector output
 `-- src/filing_analyst/
     |-- telemetry.py             providers, logging, redaction, cost and error attributes
-    |-- agents.py                the two agents, trace attributes, ranking hook
-    |-- budget.py                the call budget hook
+    |-- frameworks/strands.py    the two agents, trace attributes, budget and ranking hooks
+    |-- agents.py                what every framework adapter shares
+    |-- budget.py                the call budget counter
     |-- tools.py                 query_facts, compute_ratio, frame_values
     `-- verifier.py              the grounding check
 ```
