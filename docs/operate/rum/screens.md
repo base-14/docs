@@ -4,13 +4,19 @@ sidebar_label: Screens
 sidebar_position: 7
 description:
   Measure per-screen performance with RUM in base14 Scout. Track load times,
-  frame rendering, memory and CPU usage, jank, and crashes by screen.
+  Core Web Vitals (LCP, INP, CLS), frame rendering, memory and CPU usage,
+  jank, and crashes by screen.
 keywords:
   [
     rum,
     screens,
     screen performance,
     screen load time,
+    core web vitals,
+    lcp,
+    inp,
+    cls,
+    route transition,
     frame rendering,
     frame build time,
     raster time,
@@ -32,15 +38,53 @@ The **Screens** tab measures per-screen performance across your app, so you
 can find the slowest or jankiest screens without knowing what to look for
 up front.
 
-![Total Screens, Slowest Screen, Most Janky, and Most Crashing stat cards above a table with Screen, Views, Unique Sessions, Avg Load, P95 Load, Avg Time Spent, Long Tasks, and Crashes columns](/img/rum/screens/list.png)
+## Load Time on Mobile vs. Web
+
+What "load time" means depends on the platform, and the tab adapts to the app
+you have selected:
+
+| | Mobile (Flutter, iOS, Android) | Web |
+| --- | --- | --- |
+| **Headline load metric** | **Load Time**: time to render the screen after navigation | **LCP** (Largest Contentful Paint), p75 |
+| **Secondary timing** | — | **Route Transition**: time from a client-side route change to the next rendered frames |
+| **Core Web Vitals row** | Only when the app relays vitals from embedded WebViews | Always |
+
+On the web, **Route Transition** is not a page-load measurement. It's a few
+milliseconds for most navigations. It can also stretch to hours when a tab is
+left in the background, because the browser stops rendering hidden tabs. For
+that reason it is reported as p50 / p95 rather than an average. LCP, which the
+browser measures once per full page load, is the page-load number.
+
+All load times are shown as percentiles (p50 / p95 for load time and route
+transition, p75 for Core Web Vitals) so that a handful of extreme outliers
+cannot dominate them.
+
+![Total Screens, Slowest Screen, Most Janky, and Most Crashing stat cards above a table with Screen, Views, Unique Sessions, Load Time p50, Load Time p95, Avg Time Spent, Long Tasks, and Crashes columns](/img/rum/screens/list.png)
 
 ---
 
 ## Screen List
 
 Four stat tiles summarize the whole app before the table: **Total Screens**,
-**Slowest Screen** (with its avg load time), **Most Janky** (with its long
-task count), and **Most Crashing** (with its crash count).
+**Slowest Screen**, **Most Janky** (with its long task count), and **Most
+Crashing** (with its crash count). **Slowest Screen** is ranked by p75 LCP on
+web apps and by p95 load time on mobile apps.
+
+### Core Web Vitals
+
+On web apps, and on mobile apps that embed WebViews, a row of three tiles
+sits above the table: **LCP**, **INP** (Interaction to Next Paint), and
+**CLS** (Cumulative Layout Shift). Each shows the p75 value, colored against
+the standard thresholds:
+
+| Vital | Good | Needs improvement | Poor |
+| --- | --- | --- | --- |
+| LCP | ≤ 2.5 s | ≤ 4 s | > 4 s |
+| INP | ≤ 200 ms | ≤ 500 ms | > 500 ms |
+| CLS | ≤ 0.1 | ≤ 0.25 | > 0.25 |
+
+Under each value, a bar shows the share of measurements the browser itself
+rated good, needs improvement, or poor.
 
 ### Table Columns
 
@@ -49,14 +93,14 @@ task count), and **Most Crashing** (with its crash count).
 | **Screen** | The screen's route/name |
 | **Views** | Number of times the screen was viewed |
 | **Unique Sessions** | Distinct sessions that viewed it (links to a filtered session list) |
-| **Avg Load** | Average load time |
-| **P95 Load** | 95th-percentile load time |
+| **LCP p75** / **INP p75** / **CLS p75** | Core Web Vitals for the screen (web apps and WebView-embedding apps only) |
+| **Load Time p50** / **p95** | Median and 95th-percentile load time. Shown as **Route Transition p50** / **p95** on web apps |
 | **Avg Time Spent** | Average time users spent on the screen |
 | **Long Tasks** | Count of long-running UI-thread tasks (jank) |
 | **Crashes** | Crashes that occurred on this screen |
 
-Sort by **Avg Load** or **Long Tasks** to find the screens most in need of
-optimization.
+Sort by **LCP p75** (web), **Load Time p95** (mobile), or **Long Tasks** to
+find the screens most in need of optimization.
 
 ---
 
@@ -66,18 +110,31 @@ Select a screen to see its full performance breakdown.
 
 ### Summary Stats
 
-![Views, Unique Sessions, Avg Load Time, P95 Load Time, Long Tasks, and Crashes stat cards](/img/rum/screens/summary-stats.png)
+![Views, Unique Sessions, Load Time p50, Load Time p95, Long Tasks, and Crashes stat cards](/img/rum/screens/summary-stats.png)
 
-**Views**, **Unique Sessions**, **Avg Load Time**, **P95 Load Time**,
-**Long Tasks**, and **Crashes** for the selected screen and time range.
+**Views**, **Unique Sessions**, **Load Time p50**, **Load Time p95**,
+**Long Tasks**, and **Crashes** for the selected screen and time range. On a
+web app the load tiles are labeled **Route Transition p50** / **p95**, and the
+screen's own **Core Web Vitals** row (LCP / INP / CLS at p75) sits beneath
+them.
 
 ### Load Time Trend and Views Over Time
 
 ![Load Time Trend chart and Views Over Time chart](/img/rum/screens/load-time-views.png)
 
-- **Load Time Trend** - Avg and p95 load time over the range, with a
-  Name / Min / Mean / Max table
+- **Load Time Trend** (mobile) - p50 and p95 load time over the range, with
+  a Name / Min / Mean / Max table
+- **LCP Trend** (web) - p50 and p75 LCP over the range. The
+  **Route Transition Trend** follows further down the page
 - **Views Over Time** - view volume over the range
+
+### Web Vitals
+
+On web apps two further charts follow:
+
+- **Web Vitals (p75)** - LCP, INP, FCP, and TTFB for the screen, one line
+  each, in milliseconds
+- **CLS (p75)** - layout shift on its own axis, since it is a unitless score
 
 ### Rendering and Resource Usage
 
@@ -96,8 +153,14 @@ Select a screen to see its full performance breakdown.
 
 ![Slowest Loads and Long Tasks (Jank Events) tables](/img/rum/screens/slowest-loads-long-tasks.png)
 
-- **Slowest Loads** - table of individual slow page loads (**Time**,
-  **Load Time**, **User**, **Session**)
+- **Slowest Loads** (mobile) - table of individual slow screen loads
+  (**Time**, **Load Time**, **User**, **Session**)
+- **Slowest LCP** (web) - table of the slowest individual page loads by LCP,
+  with the LCP broken into **Delay / Load / Render** (resource load delay,
+  resource load time, render delay, in ms) and the **Element** resource that
+  was the largest paint. A large delay points at the server or at
+  late-discovered resources, a large load time at the resource itself, and a
+  large render delay at blocking scripts or styles
 - **Long Tasks (Jank Events)** - table of individual long tasks (**Time**,
   **Duration**, **User**, **Session**)
 
@@ -119,10 +182,12 @@ none in range.
 ### Finding the Slowest Screen
 
 1. Check the **Slowest Screen** stat tile, or sort the **Screen List** by
-   **Avg Load**
-2. Open the screen and check **Load Time Trend** for a gradual regression vs.
-   a one-time spike
-3. Cross-check **Slowest Loads** for the specific sessions affected
+   **LCP p75** (web) or **Load Time p95** (mobile)
+2. Open the screen and check **LCP Trend** / **Load Time Trend** for a
+   gradual regression vs. a one-time spike
+3. Cross-check **Slowest LCP** / **Slowest Loads** for the specific sessions
+   affected. On the web, the Delay / Load / Render split and the element URL
+   show where the time went
 
 ### Diagnosing Jank on a Screen
 
@@ -149,12 +214,21 @@ usual mechanical cause of jank. The **Long Tasks (Jank Events)** table lists
 individual occurrences with the user and session involved, so you can open the
 exact session and see what ran.
 
-### Avg Load looks fine but P95 Load is bad. Where do I look?
+### p50 looks fine but p95 is bad. Where do I look?
 
-Open the screen and read **Slowest Loads**, which lists individual slow loads
-with their time, duration, user, and session. A healthy average with a bad tail
-usually means a subset of devices, networks, or accounts, and the session links
-are how you find which.
+Open the screen and read **Slowest Loads** (or **Slowest LCP** on a web app),
+which lists individual slow loads with their time, duration, user, and
+session. A healthy median with a bad tail usually means a subset of devices,
+networks, or accounts, and the session links are how you find which.
+
+### Why is Route Transition so much lower than LCP on my web app?
+
+They measure different things. **Route Transition** is the time from a
+client-side route change until the next frames render, usually a few
+milliseconds. **LCP** measures a full page load, from navigation until the
+largest element is painted, so it includes the network and rendering. Use LCP
+to judge how fast pages load, and Route Transition to spot client-side
+navigation that has become sluggish.
 
 ---
 
