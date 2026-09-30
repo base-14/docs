@@ -45,7 +45,7 @@ you have selected:
 
 | | Mobile (Flutter, iOS, Android) | Web |
 | --- | --- | --- |
-| **Headline load metric** | **Load Time**: time to render the screen after navigation | **LCP** (Largest Contentful Paint), p75 |
+| **Headline load metric** | **Load Time**: time to render the screen after navigation | **LCP** (Largest Contentful Paint) by default, or **FCP** (First Contentful Paint), p75 |
 | **Secondary timing** | — | **Route Transition**: time from a client-side route change to the next rendered frames |
 | **Core Web Vitals row** | Only when the app relays vitals from embedded WebViews | Always |
 
@@ -54,6 +54,25 @@ milliseconds for most navigations. It can also stretch to hours when a tab is
 left in the background, because the browser stops rendering hidden tabs. For
 that reason it is reported as p50 / p95 rather than an average. LCP, which the
 browser measures once per full page load, is the page-load number.
+
+### Choosing LCP or FCP
+
+An admin picks the web page-load metric under **Administration → Plugins →
+RUM → Web Performance → Page Load Metric**:
+
+- **LCP** (default) - when the page's main content has rendered. This is the
+  Core Web Vitals standard, and the closest match to "the page looks loaded".
+- **FCP** - when the browser first renders anything (text, an image, a
+  background). It is always earlier than LCP, and tracks server response and
+  render-blocking resources rather than the main content.
+
+The setting changes the **Slowest Screen** tile, the Overview's **Slowest
+Screens** table, the screen's trend chart (**LCP Trend** or **FCP Trend**) and
+its slowest-loads table (**Slowest LCP** or **Slowest FCP**). With FCP
+selected, the screen list also gains an **FCP p75** column. The **Core Web
+Vitals** row always shows LCP, INP, and CLS, and mobile apps keep their own
+**Load Time** whatever the setting. FCP carries no attribution, so **Slowest
+FCP** has no **Delay / Load / Render** or **Element** columns.
 
 All load times are shown as percentiles (p50 / p95 for load time and route
 transition, p75 for Core Web Vitals) so that a handful of extreme outliers
@@ -68,7 +87,8 @@ cannot dominate them.
 Four stat tiles summarize the whole app before the table: **Total Screens**,
 **Slowest Screen**, **Most Janky** (with its long task count), and **Most
 Crashing** (with its crash count). **Slowest Screen** is ranked by p75 LCP on
-web apps and by p95 load time on mobile apps.
+web apps (or p75 FCP, if [configured](#choosing-lcp-or-fcp)) and by p95 load
+time on mobile apps.
 
 ### Core Web Vitals
 
@@ -124,7 +144,8 @@ them.
 
 - **Load Time Trend** (mobile) - p50 and p95 load time over the range, with
   a Name / Min / Mean / Max table
-- **LCP Trend** (web) - p50 and p75 LCP over the range. The
+- **LCP Trend** (web) - p50 and p75 LCP over the range (**FCP Trend** when
+  the app is [configured for FCP](#choosing-lcp-or-fcp)). The
   **Route Transition Trend** follows further down the page
 - **Views Over Time** - view volume over the range
 
@@ -160,7 +181,9 @@ On web apps two further charts follow:
   resource load time, render delay, in ms) and the **Element** resource that
   was the largest paint. A large delay points at the server or at
   late-discovered resources, a large load time at the resource itself, and a
-  large render delay at blocking scripts or styles
+  large render delay at blocking scripts or styles. When the app is
+  [configured for FCP](#choosing-lcp-or-fcp) this is **Slowest FCP**, without
+  the breakdown
 - **Long Tasks (Jank Events)** - table of individual long tasks (**Time**,
   **Duration**, **User**, **Session**)
 
