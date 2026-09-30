@@ -42,15 +42,16 @@ Set a global tracer and meter provider, then call
 `OpenAIAgentsInstrumentor().instrument(disable_openai_trace_export=True)` and
 `OpenAIInstrumentor().instrument()` before the first run. Set
 `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=SPAN_ONLY` to record
-content. `true` records none. Pass `RunConfig(group_id=...)` to set
-`gen_ai.conversation.id`.
+content. Setting it to `true` records no content. Pass
+`RunConfig(group_id=...)` to set `gen_ai.conversation.id`.
 
 :::
 
 > **Note:** For framework-agnostic agent patterns, see
 > [AI Agent Observability](../../../guides/ai-observability/agent-observability.md).
 > For other Python agent frameworks, see
-> [Strands Agents](./strands-agents.md) and [Google ADK](./google-adk.md).
+> [Strands Agents](./strands-agents.md), [Google ADK](./google-adk.md) and
+> [Microsoft Agent Framework](./microsoft-agent-framework.md).
 
 :::note Running this in production
 
@@ -74,7 +75,8 @@ does.
 
 - Install the two instrumentations and turn off the export to OpenAI.
 - Read the span tree of a run, including an agent called as a tool.
-- Set the conversation ID with `group_id`, and put request IDs on spans with
+- Set the conversation ID with `group_id` or a span processor, and put
+  request IDs on spans with
   a span processor.
 - Turn content capture on with a capture mode.
 - Recognize a budget stop and a failed tool in a trace.
@@ -156,7 +158,7 @@ pip install openai-agents==0.22.3 \
 </Tabs>
 ```
 
-The SDK instrumentation needs OpenTelemetry 1.43 or later. The agents
+Both instrumentations need `opentelemetry-api` 1.43 or later. The agents
 instrumentation emits no model-call spans. The OpenAI client instrumentation
 adds them. For logs, add `opentelemetry-instrumentation-logging==0.66b0`.
 
@@ -262,7 +264,8 @@ def from_settings(settings: Settings) -> OpenAIAgentsFramework:
 
 ### Keep Traces Off OpenAI
 
-The SDK exports its traces to OpenAI whenever `OPENAI_API_KEY` is set.
+The SDK exports its traces to OpenAI whenever an OpenAI API key is
+available, usually from `OPENAI_API_KEY`.
 `OpenAIAgentsInstrumentor().instrument()` adds its processor next to that
 exporter, so both run. With `disable_openai_trace_export=True`, it replaces
 the SDK's processors with its own, so traces go only to OpenTelemetry. Pass
@@ -275,11 +278,11 @@ only SDK trace processor is the OpenTelemetry one.
 
 | Variable | Value in the example | Read by |
 | --- | --- | --- |
-| `OTEL_SERVICE_NAME` | `ai-filing-analyst` | The SDK resource. |
+| `OTEL_SERVICE_NAME` | `ai-filing-analyst` | The OpenTelemetry SDK resource. |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://otel-collector:4318` | The OTLP exporters. |
 | `OTEL_EXPORTER_OTLP_PROTOCOL` | `http/protobuf` | The OTLP exporters. |
 | `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT` | `true`, mapped to `SPAN_ONLY` by the example | Both instrumentations. Takes a capture mode. See [Content Capture](#content-capture). |
-| `OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT` | `4096` | The SDK. Caps each captured value. |
+| `OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT` | `4096` | The OpenTelemetry SDK. Caps each captured value. |
 | `OTEL_PYTHON_LOG_CORRELATION` | `true` | The example. Adds trace and span IDs to console log lines. |
 
 ## What the Instrumentations Emit
@@ -371,8 +374,9 @@ class AgentRunAttributesProcessor(SpanProcessor):
         span.set_attributes({key: value for key, value in added.items() if key not in attributes})
 ```
 
-`run.question` holds the request ID, `gen_ai.conversation.id` and the ticker,
-so `execute_tool` spans get the conversation ID too.
+`run.question` holds the request ID, `gen_ai.conversation.id` and the ticker.
+The example does not pass `group_id`. Its processor sets
+`gen_ai.conversation.id` on every GenAI span, including `execute_tool`.
 
 ## Agents as Tools
 
@@ -522,7 +526,7 @@ verified 2026-09-29:
 
 - **Traces go to OpenAI unless you turn that off.** Without
   `disable_openai_trace_export=True`, the SDK's exporter stays active next to
-  OpenTelemetry whenever `OPENAI_API_KEY` is set.
+  OpenTelemetry whenever an OpenAI API key is available.
 - **`error.type` is `_OTHER` on failed agent and tool spans**, with no
   recorded exception. Record the exception in a hook and derive the type in
   an exporter.
@@ -558,9 +562,8 @@ Filter spans on `status = Error` and group by `error.type`. A model server
 that cannot be reached shows on `chat` as `openai.APIConnectionError`. With
 the example's exporter, `filing_analyst.budget.BudgetExceeded` on
 `invoke_agent` marks a budget stop. Without it, `invoke_agent` reads
-`_OTHER`. A timeout leaves `invoke_agent`
-without error status. The example's server span ends with error status, a
-504 and `base14.filing.outcome=timeout`.
+`_OTHER`. A timeout leaves `invoke_agent` without error status. The
+example's server span ends with error status, a 504 and `base14.filing.outcome=timeout`.
 
 ### Find a tool that failed inside a run that completed
 
@@ -592,7 +595,7 @@ spans, grouped by `gen_ai.request.model`, or read the
 - **Send through a collector.** The example exports OTLP HTTP to a collector,
   which authenticates to Scout and keeps a `debug` exporter for local checks.
 - **Keep fault injection off.** The example's fault fields are refused unless
-  `FILING_FAULTS_ENABLED=true`, which only the scenario harness sets.
+  `FILING_FAULTS_ENABLED=true`. Set it only for the scenario harness.
 
 ## Running Your Application
 
@@ -618,7 +621,9 @@ curl -s -X POST http://localhost:8000/questions \
 ```
 
 `scripts/test-api.sh` runs seventeen scenarios, eight with injected faults,
-and `scripts/verify-scout.sh` checks the telemetry each one produced.
+and `scripts/verify-scout.sh` checks the telemetry each one produced. The
+fault scenarios need the stack started with
+`FILING_FAULTS_ENABLED=true make docker-up FRAMEWORK=openai-agents`.
 
 ## Troubleshooting
 
@@ -704,6 +709,8 @@ Attach the inner agent with `as_tool`. It runs inside the outer agent's
 - [LLM Observability](../../../guides/ai-observability/llm-observability.md) -
   token, cost and latency signals.
 - [Google ADK](./google-adk.md) - the same example on ADK.
+- [Microsoft Agent Framework](./microsoft-agent-framework.md) - the same
+  example on Agent Framework.
 - [Strands Agents](./strands-agents.md) - the same example on Strands.
 
 ### Scout Platform Features

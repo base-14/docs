@@ -655,7 +655,7 @@ request ID attribute the example puts on every record.
 - **Send through a collector.** The example exports OTLP HTTP to a collector,
   which authenticates to Scout and keeps a `debug` exporter for local checks.
 - **Keep fault injection off.** The example's fault fields are refused unless
-  `FILING_FAULTS_ENABLED=true`, which only the scenario harness sets.
+  `FILING_FAULTS_ENABLED=true`. Set it only for the scenario harness.
 
 ## Running Your Application
 
@@ -680,7 +680,9 @@ curl -s -X POST http://localhost:8000/questions \
 ```
 
 `scripts/test-api.sh` runs seventeen scenarios, eight with injected faults,
-and `scripts/verify-scout.sh` checks the telemetry each one produced.
+and `scripts/verify-scout.sh` checks the telemetry each one produced. The
+fault scenarios need the stack started with
+`FILING_FAULTS_ENABLED=true make docker-up FRAMEWORK=strands`.
 
 ## Troubleshooting
 

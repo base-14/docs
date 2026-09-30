@@ -218,7 +218,7 @@ trace shows up, check the endpoint and protocol and see
 [Troubleshooting](#troubleshooting).
 
 `configure_otel_providers()` sets `service.version` to the Agent Framework
-version when you do not pass `service_version`.
+version unless you pass `service_version` or set `OTEL_SERVICE_VERSION`.
 
 ## Configuration
 
@@ -301,7 +301,7 @@ no `server.port`.
 | Metric | What it measures | Attributes |
 | --- | --- | --- |
 | `gen_ai.client.operation.duration` | Model call duration. | `gen_ai.operation.name`, `gen_ai.provider.name`, `gen_ai.request.model`, `gen_ai.response.model`, `server.address`, and `error.type` on a failed call. |
-| `gen_ai.client.token.usage` | Tokens per model call. | The above, plus `gen_ai.token.type`. |
+| `gen_ai.client.token.usage` | Tokens per model call. | The same, without `error.type`, plus `gen_ai.token.type`. |
 | `agent_framework.function.invocation.duration` | Tool call duration. | The `execute_tool` span's attributes, `agent_framework.function.name`, and `error.type` on a failed call. |
 
 There is no agent-level duration metric. `invoke_agent` spans carry the run
@@ -361,7 +361,7 @@ replace it, overwrite it in the processor instead.
 
 ## Agents as Tools
 
-`agent.as_tool(name, description)` wraps an agent as a tool of another agent:
+`agent.as_tool(name=..., description=...)` wraps an agent as a tool of another agent:
 
 ```python showLineNumbers title="frameworks/maf.py (condensed)"
 ranking = Agent(
@@ -457,7 +457,7 @@ Framework does not read `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT`.
 The example maps it to `enable_sensitive_data` so all its frameworks follow
 one setting.
 
-## Adding Cost with a Span Exporter
+## Adding Cost and Error Type with a Span Exporter
 
 The example wraps the OTLP span exporter to add, on the way out:
 
@@ -486,7 +486,8 @@ verified 2026-09-29:
   model's provider is on `chat`.
 - **No agent-level duration metric.**
 - **`service.version` defaults to the Agent Framework version** with
-  `configure_otel_providers()`. Pass `service_version`.
+  `configure_otel_providers()`, even when `OTEL_RESOURCE_ATTRIBUTES` sets one.
+  Pass `service_version` or set `OTEL_SERVICE_VERSION`.
 - **`response_format` cannot be used with tools on Ollama.** Ollama applies
   the schema to every call. Use a function tool and end the run in
   middleware.
@@ -541,7 +542,7 @@ so do not add both.
 - **Send through a collector.** The example exports OTLP HTTP to a collector,
   which authenticates to Scout and keeps a `debug` exporter for local checks.
 - **Keep fault injection off.** The example's fault fields are refused unless
-  `FILING_FAULTS_ENABLED=true`, which only the scenario harness sets.
+  `FILING_FAULTS_ENABLED=true`. Set it only for the scenario harness.
 
 ## Running Your Application
 
@@ -567,11 +568,13 @@ curl -s -X POST http://localhost:8000/questions \
 ```
 
 `scripts/test-api.sh` runs seventeen scenarios, eight with injected faults,
-and `scripts/verify-scout.sh` checks the telemetry each one produced.
+and `scripts/verify-scout.sh` checks the telemetry each one produced. The
+fault scenarios need the stack started with
+`FILING_FAULTS_ENABLED=true make docker-up FRAMEWORK=maf`.
 
 ## Troubleshooting
 
-### No spans
+### No agent spans
 
 Nothing set a tracer provider. Call `configure_otel_providers()`, or set your
 own and call `enable_instrumentation()`. If `ENABLE_INSTRUMENTATION=false` or
@@ -601,7 +604,8 @@ which selects the v1.36.0 conventions. Add the token.
 
 ### Does Microsoft Agent Framework support OpenTelemetry?
 
-Yes. The Python packages have OpenTelemetry built in and on by default.
+Yes, the Agent Framework Python packages have OpenTelemetry built in and on
+by default.
 `configure_otel_providers()` sets up the exporters, or you can bring your own
 providers.
 
@@ -617,14 +621,15 @@ Pass `enable_sensitive_data=True` to `configure_otel_providers()` or
 
 ### How do I set the conversation ID in Agent Framework?
 
-With a local model, Agent Framework sets none. Add
-`gen_ai.conversation.id` in a span processor, as in
+Agent Framework sets `gen_ai.conversation.id` only from a service-managed
+session ID. With a local model, add it in a span processor, as in
 [Request Attributes](#request-attributes).
 
 ### Does Agent Framework record cost?
 
-No, it records token counts but not cost. Add a cost attribute in a span
-exporter.
+No, Agent Framework records token counts but not cost. Add a cost attribute in
+a span exporter, as in
+[Adding Cost and Error Type](#adding-cost-and-error-type-with-a-span-exporter).
 
 ### How do I trace one Agent Framework agent calling another?
 

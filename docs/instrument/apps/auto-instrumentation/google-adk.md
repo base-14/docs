@@ -331,9 +331,12 @@ The attributes worth knowing, with the opt-in set:
 - `gen_ai.conversation.id`, the session ID, on `invoke_agent` and
   `generate_content`.
 - `gen_ai.request.model`, `gen_ai.usage.input_tokens`,
-  `gen_ai.usage.output_tokens`, `gen_ai.usage.cache_read.input_tokens` and
-  `gen_ai.response.finish_reasons` on `generate_content`, and on `call_llm`.
-- `gen_ai.tool.definitions` on `generate_content`.
+  `gen_ai.usage.output_tokens` and `gen_ai.response.finish_reasons` on
+  `generate_content`, and on `call_llm`, with
+  `gen_ai.usage.cache_read.input_tokens` when the model reports it.
+- `gen_ai.tool.definitions` on `generate_content`. The parameters are there
+  only when `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT` is `SPAN_ONLY`
+  or `SPAN_AND_EVENT`.
 - `gen_ai.tool.name`, `gen_ai.tool.description`, `gen_ai.tool.type` and
   `gen_ai.tool.call.id` on `execute_tool`.
 
@@ -389,7 +392,8 @@ class AgentRunAttributesProcessor(SpanProcessor):
 `run.question` holds the request ID, `gen_ai.conversation.id` and the
 ticker. `_agent_or_model` picks the agent's prompt version, model digest and
 server from the span's agent name or model, so the ranking agent's spans carry
-its own. An attribute ADK has already set when the span starts is kept.
+its own. ADK sets its own attributes after the span starts, so where both
+set a key, ADK's value wins.
 
 The session ID is ADK's `gen_ai.conversation.id`. The example uses the
 request ID as the analyst's session ID, so the two match.
@@ -405,7 +409,7 @@ ranking = LlmAgent(
     description=RANKING_TOOL_DESCRIPTION,
     instruction=verbatim(config.ranking_prompt.system),
     tools=list(tools.ranking),
-    **callbacks,
+    **hooks,
 )
 ranking_tool = AgentTool(agent=ranking)
 ranking_tool.name = "rank_among_filers"
@@ -416,12 +420,17 @@ analyst = LlmAgent(
     instruction=verbatim(analyst_instructions(config, FINISH_RULE)),
     tools=[*tools.analyst, ranking_tool],
     output_schema=FilingAnswer,
-    **callbacks,
+    **hooks,
 )
 ```
 
-The inner agent runs in a new session, so its spans carry that session's
-UUID as `gen_ai.conversation.id`, not the outer session ID. Search by your own
+`hooks` maps the four `*_callback` arguments to the methods of one
+`Callbacks` object, shown in [Budgets](#budgets).
+
+The inner agent runs in a new session, so ADK sets that session's UUID as
+`gen_ai.conversation.id` on its `invoke_agent` and `generate_content` spans,
+not the outer session ID. The example's processor puts the request ID on its
+other spans. Search by your own
 request ID attribute to see both agents.
 
 ADK fills `{name}` placeholders in a string instruction from session state.
@@ -473,7 +482,6 @@ class Callbacks:
         exceeded = self._budget.count_tool()
         if exceeded is None:
             return None
-        trace.get_current_span().set_attribute("error.type", BUDGET_ERROR_TYPE)
         return {"error": "budget", "detail": str(exceeded)}
 
     def on_tool_error(self, tool: BaseTool, args: dict[str, Any], tool_context: ToolContext, error: Exception) -> dict[str, Any] | None:
@@ -486,7 +494,12 @@ replaces the tool's result, so the tool does not run.
 
 A tool that raises ends the whole run. The example's `on_tool_error` returns
 the error to the model as a tool result instead, so the model can answer
-without it. The `execute_tool` span still ends with error status.
+without it.
+
+ADK marks a function tool's span with error status and `error.type=TOOL_ERROR`
+whenever the tool's result is a dict with an `error` key, whether the tool,
+`before_tool` or `on_tool_error` produced it. An `AgentTool` span ends without
+error.
 
 ADK has no wall-clock limit. The example wraps the run in `asyncio.wait_for`,
 which cancels it at the deadline. A cancelled run ends `invoke_agent` without
@@ -528,9 +541,10 @@ def apply_capture_setting() -> None:
 
 ## Adding Cost and Error Type with a Span Exporter
 
-ADK records the exception on a failed `call_llm`, `invoke_agent` and
-`invocation` span but sets no `error.type` there, and records no cost. The
-example wraps the OTLP span exporter to add both on the way out:
+ADK records the exception on a failed `generate_content`, `call_llm`,
+`invoke_agent` and `invocation` span but sets no `error.type` there, and
+records no cost. The example wraps the OTLP span exporter to add both on the
+way out:
 
 - `error.type` from the first recorded exception, then from the HTTP status
   code, then `_OTHER`.
@@ -558,11 +572,15 @@ As of Google ADK 2.10.0, verified 2026-09-29:
   Add it in a span exporter.
 - **A tool that raises ends the run.** Return the error from
   `on_tool_error_callback` to hand it to the model instead.
-- **A failed tool span has no `gen_ai.tool.status`.** Its `error.type` is the
-  exception class, or `TOOL_ERROR` when `on_tool_error_callback` returns a
-  result.
+- **A tool error returned to the model is marked by the result's shape.** A
+  function tool whose result is a dict with an `error` key ends with error
+  status and `error.type=TOOL_ERROR`. An `AgentTool` span ends without error.
 - **An agent called through `AgentTool` gets its own conversation ID**, the
   inner session's UUID.
+- **Span names depend on ADK's telemetry schema version.** This page shows
+  version 1, the default outside Agent Engine. On Agent Engine, or with
+  `ADK_TELEMETRY_SCHEMA_VERSION_OPT_IN=2`, `invoke_workflow <agent>` replaces
+  `invocation`.
 - **`set_model_response` is listed first.** With a schema that has fields
   like the tools' parameters, a small model can fill tool parameters from it.
   Move it to the end in `before_model_callback`.
@@ -583,9 +601,9 @@ agents.
 
 ### Find failed runs and why
 
-Filter spans on `status = Error` and group by `error.type`. A model server
-that cannot be reached shows on `generate_content` as
-`litellm.exceptions.APIConnectionError`. With the example's exporter,
+Filter spans on `status = Error` and group by `error.type`. With the
+example's exporter, a model server that cannot be reached shows on
+`generate_content` as `litellm.exceptions.APIConnectionError`, and
 `filing_analyst.budget.BudgetExceeded` on `invoke_agent` marks a budget stop.
 A timeout leaves `invoke_agent` without error status. The example's server
 span ends with error status, a 504 and `base14.filing.outcome=timeout`.
@@ -626,7 +644,7 @@ the messages in the conventions' format.
 - **Send through a collector.** The example exports OTLP HTTP to a collector,
   which authenticates to Scout and keeps a `debug` exporter for local checks.
 - **Keep fault injection off.** The example's fault fields are refused unless
-  `FILING_FAULTS_ENABLED=true`, which only the scenario harness sets.
+  `FILING_FAULTS_ENABLED=true`. Set it only for the scenario harness.
 
 ## Running Your Application
 
@@ -652,7 +670,9 @@ curl -s -X POST http://localhost:8000/questions \
 ```
 
 `scripts/test-api.sh` runs seventeen scenarios, eight with injected faults,
-and `scripts/verify-scout.sh` checks the telemetry each one produced.
+and `scripts/verify-scout.sh` checks the telemetry each one produced. The
+fault scenarios need the stack started with
+`FILING_FAULTS_ENABLED=true make docker-up FRAMEWORK=adk`.
 
 ## Troubleshooting
 
@@ -674,10 +694,11 @@ one at startup, or call `maybe_set_otel_providers()` with
 `ADK_CAPTURE_MESSAGE_CONTENT_IN_SPANS` is unset, so ADK keeps content in the
 `gcp.vertex.agent.*` span attributes. Set it to `false`.
 
-### A tool span is missing its error type and the run stopped
+### A tool error stops the run
 
-The tool raised and no `on_tool_error_callback` handled it. Add one that
-returns the error as a result.
+The tool raised and no `on_tool_error_callback` returned a result. The
+`execute_tool` span has error status and `error.type` set to the exception
+class. Add a callback that returns the error as a result.
 
 ### Dependency conflict on opentelemetry-sdk
 
