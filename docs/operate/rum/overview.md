@@ -58,7 +58,8 @@ individual measurements split across those ratings. See
 [Screens](./screens.md#core-web-vitals) for the thresholds and the per-screen
 breakdown.
 
-On web apps, LCP is the page-load metric. Browsers have no cold or warm
+On web apps, LCP is the page-load metric (or FCP, if an admin
+[chose it](./screens.md#choosing-lcp-or-fcp)). Browsers have no cold or warm
 start, so those two tiles are not shown.
 
 Use the shared [Filters](./getting-started.md#filters) sidebar (Device, App,
@@ -140,7 +141,8 @@ the selected range.
 ### Slowest Screens
 
 Mobile apps: **Screen**, **Load Time p95**, **Views**, ranked by p95 load
-time. Web apps: **Screen**, **LCP p75**, **Page Loads**, ranked by p75 LCP.
+time. Web apps: **Screen**, **LCP p75**, **Page Loads**, ranked by p75 LCP
+(**FCP p75** when the app is [configured for FCP](./screens.md#choosing-lcp-or-fcp)).
 
 Click through to [Screens](./screens.md) for the full per-screen breakdown,
 including frame timing and jank.
