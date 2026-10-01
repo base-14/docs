@@ -4,7 +4,7 @@ title:
 sidebar_label: Vercel AI SDK
 sidebar_position: 8
 description:
-  Trace Vercel AI SDK 7 agents with @ai-sdk/otel, add conversation ids, logs,
+  Trace Vercel AI SDK 7 agents with @ai-sdk/otel, add conversation IDs, logs,
   per-run cost and GenAI metrics, and instrument AI SDK v6 with middleware.
 keywords:
   [
@@ -45,14 +45,17 @@ Install `@ai-sdk/otel`, start the OpenTelemetry `NodeSDK` from a module loaded
 with `node --import`, and call `registerTelemetry(new OpenTelemetry())`. Each
 agent run then produces `invoke_agent`, `step`, `chat` and `execute_tool`
 spans. `@ai-sdk/otel` records no metrics or logs, and it captures prompts and
-completions by default. Use `enrichSpan` to add a conversation id, a span
+completions by default. Use `enrichSpan` to add a conversation ID, a span
 processor to add cost, and the collector to derive the GenAI client metrics.
 
 :::
 
 > **Note:** For framework-agnostic agent patterns, see
 > [AI Agent Observability](../../../guides/ai-observability/agent-observability.md).
-> For Python, see [LangGraph](./langgraph.md) and
+> For Python agent frameworks, see [Strands Agents](./strands-agents.md),
+> [Google ADK](./google-adk.md),
+> [Microsoft Agent Framework](./microsoft-agent-framework.md),
+> [OpenAI Agents SDK](./openai-agents-sdk.md), [LangGraph](./langgraph.md) and
 > [LlamaIndex](./llamaindex.md).
 
 :::note Running this in production
@@ -73,7 +76,7 @@ does.
 
 - Register `@ai-sdk/otel` with the OpenTelemetry Node SDK.
 - Read the span tree of an agent run.
-- Add a conversation id, agent role and subtopic to every AI SDK span.
+- Add a conversation ID, agent role and subtopic to every AI SDK span.
 - Nest subagent spans under the tool call that started them.
 - Compute cost per span and per run, including simulated cost.
 - Record run-level metrics with suitable bucket boundaries.
@@ -88,7 +91,7 @@ does.
 | --- | --- | --- |
 | Traces | `invoke_agent`, `step`, `chat` and `execute_tool` spans with GenAI attributes. | `gen_ai.conversation.id` and `base14.*` attributes through `enrichSpan`. `gen_ai.provider.name` and cost in span processors. HTTP spans from the Node auto-instrumentations. |
 | Metrics | None. Durations and token counts are span attributes. | Six run-level instruments under `base14.*`. `gen_ai.client.operation.duration` and `gen_ai.client.token.usage`, derived from `chat` spans in the collector. |
-| Logs | None. | `pino` records through the pino instrumentation, each with the trace and span id. |
+| Logs | None. | `pino` records through the pino instrumentation, each with the trace and span ID. |
 
 ## Prerequisites
 
@@ -140,8 +143,8 @@ Replace `ollama-ai-provider-v2` with your provider package. Pin exact versions.
 
 ## Quick Start
 
-One agent call with one tool, traced to a collector on `localhost:4318`.
-Install the smaller set first:
+One agent call with one tool, traced to a collector on `localhost:4318`. It
+needs these packages and the model:
 
 ```bash showLineNumbers title="Terminal"
 npm install ai @ai-sdk/otel ollama-ai-provider-v2 zod \
@@ -182,15 +185,15 @@ await sdk.shutdown();
 ```
 
 Run it with `node order-agent.mjs`. The trace has `invoke_agent qwen3.5:9B` at
-the root, with `step 1` holding `chat qwen3.5:9B` and `execute_tool
-orderStatus`, and `step 2` holding the final `chat`. The spans carry the
-prompt, the tool arguments and the tool result, because `recordInputs` and
-`recordOutputs` default to `true`. Set both to `false` in `telemetry` to keep
-content out.
+the root. Under it, `step 1` holds `chat qwen3.5:9B` and
+`execute_tool orderStatus`, and `step 2` holds the final `chat`. The spans
+carry the prompt, the tool arguments and the tool result, because
+`recordInputs` and `recordOutputs` default to `true`. Set both to `false` in
+`telemetry` to keep content out.
 
 For a hosted provider, swap the model for the provider package and set its key
 in the environment, for example `OPENAI_API_KEY` for `@ai-sdk/openai`. The
-spans are the same.
+span tree is the same, and `gen_ai.provider.name` names the provider.
 
 ## Configuration
 
@@ -383,19 +386,18 @@ POST                                              server span, url.path=/plans
 | `execute_tool <tool name>` | Tool call. |
 
 Each `chat` span also has a child HTTP client span, `POST`, for the provider
-call.
-The HTTP server span is named for the method only, because there is no route
+call. The HTTP server span is named for the method only, because there is no route
 to name it from. Use `url.path` for the path.
 
 Attributes on the AI SDK spans:
 
 | Attribute | Value |
 | --- | --- |
-| `gen_ai.operation.name` | `invoke_agent`, `chat` or `execute_tool`. |
+| `gen_ai.operation.name` | `invoke_agent`, `agent_step`, `chat` or `execute_tool`. |
 | `gen_ai.agent.name` | The agent's `functionId`. |
-| `gen_ai.provider.name` | The AI SDK provider id, mapped for well-known providers. Ollama arrives as `ollama.responses`. |
-| `gen_ai.request.model` | The requested model id. |
-| `gen_ai.response.model` | The model id the provider returned. |
+| `gen_ai.provider.name` | The AI SDK provider ID, mapped for well-known providers. Ollama arrives as `ollama.responses`. |
+| `gen_ai.request.model` | The requested model ID. |
+| `gen_ai.response.model` | The model ID the provider returned. |
 | `gen_ai.usage.input_tokens` | Input tokens. |
 | `gen_ai.usage.output_tokens` | Output tokens. |
 
@@ -447,25 +449,25 @@ export const enrichSpan: EnrichSpan = ({ runtimeContext }) => {
 };
 ```
 
-The route handler creates the plan id and passes it into each agent's runtime
+The route handler creates the plan ID and passes it into each agent's runtime
 context. Researchers are built per subtopic, so theirs also carries the
 subtopic.
 
 | Attribute | On |
 | --- | --- |
-| `gen_ai.conversation.id` | Every AI SDK span in the run. The plan id. |
+| `gen_ai.conversation.id` | Every AI SDK span in the run. The plan ID. |
 | `base14.plan.id` | Every AI SDK span in the run. |
 | `base14.agent.role` | `lead` or `researcher`. |
 | `base14.subtopic` | Researcher spans. |
 | `base14.tool.catalogue` | `deferred` or `full`. |
 
 `@ai-sdk/otel` never sets `gen_ai.conversation.id`. One plan is one
-conversation here, so the example uses the plan id. In a chat app, pass the
-chat or session id in the runtime context instead.
+conversation here, so the example uses the plan ID. In a chat app, pass the
+chat or session ID in the runtime context instead.
 
 HTTP spans come from the Node auto-instrumentations, not the AI SDK, so they
-have no conversation id or `base14.*` attributes. Filtering on
-`gen_ai.conversation.id` misses the root span. Filter on the trace id to get
+have no conversation ID or `base14.*` attributes. Filtering on
+`gen_ai.conversation.id` misses the root span. Filter on the trace ID to get
 the whole trace.
 
 Use your own prefix for application attributes. `gen_ai.` belongs to the
@@ -473,11 +475,14 @@ semantic conventions.
 
 ### Provider Name
 
-`@ai-sdk/otel` maps well-known provider ids, such as `openai` and `anthropic`,
+`@ai-sdk/otel` maps well-known provider IDs, such as `openai` and `anthropic`,
 onto the GenAI provider names and passes the rest through. A span processor
-rewrites the Ollama provider id:
+rewrites the Ollama provider ID:
 
 ```typescript showLineNumbers title="src/telemetry/enrich.ts"
+const ATTR_PROVIDER_NAME = "gen_ai.provider.name";
+const OLLAMA_PROVIDER_PREFIX = "ollama.";
+
 export class ProviderNameSpanProcessor implements SpanProcessor {
   onStart(): void {}
 
@@ -582,7 +587,7 @@ export class PlanCostSpanProcessor implements SpanProcessor {
   are set on every `chat` and `invoke_agent` span.
 - **Run total from `invoke_agent` only.** `chat` spans have token counts too.
   Adding both counts every model call twice.
-- **Bounded totals.** Totals are kept per plan id, up to 1024 runs, and the
+- **Bounded totals.** Totals are kept per plan ID, up to 1024 runs, and the
   least recently updated run is evicted first. Evicting by insertion order can
   drop a run that is still in progress.
 - **No exceptions in `onEnd`.** An error there is hard to trace back to a
@@ -722,15 +727,14 @@ service:
   traces `exporters` list has to include `signal_to_metrics`, or the metrics
   stop.
 
-The example runs collector contrib 0.161.0, where the connector is named
-`signal_to_metrics`. The older name, `signaltometrics`, still loads there with
-a deprecation warning.
+The example runs collector contrib 0.161.0. That release also accepts the
+name `signaltometrics`, with a deprecation warning.
 
 ## Logs and Trace Correlation
 
 `@ai-sdk/otel` emits no logs. The example logs through `pino`, and the pino
 instrumentation in the Node auto-instrumentations sends each record to the
-logs pipeline with the active trace and span id:
+logs pipeline with the active trace and span ID:
 
 ```typescript showLineNumbers title="src/log.ts"
 import { pino } from "pino";
@@ -744,7 +748,7 @@ logger.info({ planId: id, declined }, "plan accepted");
 
 - **Import order.** `src/log.ts` is imported after the telemetry module has
   started the SDK, so pino is already patched.
-- **One run, three records.** `plan accepted`, then `plan finished` or
+- **Two records per run.** `plan accepted`, then `plan finished` or
   `plan failed`, each with `planId`.
 - **Keep prompts out of logs.** The example logs ids and outcomes, not the
   topic the user sent.
@@ -867,14 +871,13 @@ As of AI SDK 7.0.123 and `@ai-sdk/otel` 1.0.123, verified 2026-09-30:
   default to `true`, and no `OTEL_*` variable changes that.
 - **`OTEL_SEMCONV_STABILITY_OPT_IN` is not read.** The attribute names are
   fixed by the `@ai-sdk/otel` version.
-- **No route on the HTTP server span** under Hono. The span is named `POST`.
-  Use `url.path`.
 
 ## What to Look For in Scout
 
 ### Follow one plan across the lead and its researchers
 
-Filter spans on `gen_ai.conversation.id` with the id from the `accepted` line.
+Filter spans on `gen_ai.conversation.id` with the `id` from the response's
+`accepted` line.
 Each researcher's `invoke_agent gemma4:e2b` sits under
 `execute_tool research_subtopic` in the lead's trace, with its own
 `base14.subtopic`.
@@ -902,8 +905,8 @@ definition on every step.
 
 ### Go from a log line to its trace
 
-Open the trace id on a `plan accepted` or `plan finished` record. From a
-trace, filter logs by trace id or by `planId`.
+Open the trace ID on a `plan accepted` or `plan finished` record. From a
+trace, filter logs by trace ID or by `planId`.
 
 ## Production Patterns
 
@@ -912,7 +915,7 @@ trace, filter logs by trace id or by `planId`.
   either way.
 - **Redact in the collector.** Use the `attributes` or `transform` processor
   to remove fields such as `gen_ai.input.messages` before export.
-- **Set a conversation id.** Put your chat or session id in the runtime
+- **Set a conversation ID.** Put your chat or session ID in the runtime
   context and map it to `gen_ai.conversation.id` in `enrichSpan`.
 - **Sum cost from `invoke_agent` spans only.** `chat` spans repeat the same
   tokens. Mark borrowed rates as simulated.
@@ -985,13 +988,13 @@ The key is not listed in `includeRuntimeContext`, or the agent has no
 
 ### Cost attributes are missing
 
-The cost processor is registered after the exporting processor. Put it first
-in `spanProcessors`.
+The cost processor is registered after the exporting processor. Put it ahead
+of the `BatchSpanProcessor` in `spanProcessors`.
 
 ### Every cost is zero
 
 The model has no price row and no `PRICE_MODEL` applies. Set `PRICE_MODEL` to a
-model id in `_shared/pricing.json`.
+model ID in `_shared/pricing.json`.
 
 ### A run returns no output
 
@@ -1110,48 +1113,51 @@ does not record them.
 
 ### Does AI SDK 7 emit OpenTelemetry spans by itself?
 
-Yes, through `@ai-sdk/otel`. After `registerTelemetry(new OpenTelemetry())`,
+AI SDK 7 emits spans through `@ai-sdk/otel`. After
+`registerTelemetry(new OpenTelemetry())`,
 each `ToolLoopAgent`, `generateText` or `streamText` call produces
 `invoke_agent`, `step`, `chat` and `execute_tool` spans.
 
 ### Does `@ai-sdk/otel` record metrics?
 
-No. It puts durations and token counts on spans only. Derive
+`@ai-sdk/otel` records no metrics, only span attributes. Derive
 `gen_ai.client.operation.duration` and `gen_ai.client.token.usage` from `chat`
 spans with the collector's `signal_to_metrics` connector, and record run-level
 metrics in your application.
 
 ### Does `@ai-sdk/otel` export logs?
 
-No. Log with a library that has an OpenTelemetry instrumentation, such as
-pino, and add a log record processor to the `NodeSDK`. Each record then
-carries the trace and span id.
+`@ai-sdk/otel` exports no logs. Log with a library that has an OpenTelemetry
+instrumentation, such as pino, and add a log record processor to the
+`NodeSDK`. Each record then
+carries the trace and span ID.
 
 ### Does AI SDK 7 read `OTEL_SEMCONV_STABILITY_OPT_IN`?
 
-No. `@ai-sdk/otel` reads no `OTEL_*` variable, and its attribute names are set
-by the package version. Pin `@ai-sdk/otel` and re-check the spans after each
-upgrade.
+AI SDK 7 does not read `OTEL_SEMCONV_STABILITY_OPT_IN` or any other `OTEL_*`
+variable. Its attribute names are set by the `@ai-sdk/otel` version. Pin
+`@ai-sdk/otel` and re-check the spans after each upgrade.
 
 ### How do I set `gen_ai.conversation.id`?
 
-Return it from `enrichSpan`. Pass your chat or session id in the agent's
-runtime context and list the key in `includeRuntimeContext`.
+Set `gen_ai.conversation.id` by returning it from `enrichSpan`. Pass your
+chat or session ID in the agent's runtime context and list the key in
+`includeRuntimeContext`.
 
 ### How do I add my own attributes to AI SDK spans?
 
 Pass `enrichSpan` to the `OpenTelemetry` constructor. It receives the agent's
 runtime context. List each key you use in `includeRuntimeContext`.
 
-### Why is `gen_ai.agent.name` not my agent's id?
+### Why is `gen_ai.agent.name` not my agent's ID?
 
 It comes from the telemetry `functionId`, not the agent `id`. Set `functionId`
 on each agent.
 
 ### How do I track the cost of one agent run?
 
-Add the run id with `enrichSpan`. Compute cost in a span processor's `onEnd`
-and sum it per run id over `invoke_agent` spans only.
+Add the run ID with `enrichSpan`. Compute cost in a span processor's `onEnd`
+and sum it per run ID over `invoke_agent` spans only.
 
 ### How do I report cost for a local model?
 
@@ -1175,8 +1181,9 @@ AI SDK 7 with `@ai-sdk/otel`, and AI SDK v6 with a
 
 ### Can I see prompts and completions in traces?
 
-Yes, and they are recorded by default. `recordInputs` and `recordOutputs` on
-the agent's telemetry settings default to `true`. Set both to `false` to keep
+AI SDK 7 records prompts and completions in traces by default.
+`recordInputs` and `recordOutputs` on the agent's telemetry settings default
+to `true`. Set both to `false` to keep
 content out.
 
 ### Can I use this with Next.js, Express or Fastify?
@@ -1190,7 +1197,7 @@ and [Express](./express.md).
 ### Related Guides
 
 - [AI Agent Observability](../../../guides/ai-observability/agent-observability.md)
-  \- agent timelines, conversation ids and multi-agent patterns.
+  \- agent timelines, conversation IDs and multi-agent patterns.
 - [LLM Observability](../../../guides/ai-observability/llm-observability.md) -
   token and cost metrics and evaluation, in Python.
 - [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)

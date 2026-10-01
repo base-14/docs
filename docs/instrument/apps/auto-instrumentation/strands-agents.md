@@ -774,6 +774,11 @@ Strands 1.57.1 writes its own name there. Override it in `trace_attributes`.
   \- agent timelines, conversation IDs and tool calls.
 - [LLM Observability](../../../guides/ai-observability/llm-observability.md) -
   token, cost and latency signals.
+- [Google ADK](./google-adk.md) - the same example on ADK.
+- [Microsoft Agent Framework](./microsoft-agent-framework.md) - the same
+  example on Agent Framework.
+- [OpenAI Agents SDK](./openai-agents-sdk.md) - the same example on the
+  OpenAI Agents SDK.
 - [Pydantic AI](./pydantic-ai.md) - built-in GenAI spans from another Python
   framework.
 - [FastAPI](./fast-api.md) - the HTTP service in front of the agents.
