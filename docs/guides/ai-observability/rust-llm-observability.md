@@ -122,7 +122,7 @@ This guide demonstrates how to:
 
 Before starting, ensure you have:
 
-- **Rust 1.85 or later** installed (1.98+ recommended for edition 2024 support)
+- **Rust 1.94 or later** installed (SQLx 0.9 requires it; 1.98+ recommended)
 - **An LLM API key** from at least one provider (OpenAI, Anthropic, or Google)
 - **Scout Collector** configured and accessible from your application
   - See
@@ -139,15 +139,15 @@ Before starting, ensure you have:
 | Component             | Minimum Version | Recommended |
 | --------------------- | --------------- | ----------- |
 | Rust                  | 1.85            | 1.98+       |
-| opentelemetry         | 0.28            | 0.32+       |
-| opentelemetry_sdk     | 0.28            | 0.32+       |
-| opentelemetry-otlp    | 0.28            | 0.32+       |
-| tracing-opentelemetry | 0.29            | 0.33+       |
+| opentelemetry         | 0.28            | 0.33+       |
+| opentelemetry_sdk     | 0.28            | 0.33+       |
+| opentelemetry-otlp    | 0.28            | 0.33+       |
+| tracing-opentelemetry | 0.29            | 0.34+       |
 | tracing               | 0.1             | 0.1+        |
 | tracing-subscriber    | 0.3             | 0.3+        |
 | async-openai          | 0.25+           | 0.33+       |
 | Axum                  | 0.7+            | 0.8+        |
-| SQLx                  | 0.7+            | 0.8+        |
+| SQLx                  | 0.7+            | 0.9+        |
 
 Verified with Rust 1.98.1 and collector 0.161.0 on 2026-09-20.
 
@@ -201,7 +201,7 @@ tower-http = { version = "0.6", features = ["trace", "cors", "timeout", "request
 tokio = { version = "1", features = ["full", "tracing"] }
 
 # Database
-sqlx = { version = "0.8", features = [
+sqlx = { version = "0.9", features = [
     "runtime-tokio", "tls-rustls", "postgres",
     "macros", "uuid", "chrono", "json"
 ] }
@@ -211,21 +211,21 @@ async-openai = { version = "0.33", features = ["chat-completion"] }
 reqwest = { version = "0.12", features = ["json"] }
 
 # OpenTelemetry
-opentelemetry = "0.32"
-opentelemetry_sdk = { version = "0.32", features = [
+opentelemetry = "0.33"
+opentelemetry_sdk = { version = "0.33", features = [
     "rt-tokio", "logs", "metrics"
 ] }
-opentelemetry-otlp = { version = "0.32", features = [
+opentelemetry-otlp = { version = "0.33", features = [
     "grpc-tonic", "trace", "logs", "metrics"
 ] }
-opentelemetry-appender-tracing = "0.32"
+opentelemetry-appender-tracing = "0.33"
 
 # Tracing
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = [
     "env-filter", "json"
 ] }
-tracing-opentelemetry = "0.33"
+tracing-opentelemetry = "0.34"
 
 # Utilities
 serde = { version = "1", features = ["derive"] }

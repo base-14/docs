@@ -125,11 +125,11 @@ Before starting, ensure you have:
 | Rust                  | 1.80.0          | 1.98.0+             |
 | Actix Web             | 4.0.0           | 4.12+               |
 | tracing-actix-web     | 0.7.0           | 0.7+                |
-| OpenTelemetry         | 0.27.0          | 0.32+               |
-| tracing-opentelemetry | 0.28.0          | 0.33+               |
-| SQLx                  | 0.7.0           | 0.8.6+              |
+| OpenTelemetry         | 0.27.0          | 0.33+               |
+| tracing-opentelemetry | 0.28.0          | 0.34+               |
+| SQLx                  | 0.7.0           | 0.9.0+              |
 
-Verified with Rust 1.98.1 and collector 0.161.0 on 2026-09-20.
+Verified with Rust 1.98.1 and collector 0.161.0 on 2026-10-03.
 
 ## Required Packages
 
@@ -160,21 +160,21 @@ tracing-actix-web = "0.7"
 tokio = { version = "1.49.0", features = ["full", "tracing"] }
 
 # Database
-sqlx = { version = "0.8.6", features = [
+sqlx = { version = "0.9.0", features = [
     "runtime-tokio", "tls-rustls", "postgres",
     "macros", "migrate", "uuid", "time", "json",
 ] }
 
 # OpenTelemetry
-opentelemetry = "0.32"
-opentelemetry_sdk = { version = "0.32", features = ["rt-tokio", "logs"] }
-opentelemetry-otlp = { version = "0.32", features = ["grpc-tonic", "trace", "logs"] }
-opentelemetry-appender-tracing = "0.32"
+opentelemetry = "0.33"
+opentelemetry_sdk = { version = "0.33", features = ["rt-tokio", "logs"] }
+opentelemetry-otlp = { version = "0.33", features = ["grpc-tonic", "trace", "logs"] }
+opentelemetry-appender-tracing = "0.33"
 
 # Tracing
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
-tracing-opentelemetry = "0.33"
+tracing-opentelemetry = "0.34"
 
 # Authentication
 jsonwebtoken = { version = "10.3.0", features = ["rust_crypto"] }

@@ -103,7 +103,7 @@ This comprehensive guide demonstrates how to:
 
 Before starting, ensure you have:
 
-- **Rust 1.80 or later** (stable toolchain recommended)
+- **Rust 1.94 or later** (stable toolchain recommended). SQLx 0.9 requires 1.94.
   - For best performance and compatibility, Rust 1.98+ is recommended
   - Edition 2021 or 2024 required
 - **Axum 0.7 or later** web framework
@@ -122,11 +122,11 @@ Before starting, ensure you have:
 | --------------------- | --------------- | ------------------- |
 | Rust                  | 1.80.0          | 1.98.0+             |
 | Axum                  | 0.7.0           | 0.8.8+              |
-| OpenTelemetry         | 0.27.0          | 0.32+               |
-| tracing-opentelemetry | 0.28.0          | 0.33+               |
-| SQLx                  | 0.7.0           | 0.8.6+              |
+| OpenTelemetry         | 0.27.0          | 0.33+               |
+| tracing-opentelemetry | 0.28.0          | 0.34+               |
+| SQLx                  | 0.7.0           | 0.9.0+              |
 
-Verified with Rust 1.98.1 and collector 0.161.0 on 2026-09-20.
+Verified with Rust 1.98.1 and collector 0.161.0 on 2026-10-03.
 
 ## Required Packages
 
@@ -143,18 +143,18 @@ tower-http = { version = "0.6.8", features = ["trace", "cors", "timeout", "reque
 tokio = { version = "1.49", features = ["full", "tracing"] }
 
 # Database (optional)
-sqlx = { version = "0.8.6", features = ["runtime-tokio", "postgres", "macros"] }
+sqlx = { version = "0.9.0", features = ["runtime-tokio", "postgres", "macros"] }
 
 # OpenTelemetry
-opentelemetry = "0.32"
-opentelemetry_sdk = { version = "0.32", features = ["rt-tokio", "logs"] }
-opentelemetry-otlp = { version = "0.32", features = ["grpc-tonic", "trace", "logs"] }
-opentelemetry-appender-tracing = "0.32"
+opentelemetry = "0.33"
+opentelemetry_sdk = { version = "0.33", features = ["rt-tokio", "logs"] }
+opentelemetry-otlp = { version = "0.33", features = ["grpc-tonic", "trace", "logs"] }
+opentelemetry-appender-tracing = "0.33"
 
 # Tracing
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
-tracing-opentelemetry = "0.33"
+tracing-opentelemetry = "0.34"
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
@@ -1514,16 +1514,16 @@ axum = { version = "0.8.8", features = ["macros"] }
 tower = { version = "0.5.2", features = ["full"] }
 tower-http = { version = "0.6.8", features = ["trace", "cors", "timeout"] }
 tokio = { version = "1.49", features = ["full", "tracing"] }
-sqlx = { version = "0.8.6", features = ["runtime-tokio", "postgres"] }
+sqlx = { version = "0.9.0", features = ["runtime-tokio", "postgres"] }
 
-opentelemetry = "0.32"
-opentelemetry_sdk = { version = "0.32", features = ["rt-tokio", "logs"] }
-opentelemetry-otlp = { version = "0.32", features = ["grpc-tonic", "trace", "logs"] }
-opentelemetry-appender-tracing = "0.32"
+opentelemetry = "0.33"
+opentelemetry_sdk = { version = "0.33", features = ["rt-tokio", "logs"] }
+opentelemetry-otlp = { version = "0.33", features = ["grpc-tonic", "trace", "logs"] }
+opentelemetry-appender-tracing = "0.33"
 
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
-tracing-opentelemetry = "0.33"
+tracing-opentelemetry = "0.34"
 
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
