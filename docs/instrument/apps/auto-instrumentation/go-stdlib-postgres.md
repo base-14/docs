@@ -108,9 +108,9 @@ This documentation is designed for:
 
 Before starting, ensure you have:
 
-- **Go 1.22 or later** for `ServeMux` pattern routing (`GET /api/x/{id}`).
-  Go 1.27+ recommended for the latest runtime metrics integration.
-  Verified with Go 1.27.1 on 2026-09-20.
+- **Go 1.26 or later**. OTel Go 1.47 requires it; `ServeMux` pattern routing
+  (`GET /api/x/{id}`) needs 1.22.
+  Verified with Go 1.27.1 and OTel Go 1.47.0 on 2026-10-03.
 - **PostgreSQL 14 or later**. The example uses Postgres 18.
 - **Docker and Docker Compose v2** for local multi-service testing.
 - **OpenTelemetry Collector** (Contrib distribution) running locally or
@@ -123,15 +123,15 @@ Before starting, ensure you have:
 
 | Component                  | Version           | Notes                                              |
 | -------------------------- | ----------------- | -------------------------------------------------- |
-| Go                         | 1.22+             | 1.22 required for mux pattern routing              |
-| Go (recommended)           | 1.26              | Used by the reference example                      |
+| Go                         | 1.26+             | Required by OTel Go 1.47; mux routing needs 1.22   |
+| Go (recommended)           | 1.27              | Used by the reference example                      |
 | pgx                        | v5.9+             | `pgxpool` for connection pooling                   |
 | PostgreSQL                 | 14, 15, 16, 17, 18 | Tested on 18                                       |
-| otelhttp                   | v0.68+            | Server handler + client transport                  |
+| otelhttp                   | v0.72+            | Server handler + client transport                  |
 | otelpgx                    | v0.10+            | pgx tracer plugin                                  |
-| otelslog bridge            | v0.18+            | `log/slog` → OTel logs pipeline                    |
-| OTel Go SDK                | v1.43+            | `go.opentelemetry.io/otel`                         |
-| OTel logs SDK              | v0.19+            | `sdk/log`, `exporters/otlp/otlplog/otlploghttp`    |
+| otelslog bridge            | v0.21+            | `log/slog` → OTel logs pipeline                    |
+| OTel Go SDK                | v1.47+            | `go.opentelemetry.io/otel`                         |
+| OTel logs SDK              | v1.47+            | `sdk/log`; `otlploghttp` exporter v0.23+           |
 | OpenTelemetry Collector    | 0.149+            | Contrib build (oauth2client extension)             |
 | Distroless base image      | static-debian12   | `gcr.io/distroless/static-debian12:nonroot`        |
 
@@ -189,20 +189,20 @@ module stdlib-articles
 go 1.27.1
 
 require (
- github.com/exaring/otelpgx v0.10.0
- github.com/jackc/pgx/v5 v5.9.2
- go.opentelemetry.io/contrib/bridges/otelslog v0.18.0
- go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.68.0
- go.opentelemetry.io/otel v1.43.0
- go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp v0.19.0
- go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp v1.43.0
- go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.43.0
- go.opentelemetry.io/otel/log v0.19.0
- go.opentelemetry.io/otel/metric v1.43.0
- go.opentelemetry.io/otel/sdk v1.43.0
- go.opentelemetry.io/otel/sdk/log v0.19.0
- go.opentelemetry.io/otel/sdk/metric v1.43.0
- go.opentelemetry.io/otel/trace v1.43.0
+ github.com/exaring/otelpgx v0.12.0
+ github.com/jackc/pgx/v5 v5.11.0
+ go.opentelemetry.io/contrib/bridges/otelslog v0.21.0
+ go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.72.0
+ go.opentelemetry.io/otel v1.47.0
+ go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp v0.23.0
+ go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp v1.47.0
+ go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.47.0
+ go.opentelemetry.io/otel/log v1.47.0
+ go.opentelemetry.io/otel/metric v1.47.0
+ go.opentelemetry.io/otel/sdk v1.47.0
+ go.opentelemetry.io/otel/sdk/log v1.47.0
+ go.opentelemetry.io/otel/sdk/metric v1.47.0
+ go.opentelemetry.io/otel/trace v1.47.0
 )
 ```
 
@@ -335,7 +335,6 @@ import (
  "go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
  "go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
  "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
- "go.opentelemetry.io/otel/log/global"
  "go.opentelemetry.io/otel/propagation"
  sdklog "go.opentelemetry.io/otel/sdk/log"
  sdkmetric "go.opentelemetry.io/otel/sdk/metric"
@@ -400,7 +399,7 @@ func initTelemetry(ctx context.Context, serviceName, endpoint string) (shutdownF
 
  otel.SetTracerProvider(tp)
  otel.SetMeterProvider(mp)
- global.SetLoggerProvider(lp)
+ otel.SetLoggerProvider(lp)
  otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
   propagation.TraceContext{},
   propagation.Baggage{},
