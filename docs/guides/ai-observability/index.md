@@ -76,6 +76,7 @@ backend also avoids paying for two stacks; see
 | [Microsoft Agent Framework Instrumentation](../../instrument/apps/auto-instrumentation/microsoft-agent-framework) | Framework-specific: Agent Framework's built-in OpenTelemetry for Python and .NET, agent, chat and tool spans, `gen_ai.*` metrics and message events, sensitive data, middleware budgets and known gaps |
 | [OpenAI Agents SDK Instrumentation](../../instrument/apps/auto-instrumentation/openai-agents-sdk) | Framework-specific: the contrib OpenAI Agents and OpenAI instrumentations, workflow, agent, chat and tool spans, `gen_ai.*` metrics, trace export off OpenAI, content capture modes and known gaps |
 | [OpenClaw](../../instrument/component/collecting-openclaw-telemetry) | Agent runtime: the gateway's `diagnostics-otel` plugin, run, model and tool spans, `gen_ai.*` and `openclaw.*` metrics, trace-correlated logs and known gaps |
+| [Claude Code](../../instrument/component/collecting-claude-code-telemetry) | Agent runtime: Claude Code and the Claude Agent SDK by environment variables, interaction, model request and tool spans, cost and token metrics, per-event logs and known gaps |
 
 ## What Gets Instrumented
 

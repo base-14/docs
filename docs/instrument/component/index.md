@@ -122,9 +122,10 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 
 ### AI Agent Runtimes
 
-| Component | Guide                                         | Key Metrics                                        |
-|-----------|-----------------------------------------------|----------------------------------------------------|
-| OpenClaw  | [OpenClaw](./collecting-openclaw-telemetry)   | Run and model call latency, token usage, lane queueing, context size; traces and logs |
+| Component   | Guide                                             | Key Metrics                                        |
+|-------------|---------------------------------------------------|----------------------------------------------------|
+| OpenClaw    | [OpenClaw](./collecting-openclaw-telemetry)       | Run and model call latency, token usage, lane queueing, context size; traces and logs |
+| Claude Code | [Claude Code](./collecting-claude-code-telemetry) | Cost and token usage per model, sessions, edit decisions, lines of code; traces and logs |
 
 ### Distributed Compute
 

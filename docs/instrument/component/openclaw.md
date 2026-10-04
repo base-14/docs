@@ -555,6 +555,8 @@ the same Collector.
   Production deployment.
 - [AI Agent Observability](../../guides/ai-observability/agent-observability.md)
   \- Agent spans, tool calls and conversation IDs across frameworks.
+- [Claude Code](./claude-code.md) - Monitor Claude Code and the Claude Agent
+  SDK.
 - [LiteLLM Gateway](./litellm.md) - Monitor a LiteLLM proxy placed between
   OpenClaw and its providers.
 - [vLLM](./vllm.md) - Monitor a self-hosted model server that OpenClaw calls.

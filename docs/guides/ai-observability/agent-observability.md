@@ -712,6 +712,9 @@ Native OpenTelemetry, enabled by configuration:
 - [OpenClaw](../../instrument/component/openclaw.md) \- the gateway's
   `diagnostics-otel` plugin, run, model and tool spans, metrics and
   trace-correlated logs
+- [Claude Code](../../instrument/component/claude-code.md) \- Claude Code
+  and the Claude Agent SDK, interaction, model request and tool spans,
+  cost and token metrics and per-event logs
 - [Google ADK Instrumentation](../../instrument/apps/auto-instrumentation/google-adk.md)
   \- agent, model and tool spans, `gen_ai.*` metrics and inference events
 - [Microsoft Agent Framework Instrumentation](../../instrument/apps/auto-instrumentation/microsoft-agent-framework.md)
@@ -765,6 +768,10 @@ Instrumented by a callback handler or custom spans:
 - [components/openclaw-telemetry](https://github.com/base-14/examples/tree/main/components/openclaw-telemetry)
   \- an OpenClaw gateway on a local Ollama model exporting all three
   signals, covered by [OpenClaw](../../instrument/component/openclaw.md)
+- [components/claude-code-telemetry](https://github.com/base-14/examples/tree/main/components/claude-code-telemetry)
+  \- headless Claude Code turns and an Agent SDK query exporting all three
+  signals, covered by
+  [Claude Code](../../instrument/component/claude-code.md)
 
 ### Scout Platform Features
 

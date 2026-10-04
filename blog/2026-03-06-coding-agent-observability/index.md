@@ -54,6 +54,13 @@ instrumentation varies significantly.
 Claude Code emits **metrics and logs** via OTLP, but not traces. Enable it with
 `CLAUDE_CODE_ENABLE_TELEMETRY=1` and point to a collector endpoint.
 
+:::note
+Claude Code has since added traces as a beta feature, along with more
+events and variables. The
+[Claude Code guide](/instrument/component/collecting-claude-code-telemetry/)
+has the current setup.
+:::
+
 **Metrics:**
 
 | Metric | Description |
