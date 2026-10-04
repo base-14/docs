@@ -77,6 +77,7 @@ backend also avoids paying for two stacks; see
 | [OpenAI Agents SDK Instrumentation](../../instrument/apps/auto-instrumentation/openai-agents-sdk) | Framework-specific: the contrib OpenAI Agents and OpenAI instrumentations, workflow, agent, chat and tool spans, `gen_ai.*` metrics, trace export off OpenAI, content capture modes and known gaps |
 | [OpenClaw](../../instrument/component/collecting-openclaw-telemetry) | Agent runtime: the gateway's `diagnostics-otel` plugin, run, model and tool spans, `gen_ai.*` and `openclaw.*` metrics, trace-correlated logs and known gaps |
 | [Claude Code](../../instrument/component/collecting-claude-code-telemetry) | Agent runtime: Claude Code and the Claude Agent SDK by environment variables, interaction, model request and tool spans, cost and token metrics, per-event logs and known gaps |
+| [Codex CLI](../../instrument/component/collecting-codex-telemetry) | Agent runtime: the OpenAI Codex CLI's `[otel]` config, turn, model request and command spans, `codex.*` metrics, per-event logs, a stream event filter and known gaps |
 
 ## What Gets Instrumented
 

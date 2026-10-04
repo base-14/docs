@@ -104,6 +104,13 @@ Optional flags control cardinality and privacy: `OTEL_LOG_USER_PROMPTS`,
 Codex CLI emits **traces, metrics, and logs** via OTLP. Configure in
 `~/.codex/config.toml`. Supports both gRPC and HTTP exporters.
 
+:::note
+Codex has since changed its metric set, and `codex exec` now exports
+metrics. The
+[Codex CLI guide](/instrument/component/collecting-codex-telemetry/)
+has the current setup.
+:::
+
 **Metrics:**
 
 | Metric | Type |

@@ -715,6 +715,9 @@ Native OpenTelemetry, enabled by configuration:
 - [Claude Code](../../instrument/component/claude-code.md) \- Claude Code
   and the Claude Agent SDK, interaction, model request and tool spans,
   cost and token metrics and per-event logs
+- [Codex CLI](../../instrument/component/codex.md) \- the OpenAI Codex CLI,
+  turn, model request and command spans, `codex.*` metrics and per-event
+  logs
 - [Google ADK Instrumentation](../../instrument/apps/auto-instrumentation/google-adk.md)
   \- agent, model and tool spans, `gen_ai.*` metrics and inference events
 - [Microsoft Agent Framework Instrumentation](../../instrument/apps/auto-instrumentation/microsoft-agent-framework.md)
@@ -772,6 +775,9 @@ Instrumented by a callback handler or custom spans:
   \- headless Claude Code turns and an Agent SDK query exporting all three
   signals, covered by
   [Claude Code](../../instrument/component/claude-code.md)
+- [components/codex-telemetry](https://github.com/base-14/examples/tree/main/components/codex-telemetry)
+  \- headless Codex CLI turns on a local Ollama model exporting all three
+  signals, covered by [Codex CLI](../../instrument/component/codex.md)
 
 ### Scout Platform Features
 

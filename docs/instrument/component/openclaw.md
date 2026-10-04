@@ -557,6 +557,7 @@ the same Collector.
   \- Agent spans, tool calls and conversation IDs across frameworks.
 - [Claude Code](./claude-code.md) - Monitor Claude Code and the Claude Agent
   SDK.
+- [Codex CLI](./codex.md) - Monitor the OpenAI Codex CLI.
 - [LiteLLM Gateway](./litellm.md) - Monitor a LiteLLM proxy placed between
   OpenClaw and its providers.
 - [vLLM](./vllm.md) - Monitor a self-hosted model server that OpenClaw calls.

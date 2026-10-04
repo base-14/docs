@@ -614,6 +614,7 @@ Put the variables in the `env` block of the managed settings file. Use
   Run the Collector locally.
 - [AI Agent Observability](../../guides/ai-observability/agent-observability.md)
   \- Agent spans, tool calls and conversation IDs across frameworks.
+- [Codex CLI](./codex.md) - Monitor the OpenAI Codex CLI.
 - [OpenClaw](./openclaw.md) - Monitor an OpenClaw agent gateway.
 - [LiteLLM Gateway](./litellm.md) - Monitor a LiteLLM proxy placed between
   Claude Code and its providers.
