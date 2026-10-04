@@ -4,15 +4,18 @@ title:
 sidebar_label: Microsoft Agent Framework
 sidebar_position: 7.85
 description:
-  Trace Microsoft Agent Framework for Python with its built-in OpenTelemetry
-  instrumentation. Agent, chat and tool spans, gen_ai metrics, message
-  events, sensitive data, middleware budgets and the known gaps.
+  Trace Microsoft Agent Framework in Python and .NET with built-in
+  OpenTelemetry instrumentation. Agent, chat and tool spans, gen_ai metrics,
+  known gaps.
 keywords:
   [
     microsoft agent framework opentelemetry,
     microsoft agent framework tracing,
     microsoft agent framework observability,
     agent framework python tracing,
+    microsoft agent framework dotnet opentelemetry,
+    agent framework UseOpenTelemetry,
+    Experimental.Microsoft.Agents.AI,
     agent_framework observability,
     configure_otel_providers,
     enable_instrumentation,
@@ -32,7 +35,8 @@ keywords:
 Microsoft Agent Framework has OpenTelemetry built in. With instrumentation on,
 which is the default, every agent run emits `invoke_agent`, `chat` and
 `execute_tool` spans, `gen_ai.*` metrics, and message events when sensitive
-data is on. This page covers the Python packages.
+data is on. Most of this page covers the Python packages. The .NET packages
+are in [.NET](#net).
 
 :::tip TL;DR
 
@@ -62,6 +66,8 @@ does.
 
 - Python developers running Microsoft Agent Framework who want traces,
   metrics and message events in an OpenTelemetry backend.
+- .NET developers wiring `UseOpenTelemetry()` and the framework's source and
+  meter into an OTLP pipeline.
 - Teams running it on a local model through `agent-framework-ollama`.
 - Teams nesting one agent inside another with `as_tool`, who want one trace
   per request across both.
@@ -471,6 +477,141 @@ The example wraps the OTLP span exporter to add, on the way out:
 `CostAndErrorAttributingSpanExporter` in the example's
 [`telemetry.py`](https://github.com/base-14/examples/blob/main/python/ai-filing-analyst/src/filing_analyst/telemetry.py).
 
+## .NET
+
+The .NET packages have the same built-in instrumentation, wired differently.
+There is no global switch. Each agent is wrapped with `UseOpenTelemetry()`,
+and the application registers the framework's source and meter by name.
+
+| Component | Version in the example |
+| --- | --- |
+| `Microsoft.Agents.AI.OpenAI`, `Microsoft.Agents.AI.Workflows` | 1.23.0 |
+| `Microsoft.Extensions.AI` | 10.10.0 |
+| `ModelContextProtocol` | 2.2.0 |
+| `OpenTelemetry.Extensions.Hosting`, `OpenTelemetry.Exporter.OpenTelemetryProtocol` | 1.19.1 |
+| .NET SDK | 10.0.400 |
+| OpenTelemetry Collector Contrib | 0.161.0 |
+| Example | [`agent-rebooking`](https://github.com/base-14/examples/tree/main/csharp/agent-rebooking) on Ollama with `qwen3.5:9b` |
+
+Last verified 2026-10-04 with Agent Framework 1.23.0 for .NET.
+
+### Wrap Each Agent
+
+`UseOpenTelemetry()` goes on the agent builder. The `configure` callback sets
+`EnableSensitiveData`, which the example drives from
+`OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT`.
+
+```csharp title="AgentRebooking/Agents/AgentSetup.cs" showLineNumbers
+        var triage = new ChatClientAgent(
+                chatClient,
+                new ChatClientAgentOptions
+                {
+                    Id = TriageAgentId,
+                    Name = TriageAgentId,
+                    Description = "Classifies traveller messages and routes disruptions to rebooking.",
+                    ChatOptions = new ChatOptions { Instructions = TriageInstructions },
+                })
+            .AsBuilder().UseOpenTelemetry(configure: Capture(captureMessageContent)).Build();
+```
+
+```csharp title="AgentRebooking/Agents/AgentSetup.cs"
+    private static Action<OpenTelemetryAgent> Capture(bool captureMessageContent) =>
+        agent => agent.EnableSensitiveData = captureMessageContent;
+```
+
+Instrumentation is per agent: an agent is instrumented only when it is built
+through `UseOpenTelemetry()`. The example wraps the agents and not the chat
+client, so each model call produces one `chat` span. Wrapping both records
+the same call twice.
+
+### Register the Source and the Meter
+
+The framework's `ActivitySource` and `Meter` share one name,
+`Experimental.Microsoft.Agents.AI`. `AddSource` gives the spans and `AddMeter`
+gives the metrics. Both match by name, so a missing or misspelled name drops
+the telemetry without an error.
+
+```csharp title="AgentRebooking/Telemetry/TelemetryRegistration.cs" showLineNumbers
+    public static TracerProviderBuilder ConfigureTracing(TracerProviderBuilder tracing) => tracing
+        .AddAspNetCoreInstrumentation(o => o.RecordException = true)
+        .AddHttpClientInstrumentation()
+        // Dropping the MCP name here silently costs every mcp.* attribute and the trace
+        // context hop into the server. See Telemetry/Sources.cs.
+        .AddSource(Sources.TraceSourceNames);
+
+    public static MeterProviderBuilder ConfigureMetrics(MeterProviderBuilder metrics) => metrics
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddRuntimeInstrumentation()
+        // AddMeter matches by name, not by instance, and a mismatch drops measurements silently.
+        .AddMeter(Sources.MeterNames)
+        .AddView(ApprovalTelemetry.WaitDurationInstrument, new ExplicitBucketHistogramConfiguration
+        {
+            Boundaries = ApprovalTelemetry.WaitDurationBucketBoundaries,
+        });
+```
+
+`Sources.TraceSourceNames` and `Sources.MeterNames` both hold
+`Experimental.Microsoft.Agents.AI`, `Experimental.ModelContextProtocol`,
+`Npgsql` and the example's own `AgentRebooking`.
+
+The exporter is the OTLP exporter, added when an endpoint is set:
+
+```csharp title="AgentRebooking/Program.cs"
+if (useOtlpExporter)
+{
+    builder.Services.AddOpenTelemetry().UseOtlpExporter();
+}
+```
+
+### What the .NET Packages Emit
+
+| Source or meter | Spans | Metrics |
+| --- | --- | --- |
+| `Experimental.Microsoft.Agents.AI` | `invoke_agent <name>(<id>)`, `chat <model>`, `execute_tool <tool>` | `gen_ai.client.operation.duration`, `gen_ai.client.token.usage`, `gen_ai.client.operation.time_to_first_chunk`, `gen_ai.client.operation.time_per_output_chunk` |
+| `Experimental.ModelContextProtocol` | `tools/call <tool>`, `tools/list`, `server/discover` | `mcp.client.operation.duration`, `mcp.server.operation.duration` |
+
+`chat` and `invoke_agent` spans carry `gen_ai.provider.name`,
+`gen_ai.request.model`, `gen_ai.response.model`, `gen_ai.usage.input_tokens`,
+`gen_ai.usage.output_tokens`, `server.address` and `server.port`.
+`invoke_agent` adds `gen_ai.agent.id`, `gen_ai.agent.name` and
+`gen_ai.agent.description`. `execute_tool` carries `gen_ai.tool.name`,
+`gen_ai.tool.call.id` and, for an MCP tool, `mcp.method.name` and
+`mcp.session.id`.
+
+`gen_ai.client.token.usage` is split by `gen_ai.token.type`, and both
+histograms carry the provider and the request model, so tokens by model need
+no custom code.
+
+The Python metric `agent_framework.function.invocation.duration` has no .NET
+counterpart. The two chunk histograms are recorded for streaming calls, which
+is how the example calls the model.
+
+### Semantic Conventions in .NET
+
+The .NET packages at 1.23.0 do not read `OTEL_SEMCONV_STABILITY_OPT_IN`.
+They emit one set of names, the current ones: `gen_ai.provider.name`, not
+`gen_ai.system`. Setting the variable on a .NET service changes nothing.
+
+The Python packages do read it, and `gen_ai_latest_experimental` is their
+default. A system with agents in both languages gets the same attribute names
+from both as long as the Python side keeps that default.
+
+### Sending to Scout Instead of Application Insights
+
+Microsoft's samples export through the Azure Monitor exporter to Application
+Insights. The spans and metrics are standard OpenTelemetry, so changing the
+destination means changing the exporter. The example registers the OTLP
+exporter and points `OTEL_EXPORTER_OTLP_ENDPOINT` at a collector, which
+forwards to Scout. Nothing in the agent code changes.
+
+The .NET Aspire dashboard accepts OTLP as well, so the same exporter setting
+works for a local view during development.
+
+For approval gates, trace context across a pause and where the error status
+goes in a .NET agent, see
+[Agent Approval Gates](../../../guides/ai-observability/agent-approval-gates.md).
+
 ## Known Gaps
 
 As of Agent Framework 1.19.0 and `agent-framework-ollama` 1.0.0b260813,
@@ -635,6 +776,13 @@ a span exporter, as in
 
 Attach the inner agent with `as_tool`. It runs inside the outer agent's
 `execute_tool` span, so both share one trace.
+
+### How do I enable OpenTelemetry in Microsoft Agent Framework for .NET?
+
+Build each agent through `.AsBuilder().UseOpenTelemetry().Build()` and
+register `Experimental.Microsoft.Agents.AI` with both `AddSource` and
+`AddMeter`. The source gives `invoke_agent`, `chat` and `execute_tool` spans
+and the meter gives the `gen_ai.client.*` histograms. See [.NET](#net).
 
 ## What's Next?
 

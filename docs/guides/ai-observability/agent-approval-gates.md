@@ -92,10 +92,10 @@ This guide shows you how to:
 | Component | Version | Notes |
 | --- | --- | --- |
 | .NET SDK | 10.0.400 | Pinned in `global.json`. |
-| `Microsoft.Agents.AI.Workflows` | 1.21.0 | Handoff workflow, `RequestInfoEvent`. |
+| `Microsoft.Agents.AI.Workflows` | 1.23.0 | Handoff workflow, `RequestInfoEvent`. |
 | `Microsoft.Extensions.AI` | 10.10.0 | `ApprovalRequiredAIFunction`. |
 | `ModelContextProtocol` | 2.2.0 | Tools come from an in-process MCP server. |
-| `OpenTelemetry.*` | 1.18.0 | SDK, OTLP exporter, ASP.NET Core, HttpClient, Runtime. |
+| `OpenTelemetry.*` | 1.19.x | SDK, OTLP exporter, ASP.NET Core, HttpClient, Runtime. |
 | OTel Collector contrib | 0.161.0 | `oauth2client` extension for Scout. |
 | Ollama model | `qwen3.5:9b` | On the host, not in a container. |
 
@@ -430,7 +430,7 @@ the reply as well as the state.
 
 ## Framework and MCP Notes
 
-These are specific to Microsoft Agent Framework 1.21.0 and the MCP C# SDK
+These are specific to Microsoft Agent Framework 1.23.0 and the MCP C# SDK
 2.2.0. They affect what the rest of the trace looks like.
 
 ### Register every source
@@ -468,7 +468,7 @@ ASP.NET Core, register the hosted service that opens the session after
 A handoff is a tool the framework injects into the source agent. It has no
 body and is never run, so there is no `execute_tool` span. Read a handoff from
 the pair of `invoke_agent` spans and from `gen_ai.tool.definitions` on the
-source agent's span. At 1.21.0 the injected tool is named `handoff_to_1`, not
+source agent's span. At 1.23.0 the injected tool is named `handoff_to_1`, not
 `handoff_to_<agent_id>` as the framework documentation says.
 
 ### Content capture

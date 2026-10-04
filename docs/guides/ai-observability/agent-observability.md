@@ -715,8 +715,8 @@ Native OpenTelemetry, enabled by configuration:
 - [Google ADK Instrumentation](../../instrument/apps/auto-instrumentation/google-adk.md)
   \- agent, model and tool spans, `gen_ai.*` metrics and inference events
 - [Microsoft Agent Framework Instrumentation](../../instrument/apps/auto-instrumentation/microsoft-agent-framework.md)
-  \- agent, chat and tool spans, metrics and message events in Python, on by
-  default
+  \- agent, chat and tool spans, metrics and message events, on by default
+  in Python and enabled per agent in .NET
 
 Built in behind a flag or a package:
 
