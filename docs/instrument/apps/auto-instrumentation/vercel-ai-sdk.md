@@ -1200,6 +1200,8 @@ and [Express](./express.md).
   \- agent timelines, conversation IDs and multi-agent patterns.
 - [LLM Observability](../../../guides/ai-observability/llm-observability.md) -
   token and cost metrics and evaluation, in Python.
+- [Mastra](./mastra.md) - the same example's agents on Mastra, through
+  `@mastra/otel-bridge`.
 - [Node.js Custom Instrumentation](../custom-instrumentation/javascript-node.md)
   \- manual spans and metrics.
 

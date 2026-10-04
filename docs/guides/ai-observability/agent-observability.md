@@ -728,6 +728,9 @@ Built in behind a flag or a package:
 
 - [Vercel AI SDK Instrumentation](../../instrument/apps/auto-instrumentation/vercel-ai-sdk.md)
   \- `@ai-sdk/otel`, run ids, subagent fan-out and per-run cost
+- [Mastra Instrumentation](../../instrument/apps/auto-instrumentation/mastra.md)
+  \- `@mastra/otel-bridge`, agent, chat and tool spans in the request's
+  trace
 - [Pydantic AI Instrumentation](../../instrument/apps/auto-instrumentation/pydantic-ai.md)
   \- `Agent.instrument_all`, agent, model and tool spans without Logfire
 - [Pydantic AI on Temporal](../../instrument/apps/auto-instrumentation/pydantic-ai-temporal.md)

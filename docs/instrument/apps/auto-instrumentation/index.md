@@ -74,6 +74,7 @@ your collector is working first, try the
 | Next.js (collector) | [Next.js Collector](./nextjs)  | SSR, API routes, middleware, React components — exports to your collector |
 | Node.js (generic) | [Node.js](./nodejs)              | HTTP, filesystem, child processes                 |
 | Vercel AI SDK     | [Vercel AI SDK](./vercel-ai-sdk) | LLM calls, AI pipelines, token/cost tracking      |
+| Mastra            | [Mastra](./mastra)               | Agent runs, LLM calls, tool calls through the OTel bridge |
 
 ### Frontend / Browser
 
