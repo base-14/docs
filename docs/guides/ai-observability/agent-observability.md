@@ -441,7 +441,7 @@ parallel sub-agents, name each one.
 Agent runs need the same GenAI metrics as LLM calls, dimensioned by agent and
 tool so you can answer "which agent is slowest?" and "which tool fails most?".
 Reuse the metric definitions from the
-[LLM Observability guide](./llm-observability.md#token-and-cost-tracking) and
+[LLM Observability guide](./llm-observability.md#cost) and
 add
 agent/tool attributes when recording:
 
@@ -474,9 +474,9 @@ span.add_event(
 )
 ```
 
-Record the same score as a `gen_ai.evaluation.score` histogram to track quality
+Record the same score as a `base14.gen_ai.evaluation.score` histogram to track quality
 trends over time. See the
-[evaluation section of the LLM Observability guide](./llm-observability.md#evaluation-and-quality-metrics)
+[evaluation section of the LLM Observability guide](./llm-observability.md#evaluation-and-quality)
 for the metric definition and dashboard patterns.
 
 ## Content Capture, PII and Security
@@ -741,11 +741,14 @@ Built in behind a flag or a package:
 - [OpenAI Agents SDK Instrumentation](../../instrument/apps/auto-instrumentation/openai-agents-sdk.md)
   \- the contrib instrumentation, workflow, agent, chat and tool spans, with
   trace export to OpenAI turned off
+- [LangChain Instrumentation](../../instrument/apps/auto-instrumentation/langchain.md)
+  \- the official GenAI package, agent, chat, tool and retrieval spans, with
+  cost and scrubbing added in a span exporter
 
 Instrumented by a callback handler or custom spans:
 
-- [LangChain Instrumentation](../../instrument/apps/auto-instrumentation/langchain.md)
-  \- zero-code auto-instrumentation, then a callback handler for GenAI spans
+- [LangChain Callback Handler](./langchain-callback-handler.md) \- your own
+  handler, for chains the official package does not cover
 - [LangGraph Instrumentation](../../instrument/apps/auto-instrumentation/langgraph.md)
   \- node wrapping, conditional routing, tool-calling nodes
 - [LlamaIndex Instrumentation](../../instrument/apps/auto-instrumentation/llamaindex.md)
