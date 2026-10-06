@@ -745,14 +745,16 @@ Built in behind a flag or a package:
   \- the official GenAI package, agent, chat, tool and retrieval spans, with
   cost and scrubbing added in a span exporter
 
-Instrumented by a callback handler or custom spans:
+Traced through the model SDK packages, with spans of your own where needed:
 
+- [LangGraph Instrumentation](../../instrument/apps/auto-instrumentation/langgraph.md)
+  \- a span per node, model calls from the OpenAI, Anthropic and Google
+  packages
+- [LlamaIndex Instrumentation](../../instrument/apps/auto-instrumentation/llamaindex.md)
+  \- model calls from the SDK packages, Ollama through `OpenAILike`,
+  structured output corrections
 - [LangChain Callback Handler](./langchain-callback-handler.md) \- your own
   handler, for chains the official package does not cover
-- [LangGraph Instrumentation](../../instrument/apps/auto-instrumentation/langgraph.md)
-  \- node wrapping, conditional routing, tool-calling nodes
-- [LlamaIndex Instrumentation](../../instrument/apps/auto-instrumentation/llamaindex.md)
-  \- RAG, structured output, self-correction loops
 
 ### Runnable Examples
 
