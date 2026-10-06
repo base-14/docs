@@ -32,7 +32,8 @@ Trace a LlamaIndex application's model calls with OpenTelemetry. There is no
 official LlamaIndex instrumentation, but LlamaIndex's OpenAI, OpenAI-compatible,
 Anthropic and Google integrations call those vendors' SDKs, and the official
 OpenTelemetry GenAI packages for the SDKs trace every call: a `chat {model}`
-span with the model and tokens, and the `gen_ai.client.*` metrics.
+(`generate_content {model}` for the Google Gen AI SDK) span with the model and
+tokens, and the `gen_ai.client.*` metrics.
 
 The application adds what the packages cannot know: which endpoint and content
 a call served, the real provider behind an OpenAI-compatible endpoint, the
@@ -83,7 +84,7 @@ does.
 
 | Signal | What the instrumentation emits | What the [example](#complete-example) adds |
 | --- | --- | --- |
-| Traces | A `chat {model}` span per SDK call from the OpenAI, Anthropic and Google packages, and FastAPI spans. LlamaIndex itself emits none. | The endpoint, content type and length, `ollama` as the provider and `base14.gen_ai.cost_usd` on chat spans; `gen_ai.evaluation.result` and `provider_fallback` events. |
+| Traces | A `chat {model}` span per SDK call from the OpenAI and Anthropic packages, `generate_content {model}` from the Google package, and FastAPI spans. LlamaIndex itself emits none. | The endpoint, content type and length, `ollama` as the provider and `base14.gen_ai.cost_usd` on chat spans; `gen_ai.evaluation.result` and `provider_fallback` events. |
 | Metrics | `gen_ai.client.token.usage` and `gen_ai.client.operation.duration`. | `base14.gen_ai.cost`, `.retry.count`, `.fallback.count`, `.error.count` and `.evaluation.score`; HTTP request metrics. |
 | Logs | None. | OTLP log records from the application's logging, with the trace ID. |
 
@@ -214,9 +215,9 @@ The collector receives one `chat qwen3.5:9B` span with
 Its `gen_ai.provider.name` is `openai`; see
 [Adding Context, Provider and Cost](#adding-context-provider-and-cost).
 
-`reasoning_effort="none"` turns off thinking for models such as `qwen3.5`.
-Without it, the model can spend the whole output budget reasoning and return
-an empty answer.
+`reasoning_effort` is passed through to Ollama's OpenAI-compatible endpoint;
+`none` asks a thinking model to answer without a reasoning phase. Drop it for
+models that do not reason.
 
 ## Configuration
 
@@ -257,13 +258,12 @@ off, and reaches Ollama through its `/v1` endpoint:
         )
 ```
 
-Each SDK call is one `chat {model}` CLIENT span carrying
-`gen_ai.operation.name`, `gen_ai.provider.name`, `gen_ai.request.model`,
-`gen_ai.response.model`, `gen_ai.request.temperature`,
-`gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens`,
-`gen_ai.response.id`, `gen_ai.response.finish_reasons` and `server.address`,
-with `server.port` unless it is the default 443. One request to `/review`
-gives:
+Each SDK call is one `chat {model}` CLIENT span (`generate_content {model}` for
+the Google Gen AI SDK) carrying `gen_ai.operation.name`, `gen_ai.provider.name`,
+`gen_ai.request.model`, `gen_ai.response.model`, `gen_ai.request.temperature`,
+`gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens`, `gen_ai.response.id`,
+`gen_ai.response.finish_reasons` and `server.address`, with `server.port` unless
+it is the default 443. One request to `/review` gives:
 
 ```text
 POST /review                (FastAPI)
@@ -459,7 +459,8 @@ the model is LlamaIndex's `Ollama` class, which no package traces. Use
 
 ### Empty answers from a thinking model
 
-The model spent its output budget reasoning. Send
+A thinking model's reasoning counts against the output token limit, and a low
+limit can leave no room for the answer. Raise `max_tokens`, or send
 `additional_kwargs={"reasoning_effort": "none"}` on `OpenAILike`.
 
 ### Chat spans say `openai` for Ollama

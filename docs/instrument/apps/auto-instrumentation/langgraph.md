@@ -86,7 +86,7 @@ does.
 
 | Signal | What the instrumentation emits | What the [example](#complete-example) adds |
 | --- | --- | --- |
-| Traces | A `chat {model}` span per SDK call from the OpenAI, Anthropic and Google packages, and FastAPI and SQLAlchemy spans. LangGraph itself emits none for plain function nodes. | `pipeline.run` and an `invoke_agent {node}` span per node, per-item spans, a `retrieval` span, and the agent, campaign ID, provider and cost on chat spans. |
+| Traces | A `chat {model}` span per SDK call from the OpenAI and Anthropic packages, `generate_content {model}` from the Google package, and FastAPI and SQLAlchemy spans. LangGraph itself emits none for plain function nodes. | `pipeline.run` and an `invoke_agent {node}` span per node, per-item spans, a `retrieval` span, and the agent, campaign ID, provider and cost on chat spans. |
 | Metrics | `gen_ai.client.token.usage` and `gen_ai.client.operation.duration` from the packages. | `base14.gen_ai.cost`, `.retry.count`, `.fallback.count`, `.error.count` and `.evaluation.score`. |
 | Logs | None. | Trace and span IDs on the application's log lines, through the logging instrumentation. No OTLP log export. |
 
@@ -352,8 +352,9 @@ call:
     GoogleGenAiSdkInstrumentor().instrument()
 ```
 
-Each `chat {model}` CLIENT span carries `gen_ai.operation.name`,
-`gen_ai.provider.name`, `gen_ai.request.model`, `gen_ai.request.temperature`,
+Each `chat {model}` CLIENT span (`generate_content {model}` for the Google Gen
+AI SDK) carries `gen_ai.operation.name`, `gen_ai.provider.name`,
+`gen_ai.request.model`, `gen_ai.request.temperature`,
 `gen_ai.request.max_tokens`, `gen_ai.response.model`, `gen_ai.response.id`,
 `gen_ai.response.finish_reasons`, `gen_ai.usage.input_tokens`,
 `gen_ai.usage.output_tokens` and `server.address`. `server.port` is left out
@@ -519,8 +520,9 @@ docker compose up -d --build
 pipeline and checks the collector output: that every `chat` span comes from a
 GenAI package, that none names Ollama as `openai`, and the GenAI attributes and
 metrics. `scripts/test-api.sh` runs the API end to end on one prospect; set
-`CONNECTIONS_CSV=data/sample-connections.csv` for the full sample of eight,
-and raise `PIPELINE_TIMEOUT` on a local model.
+`CONNECTIONS_CSV=data/sample-connections.csv` for the full sample of ten,
+and raise `PIPELINE_TIMEOUT` if a run needs longer than its default of 600
+seconds.
 
 ## Troubleshooting
 
@@ -567,7 +569,8 @@ Install `opentelemetry-instrumentation-genai-openai`,
 `opentelemetry-instrumentation-genai-anthropic` and
 `opentelemetry-instrumentation-google-genai`, and call `instrument()` on each
 after setting up the tracer provider. Every SDK call then gets a `chat {model}`
-span under the node's span.
+(`generate_content {model}` for the Google Gen AI SDK) span under the node's
+span.
 
 ### How do I attribute tokens and cost to a LangGraph node?
 

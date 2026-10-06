@@ -39,7 +39,7 @@ shows what they record and how to add what they cannot know.
 An LLM call is more than an HTTP request. It has a model, token counts, a cost,
 and sometimes a quality score, and it belongs to an agent and a business
 operation. The GenAI packages record the model and the tokens on a
-`chat {model}` span. The application adds the rest: which agent made the call,
+model call span. The application adds the rest: which agent made the call,
 which customer or campaign it served, what it cost, whether it was retried or
 fell back to another provider, and how its output scored.
 
@@ -93,7 +93,7 @@ does.
 
 | Signal | What the instrumentation emits | What the [example](#complete-example) adds |
 | --- | --- | --- |
-| Traces | `chat {model}` spans from the GenAI packages; FastAPI and SQLAlchemy spans. | Agent, business ID, provider and cost on chat spans; pipeline, agent and per-item spans; a retrieval span; `provider_fallback` and `gen_ai.evaluation.result` events. |
+| Traces | `chat {model}` spans from the GenAI packages, `generate_content {model}` for Google; FastAPI and SQLAlchemy spans. | Agent, business ID, provider and cost on chat spans; pipeline, agent and per-item spans; a retrieval span; `provider_fallback` and `gen_ai.evaluation.result` events. |
 | Metrics | `gen_ai.client.token.usage` and `gen_ai.client.operation.duration`. | `base14.gen_ai.cost`, `.retry.count`, `.fallback.count`, `.error.count` and `.evaluation.score`. |
 | Logs | None. | Trace and span IDs on log lines through the logging instrumentation. |
 
@@ -160,7 +160,7 @@ POST /campaigns/{campaign_id}/run       (FastAPI)
 Three kinds of spans work together:
 
 - **Instrumentation spans**, with no code: FastAPI requests, SQLAlchemy
-  queries, and a `chat {model}` span for every SDK call from the GenAI
+  queries, and a model call span for every SDK call from the GenAI
   packages.
 - **Application spans**: `pipeline.run`, an `invoke_agent` span per graph node,
   and one span per prospect or draft.
@@ -244,10 +244,10 @@ Set up the providers first, then instrument each SDK:
     GoogleGenAiSdkInstrumentor().instrument()
 ```
 
-Every SDK call then gets a `chat {model}` CLIENT span with
-`gen_ai.operation.name`, `gen_ai.provider.name`, `gen_ai.request.model`,
-`gen_ai.request.temperature`, `gen_ai.request.max_tokens`,
-`gen_ai.response.model`, `gen_ai.response.id`,
+Every SDK call then gets a `chat {model}` CLIENT span (`generate_content
+{model}` for the Google Gen AI SDK) with `gen_ai.operation.name`,
+`gen_ai.provider.name`, `gen_ai.request.model`, `gen_ai.request.temperature`,
+`gen_ai.request.max_tokens`, `gen_ai.response.model`, `gen_ai.response.id`,
 `gen_ai.response.finish_reasons`, `gen_ai.usage.input_tokens`,
 `gen_ai.usage.output_tokens` and `server.address`, and the
 `gen_ai.client.token.usage` and `gen_ai.client.operation.duration` histograms
