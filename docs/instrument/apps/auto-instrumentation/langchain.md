@@ -1,61 +1,57 @@
 ---
 title:
-  LangChain OpenTelemetry Instrumentation - Callback Handler Tracing Guide
+  LangChain OpenTelemetry Instrumentation - Official GenAI Package Guide
 sidebar_label: LangChain
 sidebar_position: 5.9
 description:
-  Trace LangChain agents, tool calls, and RAG retrieval with OpenTelemetry.
-  Start with zero-code auto-instrumentation, then write a custom callback
-  handler for clean GenAI spans.
+  Trace LangChain agents, tools and retrieval with the official OpenTelemetry
+  GenAI instrumentation, then add cost, conversation IDs and PII scrubbing.
 keywords:
   [
     langchain opentelemetry instrumentation,
+    opentelemetry-instrumentation-genai-langchain,
     langchain tracing,
     langchain callback handler,
-    openllmetry,
-    opentelemetry-instrumentation-langchain,
+    create_agent instrumentation,
+    langchain agent observability,
     gen_ai semantic conventions,
     llm observability,
     rag retrieval tracing,
     tool calling agent tracing,
     langchain token cost tracking,
-    create_agent instrumentation,
+    langchain retry fallback middleware,
     ollama tracing,
+    openllmetry alternative,
     langchain vs langsmith,
     ai agent monitoring python,
-    genai agent spans,
   ]
 ---
 
 # LangChain
 
-Instrument a LangChain agent with OpenTelemetry to get one trace across the
-whole request: the HTTP call, the agent run, every LLM turn, each tool
-invocation, the RAG retrieval, and the database write. This guide takes two
-paths. First, zero-code auto-instrumentation that produces traces in minutes.
-Then a hand-written callback handler that emits clean GenAI
-semantic-convention spans when you need control over names, attributes, cost
-metrics, and content capture.
+Trace a LangChain agent with the official OpenTelemetry GenAI instrumentation,
+`opentelemetry-instrumentation-genai-langchain`. One call at startup gives you
+an `invoke_agent` span for the agent, a `chat` span for every model call, an
+`execute_tool` span for every tool and a `retrieval` span for every retriever,
+with token metrics, all in the same trace as your HTTP and database spans.
 
-Both paths rest on the same mechanism: **a LangChain callback handler**. The
-zero-code library injects one for you; the custom path is you writing your
-own.
+The instrumentation does not know your application. This guide adds what it
+leaves out: a conversation ID on every span, the data source on retrieval
+spans, the cost of each model call, PII scrubbing of captured content, and
+retry and fallback counters from `create_agent` middleware.
 
 The example is a small SRE runbook assistant. You POST an incident question;
 a tool-calling agent retrieves the relevant runbook from a pgvector store,
-inspects service metrics, logs, and status through tools, and returns a cited
-diagnosis. That shape - agent, tools, retrieval, database - is where a flat
-log stream stops being enough. Your own agent will differ in the details; the
-handler is the same either way.
+inspects service metrics, logs and status through tools, and returns a cited
+diagnosis.
 
 :::tip TL;DR
 
-For a quick start, `pip install opentelemetry-instrumentation-langchain` and
-call `LangchainInstrumentor().instrument()` - traces appear in Scout with no
-code changes. For production-grade GenAI spans, attach a custom
-`BaseCallbackHandler` that maps LangChain's `run_id` / `parent_run_id` run
-tree to OpenTelemetry spans with `gen_ai.*` attributes, token and cost
-metrics, and content capture off by default.
+Install `opentelemetry-instrumentation-genai-langchain` and call
+`LangChainInstrumentor().instrument()` after setting up the tracer provider.
+Name the agent with `create_agent(name=...)` and pass a conversation ID in the
+run's metadata. Add cost and PII scrubbing in a span exporter, and keep
+content capture at `no_content` unless you need it.
 
 :::
 
@@ -69,87 +65,78 @@ does.
 
 ## LangChain vs LangGraph
 
-LangChain 1.x agents built with `create_agent` are **LangGraph graphs under
-the hood** - a stateful `model` / `tools` graph, not the old `AgentExecutor`
-loop. This guide covers the high-level `create_agent` API and
-callback-handler instrumentation, where you observe the agent as a run tree
-without touching graph internals. The
-[LangGraph guide](./langgraph.md) covers the complementary case: a
-hand-built `StateGraph` where you wrap each node and edge with spans
-yourself. If you build graphs by hand, read that guide; if you use
-`create_agent` and want the agent, tools, and retrieval traced, stay here.
+LangChain 1.x agents built with `create_agent` are LangGraph graphs under the
+hood. This guide covers `create_agent` agents and the LangChain
+instrumentation, which traces them through LangChain's callbacks. The
+[LangGraph guide](./langgraph.md) covers a hand-built `StateGraph` whose nodes
+are plain functions; the LangChain instrumentation gives such a graph one
+workflow span and nothing for its nodes.
 
 ## Who This Guide Is For
 
-This documentation is designed for:
-
-- **AI/ML engineers**: building LangChain agents and needing visibility into
-  which tool ran, how many tokens a turn used, and where latency accrues.
-- **Backend developers**: adding an agent endpoint to an existing FastAPI
-  service and wanting one trace across HTTP, agent, LLM, and database.
-- **Platform teams**: standardizing GenAI observability on OpenTelemetry
-  semantic conventions instead of a vendor-specific tracer.
-- **DevOps and SRE engineers**: deploying LangChain services with cost
-  tracking, error visibility, and unified traces in production.
+- **AI/ML engineers** building LangChain agents who need to see which tool
+  ran, how many tokens a turn used and where the time went.
+- **Backend developers** adding an agent endpoint to an existing FastAPI
+  service who want one trace across HTTP, agent, model and database.
+- **Platform teams** standardizing GenAI observability on the OpenTelemetry
+  conventions instead of a vendor-specific tracer.
+- **Teams on OpenLLMetry or a hand-written callback handler** deciding whether
+  to move to the official package.
 
 ## Overview
 
-This guide demonstrates how to:
+- Enable the official LangChain instrumentation and read the spans it creates.
+- Name the agent and pass a conversation ID so one request is one search.
+- Add the data source, the cost and PII scrubbing in a span processor and a
+  span exporter.
+- Retry and fall back between models with `create_agent` middleware, so every
+  attempt is one span.
+- Trace embeddings, which have no LangChain callback.
+- Wire the collector to base14 Scout.
 
-- Enable zero-code LangChain tracing with OpenLLMetry auto-instrumentation.
-- Understand why every LangChain instrumentor is a callback handler.
-- Build a custom `OTelCallbackHandler` that emits GenAI-semconv spans for
-  chains, chat models, tools, and retrievers.
-- Parent spans correctly across threads and `await` boundaries using the
-  run tree, not the ambient context.
-- Record token, cost, and duration metrics per LLM call.
-- Capture prompts and completions safely, off by default, with PII scrubbing.
-- Handle real failures and graceful degradation without leaking spans.
-- Read the resulting span tree and avoid the common pitfalls.
-- Wire the collector to base14 Scout with the `environment` resource
-  attribute Scout filters on.
+### Signals
+
+| Signal | What the instrumentation emits | What the [example](#complete-example) adds |
+| --- | --- | --- |
+| Traces | `invoke_agent`, `chat {model}`, `execute_tool {name}` and `retrieval` spans with GenAI attributes. | The conversation ID on every span, the data source and chunk count on retrieval spans, `base14.gen_ai.cost_usd` on chat spans, a `provider_fallback` event, an `embeddings {model}` span, and FastAPI, httpx and SQLAlchemy spans. |
+| Metrics | `gen_ai.client.token.usage`, `gen_ai.client.operation.duration`, `gen_ai.invoke_agent.duration`, `gen_ai.execute_tool.duration`, and the streaming `gen_ai.client.operation.time_to_first_chunk` and `time_per_output_chunk`. | `base14.gen_ai.cost`, `.retry.count`, `.fallback.count` and `.error.count`. |
+| Logs | None. | OTLP log records from the application's own logging, with the trace ID. |
 
 ## Prerequisites
 
-Before starting, ensure you have:
-
-- **Python 3.10 or later** installed. That is the floor for LangChain 1.x and
-  the OpenTelemetry SDK, which is what the callback handler needs.
-- **A running collector** reachable over OTLP - see
+- Python 3.10 or later. The example uses 3.14.
+- A chat model that can call tools. The Quick Start and the example use Ollama
+  with `qwen3.5:9B`, which needs no API key. Anthropic, OpenAI and Google are
+  configurable alternatives.
+- An OpenTelemetry Collector. See
   [Docker Compose Setup](../../collector-setup/docker-compose-example.md).
-- **PostgreSQL 18 with pgvector** for the runbook store (the compose file
-  below provisions it).
-- **An LLM**: a local
-  [Ollama](https://ollama.com) model works with no API key; Anthropic,
-  OpenAI, and Google are configurable alternatives.
-- Basic familiarity with OpenTelemetry traces, spans, and metrics.
+- PostgreSQL 18 with pgvector for the example's runbook store.
+- A base14 Scout account, optional. The example runs without one.
 
 ### Compatibility Matrix
 
-What the instrumentation itself needs:
+| Component | Version in the example |
+| --- | --- |
+| `langchain` | 1.3.18 |
+| `langchain-core` | 1.6.1 |
+| `langgraph` | 1.2.12 |
+| `langchain-ollama` | 1.1.0 |
+| `opentelemetry-instrumentation-genai-langchain` | 1.2b0 |
+| `opentelemetry-util-genai` | 1.2b0 |
+| `opentelemetry-sdk`, `opentelemetry-api` | 1.45.0 |
+| `opentelemetry-exporter-otlp-proto-http` | 1.45.0 |
+| `opentelemetry-instrumentation-fastapi`, `-sqlalchemy`, `-httpx`, `-logging` | 0.66b0 |
+| Python | 3.14 |
+| Ollama | 0.34.2, with `qwen3.5:9B` and `embeddinggemma` |
+| OpenTelemetry Collector Contrib | 0.161.0 |
+| Example | [`ai-runbook-assistant`](https://github.com/base-14/examples/tree/main/python/ai-runbook-assistant) |
 
-| Component                                  | Minimum | Recommended |
-| ------------------------------------------ | ------- | ----------- |
-| Python                                     | 3.10    | 3.13+       |
-| langchain                                  | 1.3     | 1.3.13+     |
-| langchain-core                             | 1.4     | 1.4.9+      |
-| opentelemetry-sdk / api                    | 1.40.0  | 1.40+       |
-| opentelemetry-instrumentation-langchain    | 0.62    | 0.62.1+     |
-
-The `BaseCallbackHandler` lifecycle this guide builds on has been stable since
-LangChain 0.1, so the handler ports back further than the table suggests. The
-`create_agent` API is the part that needs 1.x.
-
-Everything else depends on what your app already uses. The example app happens
-to run FastAPI, SQLAlchemy, and pgvector on PostgreSQL 18, and pins Python 3.14
-for unrelated reasons - none of that is required to instrument LangChain. Swap
-in your own web framework and datastore; the handler does not care.
-
-`create_agent` pulls LangGraph in transitively. For LangGraph's own node and
-graph spans, see [LangGraph](./langgraph.md).
-
-Treat every package as version-sensitive and re-pin at build time; the
-LangChain and OpenLLMetry lines move quickly.
+Last verified 2026-10-06 with LangChain 1.3.18 and
+`opentelemetry-instrumentation-genai-langchain` 1.2b0, with content capture
+off and with `span_only`. The package supports `langchain>=0.3.21,<2`. It is
+beta and always emits the latest experimental GenAI conventions, so attribute
+names can change between releases. Pin exact versions and re-check the spans
+after each upgrade.
 
 ## Installation
 
@@ -162,25 +149,11 @@ import TabItem from '@theme/TabItem';
 ```
 
 ```bash showLineNumbers title="Terminal"
-# Core - LangChain plus the OpenTelemetry SDK and an OTLP exporter
 pip install \
-  langchain langchain-core \
+  langchain langchain-ollama \
   opentelemetry-sdk \
-  opentelemetry-exporter-otlp-proto-http
-
-# Zero-code path only, for the quick start below
-pip install opentelemetry-instrumentation-langchain
-
-# Whichever LLM provider you use
-pip install langchain-ollama
-# langchain-anthropic | langchain-openai | langchain-google-genai
-
-# Instrumentation for the rest of your stack, so LangChain spans
-# join the same trace as your HTTP and database calls
-pip install \
-  opentelemetry-instrumentation-fastapi \
-  opentelemetry-instrumentation-sqlalchemy \
-  opentelemetry-instrumentation-httpx
+  opentelemetry-exporter-otlp-proto-http \
+  opentelemetry-instrumentation-genai-langchain
 ```
 
 ```mdx-code-block
@@ -189,25 +162,11 @@ pip install \
 ```
 
 ```bash showLineNumbers title="Terminal"
-# Core - LangChain plus the OpenTelemetry SDK and an OTLP exporter
 uv add \
-  langchain langchain-core \
+  langchain langchain-ollama \
   opentelemetry-sdk \
-  opentelemetry-exporter-otlp-proto-http
-
-# Zero-code path only, for the quick start below
-uv add opentelemetry-instrumentation-langchain
-
-# Whichever LLM provider you use
-uv add langchain-ollama
-# langchain-anthropic | langchain-openai | langchain-google-genai
-
-# Instrumentation for the rest of your stack, so LangChain spans
-# join the same trace as your HTTP and database calls
-uv add \
-  opentelemetry-instrumentation-fastapi \
-  opentelemetry-instrumentation-sqlalchemy \
-  opentelemetry-instrumentation-httpx
+  opentelemetry-exporter-otlp-proto-http \
+  opentelemetry-instrumentation-genai-langchain
 ```
 
 ```mdx-code-block
@@ -215,790 +174,411 @@ uv add \
 </Tabs>
 ```
 
-:::warning Package name collision
+Swap `langchain-ollama` for `langchain-anthropic`, `langchain-openai` or
+`langchain-google-genai` to match your provider. Add the FastAPI, SQLAlchemy
+and httpx instrumentations so the agent's spans join the same trace as your
+HTTP and database calls.
 
-The PyPI name `opentelemetry-instrumentation-langchain` is **Traceloop's
-OpenLLMetry** package, not the official OpenTelemetry GenAI SIG one.
-`pip install opentelemetry-instrumentation-langchain` installs Traceloop's
-build. It is mature and exports to any OTLP collector, so it is the right
-choice to start. The official SIG instrumentation ships from the
-`opentelemetry-python-contrib` source tree and is the emerging
-`gen_ai`-native standard to track. See
-[Choosing an Approach](#choosing-an-approach).
+:::warning Two packages, similar names
+
+`opentelemetry-instrumentation-genai-langchain` is the official OpenTelemetry
+package, published from
+[`opentelemetry-python-genai`](https://github.com/open-telemetry/opentelemetry-python-genai).
+`opentelemetry-instrumentation-langchain`, without `genai`, is Traceloop's
+OpenLLMetry. See [Choosing an Approach](#choosing-an-approach).
 
 :::
+
+The instrumentation checks that the `langchain` distribution is installed. An
+app that installs only `langchain-core` and `langgraph` needs
+`LangChainInstrumentor().instrument(skip_dep_check=True)`, or nothing is
+instrumented.
+
+## Quick Start
+
+One agent with one tool, traced to a local collector on `localhost:4318`.
+
+```python showLineNumbers title="quickstart.py"
+from langchain.agents import create_agent
+from langchain_core.tools import tool
+from langchain_ollama import ChatOllama
+from opentelemetry import metrics, trace
+from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.genai.langchain import LangChainInstrumentor
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
+resource = Resource.create({"service.name": "langchain-quickstart"})
+tracer_provider = TracerProvider(resource=resource)
+tracer_provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter()))
+trace.set_tracer_provider(tracer_provider)
+meter_provider = MeterProvider(
+    resource=resource, metric_readers=[PeriodicExportingMetricReader(OTLPMetricExporter())]
+)
+metrics.set_meter_provider(meter_provider)
+
+LangChainInstrumentor().instrument()
+
+
+@tool
+def service_status(service: str) -> str:
+    """Return the current status of a service."""
+    return f"{service}: 2 of 3 replicas healthy, last restart OOMKilled"
+
+
+agent = create_agent(
+    model=ChatOllama(model="qwen3.5:9B", reasoning=False),
+    tools=[service_status],
+    name="status_agent",
+)
+result = agent.invoke(
+    {"messages": [{"role": "user", "content": "Is checkout healthy?"}]},
+    config={"metadata": {"conversation_id": "quickstart-1"}},
+)
+print(result["messages"][-1].content)
+
+tracer_provider.shutdown()
+meter_provider.shutdown()
+```
+
+The collector receives one trace:
+
+```text
+invoke_agent status_agent
+├─ chat qwen3.5:9B             (picks the tool)
+├─ execute_tool service_status
+└─ chat qwen3.5:9B             (writes the answer)
+```
+
+`gen_ai.agent.name` is `status_agent` on the agent and tool spans, and
+`gen_ai.conversation.id` is `quickstart-1` on the agent and chat spans. The
+two `shutdown` calls flush the batch before the script exits.
 
 ## Configuration
 
-Instrumentation is configured entirely through environment variables. These
-are the standard OpenTelemetry ones, read by the SDK itself:
-
-```bash showLineNumbers title=".env"
-OTEL_SERVICE_NAME=your-agent-service
-OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
-OTEL_RESOURCE_ATTRIBUTES=environment=production
-OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental
-```
+The OpenTelemetry SDK reads the standard variables:
 
 | Variable | Default | What it controls |
-| -------- | ------- | ---------------- |
-| `OTEL_SERVICE_NAME` | unset | Becomes `service.name` on every span. Set it, or your agent shows up as `unknown_service`. |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://localhost:4318` | OTLP HTTP endpoint of your collector. |
-| `OTEL_RESOURCE_ATTRIBUTES` | unset | Comma-separated resource attributes. Use it for `environment`. |
-| `OTEL_SEMCONV_STABILITY_OPT_IN` | unset | Set to `gen_ai_latest_experimental` to opt into the current GenAI conventions rather than the frozen older set. |
+| --- | --- | --- |
+| `OTEL_SERVICE_NAME` | unset | `service.name` on every span. |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://localhost:4318` | OTLP HTTP endpoint of the collector. |
+| `OTEL_RESOURCE_ATTRIBUTES` | unset | Resource attributes such as `environment`. |
 
-Then there is content capture, which is the one GenAI-specific decision and
-the one that carries privacy consequences. Each path has its own flag, and
-they default in opposite directions:
+The instrumentation reads the GenAI ones:
 
-| Path | Variable | Default |
-| ---- | -------- | ------- |
-| Custom callback handler | `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT` | `false` |
-| OpenLLMetry auto-instrumentation | `TRACELOOP_TRACE_CONTENT` | **`true`** |
+| Variable | Default | What it controls |
+| --- | --- | --- |
+| `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT` | `no_content` | `no_content`, `span_only`, `event_only` or `span_and_event`, case-insensitive. `true` and `false` are not valid: the package logs a warning and captures nothing. |
+| `OTEL_INSTRUMENTATION_GENAI_EMIT_EVENT` | follows the mode | `true` or `false`, overrides whether content events are emitted. |
+| `OTEL_INSTRUMENTATION_GENAI_COMPLETION_HOOK` | unset | `upload` sends content to `OTEL_INSTRUMENTATION_GENAI_UPLOAD_BASE_PATH` instead of the span. Needs `opentelemetry-util-genai[upload]`. |
 
-If you start with the zero-code path, prompts and completions are recorded
-unless you turn them off:
+The capture mode is read once, when `instrument()` runs. Set it before the
+process starts. The package always emits the latest experimental GenAI
+conventions and does not read `OTEL_SEMCONV_STABILITY_OPT_IN`.
 
-```bash showLineNumbers title="Terminal"
-export TRACELOOP_TRACE_CONTENT=false
-```
+## What the Instrumentation Emits
 
-See [Content Capture and PII](#content-capture-and-pii) before enabling either
-in production.
+`LangChainInstrumentor` adds a callback handler to every LangChain callback
+manager, so it sees each run of the agent, its model, its tools and its
+retriever. For a `create_agent` agent on sync `invoke`, it also makes its
+spans current, so the httpx, SQLAlchemy and other spans created inside a run
+nest under them.
 
-:::tip One switch for the whole thing
+| Span | Kind | Attributes the instrumentation sets |
+| --- | --- | --- |
+| `invoke_agent {name}` | `INTERNAL` | `gen_ai.operation.name`, `gen_ai.agent.name` from `create_agent(name=...)`, `gen_ai.conversation.id` from the run's metadata |
+| `chat {model}` | `CLIENT` | `gen_ai.provider.name`, `gen_ai.request.model`, `gen_ai.response.model`, `gen_ai.request.temperature`, `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens`, `gen_ai.response.finish_reasons`, `gen_ai.conversation.id` |
+| `execute_tool {name}` | `INTERNAL` | `gen_ai.tool.name`, `gen_ai.tool.type`, `gen_ai.tool.call.id`, `gen_ai.tool.description`, `gen_ai.agent.name` |
+| `retrieval` | `CLIENT` | `gen_ai.operation.name`, `gen_ai.provider.name` set to the vector store class, such as `PGVector` |
 
-Worth copying from the example app: a single `INSTRUMENTATION_MODE` setting
-with values `auto`, `callback`, and `off`, read once at startup. It lets you
-compare the two paths against the same workload and kill instrumentation
-outright without a redeploy. Your own app config (model names, datastore URLs,
-API keys) stays separate from this and has no bearing on the telemetry.
+With `span_only`, chat spans add `gen_ai.input.messages`,
+`gen_ai.output.messages`, `gen_ai.system_instructions` and
+`gen_ai.tool.definitions`; tool spans add the call arguments and result; and
+retrieval spans add `gen_ai.retrieval.query.text` and
+`gen_ai.retrieval.documents`, a JSON list of document IDs and scores.
 
-:::
-
-## Quick Start: Auto-Instrumentation
-
-The fastest path to a trace is zero-code. Enable OpenLLMetry's
-`LangchainInstrumentor` once, before you build the agent, and every LangChain
-run emits spans.
-
-```python showLineNumbers title="src/runbook_assistant/telemetry/auto.py"
-"""Zero-code LangChain instrumentation via OpenLLMetry (Traceloop)."""
-
-import logging
-
-
-logger = logging.getLogger(__name__)
-_enabled = False
-
-
-def enable_auto_instrumentation() -> None:
-    global _enabled
-    if _enabled:
-        return
-    from opentelemetry.instrumentation.langchain import LangchainInstrumentor
-
-    LangchainInstrumentor().instrument()
-    _enabled = True
-    logger.info("OpenLLMetry LangChain auto-instrumentation enabled")
-```
-
-That is the entire integration. Point the OTLP exporter at your collector
-(see [Scout Wiring](#scout-wiring)), send a request, and the trace appears in
-Scout. With the agent answering an incident question, the auto-instrumented
-trace looks like this:
+The example's trace for one diagnosis:
 
 ```text
-POST /api/v1/diagnose                                 SERVER  (FastAPI)
-└─ invoke_agent LangGraph                             INTERNAL
-   └─ LangGraph.workflow                              INTERNAL
-      ├─ execute_task model                           INTERNAL  (graph node)
-      │  └─ ChatOllama.chat                           CLIENT    (LLM turn)
-      │     └─ POST /api/chat                         CLIENT    (httpx → Ollama)
-      └─ execute_task tools                           INTERNAL  (graph node)
-         ├─ execute_tool search_runbooks              INTERNAL
-         │  └─ vector_db_retrieve VectorStoreRetriever CLIENT   (retrieval)
-         └─ execute_tool query_metrics                INTERNAL
-   (repeats model → tools until the agent answers)
+POST /api/v1/diagnose                 (FastAPI)
+├─ invoke_agent runbook_assistant
+│  ├─ chat qwen3.5:9B                 (picks a tool)
+│  │  └─ POST                         (httpx, to Ollama)
+│  ├─ execute_tool search_runbooks
+│  │  └─ retrieval
+│  │     ├─ embeddings embeddinggemma (the example's own span)
+│  │     └─ SELECT runbooks           (SQLAlchemy)
+│  ├─ execute_tool query_metrics
+│  ├─ execute_tool search_logs
+│  └─ chat qwen3.5:9B                 (writes the diagnosis)
+└─ INSERT                             (SQLAlchemy, the saved diagnosis)
 ```
 
-Notice how much shows up for free: the agent run, each LangGraph node
-(`model`, `tools`), the LLM turns, the tool calls, and the vector retrieval.
-The LLM spans carry token usage, and the whole tree nests under the FastAPI
-server span, so the agent shares a trace with your HTTP and database
-telemetry.
+## Conversation IDs and Agent Names
 
-### Auto-Instrumentation Is a Callback Handler
-
-`LangchainInstrumentor().instrument()` works by monkeypatching
-`langchain_core.callbacks.BaseCallbackManager.__init__` to inject its own
-callback handler into every run. Traceloop OpenLLMetry, the official OTel
-GenAI SIG instrumentation, and OpenInference all do the same thing - they add
-a handler for you.
-
-LangChain emits observability through callback handlers. Auto-instrumentation
-injects one; the deep dive below is you writing your own.
-
-### Where Auto-Instrumentation Falls Short
-
-The zero-code trace is excellent for exploration, but a few things make a
-custom handler worthwhile. These are observed from OpenLLMetry 0.62.1 against
-a local `ChatOllama` model:
-
-- **Framework-centric span names.** The LLM span is `ChatOllama.chat`, not
-  the GenAI-semconv `chat {model}`; the agent is `invoke_agent LangGraph`
-  rather than your service name; retrieval is
-  `vector_db_retrieve VectorStoreRetriever`.
-- **Model field is `unknown`.** For Ollama, `gen_ai.request.model` and
-  `gen_ai.response.model` come through as `"unknown"`; the real model name is
-  only in a proprietary `traceloop.association.properties.ls_model_name`
-  attribute.
-- **Proprietary attributes.** Every span carries `traceloop.*` association
-  properties alongside the `gen_ai.*` ones.
-- **Content on by default.** Auto-instrumentation records the full prompt,
-  system message, tool arguments, and retrieved documents in span attributes
-  such as `gen_ai.input.messages` and `gen_ai.task.input`. Crucially, it
-  **ignores** `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT`; it is
-  gated by OpenLLMetry's own `TRACELOOP_TRACE_CONTENT` (default `true`). To
-  turn content off, set `TRACELOOP_TRACE_CONTENT=false`.
-
-None of these block you - they are the reasons a team with compliance or
-naming requirements moves to the custom handler next.
-
-## Callback-Handler Deep Dive
-
-### Why Callbacks
-
-A LangChain run is a **tree**. Every step - the agent, each LLM call, each
-tool, each retrieval - has a `run_id`, and every child step carries its
-parent's id as `parent_run_id`. LangChain reports lifecycle events for each
-node to any registered callback handler:
-
-| LangChain event                        | Fires when                     |
-| -------------------------------------- | ------------------------------ |
-| `on_chain_start` / `on_chain_end`      | a chain or agent run begins    |
-| `on_chat_model_start` / `on_llm_end`   | an LLM turn begins and returns |
-| `on_tool_start` / `on_tool_end`        | a tool is invoked              |
-| `on_retriever_start` / `on_retriever_end` | a retriever runs            |
-| `on_*_error`                           | any of the above raises        |
-
-Mapping that run tree onto an OpenTelemetry span tree is the whole job: start
-a span on each `*_start`, end it on the matching `*_end`, and parent each
-span on its `parent_run_id`'s span.
-
-### Telemetry Setup
-
-Bootstrap the SDK once, before the app serves traffic. This wires the OTLP
-exporters for all three signals, the `environment` resource attribute, and base
-auto-instrumentation for httpx, SQLAlchemy, and logging.
-
-```python showLineNumbers title="src/runbook_assistant/telemetry/setup.py"
-def build_resource() -> Resource:
-    """Resource with the environment attribute Scout filters on."""
-    s = get_settings()
-    return Resource.create(
-        {
-            "service.name": s.otel_service_name,
-            "service.version": _APP_VERSION,
-            "environment": s.scout_environment,
-        }
-    )
-```
-
-```python showLineNumbers title="src/runbook_assistant/telemetry/setup.py"
-def setup_telemetry(engine: Any = None) -> tuple[trace.Tracer, metrics.Meter]:
-    resource = build_resource()
-    endpoint = os.environ.get(
-        "OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4318"
-    )
-
-    trace_provider = TracerProvider(resource=resource)
-    trace_provider.add_span_processor(
-        BatchSpanProcessor(OTLPSpanExporter(endpoint=f"{endpoint}/v1/traces"))
-    )
-    trace.set_tracer_provider(trace_provider)
-
-    # Required for the GenAI token, cost, duration, and error instruments
-    # in the Metrics section below - without a meter provider they no-op.
-    reader = PeriodicExportingMetricReader(
-        OTLPMetricExporter(endpoint=f"{endpoint}/v1/metrics"),
-        export_interval_millis=10_000,
-    )
-    metrics.set_meter_provider(
-        MeterProvider(resource=resource, metric_readers=[reader])
-    )
-
-    # OTLP logs carry the active trace_id/span_id for trace<>log correlation.
-    log_provider = LoggerProvider(resource=resource)
-    log_provider.add_log_record_processor(
-        BatchLogRecordProcessor(OTLPLogExporter(endpoint=f"{endpoint}/v1/logs"))
-    )
-    _logs.set_logger_provider(log_provider)
-
-    HTTPXClientInstrumentor().instrument()
-    LoggingInstrumentor().instrument(set_logging_format=True)
-    if engine is not None:
-        SQLAlchemyInstrumentor().instrument(engine=engine.sync_engine)
-
-    return (
-        trace.get_tracer("langchain-agent"),
-        metrics.get_meter("langchain-agent"),
-    )
-```
-
-If you take the zero-code path, call `enable_auto_instrumentation()` at the end
-of this function, after the providers exist and before the agent is built.
-
-The httpx instrumentation matters more than it looks: LangChain has no
-embeddings callback event, and Ollama chat and embeddings both go over HTTP.
-So even without a semantic span, the `POST /api/chat` and `POST /api/embed`
-transport calls show up as CLIENT spans under the LLM and retrieval steps.
-
-### Build the Callback Handler
-
-The handler keeps a `run_id -> span` map and a small `_RunState` per run. The
-central correctness point is `_parent_ctx`: it parents a new span on the
-**stored** parent span, never on `trace.get_current_span()`, because
-LangChain callbacks can fire on worker threads or across `await`.
-
-```python showLineNumbers title="src/runbook_assistant/telemetry/callback.py"
-class OTelCallbackHandler(BaseCallbackHandler):
-    def __init__(
-        self,
-        tracer: trace.Tracer | None = None,
-        agent_name: str = "agent",
-        data_source_id: str = "knowledge_base",
-        conversation_id: str | None = None,
-    ) -> None:
-        self._tracer = tracer or trace.get_tracer("langchain.callback")
-        self._agent_name = agent_name
-        self._data_source_id = data_source_id
-        self._conversation_id = conversation_id
-        self._runs: dict[UUID, _RunState] = {}
-        self._metrics = get_metrics()
-        self._capture = get_settings().capture_content
-
-    def _parent_ctx(self, parent_run_id: UUID | None) -> otel_context.Context | None:
-        if parent_run_id is not None and parent_run_id in self._runs:
-            return trace.set_span_in_context(self._runs[parent_run_id].span)
-        return None
-
-    def _start(self, run_id, parent_run_id, name, kind) -> Span:
-        span = self._tracer.start_span(
-            name, context=self._parent_ctx(parent_run_id), kind=kind
-        )
-        self._runs[run_id] = _RunState(span, time.perf_counter())
-        return span
-```
-
-:::danger Parent on the run tree, not the ambient context
-
-Because callbacks can arrive off the request thread,
-`trace.get_current_span()` may point at the wrong span, or none. Always
-resolve the parent from your own `run_id -> span` map via `parent_run_id`.
-Skipping this is the most common cause of mis-nested LangChain traces.
-
-:::
-
-#### The chain (agent) span
-
-The root chain run - the one with no `parent_run_id` - becomes the
-`invoke_agent` span, named after your service. Intermediate LangGraph node
-runs (`model`, `tools`) are collapsed to a pass-through so the tree shows the
-meaningful chat, tool, and retrieval spans instead of graph plumbing.
-
-```python showLineNumbers title="src/runbook_assistant/telemetry/callback.py"
-    def on_chain_start(
-        self, serialized, inputs, *, run_id, parent_run_id=None,
-        tags=None, metadata=None, **kwargs,
-    ) -> None:
-        if parent_run_id is None:
-            span = self._start(
-                run_id, None, f"invoke_agent {self._agent_name}", SpanKind.INTERNAL
-            )
-            span.set_attribute("gen_ai.operation.name", "invoke_agent")
-            span.set_attribute("gen_ai.agent.name", self._agent_name)
-            if self._conversation_id:
-                span.set_attribute("gen_ai.conversation.id", self._conversation_id)
-        else:
-            # Skip the span for intermediate LangGraph nodes; pass-through keeps
-            # child spans nested under the nearest real ancestor.
-            parent = self._runs.get(parent_run_id)
-            if parent is not None:
-                self._runs[run_id] = _RunState(
-                    parent.span, parent.start, owns_span=False
-                )
-```
-
-Whether you collapse node runs or keep them is a judgment call. Collapsing
-gives a clean agent-centric tree; keeping them mirrors the auto-instrumented
-view where `execute_task model` and `execute_task tools` are visible. This
-example collapses them - see
-[Reading the Span Tree](#reading-the-span-tree).
-
-#### The chat model span
-
-`on_chat_model_start` opens a `chat {model}` CLIENT span. The `gen_ai.*`
-attributes it sets follow the OpenTelemetry GenAI semantic conventions, which
-are still in Development status as of September 2026, with no tagged release,
-so the names can still change; see
-[open-telemetry/semantic-conventions-genai](https://github.com/open-telemetry/semantic-conventions-genai).
-The model and provider come from the run metadata (`ls_model_name`,
-`ls_provider`), which is how the handler gets the real model name that
-auto-instrumentation reports as `unknown`.
-
-```python showLineNumbers title="src/runbook_assistant/telemetry/callback.py"
-    def _start_llm(self, run_id, parent_run_id, metadata, messages) -> None:
-        meta = metadata or {}
-        model = meta.get("ls_model_name", "unknown")
-        provider = meta.get("ls_provider", "unknown")
-        span = self._start(run_id, parent_run_id, f"chat {model}", SpanKind.CLIENT)
-        span.set_attribute("gen_ai.operation.name", "chat")
-        span.set_attribute("gen_ai.provider.name", provider)
-        span.set_attribute("gen_ai.request.model", model)
-```
-
-`on_llm_end` reads token usage and the finish reason off the result, sets the
-usage attributes, and records the metrics. The finish reason is
-provider-aware: Ollama reports `done_reason`, while cloud providers use
-`stop_reason` or `finish_reason`.
-
-```python showLineNumbers title="src/runbook_assistant/telemetry/callback.py"
-    def on_llm_end(self, response: LLMResult, *, run_id: UUID, **kwargs) -> None:
-        state = self._runs.get(run_id)
-        if state is None:
-            return
-        span = state.span
-        in_tok, out_tok, finish, resp_model = _usage_from_result(response)
-        provider = getattr(span, "attributes", {}).get("gen_ai.provider.name", "unknown")
-        model = resp_model or "unknown"
-        if resp_model:
-            span.set_attribute("gen_ai.response.model", resp_model)
-        if finish:
-            span.set_attribute("gen_ai.response.finish_reasons", [finish])
-        span.set_attribute("gen_ai.usage.input_tokens", in_tok)
-        span.set_attribute("gen_ai.usage.output_tokens", out_tok)
-
-        attrs = {
-            "gen_ai.operation.name": "chat",
-            "gen_ai.provider.name": provider,
-            "gen_ai.request.model": model,
-        }
-        self._metrics.record_tokens(attrs, in_tok, out_tok)
-        self._metrics.record_duration(attrs, time.perf_counter() - state.start)
-        cost = calculate_cost(model, in_tok, out_tok)
-        if cost:
-            span.set_attribute("base14.gen_ai.cost_usd", cost)
-            self._metrics.add_cost(attrs, cost)
-        self._end(run_id)
-```
-
-#### The tool span
-
-`on_tool_start` opens an `execute_tool {name}` INTERNAL span with the
-GenAI tool attributes.
-
-```python showLineNumbers title="src/runbook_assistant/telemetry/callback.py"
-    def on_tool_start(
-        self, serialized, input_str, *, run_id, parent_run_id=None, **kwargs,
-    ) -> None:
-        name = (serialized or {}).get("name") or "tool"
-        span = self._start(
-            run_id, parent_run_id, f"execute_tool {name}", SpanKind.INTERNAL
-        )
-        span.set_attribute("gen_ai.operation.name", "execute_tool")
-        span.set_attribute("gen_ai.tool.name", name)
-        span.set_attribute("gen_ai.tool.type", "function")
-        if self._capture and input_str:
-            from runbook_assistant.pii import scrub
-
-            span.set_attribute("gen_ai.tool.call.arguments", scrub(input_str))
-```
-
-#### The retrieval span
-
-`on_retriever_start` opens a `retrieval {data_source}` CLIENT span; on end,
-the handler records how many chunks came back as a custom `app.*` attribute.
-
-```python showLineNumbers title="src/runbook_assistant/telemetry/callback.py"
-    def on_retriever_start(
-        self, serialized, query, *, run_id, parent_run_id=None, **kwargs,
-    ) -> None:
-        span = self._start(
-            run_id, parent_run_id,
-            f"retrieval {self._data_source_id}", SpanKind.CLIENT,
-        )
-        span.set_attribute("gen_ai.operation.name", "retrieval")
-        span.set_attribute("gen_ai.data_source.id", self._data_source_id)
-
-    def on_retriever_end(self, documents, *, run_id: UUID, **kwargs) -> None:
-        state = self._runs.get(run_id)
-        if state is not None:
-            state.span.set_attribute("app.retrieval.chunk_count", len(documents or []))
-        self._end(run_id)
-```
-
-Custom attributes use the `app.*` prefix so they never collide with reserved
-`gen_ai.*` names - `app.retrieval.chunk_count` here, and you might add
-`app.retrieval.score_threshold` or similar.
-
-### The Resulting Spans
-
-With the custom handler, the same incident question produces a clean,
-semconv-named tree:
-
-```text
-POST /api/v1/diagnose                       SERVER    (FastAPI)
-└─ invoke_agent runbook_assistant           INTERNAL
-   ├─ chat qwen3.5:9B                        CLIENT    (LLM turn, picks tools)
-   │  └─ POST /api/chat                      CLIENT    (httpx → Ollama)
-   ├─ execute_tool search_runbooks           INTERNAL
-   │  └─ retrieval runbooks                  CLIENT
-   │     ├─ POST /api/embed                  CLIENT    (httpx → Ollama)
-   │     └─ SELECT runbooks                  CLIENT    (pgvector query)
-   ├─ execute_tool query_metrics             INTERNAL
-   ├─ execute_tool search_logs               INTERNAL
-   ├─ execute_tool get_service_status        INTERNAL
-   └─ chat qwen3.5:9B                        CLIENT    (LLM turn, writes answer)
-└─ INSERT diagnoses                          CLIENT    (SQLAlchemy)
-```
-
-The attributes on each span type:
-
-| Span                          | Kind     | Key attributes                                                                                                                                          |
-| ----------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `invoke_agent runbook_assistant` | INTERNAL | `gen_ai.operation.name=invoke_agent`, `gen_ai.agent.name`, `gen_ai.conversation.id`                                                                  |
-| `chat qwen3.5:9B`             | CLIENT   | `gen_ai.operation.name=chat`, `gen_ai.provider.name`, `gen_ai.request.model`, `gen_ai.response.model`, `gen_ai.response.finish_reasons`, `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens` |
-| `execute_tool {name}`         | INTERNAL | `gen_ai.operation.name=execute_tool`, `gen_ai.tool.name`, `gen_ai.tool.type=function`                                                                   |
-| `retrieval runbooks`          | CLIENT   | `gen_ai.operation.name=retrieval`, `gen_ai.data_source.id`, `app.retrieval.chunk_count`                                                                 |
-
-Compared with the auto-instrumented trace, the model name is correct rather
-than `unknown`, span names follow the GenAI conventions, there are no
-proprietary attributes, and content is absent unless you opt in.
-
-## Metrics
-
-The handler records GenAI metrics on every LLM turn using dedicated
-instruments, so cost and token usage aggregate in dashboards independent of
-the spans.
-
-```python showLineNumbers title="src/runbook_assistant/telemetry/metrics.py"
-class GenAIMetrics:
-    def __init__(self) -> None:
-        meter = metrics.get_meter("gen_ai.client")
-        self._tokens = meter.create_histogram(
-            "gen_ai.client.token.usage", unit="{token}",
-            description="Tokens used per LLM call",
-        )
-        self._duration = meter.create_histogram(
-            "gen_ai.client.operation.duration", unit="s",
-            description="Duration of GenAI operations",
-        )
-        self._cost = meter.create_counter(
-            "base14.gen_ai.cost", unit="usd",
-            description="Cost of GenAI operations in USD",
-        )
-        self._errors = meter.create_counter(
-            "base14.gen_ai.error.count", unit="{error}",
-            description="GenAI errors by type",
-        )
-
-    def record_tokens(self, attrs, input_tokens, output_tokens) -> None:
-        self._tokens.record(input_tokens, {**attrs, "gen_ai.token.type": "input"})
-        self._tokens.record(output_tokens, {**attrs, "gen_ai.token.type": "output"})
-
-    def add_error(self, attrs) -> None:
-        self._errors.add(1, attrs)
-```
-
-Cost comes from a small per-model price table. Unknown models return `0.0` so
-the calculation never raises - local Ollama has no per-token price, so cost
-is zero there and non-zero once you point the agent at a cloud provider.
-
-```python showLineNumbers title="src/runbook_assistant/cost.py"
-PRICING: dict[str, tuple[float, float]] = {
-    "claude-sonnet-4-6": (3.0, 15.0),
-    "claude-opus-4-8": (5.0, 25.0),
-    "gpt-4o": (2.5, 10.0),
-    "gemini-2.5-pro": (1.25, 10.0),
-}
-
-
-def calculate_cost(model: str, input_tokens: int, output_tokens: int) -> float:
-    rates = PRICING.get(model) or PRICING.get(_normalize(model))
-    if not rates:
-        return 0.0
-    in_rate, out_rate = rates
-    return (input_tokens * in_rate + output_tokens * out_rate) / 1_000_000
-```
-
-With `gen_ai.request.model` and `gen_ai.provider.name` on the metric points,
-a dashboard query like `sum(base14.gen_ai.cost) by (gen_ai.request.model)`
-gives per-model spend, and the token histogram splits input from output via
-`gen_ai.token.type`.
-
-## Content Capture and PII
-
-Prompts and completions are **off by default**. The handler captures them
-only when `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true`, and even
-then it runs the text through a scrubber first and records it as a span event,
-not a raw attribute.
-
-```python showLineNumbers title="src/runbook_assistant/pii.py"
-_EMAIL = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
-_IPV4 = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
-_BEARER = re.compile(r"(?i)bearer\s+[a-z0-9._-]+")
-_APIKEY = re.compile(r"\b(sk-|key-)[A-Za-z0-9]{8,}\b")
-
-
-def scrub(text: str, limit: int = 1000) -> str:
-    if not text:
-        return ""
-    text = _EMAIL.sub("[email]", text)
-    text = _IPV4.sub("[ip]", text)
-    text = _BEARER.sub("[token]", text)
-    text = _APIKEY.sub("[key]", text)
-    return text[:limit]
-```
-
-:::warning Auto-instrumentation captures content by default
-
-The custom handler above respects
-`OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT`. OpenLLMetry
-auto-instrumentation does **not** - it records full prompts, tool arguments,
-and retrieved documents by default and is controlled by its own
-`TRACELOOP_TRACE_CONTENT` variable. If you run auto mode in an environment
-with sensitive data, set `TRACELOOP_TRACE_CONTENT=false` explicitly.
-
-:::
-
-## Error Handling
-
-The handler distinguishes a real failure from a failure the agent recovers
-from. A failed LLM call records the exception, sets `error.type`, and marks
-the span `ERROR`. A tool that fails but that the agent works around marks the
-tool span `ERROR` while leaving the parent `invoke_agent` span green, adding
-an event instead - the request succeeded, so the agent span should not read
-as failed.
-
-```python showLineNumbers title="src/runbook_assistant/telemetry/callback.py"
-    def _error(self, run_id: UUID, error: BaseException) -> None:
-        state = self._runs.pop(run_id, None)
-        if state is None or not state.owns_span:
-            return
-        span = state.span
-        span.record_exception(error)
-        span.set_attribute("error.type", type(error).__name__)
-        span.set_status(Status(StatusCode.ERROR, str(error)))
-        span.end()
-
-    def on_tool_error(self, error, *, run_id, parent_run_id=None, **kwargs) -> None:
-        self._error(run_id, error)
-        parent = self._runs.get(parent_run_id) if parent_run_id else None
-        if parent is not None:
-            parent.span.add_event(
-                "tool_execution_failed", {"error.type": type(error).__name__}
-            )
-```
-
-Retrieval failure follows the same graceful-degradation shape: the retriever
-span is marked `ERROR`, and the parent gets a `rag_retrieval_degraded` event
-rather than an error status. Because every `_error` path pops the `run_id`
-from the map, a failed run never orphans a span or leaks a stored context.
-
-Record the error on the metric side too. Spans tell you about one failed
-request; the `base14.gen_ai.error.count` counter tells you the rate, and it
-survives sampling:
-
-```python showLineNumbers title="src/runbook_assistant/telemetry/callback.py"
-    def on_llm_error(self, error, *, run_id: UUID, **kwargs) -> None:
-        state = self._runs.get(run_id)
-        self._metrics.add_error(
-            {
-                "gen_ai.operation.name": "chat",
-                "error.type": type(error).__name__,
-                # Read provider from your own run state, not from the span
-                "gen_ai.provider.name": state.provider if state else "unknown",
-            }
-        )
-        self._error(run_id, error)
-```
-
-Keep `provider` and `model` on your `_RunState` rather than reading them back
-off the span. `Span.attributes` exists on the SDK's `ReadableSpan` but not on
-the tracing API, so a sampled-out run hands you a `NonRecordingSpan` and the
-attribute silently degrades to `unknown` on the metric point.
-
-## Reading the Span Tree
-
-A few things to look for, and the pitfalls that produce a confusing trace:
-
-- **Two LLM turns per diagnosis.** The first `chat` span chooses tools; the
-  final one writes the answer. If you see only one, the agent answered
-  without calling a tool.
-- **Retrieval nests under its tool.** `retrieval runbooks` is a child of
-  `execute_tool search_runbooks`, and the `POST /api/embed` and
-  `SELECT runbooks` spans nest under retrieval - embedding then vector query.
-- **LangGraph node noise.** In auto mode you also see `execute_task model`
-  and `execute_task tools`; the custom handler collapses those. If your
-  custom trees look too deep, you are keeping node runs instead of collapsing
-  them.
-- **Orphan or mis-nested spans** almost always mean a span was parented on
-  the ambient context instead of the run tree. Re-check `_parent_ctx`.
-- **Double instrumentation.** Running `auto` and `callback` together
-  double-instruments every operation. Pick exactly one mode.
-
-## Integration Patterns
-
-There are three places to attach a callback handler; this example uses the
-first, one handler per request, so each diagnosis gets its own
-`conversation_id`.
-
-```python showLineNumbers title="src/runbook_assistant/main.py"
-    @app.post("/api/v1/diagnose", response_model=DiagnoseResponse)
-    async def diagnose(req: DiagnoseRequest) -> DiagnoseResponse:
-        conversation_id = str(uuid.uuid4())
-        callbacks = app.state.handler_factory(conversation_id)
-        answer = run_diagnosis(app.state.agent, req.question, callbacks)
-        ...
-```
+Name the agent in `create_agent`, and pass a conversation ID in the run's
+metadata. The instrumentation reads both:
 
 ```python showLineNumbers title="src/runbook_assistant/agent.py"
-def run_diagnosis(agent, question, callbacks=None) -> str:
-    result = agent.invoke(
-        {"messages": [{"role": "user", "content": question}]},
-        config={"callbacks": callbacks or []},
+def build_agent(retriever: Any) -> Any:
+    model, resilience = build_models()
+    return create_agent(
+        model=model,
+        tools=build_tools(retriever),
+        system_prompt=SYSTEM_PROMPT,
+        middleware=[resilience],
+        name=AGENT_NAME,
     )
+
+
+def run_diagnosis(agent: Any, question: str, conversation_id: str) -> str:
+    """The instrumentation reads the conversation ID from the run's metadata."""
+    with run_attributes(RunAttributes(conversation_id=conversation_id)):
+        result = agent.invoke(
+            {"messages": [{"role": "user", "content": question}]},
+            config={"metadata": {"conversation_id": conversation_id}},
+        )
     messages = result.get("messages", [])
     return messages[-1].content if messages else ""
 ```
 
-- **Per-invocation** (shown): pass `config={"callbacks": [...]}` on each
-  `invoke`. Best when per-request context like a conversation id matters.
-- **Constructor**: pass `callbacks=[...]` when building the model or chain.
-  The handler applies to every call through that object.
-- **Global**: register a handler on the callback manager once at startup so
-  it applies process-wide. This is effectively what auto-instrumentation
-  does.
+Without `name`, the agent span is `invoke_agent` with no `gen_ai.agent.name`.
+The instrumentation puts the conversation ID on agent and chat spans only;
+`run_attributes` hands it to the span processor below for the tool and
+retrieval spans.
 
-## The Example Application
+## Adding Context, Cost and Scrubbing
 
-The code excerpts throughout this guide come from a working reference app, an
-SRE runbook assistant, at
-[base-14/examples/python/ai-runbook-assistant](https://github.com/base-14/examples/tree/main/python/ai-runbook-assistant).
-Clone it if you want a running trace to compare yours against. The snippets
-below are trimmed for readability - helpers like `_RunState`, `get_settings`,
-and the PII scrubber live in that repo rather than in the text here.
+Two pieces of the example add what the instrumentation cannot know. Both live
+in `telemetry/genai_spans.py` and are registered on the tracer provider before
+`instrument()` runs.
 
-The pieces the handler observes are ordinary LangChain. The agent is built
-with `create_agent`, which returns a LangGraph-backed graph:
+A span processor adds the conversation ID and the data source when a span
+starts:
 
-```python showLineNumbers title="src/runbook_assistant/agent.py"
-from langchain.agents import create_agent
+```python showLineNumbers title="src/runbook_assistant/telemetry/genai_spans.py"
+class RunAttributesProcessor(SpanProcessor):
+    """Adds the conversation and the data source to the instrumentation's spans."""
 
+    def __init__(self, data_source: DataSource) -> None:
+        self._data_source = data_source
 
-def build_agent(retriever: Any) -> Any:
-    return create_agent(
-        model=build_chat_model(),
-        tools=build_tools(retriever),
-        system_prompt=SYSTEM_PROMPT,
-    )
+    def on_start(self, span: Span, parent_context: otel_context.Context | None = None) -> None:
+        if not _is_langchain_span(span):
+            return
+        attributes = span.attributes or {}
+        added: dict[str, AttributeValue] = {}
+        run = _run.get()
+        if run is not None:
+            added["gen_ai.conversation.id"] = run.conversation_id
+        if _operation(span) == "retrieval":
+            added["gen_ai.data_source.id"] = self._data_source.id
+            if self._data_source.address is not None:
+                added["server.address"] = self._data_source.address
+            if self._data_source.port is not None:
+                added["server.port"] = self._data_source.port
+        span.set_attributes({k: v for k, v in added.items() if k not in attributes})
 ```
 
-Tools are plain `@tool` functions; their docstrings are the descriptions the
-model sees. `search_runbooks` wraps the pgvector retriever, the rest read a
-fixture so the example runs offline and the captured trace is reproducible.
+Cost and scrubbing need the finished span, whose attributes are frozen, so a
+span exporter wraps the OTLP exporter and rebuilds the spans it changes:
 
-```python showLineNumbers title="src/runbook_assistant/tools.py"
-def build_search_runbooks(retriever: Any) -> Any:
-    @tool
-    def search_runbooks(query: str) -> str:
-        """Search the SRE runbook knowledge base for relevant procedures."""
-        docs = retriever.invoke(query)
-        if not docs:
-            return "No matching runbooks found."
-        return "\n\n".join(
-            f"# {d.metadata.get('title', 'runbook')}\n{d.page_content}" for d in docs
+```python showLineNumbers title="src/runbook_assistant/telemetry/genai_spans.py"
+def _derived_attributes(span: ReadableSpan) -> dict[str, AttributeValue]:
+    attributes = span.attributes or {}
+    derived: dict[str, AttributeValue] = {}
+    model = attributes.get("gen_ai.response.model") or attributes.get("gen_ai.request.model")
+    if attributes.get("gen_ai.operation.name") == "chat" and model is not None:
+        derived[COST_ATTRIBUTE] = calculate_cost(
+            str(model),
+            _as_token_count(attributes.get("gen_ai.usage.input_tokens")),
+            _as_token_count(attributes.get("gen_ai.usage.output_tokens")),
         )
-
-    return search_runbooks
+    for key in CONTENT_ATTRIBUTES:
+        value = attributes.get(key)
+        if isinstance(value, str):
+            derived[key] = scrub(value, limit=len(value))
+    return derived
 ```
 
-The retriever is a `PGVector` store over local `embeddinggemma` embeddings.
-The LLM is provider-agnostic - Ollama by default, with Anthropic, OpenAI, and
-Google selectable by environment variable.
-
-```python showLineNumbers title="src/runbook_assistant/retriever.py"
-def build_retriever(connection_string: str) -> tuple[Any, Any]:
-    from langchain_ollama import OllamaEmbeddings
-    from langchain_postgres import PGVector
-
-    s = get_settings()
-    embeddings = OllamaEmbeddings(model=s.embedding_model, base_url=s.ollama_base_url)
-    store = PGVector(
-        embeddings=embeddings,
-        collection_name="runbooks",
-        connection=connection_string,
-        use_jsonb=True,
+```python showLineNumbers title="src/runbook_assistant/telemetry/setup.py"
+trace_provider = TracerProvider(resource=resource)
+trace_provider.add_span_processor(
+    RunAttributesProcessor(DataSource(id=s.data_source_id, address=address, port=port))
+)
+trace_provider.add_span_processor(
+    BatchSpanProcessor(
+        GenAISpanExporter(
+            OTLPSpanExporter(endpoint=f"{s.otel_exporter_otlp_endpoint}/v1/traces")
+        )
     )
-    return store.as_retriever(search_kwargs={"k": 3}), store
+)
+trace.set_tracer_provider(trace_provider)
+LangChainInstrumentor().instrument()
 ```
 
-The `INSTRUMENTATION_MODE` setting selects the path; the app builds the
-handler factory accordingly and passes the handlers to each `invoke`.
+Cost comes from `_shared/pricing.json`; a model missing from it, every Ollama
+model included, costs 0. The scrubber replaces emails, IPv4 addresses, bearer
+tokens and API keys. It runs only on span attributes: with `event_only` or
+`span_and_event`, the content events are not scrubbed. A completion hook
+cannot scrub either, because it runs after the content is set on the span.
 
-```python showLineNumbers title="src/runbook_assistant/main.py"
-    if s.instrumentation_mode == "callback":
-        app.state.handler_factory = lambda conversation_id: [
-            OTelCallbackHandler(
-                agent_name="runbook_assistant",
-                data_source_id=s.data_source_id,
-                conversation_id=conversation_id,
+The retriever records how many chunks it returned as
+`app.retrieval.chunk_count`, on the retrieval span, which is current while it
+runs.
+
+## Retries and Fallbacks with Middleware
+
+Do not wrap a chat model in another chat model to retry it. The
+instrumentation traces both, so every call gives two `chat` spans, one inside
+the other, and the token counts double. Retry and fall back in `create_agent`
+middleware instead, where every attempt runs the real model:
+
+```python showLineNumbers title="src/runbook_assistant/llm.py"
+    def wrap_model_call(
+        self,
+        request: ModelRequest,
+        handler: Callable[[ModelRequest], ModelResponse],
+    ) -> ModelResponse:
+        try:
+            response = self._attempt(handler, request, self.primary_provider)
+        except Exception as exc:
+            if self.fallback is None or self.fallback_provider is None:
+                self._record_error(exc)
+                raise
+            self._record_switch(exc)
+            response = self._attempt(
+                handler, request.override(model=self.fallback), self.fallback_provider
             )
-        ]
-    else:
-        app.state.handler_factory = lambda _conversation_id: []
+            self._record_cost(response, self.fallback_provider, self.fallback_model)
+            return response
+        self._record_cost(response, self.primary_provider, self.primary_model)
+        return response
 ```
+
+`_attempt` retries three times with exponential backoff, and records
+`base14.gen_ai.retry.count` before each retry. A switch to the fallback adds a
+`provider_fallback` event and `gen_ai.fallback.triggered=true` to the agent
+span, and increments `base14.gen_ai.fallback.count` and
+`base14.gen_ai.error.count`. Each attempt is its own `chat` span: a failed one
+ends with error status and the exception recorded, and the fallback's span is
+named after the model that answered.
+
+Build the chat models with `max_retries=0` where the provider integration has
+one, so the provider SDK does not retry inside a single span. LangChain also
+ships `ModelRetryMiddleware` and `ModelFallbackMiddleware`. The example uses
+its own to count retries and fallbacks.
+
+## Embeddings
+
+LangChain has no callback for embeddings, so the instrumentation does not
+trace them. The example wraps the vector store's embedding client and opens an
+`embeddings {model}` span around each call. It parents on the current span,
+which is the retrieval span while a retriever runs.
+
+## Known Gaps
+
+As of `opentelemetry-instrumentation-genai-langchain` 1.2b0 with LangChain
+1.3.18, verified 2026-10-06:
+
+- **`gen_ai.response.finish_reasons` is `["error"]` on Ollama.** The package
+  reads `finish_reason` or `stop_reason`, and `ChatOllama` reports
+  `done_reason`. A successful call looks failed when you group by finish
+  reason. Filter on span status instead.
+- **No `gen_ai.request.max_tokens` on Ollama.** `ChatOllama`'s `num_predict`
+  is not mapped.
+- **No `server.address` on chat spans.** The Ollama host appears only on the
+  httpx span under each chat span.
+- **Retrieval spans name the vector store class as the provider** and carry no
+  data source. Add `gen_ai.data_source.id` and the database address in a span
+  processor, as above.
+- **The conversation ID reaches agent and chat spans only.** Add it to the rest
+  in a span processor.
+- **A chat model that wraps another doubles chat spans and tokens.** Use
+  middleware for retries and fallbacks.
+- **No context propagation on the async API.** With `ainvoke`, spans created
+  inside the run parent to the span around the call, not to the
+  instrumentation's spans.
+- **Content capture takes mode values only**, and is read once at
+  `instrument()`. `true` captures nothing.
+- **The dependency check needs the `langchain` distribution**, though the
+  package imports only `langchain_core`.
+
+## What to Look For in Scout
+
+### Follow one diagnosis end to end
+
+Search spans by `gen_ai.conversation.id`. The trace is rooted at
+`POST /api/v1/diagnose` and holds `invoke_agent runbook_assistant`, its
+`chat qwen3.5:9B` turns, the `execute_tool` spans, the retrieval with its
+embedding and SQL spans, and the `INSERT` of the saved diagnosis.
+
+### Find failed model calls and why
+
+Filter `chat` spans on error status and read the recorded exception. A retried
+attempt shows as a failed `chat` span next to the one that succeeded; a
+fallback shows as failed spans for the primary model, a span for the fallback
+model, and a `provider_fallback` event on the agent span. Plot
+`base14.gen_ai.retry.count` and `base14.gen_ai.fallback.count` for the rate.
+
+### Read tokens and cost by model
+
+Plot `gen_ai.client.token.usage` split by `gen_ai.token.type` and grouped by
+`gen_ai.request.model`, and sum `base14.gen_ai.cost` by the same attribute. On
+Ollama the cost is 0, and so is `base14.gen_ai.cost_usd` on each chat span.
+
+### Check that retrieval found runbooks
+
+Open the `retrieval` spans. `gen_ai.data_source.id` is `runbooks` and
+`app.retrieval.chunk_count` is the number of chunks returned, 3 in the
+example. With `span_only`, `gen_ai.retrieval.documents` lists their IDs.
+
+### Find slow tools
+
+Group `gen_ai.execute_tool.duration` by `gen_ai.tool.name`, or sort
+`execute_tool` spans by duration.
+
+## Production Patterns
+
+- **Keep content capture at `no_content` for real data.** Set `span_only` only
+  where you need it, and scrub in a span exporter before export.
+- **Scrub tool arguments, results and retrieval queries, not just prompts.**
+  Incident text often carries IPs, hostnames and tokens.
+- **Name every agent and pass a conversation ID per request**, so one request
+  is one search in Scout.
+- **Retry in middleware, not in a wrapper model**, and turn off the provider
+  SDK's own retries.
+- **Keep the price table current.** A model missing from it records 0 rather
+  than failing.
+- **Run one LangChain instrumentation.** The official package together with
+  OpenLLMetry or your own handler traces every operation twice.
+- **Batch exports and send through a collector**, which holds the Scout
+  credentials.
 
 ## Choosing an Approach
 
-Every option here works by injecting a LangChain callback handler; they differ
-in semantic conventions, maturity, and defaults.
+Every LangChain instrumentation works through a callback handler; they differ
+in conventions and defaults.
 
-| Approach                         | Package                                          | Conventions                    | Notes                                                                 |
-| -------------------------------- | ------------------------------------------------ | ------------------------------ | --------------------------------------------------------------------- |
-| **OpenLLMetry (Traceloop)**      | `opentelemetry-instrumentation-langchain`        | `gen_ai.*` plus `traceloop.*`  | Mature, exports to any OTLP collector. **Lead with this.** Content on by default; owns the PyPI name. |
-| **Official OTel GenAI SIG**      | contrib `instrumentation-genai` (source for now) | `gen_ai.*` native              | Emerging standard; being packaged as `opentelemetry-instrumentation-genai-langchain`. Track it. |
-| **OpenInference (Arize)**        | `openinference-instrumentation-langchain`        | own `llm.*` / `openinference.*` | Needs a translation step for `gen_ai.*` alignment.                    |
-| **LangSmith `[otel]`**           | `langsmith[otel]`                                | LangSmith model                | Defaults to LangSmith cloud; override with `OTEL_EXPORTER_OTLP_ENDPOINT`. |
-| **Custom callback handler**      | your code                                        | exactly what you emit          | Full control over names, attributes, cost, and content. This guide.   |
+| Approach | Package | Conventions | Notes |
+| --- | --- | --- | --- |
+| **Official OpenTelemetry** | `opentelemetry-instrumentation-genai-langchain` | `gen_ai.*` | Beta, from the OpenTelemetry GenAI SIG. Content off by default. This guide. |
+| **OpenLLMetry (Traceloop)** | `opentelemetry-instrumentation-langchain` | `gen_ai.*` plus `traceloop.*` | Content on by default, controlled by `TRACELOOP_TRACE_CONTENT`. At 0.62.4 the model is `unknown` on Ollama. |
+| **OpenInference (Arize)** | `openinference-instrumentation-langchain` | `openinference.*` | Needs translation to `gen_ai.*`. |
+| **LangSmith** | `langsmith[otel]` | LangSmith's own | Defaults to LangSmith cloud. |
+| **Your own callback handler** | your code | what you emit | For chains the package does not cover or attributes it does not set. |
 
-A practical rule: start with OpenLLMetry, move to the custom handler when you
-need clean semconv names, correct model fields, custom retrieval attributes,
-or content off by default. Watch the official SIG package and adopt it once it
-is pip-installable and covers your needs.
+### When to write your own callback handler
 
-## Related Conventions and Frameworks
-
-Where this fits alongside neighbouring conventions and frameworks:
-
-- **Tools as MCP.** The
-  [Model Context Protocol](https://modelcontextprotocol.io) is a common tool
-  layer, and agents increasingly expose tools as MCP servers. If your tools run
-  in-process, the callback handler traces them as `execute_tool` spans. Once
-  they sit behind an MCP server, OpenTelemetry's
-  [MCP spans](https://github.com/open-telemetry/semantic-conventions/tree/main/docs/gen-ai)
-  cover that hop instead.
-- **Agent spans.** The `invoke_agent` and `execute_tool` spans follow the
-  OpenTelemetry GenAI
-  [agent and framework span conventions](https://github.com/open-telemetry/semantic-conventions/tree/main/docs/gen-ai),
-  which supersede the older generic chat-span definitions.
-- **Agent to agent.** Multi-agent A2A messaging is out of scope here; the
-  handler traces a single agent's run tree.
-- **Other frameworks.** `create_agent` is one of several agent APIs (LangGraph,
-  OpenAI Agents SDK, Google ADK, Claude Agent SDK, Pydantic AI, CrewAI). This
-  guide uses it because it is the idiomatic LangChain 1.x agent and pairs with
-  the [LangGraph guide](./langgraph.md).
+Write one when the package does not fit: custom chains or runnables it does
+not trace, attributes it does not set that you cannot add in a span processor,
+or LangChain versions outside `>=0.3.21,<2`. The
+[LangChain callback handler guide](../../../guides/ai-observability/langchain-callback-handler.md)
+maps LangChain's run tree onto spans, step by step.
 
 ## Scout Wiring
 
@@ -1106,8 +686,7 @@ services:
     environment:
       - OTEL_SERVICE_NAME=your-agent-service
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
-      - OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental
-      - OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=${OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT:-false}
+      - OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=${OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT:-no_content}
       - SCOUT_ENVIRONMENT=${SCOUT_ENVIRONMENT:-development}
       # If your LLM runs on the host rather than in a container
       - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
@@ -1146,154 +725,131 @@ without the entry.
 ## Running Your Application
 
 ```bash showLineNumbers title="Terminal"
-# start the stack (collector picks up Scout creds from the environment)
-docker compose up -d
+# start the stack (the collector picks up Scout credentials from the environment)
+docker compose up -d --build
 
 # send an incident question
 curl -s -X POST http://localhost:8000/api/v1/diagnose \
   -H 'Content-Type: application/json' \
-  -d '{"question": "orders-service is returning 500s and the logs show
-       connection pool exhausted. What is the likely cause?"}'
+  -d '{"question": "checkout pods are being OOMKilled, what do I do?"}'
 ```
 
-If you adopted the single-switch pattern from
-[Configuration](#configuration), you can flip between the two paths without a
-code change and compare the traces against the same workload:
-
-```bash showLineNumbers title="Terminal"
-INSTRUMENTATION_MODE=auto docker compose up -d --force-recreate app
-```
+The example's `scripts/verify-scout.sh` sends diagnoses and checks the
+collector output: the span tree, that every `chat` span comes from the
+LangChain instrumentation and none is nested in another, the GenAI attributes
+and the metrics. Run the stack and the script with
+`OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=span_only` to check content
+capture as well.
 
 ## Troubleshooting
 
-### Verify Telemetry Is Working
+### No chat or agent spans
 
-The collector's `debug` exporter prints spans as they arrive. Send a request,
-then read the collector's log. If you run it under Docker Compose:
+`instrument()` did not run, ran before the tracer provider was set, or the
+dependency check failed because `langchain` is not installed. The package logs
+an error in that case. Call `instrument()` after `trace.set_tracer_provider`,
+and pass `skip_dep_check=True` for an app built on `langchain-core` and
+`langgraph` only.
 
-```bash showLineNumbers title="Terminal"
-docker compose logs otel-collector --since=1m | grep -E "Name|gen_ai"
-```
+### Two chat spans per model call
 
-With the custom handler attached you should see `invoke_agent`, `chat`,
-`execute_tool`, and `retrieval` spans. With auto-instrumentation you get the
-OpenLLMetry names instead - `LangGraph.workflow`, `ChatOllama.chat`, and
-`execute_task` nodes.
+A chat model wraps another chat model, and both are traced. Move retries and
+fallbacks into `create_agent` middleware, as in
+[Retries and Fallbacks with Middleware](#retries-and-fallbacks-with-middleware).
+Two chat spans side by side with the same parent, one failed, are a retry.
 
-### Common Issues
+### No content on spans with capture set to `true`
 
-| Symptom                                  | Cause and fix                                                                                  |
-| ---------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| No GenAI spans, only HTTP and DB         | Neither path is active, or the handler was never passed to `invoke`. Pass it in `config={"callbacks": [...]}`. |
-| Spans appear but mis-nested              | Parenting on the ambient context. Parent on the run tree via `parent_run_id`.                  |
-| `gen_ai.request.model` is `unknown`      | Auto-instrumentation with Ollama. Use the custom handler, which reads `ls_model_name` from run metadata. |
-| Every operation traced twice             | Auto-instrumentation and a custom handler are both active. Run exactly one.                     |
-| Metrics missing, spans fine              | No `MeterProvider` installed. See [Telemetry Setup](#telemetry-setup).                           |
-| Prompts show up unexpectedly             | Auto-instrumentation captures content by default. Set `TRACELOOP_TRACE_CONTENT=false`.          |
-| No traces reach Scout                    | Check the collector `oauth2client` credentials and that the SDK points at the collector's OTLP port. |
+The package accepts `no_content`, `span_only`, `event_only` and
+`span_and_event` only. Set `span_only`, and restart the process: the mode is
+read once at `instrument()`.
 
-## Security Considerations
+### HTTP and database spans are not under the agent
 
-- **Content is off by default** in the custom handler; keep it off in
-  production unless you have a specific need, and scrub before recording.
-- **Auto-instrumentation is the opposite** - set `TRACELOOP_TRACE_CONTENT=false`
-  in any environment with sensitive prompts.
-- **Scrub tool arguments and queries**, not just prompts. Incident text often
-  carries IPs, hostnames, and tokens; the `scrub` helper handles the common
-  cases and truncates.
-- **Protect collector credentials** with environment variables or a secret
-  store; never commit `SCOUT_CLIENT_SECRET`.
+The agent runs on `ainvoke`. The package does not propagate context on the
+async API. Use sync `invoke` where the nesting matters.
 
-## Performance Considerations
+### `gen_ai.response.finish_reasons` is `["error"]` on a successful call
 
-- **The handler is cheap.** It stores a `run_id -> span` entry and sets
-  attributes; the cost is dwarfed by the LLM call. Spans export in a
-  background thread via `BatchSpanProcessor`.
-- **Collapse graph node runs** if you do not need `model` / `tools` node
-  spans - fewer spans per trace, lower export volume.
-- **Sample in production.** Head or tail sampling on the collector keeps
-  trace volume manageable while preserving errors and slow requests.
-- **Batch exports** are already configured; tune `send_batch_size` and
-  `timeout` for your throughput.
+Expected on Ollama; see [Known Gaps](#known-gaps). Check the span status.
 
 ## FAQ
 
-### How does LangChain OpenTelemetry tracing differ from LangSmith?
+### Is there an official OpenTelemetry instrumentation for LangChain?
 
-LangSmith gives deep LangChain-specific traces but sits apart from your HTTP,
-database, and infrastructure telemetry. OpenTelemetry produces one trace
-across every layer, so a slow `/diagnose` response links to the exact LLM
-call, tool invocation, vector query, and SQL `INSERT` that caused it. It is
-also vendor-neutral: the same spans flow to base14 Scout or any OTLP backend.
+Yes. `opentelemetry-instrumentation-genai-langchain` is published by the
+OpenTelemetry GenAI SIG from the `opentelemetry-python-genai` repository. It is
+beta, supports `langchain>=0.3.21,<2`, and traces LangChain and LangGraph runs
+through LangChain's callbacks.
 
-### Does a LangChain callback handler add latency?
+### Is `opentelemetry-instrumentation-langchain` the official package?
 
-No. Starting and ending a span takes microseconds; LLM calls take seconds.
-The handler only stores a `run_id -> span` map and sets attributes, and spans
-export in a background thread off the request path.
+No. `opentelemetry-instrumentation-langchain` is Traceloop's OpenLLMetry; the
+official OpenTelemetry package is
+`opentelemetry-instrumentation-genai-langchain`. Both trace LangChain through
+callbacks. The official one emits
+only `gen_ai.*` attributes and captures no content by default; OpenLLMetry adds
+`traceloop.*` attributes and captures content unless
+`TRACELOOP_TRACE_CONTENT=false`.
 
-### Which LangChain versions does this guide support?
+### Which spans does a LangChain agent produce?
 
-LangChain 1.3+ with `langchain-core` 1.4+, where the agent is built with
-`create_agent` and is LangGraph-backed. The callback API has been stable
-across the 1.x line.
+A `create_agent` run gives an `invoke_agent` span with a `chat {model}` span
+for each model call, an `execute_tool {name}` span for each tool and a
+`retrieval` span for each retriever. LangGraph's internal nodes get no spans
+of their own.
 
-### How do I trace tool calls in a LangChain agent?
+### How do I set the agent name and conversation ID on LangChain spans?
 
-Implement `on_tool_start` and `on_tool_end` in a callback handler and emit an
-`execute_tool` span with `gen_ai.tool.name` and `gen_ai.tool.type`. The
-zero-code OpenLLMetry library does this for you; the custom handler here shows
-the exact mapping.
+Pass `name=` to `create_agent` and `config={"metadata": {"conversation_id":
+...}}` to `invoke`. The instrumentation puts the name on agent and tool spans
+and the conversation ID on agent and chat spans. A span processor can copy the
+conversation ID to the rest.
 
 ### How do I track LLM cost with LangChain and OpenTelemetry?
 
-Read `usage_metadata` in `on_llm_end` for token counts, multiply by a
-per-model price table, and record a `base14.gen_ai.cost` counter alongside the
-`gen_ai.client.token.usage` histogram. Attach `gen_ai.request.model` and
-`gen_ai.provider.name` so you can group cost by model.
+Add it in a span exporter. Read `gen_ai.usage.input_tokens`,
+`gen_ai.usage.output_tokens` and the model from each finished `chat` span,
+price them from a table, and set `base14.gen_ai.cost_usd` before export. Record
+a cost counter in middleware for dashboards.
 
 ### Can I capture prompts and completions in LangChain traces?
 
-Yes, but it is off by default. The custom handler captures PII-scrubbed
-content only when `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true`.
-OpenLLMetry auto-instrumentation captures content by default and is controlled
-by its own `TRACELOOP_TRACE_CONTENT`, so set `TRACELOOP_TRACE_CONTENT=false`
-to disable it there.
+Yes. Set `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=span_only` before
+the process starts. Chat spans then carry the input and output messages, the
+system instructions and the tool definitions, and tool spans carry arguments
+and results. Scrub them in a span exporter before export.
 
-### Should I use auto-instrumentation or a custom callback handler?
+### How do I retry or fall back between models without doubling spans?
 
-Start with OpenLLMetry for traces in minutes and no code changes. Move to a
-custom handler when you need clean `gen_ai` span names, correct model and
-finish-reason fields, custom retrieval attributes, or content off by default.
-Both inject a LangChain callback handler.
+Use `create_agent` middleware. A `wrap_model_call` hook can call the handler
+again on failure, or with `request.override(model=fallback)`, and every
+attempt runs the real model with one `chat` span. A wrapper chat model gives
+two spans per call.
 
-### Why does that package come from Traceloop, not OpenTelemetry?
+### Does the LangChain instrumentation trace embeddings?
 
-The PyPI name belongs to Traceloop's OpenLLMetry, not the official
-OpenTelemetry GenAI SIG. That package is mature and exports to any OTLP
-collector. The official SIG instrumentation is distributed from the
-`opentelemetry-python-contrib` source tree and is the emerging `gen_ai`-native
-standard to track.
+No. LangChain has no callback for embeddings. Wrap the embedding client and
+open an `embeddings {model}` span yourself, as the example does.
 
-### How do MCP tools fit, and are they traced?
+### Should I write my own LangChain callback handler?
 
-This example uses in-process LangChain tools, which the callback handler
-traces as `execute_tool` spans. When tools live behind a Model Context
-Protocol server, the OpenTelemetry MCP span conventions capture that hop; that
-is a separate integration and no MCP server runs here.
+Only if the official package does not cover your chains or the attributes you
+need cannot be added in a span processor. See the
+[LangChain callback handler guide](../../../guides/ai-observability/langchain-callback-handler.md).
 
 ## What's Next?
 
 ### Related Guides
 
+- [LangChain Callback Handler][callback-guide] - Write your own handler when
+  the package does not fit.
 - [LangGraph Instrumentation](./langgraph.md) - Hand-built `StateGraph`
-  agents with manual node and edge spans.
+  agents.
 - [LlamaIndex Instrumentation](./llamaindex.md) - RAG-first framework tracing
   with the same GenAI conventions.
 - [FastAPI Instrumentation](./fast-api.md) - The HTTP host that carries the
   agent endpoint.
-- [Python Custom Instrumentation](../custom-instrumentation/python.md) -
-  Manual spans and advanced patterns.
 
 ### Scout Platform Features
 
@@ -1307,10 +863,41 @@ is a separate integration and no MCP server runs here.
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
   Local development with the OpenTelemetry Collector.
 
+## Complete Example
+
+The code on this page comes from
+[`python/ai-runbook-assistant`](https://github.com/base-14/examples/tree/main/python/ai-runbook-assistant).
+
+```text
+src/runbook_assistant/
+├── telemetry/
+│   ├── setup.py         # providers, exporters, instrumentation
+│   ├── genai_spans.py   # conversation, data source, cost and scrubbing
+│   └── metrics.py       # base14.gen_ai.* instruments
+├── agent.py             # create_agent, conversation ID
+├── llm.py               # chat models, retry and fallback middleware
+├── embeddings.py        # embeddings span
+├── retriever.py         # pgvector retriever, chunk count
+├── tools.py             # search_runbooks, query_metrics, search_logs, get_service_status
+└── main.py              # FastAPI app
+```
+
+```bash showLineNumbers title="Terminal"
+git clone https://github.com/base-14/examples.git
+cd examples/python/ai-runbook-assistant
+cp .env.example .env
+ollama pull qwen3.5:9B && ollama pull embeddinggemma
+docker compose up -d --build
+./scripts/test-api.sh
+./scripts/verify-scout.sh
+```
+
 ## References
 
+- [OpenTelemetry GenAI instrumentation for Python](https://github.com/open-telemetry/opentelemetry-python-genai)
 - [OpenTelemetry GenAI Semantic Conventions](https://github.com/open-telemetry/semantic-conventions/tree/main/docs/gen-ai)
+- [LangChain agent middleware](https://docs.langchain.com/oss/python/langchain/middleware)
 - [OpenTelemetry Python SDK](https://opentelemetry.io/docs/languages/python/)
-- [LangChain Documentation](https://python.langchain.com/)
-- [OpenLLMetry (Traceloop)](https://github.com/traceloop/openllmetry)
 - [OpenTelemetry Collector Configuration](https://opentelemetry.io/docs/collector/configuration/)
+
+[callback-guide]: ../../../guides/ai-observability/langchain-callback-handler.md

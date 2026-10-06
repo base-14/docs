@@ -664,7 +664,8 @@ Give each agent the `TemporalDurability` capability and use Temporal's
   \- agent timelines, conversation IDs and tool calls.
 - [LLM Observability](../../../guides/ai-observability/llm-observability.md) -
   token, cost and latency signals.
-- [LangChain](./langchain.md) - the same GenAI spans from a callback handler.
+- [LangChain](./langchain.md) - the same GenAI spans from the official
+  LangChain package.
 - [FastAPI](./fast-api.md) - the HTTP service in front of the agents.
 
 ### Scout Platform Features
