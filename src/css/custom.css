@@ -588,8 +588,7 @@ html:not(.blog-wrapper) .markdown {
 }
 
 /* base14.io wordmark (src/theme/Navbar/Logo), sized and set as on
-   base14.io: 24px mark, 8px gap, DM Sans 22px with -1px tracking. DM Sans is
-   loaded up to 700 there too, so the requested 800 renders at 700. */
+   base14.io: 24px mark, 8px gap, DM Sans 22px bold with -1px tracking. */
 .b14-wordmark {
   gap: 0.5rem;
   color: var(--b14-white);
@@ -608,7 +607,7 @@ html:not(.blog-wrapper) .markdown {
 .b14-wordmark__text {
   font-family: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -1px;
   color: var(--b14-white);
 }
@@ -1127,13 +1126,6 @@ html.blog-wrapper:not([data-theme='dark']) article .markdown a {
 
 html.blog-wrapper:not([data-theme='dark']) article .markdown p {
   margin-bottom: 1.25em;
-}
-
-/* Hide announcement bar on blog pages */
-html.blog-wrapper [class*="announcementBar"],
-html.blog-list-page [class*="announcementBar"],
-html.blog-post-page [class*="announcementBar"] {
-  display: none;
 }
 
 /* Blog author photos - smaller avatars */

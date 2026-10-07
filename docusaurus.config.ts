@@ -68,7 +68,7 @@ const config: Config = {
       tagName: "link",
       attributes: {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=DM+Serif+Display&family=DM+Sans:wght@700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=DM+Sans:wght@700&display=swap",
       },
     },
     // Icon set copied from base14.io (public/favicon), linked the same way.
@@ -293,17 +293,6 @@ const config: Config = {
         },
       },
     ],
-    announcementBar: {
-      id: "announcement-scout-mcp",
-      content:
-        "New: Connect Claude Code or Gemini CLI to Scout and query traces, " +
-        "logs, and metrics in plain English - " +
-        '<a href="/blog/scout-mcp/" style="color: #FFFFFF; ' +
-        'text-decoration: underline;">Learn more</a>',
-      backgroundColor: "#0E7490",
-      textColor: "#FFFFFF",
-      isCloseable: true,
-    },
     colorMode: {
       // Light only, like base14.io. With the switch disabled Docusaurus also
       // ignores any theme a visitor stored earlier.
@@ -319,10 +308,6 @@ const config: Config = {
     },
     navbar: {
       title: "base14",
-      logo: {
-        alt: "Reduce downtime drastically with base14 Scout",
-        src: "img/logo.svg",
-      },
       items: [
         {
           type: "docSidebar",
