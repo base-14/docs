@@ -1151,6 +1151,28 @@ html.blog-wrapper nav[class*="sidebar"] {
 
 html.blog-wrapper nav[class*="sidebar"] [class*="sidebarItemLink"] {
   font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+/* Space between posts larger than the line gap inside a wrapped title,
+   so each post reads as one item */
+html.blog-wrapper nav[class*="sidebar"] [class*="sidebarItem_"] {
+  margin-top: 1rem;
+}
+
+/* Same width as the docs sidebar */
+@media (min-width: 997px) {
+  html.blog-wrapper .container.margin-vert--lg > .row > aside.col--3 {
+    flex: 0 0 var(--doc-sidebar-width);
+    max-width: var(--doc-sidebar-width);
+  }
+
+  /* Only on post pages, where a TOC column sits on the right; the post
+     list has none and would otherwise stretch to the full width */
+  html.blog-wrapper .container.margin-vert--lg > .row:has(> .col--2) > main.col {
+    flex: 1 1 0;
+    max-width: none;
+  }
 }
 
 html.blog-wrapper nav[class*="sidebar"] [class*="sidebarItemTitle"] {
