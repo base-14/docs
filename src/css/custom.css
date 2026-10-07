@@ -66,6 +66,7 @@
   --ifm-font-color-base: var(--b14-200);
   --ifm-heading-color: var(--b14-white);
   --ifm-color-content-secondary: var(--b14-400);
+  --base14-caret-color: var(--b14-400); /* sidebar arrows, darker than item text */
 
   /* Glass Effects */
   --base14-glass-blur: 16px;
@@ -175,6 +176,8 @@
   --ifm-heading-color: var(--b14-white);
   --ifm-color-content-secondary: var(--b14-400);
   --ifm-background-color: transparent;
+  /* Between the ramp's 500 and 600: darker than item text, still 3:1 */
+  --base14-caret-color: #6B665C;
 }
 
 .example-dialog::part(control) {
@@ -737,6 +740,17 @@ html:not(.blog-wrapper) .markdown table {
 .menu__link--sublist,
 .menu__link--active {
   font-weight: 600;
+}
+
+/* Sidebar arrows: a thin outline chevron drawn as a mask so it takes a
+   plain colour, replacing Infima's large filled icon and its filter.
+   Same up-pointing shape as Infima's, so its rotations still apply. */
+.menu__link--sublist-caret::after,
+.menu__caret::before {
+  background: var(--base14-caret-color);
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 15l6-6 6 6'/></svg>") center / 16px 16px no-repeat;
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 15l6-6 6 6'/></svg>") center / 16px 16px no-repeat;
+  filter: none;
 }
 
 .menu__link:hover,
