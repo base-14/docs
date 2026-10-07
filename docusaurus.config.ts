@@ -7,7 +7,7 @@ import type * as Preset from "@docusaurus/preset-classic";
 const config: Config = {
   title: "base14 Scout",
   tagline: "Reduce downtime drastically!",
-  favicon: "img/favicon.ico",
+  favicon: "favicon/favicon.ico",
 
   // Set the production url of your site here
   url: "https://docs.base14.io",
@@ -68,15 +68,16 @@ const config: Config = {
       tagName: "link",
       attributes: {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Inter:opsz,wght@14..32,400..700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Inter:opsz,wght@14..32,400..700&family=DM+Sans:wght@700&display=swap",
       },
     },
+    // Icon set copied from base14.io (public/favicon), linked the same way.
     {
       tagName: "link",
       attributes: {
         rel: "icon",
         type: "image/svg+xml",
-        href: "/img/favicon.svg",
+        href: "/favicon/favicon.svg",
       },
     },
     {
@@ -84,24 +85,23 @@ const config: Config = {
       attributes: {
         rel: "icon",
         type: "image/png",
-        sizes: "32x32",
-        href: "/img/favicon-32x32.png",
-      },
-    },
-    {
-      tagName: "link",
-      attributes: {
-        rel: "icon",
-        type: "image/png",
-        sizes: "16x16",
-        href: "/img/favicon-16x16.png",
+        sizes: "96x96",
+        href: "/favicon/favicon-96x96.png",
       },
     },
     {
       tagName: "link",
       attributes: {
         rel: "apple-touch-icon",
-        href: "/img/apple-touch-icon.png",
+        sizes: "180x180",
+        href: "/favicon/apple-touch-icon.png",
+      },
+    },
+    {
+      tagName: "link",
+      attributes: {
+        rel: "manifest",
+        href: "/favicon/site.webmanifest",
       },
     },
   ],
@@ -293,21 +293,12 @@ const config: Config = {
         },
       },
     ],
-    announcementBar: {
-      id: "announcement-scout-mcp",
-      content:
-        "New: Connect Claude Code or Gemini CLI to Scout and query traces, " +
-        "logs, and metrics in plain English - " +
-        '<a href="/blog/scout-mcp/" style="color: #FFFFFF; ' +
-        'text-decoration: underline;">Learn more</a>',
-      backgroundColor: "#0e7490",
-      textColor: "#FFFFFF",
-      isCloseable: true,
-    },
     colorMode: {
+      // Light only, like base14.io. With the switch disabled Docusaurus also
+      // ignores any theme a visitor stored earlier.
       defaultMode: "light",
-      disableSwitch: false,
-      respectPrefersColorScheme: true,
+      disableSwitch: true,
+      respectPrefersColorScheme: false,
     },
     docs: {
       sidebar: {
@@ -317,11 +308,6 @@ const config: Config = {
     },
     navbar: {
       title: "base14",
-      logo: {
-        alt: "Reduce downtime drastically with base14 Scout",
-        src: "img/logo.svg",
-        srcDark: "img/logo-dark.svg",
-      },
       items: [
         {
           type: "docSidebar",

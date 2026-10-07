@@ -8,8 +8,8 @@
  * invisible and the badges are colourless.
  *
  * Everything here follows the doc-page design already set in custom.css:
- * square corners, flat surfaces, no glass. Colours come from the cyan accent
- * and orange scales rather than being introduced here.
+ * square corners, flat surfaces, no glass. GET takes the site's cyan
+ * primary scale; the other methods keep their own hues.
  */
 
 :root {
@@ -17,17 +17,8 @@
   --scout-method-post: #1d4ed8;
   --scout-method-put: #b45309;
   --scout-method-patch: #7c3aed;
-  --scout-method-delete: var(--base14-orange-darkest);
+  --scout-method-delete: #dc2626;
   --scout-method-label-width: 3.25rem;
-}
-
-[data-theme="dark"] {
-  /* Lift the hues for contrast against the dark surface. */
-  --scout-method-get: var(--ifm-color-primary-light);
-  --scout-method-post: #60a5fa;
-  --scout-method-put: #fbbf24;
-  --scout-method-patch: #c4b5fd;
-  --scout-method-delete: #fca5a5;
 }
 
 /* Sidebar method labels
@@ -77,12 +68,6 @@
   content: "del";
 }
 
-[data-theme="dark"] .api-method > .menu__link::before {
-  /* The lifted hues are light, so flip the label text dark to keep it
-     readable rather than white-on-pastel. */
-  color: var(--base14-dark-bg);
-}
-
 /* On-page badges
    ------------------------------------------------------------------ */
 
@@ -92,11 +77,6 @@
   border: none;
   border-radius: 0;
   color: #fff;
-}
-
-[data-theme="dark"] .openapi__method-endpoint .badge--primary,
-[data-theme="dark"] .theme-doc-markdown .badge--primary {
-  color: var(--base14-dark-bg);
 }
 
 /* Surfaces
@@ -236,7 +216,7 @@ html:not(.blog-wrapper) .markdown:has(.theme-api-markdown) {
 /* Required-field markers read as an error state by default; here they are
    just emphasis, so tone them down to the site's accent. */
 .theme-api-markdown .openapi-schema__required {
-  color: var(--base14-orange-darker);
+  color: var(--b14-accent);
   font-size: 0.75rem;
   font-weight: 600;
 }
