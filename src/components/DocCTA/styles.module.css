@@ -34,12 +34,12 @@
 
 .primary {
   background-color: var(--ifm-color-primary);
-  color: white;
+  color: var(--b14-black);
 }
 
 .primary:hover {
   background-color: var(--ifm-color-primary-dark);
-  color: white;
+  color: var(--b14-black);
   text-decoration: none;
 }
 

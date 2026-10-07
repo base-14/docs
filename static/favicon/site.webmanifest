@@ -1,0 +1,23 @@
+{
+  "name": "base14 — Unified Observability Intelligence Platform",
+  "short_name": "base14",
+  "description": "Unified observability intelligence for reducing production downtime",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/favicon/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/favicon/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "theme_color": "#FBFAF7",
+  "background_color": "#FBFAF7",
+  "display": "standalone"
+}
