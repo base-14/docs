@@ -294,10 +294,10 @@ const config: Config = {
       },
     ],
     colorMode: {
-      // Light only, like base14.io. With the switch disabled Docusaurus also
-      // ignores any theme a visitor stored earlier.
-      defaultMode: "light",
-      disableSwitch: true,
+      // Dark by default, with the switch available. The OS preference is not
+      // consulted, so first-time visitors always land on dark.
+      defaultMode: "dark",
+      disableSwitch: false,
       respectPrefersColorScheme: false,
     },
     docs: {

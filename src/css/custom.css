@@ -65,6 +65,7 @@
   --ifm-color-emphasis-1000: var(--b14-white);
   --ifm-font-color-base: var(--b14-200);
   --ifm-heading-color: var(--b14-white);
+  --ifm-color-content-secondary: var(--b14-400);
 
   /* Glass Effects */
   --base14-glass-blur: 16px;
@@ -111,6 +112,69 @@
   --ifm-code-font-size: 95%;
   --ifm-code-background: rgba(251, 250, 247, 0.5);
   --ifm-code-border-radius: 0.5rem;
+}
+
+/* ========================================
+   Dark mode: the b14 ramp reversed, so every rule built on it flips.
+   `black` stays the page ground and `white` the highest-contrast text.
+   ======================================== */
+[data-theme='dark']:root {
+  --b14-black: #0F0E0B;
+  --b14-950: #141310;
+  --b14-900: #1B1A16;
+  --b14-800: #26241F;
+  --b14-700: #37342E;
+  --b14-600: #4A463F;
+  --b14-500: #8F8A7E;
+  --b14-400: #B8B3A8;
+  --b14-300: #D9D5CC;
+  --b14-200: #E8E5DE;
+  --b14-100: #F3F1EC;
+  --b14-50: #F7F6F2;
+  --b14-white: #FBFAF7;
+
+  /* Accent lifted for contrast on the dark ground; hover goes lighter */
+  --b14-accent: #38BDD8;
+  --b14-accent-bright: #67D3E8;
+  --b14-accent-muted: #0E7490;
+  --b14-accent-dark: #084C5E;
+  --ifm-color-primary-lighter: #236571;
+  --ifm-color-primary-lightest: #19343B;
+
+  /* Invisible, as the white glass is on paper in light mode; otherwise
+     blog posts and the TOC show a lighter panel with a rounded outline */
+  --base14-glass-bg: transparent;
+  --base14-glass-border: transparent;
+  --base14-glass-subtle: rgba(255, 255, 255, 0.04);
+  --base14-white-glass-strong: rgba(15, 14, 11, 0.95);
+  --base14-white-glass-medium: rgba(15, 14, 11, 0.85);
+  --base14-accent-glass: rgba(56, 189, 216, 0.1);
+  --base14-accent-glass-hover: rgba(56, 189, 216, 0.16);
+  --base14-accent-shadow-light: rgba(56, 189, 216, 0.15);
+  --base14-shadow-accent: 0 2px 6px rgba(0, 0, 0, 0.4);
+
+  --ifm-background-surface-color: rgba(15, 14, 11, 0.95);
+  --ifm-menu-color-background-hover: rgba(56, 189, 216, 0.1);
+  --ifm-menu-color-background-active: rgba(56, 189, 216, 0.16);
+  --ifm-code-background: rgba(255, 255, 255, 0.06);
+
+  /* Infima's dark theme sets its own cool greys at this specificity;
+     map the neutral scale back onto the warm ramp */
+  --ifm-color-emphasis-0: var(--b14-black);
+  --ifm-color-emphasis-100: var(--b14-950);
+  --ifm-color-emphasis-200: var(--b14-900);
+  --ifm-color-emphasis-300: var(--b14-800);
+  --ifm-color-emphasis-400: var(--b14-700);
+  --ifm-color-emphasis-500: var(--b14-700);
+  --ifm-color-emphasis-600: var(--b14-600);
+  --ifm-color-emphasis-700: var(--b14-500);
+  --ifm-color-emphasis-800: var(--b14-400);
+  --ifm-color-emphasis-900: var(--b14-100);
+  --ifm-color-emphasis-1000: var(--b14-white);
+  --ifm-font-color-base: var(--b14-200);
+  --ifm-heading-color: var(--b14-white);
+  --ifm-color-content-secondary: var(--b14-400);
+  --ifm-background-color: transparent;
 }
 
 .example-dialog::part(control) {
@@ -357,7 +421,7 @@ article {
   --ifm-link-decoration: underline;
 }
 
-html[data-theme="light"] {
+html[data-theme] {
   --ifm-link-color: var(--b14-accent);
   --ifm-link-hover-color: var(--b14-accent-bright);
   --ifm-color-primary: var(--b14-white);
@@ -420,7 +484,7 @@ html {
 }
 
 /* Docs pages: paper background, body text colour (light mode only) */
-html:not(.blog-wrapper):not([data-theme='dark']) {
+html:not(.blog-wrapper) {
   background: var(--b14-black);
   color: var(--b14-200);
 }
@@ -460,21 +524,21 @@ nav.navbar {
 }
 
 /* Docs navbar: paper background, nav link text (light mode only) */
-html:not(.blog-wrapper):not([data-theme='dark']) nav.navbar {
+html:not(.blog-wrapper) nav.navbar {
   background: var(--b14-black) !important;
   border-bottom: 1px solid var(--b14-800);
 }
 
-html:not(.blog-wrapper):not([data-theme='dark']) .navbar__link {
+html:not(.blog-wrapper) .navbar__link {
   color: var(--b14-300) !important;
 }
 
-html:not(.blog-wrapper):not([data-theme='dark']) .navbar__link:hover {
+html:not(.blog-wrapper) .navbar__link:hover {
   color: var(--b14-white) !important;
   background: var(--b14-950) !important;
 }
 
-html:not(.blog-wrapper):not([data-theme='dark']) .navbar__link--active {
+html:not(.blog-wrapper) .navbar__link--active {
   color: var(--b14-white) !important;
   background: var(--b14-900);
 }
@@ -704,10 +768,10 @@ article .card:hover,
 }
 
 /* Docs cards: simple rectangular border, no gradient (light mode only) */
-html:not(.blog-wrapper):not([data-theme='dark']) .card,
-html:not(.blog-wrapper):not([data-theme='dark']) article .card,
-html:not(.blog-wrapper):not([data-theme='dark']) [class*="cardContainer"],
-html:not(.blog-wrapper):not([data-theme='dark']) [class*="docCardList"] .card {
+html:not(.blog-wrapper) .card,
+html:not(.blog-wrapper) article .card,
+html:not(.blog-wrapper) [class*="cardContainer"],
+html:not(.blog-wrapper) [class*="docCardList"] .card {
   background: var(--b14-black) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
@@ -715,10 +779,10 @@ html:not(.blog-wrapper):not([data-theme='dark']) [class*="docCardList"] .card {
   border-radius: 0 !important;
 }
 
-html:not(.blog-wrapper):not([data-theme='dark']) .card:hover,
-html:not(.blog-wrapper):not([data-theme='dark']) article .card:hover,
-html:not(.blog-wrapper):not([data-theme='dark']) [class*="cardContainer"]:hover,
-html:not(.blog-wrapper):not([data-theme='dark']) [class*="docCardList"] .card:hover {
+html:not(.blog-wrapper) .card:hover,
+html:not(.blog-wrapper) article .card:hover,
+html:not(.blog-wrapper) [class*="cardContainer"]:hover,
+html:not(.blog-wrapper) [class*="docCardList"] .card:hover {
   background: var(--b14-950) !important;
   border: 1px solid var(--b14-700) !important;
   box-shadow: none;
@@ -770,12 +834,6 @@ html:not(.blog-wrapper):not([data-theme='dark']) [class*="docCardList"] .card:ho
   border-left-color: var(--b14-accent) !important;
   color: var(--b14-accent) !important;
   padding-left: 2px;
-}
-
-[data-theme='dark'] .table-of-contents__link:hover,
-[data-theme='dark'] .table-of-contents__link--active {
-  border-left-color: var(--ifm-color-primary) !important;
-  color: var(--ifm-color-primary) !important;
 }
 
 .theme-code-block {
@@ -978,7 +1036,7 @@ nav[aria-label="Breadcrumbs"] li:last-child span {
 
 /* Search result items */
 .navbar__search .dropdownMenu .suggestion {
-  background: rgba(251, 250, 247, 0.85) !important;
+  background: var(--base14-white-glass-medium) !important;
   border: 1px solid var(--ifm-color-primary-lightest) !important;
   border-radius: var(--ifm-card-border-radius) !important;
   box-shadow: none !important;
@@ -1073,6 +1131,12 @@ article p > em:only-child,
   color: var(--ifm-color-emphasis-700);
 }
 
+/* One step brighter in dark mode, where emphasis-700 is too faint */
+[data-theme='dark'] article p > em:only-child,
+[data-theme='dark'] .markdown p > em:only-child {
+  color: var(--ifm-color-emphasis-800);
+}
+
 /* Blog layout - widen container so sidebar sits closer to the left edge */
 html.blog-wrapper .container.margin-vert--lg {
   max-width: 100%;
@@ -1122,46 +1186,52 @@ html.blog-wrapper nav[class*="sidebar"] a[aria-current="page"],
 }
 
 /* Blog navbar: paper background with subtle border (light mode only) */
-html.blog-wrapper:not([data-theme='dark']) nav.navbar {
+html.blog-wrapper nav.navbar {
   background: var(--b14-black) !important;
   border-bottom: 1px solid var(--b14-800);
 }
 
-html.blog-wrapper:not([data-theme='dark']) .navbar__link {
+html.blog-wrapper .navbar__link {
   color: var(--b14-300) !important;
 }
 
-html.blog-wrapper:not([data-theme='dark']) .navbar__link:hover {
+html.blog-wrapper .navbar__link:hover {
   color: var(--b14-white) !important;
   background: var(--b14-950) !important;
 }
 
-html.blog-wrapper:not([data-theme='dark']) .navbar__link--active {
+html.blog-wrapper .navbar__link--active {
   color: var(--b14-white) !important;
   background: var(--b14-900);
 }
 
 /* Blog light mode - readability improvements */
-html.blog-wrapper:not([data-theme='dark']) {
+html.blog-wrapper {
   background: var(--b14-black);
 }
 
-html.blog-wrapper:not([data-theme='dark']) article .markdown {
+html.blog-wrapper article .markdown {
   color: var(--b14-400);
   line-height: 1.75;
 }
 
-html.blog-wrapper:not([data-theme='dark']) article .markdown h1,
-html.blog-wrapper:not([data-theme='dark']) article .markdown h2,
-html.blog-wrapper:not([data-theme='dark']) article .markdown h3 {
+/* In dark mode b14-400 reads dimmer than the post's date and author line;
+   use the docs body colour instead */
+html.blog-wrapper[data-theme='dark'] article .markdown {
+  color: var(--b14-200);
+}
+
+html.blog-wrapper article .markdown h1,
+html.blog-wrapper article .markdown h2,
+html.blog-wrapper article .markdown h3 {
   color: var(--b14-white);
 }
 
-html.blog-wrapper:not([data-theme='dark']) article .markdown a {
+html.blog-wrapper article .markdown a {
   color: var(--b14-accent);
 }
 
-html.blog-wrapper:not([data-theme='dark']) article .markdown p {
+html.blog-wrapper article .markdown p {
   margin-bottom: 1.25em;
 }
 
