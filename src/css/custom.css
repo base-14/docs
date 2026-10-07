@@ -20,14 +20,14 @@
      Light Mode Colors - Base14 Design System
      ======================================== */
 
-  /* Base14 Emerald Primary Colors */
-  --ifm-color-primary: #10b981;
-  --ifm-color-primary-dark: #059669;
-  --ifm-color-primary-darker: #047857;
-  --ifm-color-primary-darkest: #065f46;
-  --ifm-color-primary-light: #34d399;
-  --ifm-color-primary-lighter: #6ee7b7;
-  --ifm-color-primary-lightest: #a7f3d0;
+  /* Base14 Accent Primary Colors (cyan, matches base14.io accent) */
+  --ifm-color-primary: #0e7490;
+  --ifm-color-primary-dark: #155e75;
+  --ifm-color-primary-darker: #164e63;
+  --ifm-color-primary-darkest: #083344;
+  --ifm-color-primary-light: #0891b2;
+  --ifm-color-primary-lighter: #67e8f9;
+  --ifm-color-primary-lightest: #a5f3fc;
 
   /* Base14 Color Palette - Orange */
   --base14-orange-dark: #f97316;
@@ -58,10 +58,10 @@
   --base14-white-glass-strong: rgba(255, 255, 255, 0.95);
   --base14-white-glass-medium: rgba(255, 255, 255, 0.85);
 
-  /* Emerald Glass Effects (for cards) */
-  --base14-emerald-glass: rgba(5, 150, 105, 0.1);
-  --base14-emerald-glass-hover: rgba(5, 150, 105, 0.15);
-  --base14-emerald-shadow-light: rgba(5, 150, 105, 0.15);
+  /* Accent Glass Effects (for cards) */
+  --base14-accent-glass: rgba(14, 116, 144, 0.1);
+  --base14-accent-glass-hover: rgba(14, 116, 144, 0.15);
+  --base14-accent-shadow-light: rgba(14, 116, 144, 0.15);
 
   /* Orange Glass Effects (for tags and badges) */
   --base14-orange-glass: rgba(254, 243, 199, 0.2);
@@ -76,17 +76,19 @@
   --base14-radius-pill: 24px;
   --base14-transition-fast: all 0.2s ease;
   --base14-transition-medium: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  --base14-shadow-emerald: 0 2px 6px rgba(5, 150, 105, 0.2);
-  --base14-border-accent: var(--ifm-color-primary-dark); /* #047857 */
+  --base14-shadow-accent: 0 2px 6px rgba(14, 116, 144, 0.2);
+  --base14-border-accent: var(--ifm-color-primary-dark); /* #155e75 */
 
   /* Background & Surfaces */
+  --base14-light-bg: #fbfaf7; /* rgb(251, 250, 247), matches base14.io */
+  --base14-light-text: #1c1917; /* warm near-black, softer than #000 on light-bg */
   --ifm-background-color: transparent;
   --ifm-background-surface-color: rgba(255, 255, 255, 0.95);
   --ifm-footer-background-color: transparent;
 
   /* Menu Hover States */
-  --ifm-menu-color-background-hover: rgba(5, 150, 105, 0.1);
-  --ifm-menu-color-background-active: rgba(5, 150, 105, 0.15);
+  --ifm-menu-color-background-hover: rgba(14, 116, 144, 0.1);
+  --ifm-menu-color-background-active: rgba(14, 116, 144, 0.15);
   --ifm-menu-link-padding-horizontal: 1rem;
 
   /* Border Radius */
@@ -105,6 +107,15 @@
    Dark Mode Color Scheme
    ======================================== */
 [data-theme='dark']:root {
+  /* Accent scale lifted for contrast on dark surfaces */
+  --ifm-color-primary: #06b6d4;
+  --ifm-color-primary-dark: #0891b2;
+  --ifm-color-primary-darker: #0e7490;
+  --ifm-color-primary-darkest: #155e75;
+  --ifm-color-primary-light: #22d3ee;
+  --ifm-color-primary-lighter: #67e8f9;
+  --ifm-color-primary-lightest: #a5f3fc;
+
   /* Base14 Dark Mode Semantic Colors */
   --ifm-background-color: var(--base14-dark-bg);
   --ifm-background-surface-color: var(--base14-dark-surface);
@@ -143,8 +154,8 @@
   /* Menu & Navigation */
   --ifm-menu-color: var(--ifm-color-emphasis-800);
   --ifm-menu-color-active: var(--ifm-color-primary);
-  --ifm-menu-color-background-hover: var(--base14-emerald-glass);
-  --ifm-menu-color-background-active: var(--base14-emerald-glass-hover);
+  --ifm-menu-color-background-hover: var(--base14-accent-glass);
+  --ifm-menu-color-background-active: var(--base14-accent-glass-hover);
 
   /* Mobile Navbar Sidebar */
   --ifm-navbar-sidebar-background: var(--base14-dark-surface);
@@ -158,10 +169,10 @@
   --base14-white-glass-strong: rgba(28, 30, 36, 0.95);
   --base14-white-glass-medium: rgba(28, 30, 36, 0.85);
 
-  /* Emerald Glass Effects */
-  --base14-emerald-glass: rgba(16, 185, 129, 0.1);
-  --base14-emerald-glass-hover: rgba(16, 185, 129, 0.15);
-  --base14-emerald-shadow-light: rgba(16, 185, 129, 0.2);
+  /* Accent Glass Effects */
+  --base14-accent-glass: rgba(6, 182, 212, 0.1);
+  --base14-accent-glass-hover: rgba(6, 182, 212, 0.15);
+  --base14-accent-shadow-light: rgba(6, 182, 212, 0.2);
 
   /* Orange Glass Effects */
   --base14-orange-glass: rgba(249, 115, 22, 0.1);
@@ -172,7 +183,7 @@
   --base14-orange-glass-border-light: rgba(249, 115, 22, 0.2);
 
   /* Shadows */
-  --base14-shadow-emerald: 0 2px 6px var(--base14-emerald-shadow-light);
+  --base14-shadow-accent: 0 2px 6px var(--base14-accent-shadow-light);
 
   /* Cards */
   --ifm-card-background-color: var(--ifm-color-emphasis-100);
@@ -483,10 +494,10 @@ html {
   min-height: 100vh;
 }
 
-/* Docs pages: white background, black font (light mode only) */
+/* Docs pages: warm off-white background, near-black font (light mode only) */
 html:not(.blog-wrapper):not([data-theme='dark']) {
-  background: #ffffff;
-  color: #000000;
+  background: var(--base14-light-bg);
+  color: var(--base14-light-text);
 }
 
 html[data-theme='dark'] {
@@ -549,9 +560,9 @@ nav.navbar {
   border-bottom: 1px solid var(--ifm-color-border);
 }
 
-/* Docs navbar: white background, black text (light mode only) */
+/* Docs navbar: page background, black text (light mode only) */
 html:not(.blog-wrapper):not([data-theme='dark']) nav.navbar {
-  background: #ffffff !important;
+  background: var(--base14-light-bg) !important;
   border-bottom: 1px solid #e5e5e5;
 }
 
@@ -613,29 +624,37 @@ html:not(.blog-wrapper):not([data-theme='dark']) .navbar__link--active {
   font-size: 14px;
 }
 
-/* Docs and standalone page heading sizes and font */
+/* Docs and standalone page heading sizes and font.
+   Sizes are literal px on purpose: Docusaurus resets --ifm-h1-font-size
+   and --ifm-h2-font-size inside .markdown, so the :root variables would
+   not apply here. */
 .theme-doc-markdown h1,
 .mdx-page .main-wrapper h1,
 html:not(.blog-wrapper) h1[class*="title"] {
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--ifm-font-family-base);
   font-size: 36px;
+  font-weight: 600;
   line-height: 1.2;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
 .theme-doc-markdown h2,
 .mdx-page .main-wrapper h2 {
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--ifm-font-family-base);
   font-size: 28px;
+  font-weight: 600;
   line-height: 1.3;
+  letter-spacing: -0.02em;
   margin-top: 2.25rem;
 }
 
 .theme-doc-markdown h3,
 .mdx-page .main-wrapper h3 {
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--ifm-font-family-base);
   font-size: 20px;
+  font-weight: 600;
   line-height: 1.4;
+  letter-spacing: -0.01em;
   margin-top: 1.75rem;
 }
 
@@ -645,17 +664,32 @@ html:not(.blog-wrapper) h1[class*="title"] {
 .mdx-page .main-wrapper h4,
 .mdx-page .main-wrapper h5,
 .mdx-page .main-wrapper h6 {
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--ifm-font-family-base);
+  font-weight: 600;
 }
 
 /* Docs body font */
 html:not(.blog-wrapper) .theme-doc-markdown,
 html:not(.blog-wrapper) .markdown {
-  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--ifm-font-family-base);
   font-size: 1rem;
   line-height: 1.7;
   max-width: 860px;
   margin-inline: auto;
+}
+
+/* Keep prose near 75 characters per line; code, tables and images
+   keep the full 860px column */
+html:not(.blog-wrapper) .markdown > p,
+html:not(.blog-wrapper) .markdown > ul,
+html:not(.blog-wrapper) .markdown > ol,
+html:not(.blog-wrapper) .markdown > blockquote,
+html:not(.blog-wrapper) .markdown > dl {
+  max-width: 68ch;
+}
+
+html:not(.blog-wrapper) .markdown table {
+  font-variant-numeric: tabular-nums;
 }
 
 .theme-doc-page {
@@ -686,11 +720,11 @@ html:not(.blog-wrapper) .markdown {
   height: 2rem;
   margin-right: 0.5rem;
   transition: var(--base14-transition-fast);
-  filter: brightness(0) saturate(100%) invert(21%) sepia(68%) saturate(1535%) hue-rotate(129deg) brightness(96%) contrast(101%);
+  filter: brightness(0) saturate(100%) invert(24%) sepia(62%) saturate(1500%) hue-rotate(163deg) brightness(88%) contrast(92%);
 }
 
 .navbar__brand:hover .navbar__logo {
-  filter: brightness(0) saturate(100%) invert(25%) sepia(95%) saturate(1456%) hue-rotate(128deg) brightness(95%) contrast(98%);
+  filter: brightness(0) saturate(100%) invert(30%) sepia(76%) saturate(1153%) hue-rotate(158deg) brightness(91%) contrast(91%);
 }
 
 .navbar__title {
@@ -703,6 +737,13 @@ html:not(.blog-wrapper) .markdown {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   transition: var(--base14-transition-fast);
+}
+
+[data-theme='dark'] .navbar__title {
+  background: var(--ifm-color-primary);
+  -webkit-background-clip: text;
+  -moz-background-clip: text;
+  background-clip: text;
 }
 
 .navbar__brand:hover .navbar__title {
@@ -727,7 +768,7 @@ html:not(.blog-wrapper) .markdown {
 
 .navbar__link:hover {
   color: var(--ifm-color-primary) !important;
-  background: rgba(236, 253, 245, 0.5) !important;
+  background: rgba(236, 254, 255, 0.5) !important;
   text-decoration: none;
 }
 
@@ -754,11 +795,18 @@ html:not(.blog-wrapper) .markdown {
 .menu__link {
   border-left: 3px solid transparent;
   transition: var(--base14-transition-fast);
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.menu__link--sublist,
+.menu__link--active {
+  font-weight: 600;
 }
 
 .menu__link:hover,
 .menu__link:active {
-  border-left: 3px solid #047857;
+  border-left: 3px solid #0e7490;
   padding-left: calc(var(--ifm-menu-link-padding-horizontal) - 3px);
 }
 
@@ -768,7 +816,7 @@ article .card,
 [class*="docCardList"] .card {
   backdrop-filter: blur(12px) !important;
   -webkit-backdrop-filter: blur(12px) !important;
-  background: linear-gradient(90deg, var(--base14-emerald-glass), transparent) !important;
+  background: linear-gradient(90deg, var(--base14-accent-glass), transparent) !important;
   border-radius: var(--base14-radius) !important;
   transition: var(--base14-transition-fast);
   contain: layout style paint;
@@ -778,10 +826,10 @@ article .card,
 article .card:hover,
 [class*="cardContainer"]:hover,
 [class*="docCardList"] .card:hover {
-  background: linear-gradient(90deg, var(--base14-emerald-glass-hover), var(--base14-emerald-glass)) !important;
+  background: linear-gradient(90deg, var(--base14-accent-glass-hover), var(--base14-accent-glass)) !important;
   border: 1px solid var(--ifm-color-primary-lighter) !important;
   transform: translate3d(1px, 0, 0);
-  box-shadow: var(--base14-shadow-emerald);
+  box-shadow: var(--base14-shadow-accent);
 }
 
 /* Dark mode cards */
@@ -799,7 +847,7 @@ article .card:hover,
 [data-theme='dark'] [class*="docCardList"] .card:hover {
   background: var(--ifm-card-background-color) !important;
   border: 1px solid var(--ifm-link-color) !important;
-  box-shadow: 0 4px 12px var(--base14-emerald-shadow-light);
+  box-shadow: 0 4px 12px var(--base14-accent-shadow-light);
 }
 
 /* Docs cards: simple rectangular border, no gradient (light mode only) */
@@ -863,7 +911,7 @@ html:not(.blog-wrapper)[data-theme='dark'] [class*="docCardList"] .card:hover {
   background: linear-gradient(270deg, var(--base14-white-glass-medium), var(--base14-white-glass-strong));
   border: 1px solid var(--ifm-color-primary-light) !important;
   transform: translate3d(-1px, 0, 0);
-  box-shadow: 0 4px 12px var(--base14-emerald-shadow-light);
+  box-shadow: 0 4px 12px var(--base14-accent-shadow-light);
 }
 
 .pagination-nav__link.pagination-nav__link--next:hover {
@@ -871,6 +919,7 @@ html:not(.blog-wrapper)[data-theme='dark'] [class*="docCardList"] .card:hover {
 }
 
 .table-of-contents {
+  font-size: 0.875rem;
   backdrop-filter: blur(var(--base14-glass-blur-light));
   -webkit-backdrop-filter: blur(var(--base14-glass-blur-light));
   background: var(--base14-glass-bg);
@@ -887,9 +936,15 @@ html:not(.blog-wrapper)[data-theme='dark'] [class*="docCardList"] .card:hover {
 
 .table-of-contents__link:hover,
 .table-of-contents__link--active {
-  border-left-color: #047857 !important;
-  color: #047857 !important;
+  border-left-color: #0e7490 !important;
+  color: #0e7490 !important;
   padding-left: 2px;
+}
+
+[data-theme='dark'] .table-of-contents__link:hover,
+[data-theme='dark'] .table-of-contents__link--active {
+  border-left-color: var(--ifm-color-primary) !important;
+  color: var(--ifm-color-primary) !important;
 }
 
 .theme-code-block {
@@ -1076,7 +1131,7 @@ nav[aria-label="Breadcrumbs"] li:last-child span {
   }
 
   .navbar-sidebar .menu__link:hover {
-    background: var(--base14-emerald-glass) !important;
+    background: var(--base14-accent-glass) !important;
   }
 }
 
@@ -1107,7 +1162,7 @@ nav[aria-label="Breadcrumbs"] li:last-child span {
 .navbar__search-input:focus {
   background: var(--base14-white-glass-strong) !important;
   border-color: var(--ifm-color-primary) !important;
-  box-shadow: 0 0 0 3px var(--base14-emerald-shadow-light);
+  box-shadow: 0 0 0 3px var(--base14-accent-shadow-light);
   outline: none !important;
 }
 
@@ -1147,7 +1202,7 @@ nav[aria-label="Breadcrumbs"] li:last-child span {
 
 .navbar__search .dropdownMenu .suggestion:hover {
   border-color: var(--ifm-color-primary-light) !important;
-  box-shadow: var(--base14-shadow-emerald) !important;
+  box-shadow: var(--base14-shadow-accent) !important;
   transform: translateY(-1px);
 }
 
@@ -1157,7 +1212,7 @@ nav[aria-label="Breadcrumbs"] li:last-child span {
     var(--ifm-color-primary),
     var(--ifm-color-primary-dark)) !important;
   border-color: var(--ifm-color-primary-dark) !important;
-  box-shadow: var(--base14-shadow-emerald) !important;
+  box-shadow: var(--base14-shadow-accent) !important;
 }
 
 /* Highlight matched text */
@@ -1219,7 +1274,7 @@ nav[aria-label="Breadcrumbs"] li:last-child span {
 [data-theme='dark'] .navbar__search-input:focus {
   background: var(--base14-dark-surface) !important;
   border-color: var(--ifm-color-primary) !important;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.2);
 }
 
 [data-theme='dark'] .navbar__search .dropdownMenu {
@@ -1350,9 +1405,9 @@ html.blog-wrapper nav[class*="sidebar"] a[aria-current="page"],
   text-transform: none !important;
 }
 
-/* Blog navbar: white background with subtle border (light mode only) */
+/* Blog navbar: page background with subtle border (light mode only) */
 html.blog-wrapper:not([data-theme='dark']) nav.navbar {
-  background: #ffffff !important;
+  background: var(--base14-light-bg) !important;
   border-bottom: 1px solid #e5e5e5;
 }
 
@@ -1372,7 +1427,7 @@ html.blog-wrapper:not([data-theme='dark']) .navbar__link--active {
 
 /* Blog light mode - readability improvements */
 html.blog-wrapper:not([data-theme='dark']) {
-  background: #fafaf8;
+  background: var(--base14-light-bg);
 }
 
 html.blog-wrapper:not([data-theme='dark']) article .markdown {
@@ -1387,7 +1442,7 @@ html.blog-wrapper:not([data-theme='dark']) article .markdown h3 {
 }
 
 html.blog-wrapper:not([data-theme='dark']) article .markdown a {
-  color: #047857;
+  color: #0e7490;
 }
 
 html.blog-wrapper:not([data-theme='dark']) article .markdown p {
@@ -1520,11 +1575,11 @@ html:not(.blog-wrapper) .alert {
   margin: 0 !important;
 }
 
-/* Docs card titles - use Poppins, not serif */
+/* Docs card titles - use Inter, not serif */
 html:not(.blog-wrapper) .card h2,
 html:not(.blog-wrapper) .card [class*="cardTitle"],
 html:not(.blog-wrapper) [class*="docCardList"] h2 {
-  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif !important;
+  font-family: var(--ifm-font-family-base) !important;
 }
 
 /* Inline code styling */

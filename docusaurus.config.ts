@@ -68,7 +68,7 @@ const config: Config = {
       tagName: "link",
       attributes: {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=DM+Serif+Display&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Inter:opsz,wght@14..32,400..700&display=swap",
       },
     },
     {
@@ -300,7 +300,7 @@ const config: Config = {
         "logs, and metrics in plain English - " +
         '<a href="/blog/scout-mcp/" style="color: #FFFFFF; ' +
         'text-decoration: underline;">Learn more</a>',
-      backgroundColor: "#047857",
+      backgroundColor: "#0e7490",
       textColor: "#FFFFFF",
       isCloseable: true,
     },
