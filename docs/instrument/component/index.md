@@ -182,6 +182,8 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 | Docker Engine | [Docker Engine](./collecting-docker-telemetry)  | CPU, memory, block I/O, network per container  |
 | containerd    | [containerd](./collecting-containerd-telemetry) | CRI errors, image pull failures, container lifecycle latency, CPU and memory per container |
 | K3s           | [K3s](./collecting-k3s-telemetry)               | API server errors, container start failures, certificate expiry, node headroom |
+| RKE2          | [RKE2](./collecting-rke2-telemetry)             | API server errors, container start failures, certificate expiry, etcd leader and size, node headroom |
+| CRI-O         | [CRI-O](./collecting-crio-telemetry)            | CRI call errors, image pull failures, OOM kills, pod start latency; traces |
 
 ### Java Application Servers
 

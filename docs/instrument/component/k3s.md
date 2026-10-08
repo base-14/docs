@@ -616,6 +616,8 @@ the Docker host or VM.
 - [K8s Cluster Monitoring](./k8s-cluster.md) - Cluster-level object
   metrics from the Collector.
 - [etcd Monitoring](./etcd.md) - The etcd families for embedded etcd.
+- [RKE2 Monitoring](./rke2.md) - The Rancher distribution with one
+  registry per component.
 - [containerd Monitoring](./containerd.md) - The container runtime K3s
   bundles.
 - [Traefik Monitoring](./traefik.md) - The bundled ingress controller.

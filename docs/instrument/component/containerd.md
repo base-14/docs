@@ -548,6 +548,8 @@ No. Metrics are Prometheus only. OTLP carries traces.
 
 ## Related Guides
 
+- [CRI-O Monitoring](./crio.md) - The other CRI runtime, with a different
+  metric surface.
 - [Kubelet Stats Monitoring](./kubelet-stats.md) - Per-pod and per-container
   resources from the kubelet, with pod names attached.
 - [kube-state-metrics Monitoring](./kube-state-metrics.md) - Kubernetes
