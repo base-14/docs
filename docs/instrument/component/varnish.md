@@ -229,7 +229,7 @@ processors:
     send_batch_size: 1024
 
 exporters:
-  otlphttp/b14:
+  otlp_http/b14:
     endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT}
     tls:
       insecure_skip_verify: true
@@ -239,8 +239,11 @@ service:
     metrics:
       receivers: [prometheus]
       processors: [resource, batch]
-      exporters: [otlphttp/b14]
+      exporters: [otlp_http/b14]
 ```
+
+The exporter is `otlp_http` from OTel Collector Contrib 0.144.0 on. The old
+`otlphttp` spelling still works and logs a deprecation line at startup.
 
 ### Environment Variables
 
