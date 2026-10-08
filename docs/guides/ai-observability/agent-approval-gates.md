@@ -102,6 +102,15 @@ This guide shows you how to:
 Full source:
 [`csharp/agent-rebooking`](https://github.com/base-14/examples/tree/main/csharp/agent-rebooking).
 
+Last verified 2026-10-07 with Microsoft Agent Framework 1.23.0 and the MCP
+C# SDK 2.2.0, against
+[`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai)
+at commit `4f85037` (2026-10-06), from the example's API cases and its Scout
+verification on a local Ollama model. The GenAI conventions are in
+Development status and the framework's activity sources are still named
+`Experimental.*`, so pin exact versions and re-check the spans after each
+upgrade.
+
 ## How the Gate Hooks into the Framework
 
 The gate does not replace the framework's tool approval. It answers it.
@@ -479,6 +488,53 @@ and the `invoke_agent` span above it, so each model call stores its messages
 twice. Tool spans carry none of it. The content is written as span attributes,
 so attribute limits apply. Leave capture off when messages carry customer
 data.
+
+## Known Gaps
+
+As of Microsoft Agent Framework 1.23.0 and the MCP C# SDK 2.2.0, verified
+2026-10-07:
+
+- **The framework records nothing for the pause.** `RequestInfoEvent` parks
+  the run without a span, a metric or a log line. The requested and decided
+  spans and the wait histogram in this guide are the application's.
+- **Handoffs have no span.** The injected handoff tool is never run, and at
+  1.23.0 it is named `handoff_to_1`. Read a handoff from the pair of
+  `invoke_agent` spans and `gen_ai.tool.definitions`. See
+  [Handoffs have no span](#handoffs-have-no-span).
+- **Workflow spans are unreachable.** `Microsoft.Agents.AI.Workflows` gates
+  its spans behind `WorkflowBuilder.WithOpenTelemetry`, which the handoff
+  builder does not expose, so registering that source adds nothing.
+- **MCP attributes depend on registration order.** Without a listener on
+  `Experimental.ModelContextProtocol` before the session opens, `execute_tool`
+  spans lose their `mcp.*` attributes and the client stops sending
+  `traceparent`, so every server span starts its own trace. See
+  [One span per MCP tool call](#one-span-per-mcp-tool-call).
+- **A failed tool call leaves the run Unset.** The MCP SDK sets error status
+  on `tools/call` and the framework copies it to `execute_tool`, but
+  `invoke_agent` and the run span stay Unset and the run completes. Filter on
+  tool spans. See [Where the Error Status Goes](#where-the-error-status-goes).
+- **Tool error messages are serialised content.** The status message on a
+  failed `tools/call` is the JSON content array, with apostrophes escaped as
+  `\u0027`. Search for `invoking`, not for the quoted tool name.
+- **A model outage puts a stack trace in the run.** The workflow passes the
+  exception's full `ToString()` in `ExecutorFailedEvent.Data`, several
+  kilobytes. Truncate it before it becomes a status message in your own run
+  store.
+- **Captured messages are stored twice.** With capture on,
+  `gen_ai.input.messages` and `gen_ai.output.messages` land on the `chat`
+  span and on the `invoke_agent` span above it. See
+  [Content capture](#content-capture).
+- **The framework streams.** A chat-client wrapper that overrides only the
+  non-streaming method records nothing; `gen_ai.request.stream: true` on the
+  `chat` spans shows which path is in use. The example's cost, retry and
+  fallback counters stay at zero in a live run for this reason. See
+  [Custom metrics never arrive](#custom-metrics-never-arrive).
+- **Spans outlive a cancelled run.** Cancelling a run on its timeout does not
+  reach an in-flight model or MCP call, so child spans end after the run
+  span. The run span's duration is not the end of the run's work.
+- **A failure while parked marks no span.** Between the pump span ending and
+  the resume span starting there is no span of the run to mark, so the
+  failure is on the run record and an ERROR log record only.
 
 ## Configuration
 

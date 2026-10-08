@@ -88,7 +88,7 @@ is available under
 Add the OpenTelemetry Java Agent (`-javaagent`), Spring AI's Micrometer bridge
 (`micrometer-tracing-bridge-otel`), and an injected `Tracer`/`Meter` pair to
 get unified traces across HTTP, database, LLM, and pipeline layers. This guide
-covers Spring Boot 4.0.7 + Spring AI 2.0.0 with Ollama by default, and OpenAI
+covers Spring Boot 4.0.8 + Spring AI 2.0.1 with Ollama by default, and OpenAI
 or Anthropic when you set a key.
 
 :::
@@ -140,8 +140,8 @@ This guide demonstrates how to:
 Before starting, ensure you have:
 
 - **Java 25+** installed (21+ minimum).
-- **Spring Boot 4.0.7**.
-- **Spring AI 2.0.0** (BOM `org.springframework.ai:spring-ai-bom:2.0.0`).
+- **Spring Boot 4.0.8**.
+- **Spring AI 2.0.1** (BOM `org.springframework.ai:spring-ai-bom:2.0.1`).
 - **Ollama** running locally with `qwen3.5:9B` and `embeddinggemma` pulled.
   Ollama is the default provider and needs no API key; OpenAI and Anthropic
   are opt-in through `LLM_PROVIDER` and their own keys.
@@ -155,13 +155,23 @@ Before starting, ensure you have:
 | Component | Minimum Version | Pinned in the example |
 | --- | --- | --- |
 | Java | 21 | 25 |
-| Spring Boot | 3.4 | 4.0.7 |
-| Spring AI | 1.0.0 | 2.0.0 |
+| Spring Boot | 3.4 | 4.0.8 |
+| Spring AI | 1.0.0 | 2.0.1 |
 | OpenTelemetry Java Agent | 2.0.0 | 2.31.1 |
 | OpenTelemetry API | 1.40.0 | 1.65.0 |
 | opentelemetry-micrometer-1.5 | 2.0.0 | 2.31.1-alpha |
 | PostgreSQL (pgvector) | 15 | 18 |
 | OTel Collector contrib | 0.158.0 | 0.161.0 |
+
+Last verified 2026-10-07 with Spring AI 2.0.1 on Spring Boot 4.0.8 and the
+OpenTelemetry Java agent 2.31.1, against
+[`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai)
+at commit `4f85037` (2026-10-06), from the example's smoke tests, its Scout
+verification and the `model-not-found` scenario, on Ollama 0.40.0 with
+`qwen3.5:9B` and `embeddinggemma`. The
+GenAI conventions are in Development status and Spring AI's observation
+conventions follow them at their own pace, so pin the Spring AI BOM and the
+agent to exact versions and re-check the span attributes after each upgrade.
 
 ## The Unified Trace
 
@@ -500,13 +510,13 @@ composition automatically.
 ## Installation
 
 Add the following dependencies to your `build.gradle`. The project uses Spring
-Boot 4.0.7 with the Spring AI BOM for version management:
+Boot 4.0.8 with the Spring AI BOM for version management:
 
 ```groovy showLineNumbers title="build.gradle"
 plugins {
     id 'java'
     id 'checkstyle'
-    id 'org.springframework.boot' version '4.0.7'
+    id 'org.springframework.boot' version '4.0.8'
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -516,12 +526,12 @@ java {
     }
 }
 
-// Spring Boot 4.0.7 manages OpenTelemetry 1.55.0; 1.62.0 fixes GHSA-rcgg-9c38-7xpx
+// Spring Boot 4.0.8 manages OpenTelemetry 1.55.0; 1.62.0 fixes GHSA-rcgg-9c38-7xpx
 ext['opentelemetry.version'] = '1.65.0'
 
 dependencyManagement {
     imports {
-        mavenBom "org.springframework.ai:spring-ai-bom:2.0.0"
+        mavenBom "org.springframework.ai:spring-ai-bom:2.0.1"
     }
 }
 
@@ -566,7 +576,7 @@ Key dependency groups:
 - **Spring AI providers**: Each `spring-ai-starter-model-{provider}` dependency
   brings in the ChatModel implementation for that provider. You can include
   multiple providers for fallback support.
-- **Spring AI BOM**: The `spring-ai-bom:2.0.0` import manages version
+- **Spring AI BOM**: The `spring-ai-bom:2.0.1` import manages version
   alignment across all Spring AI dependencies.
 - **Dual database drivers**: R2DBC for reactive conversation persistence, JDBC
   for pgvector RAG and Spring AI tool methods (which use `JdbcTemplate`).
@@ -923,7 +933,7 @@ attributes, error classification, and content capture to every LLM call.
 
 ### The GenAI Span
 
-Spring AI 2.0.0's `ChatModel` observation is what makes the `chat {model}`
+Spring AI 2.0.1's `ChatModel` observation is what makes the `chat {model}`
 span exist for every `chatModel.call()` invocation (see
 [Layer 2](#layer-2-spring-ai-observations-micrometer-bridge)). `LlmService`
 does not open its own span for the LLM call. Two components, registered as
@@ -933,7 +943,7 @@ onto the span, and a Micrometer `ObservationHandler` that creates the span
 itself and adds the attributes that need real types instead of strings.
 
 **GenAiChatObservationConvention** extends Spring AI's own
-`DefaultChatModelObservationConvention`. Spring AI 2.0.0 still emits the
+`DefaultChatModelObservationConvention`. Spring AI 2.0.1 still emits the
 deprecated `gen_ai.system` attribute by default, so this convention replaces
 it with `gen_ai.provider.name`, and drops the token counts and finish reasons
 from its high-cardinality output because the handler below sets those as typed
@@ -2577,6 +2587,98 @@ Additional security practices in the application:
   `spring.ai.chat.observations.include-output`) which defaults to false. This
   means Spring AI's auto-generated spans also do not capture content by default.
 
+## Known Gaps
+
+As of Spring AI 2.0.1 and the OpenTelemetry Java agent 2.31.1, verified
+2026-10-07:
+
+- **Spring AI still tags `gen_ai.system`.** Its default chat observation
+  convention emits the deprecated provider attribute. The example's
+  `GenAiChatObservationConvention` replaces it with `gen_ai.provider.name`.
+  See [The GenAI Span](#the-genai-span).
+- **Observation tags are strings.** Micrometer key-values arrive on the span
+  as strings, so token counts and finish reasons need an
+  `ObservationHandler` to set them as typed attributes. The example retypes
+  them on `chat` spans only; on `embeddings {model}` spans
+  `gen_ai.usage.input_tokens` is still text and cannot be summed.
+- **Token usage is a counter.** Spring AI records `gen_ai.client.token.usage`
+  as a Micrometer counter, not the histogram the conventions describe. The
+  example keeps it rather than count the same tokens twice. See
+  [How Metrics Are Recorded](#how-metrics-are-recorded).
+- **No operation duration, no cost.** Spring AI records neither
+  `gen_ai.client.operation.duration` nor a cost. The example records the
+  duration around each call and `base14.gen_ai.cost` from its price table,
+  zero for Ollama models. See [Cost Calculation](#cost-calculation).
+- **Content capture is Spring AI's own switch.**
+  `spring.ai.chat.observations.include-input` and `include-output` control
+  the observation, not `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT`.
+  The example leaves both off and records scrubbed content itself behind the
+  OpenTelemetry variable. See
+  [Span Events (Content Capture)](#span-events-content-capture).
+- **Two spans per model call.** The agent's HTTP client span and Spring AI's
+  `chat {model}` span both cover the same request. They nest, so filter on
+  `gen_ai.operation.name` for model-level questions. See
+  [Duplicate spans from Java Agent and Spring AI](#duplicate-spans-from-java-agent-and-spring-ai).
+- **`execute_tool` spans are internal and carry no outcome.** Spring AI's
+  tool observation gives the span and `gen_ai.tool.name`; the error status,
+  `error.type`, the `tool_execution_failed` event and the arguments and
+  result under content capture come from the example's `ToolTelemetry`. See
+  [Tool Calling](#tool-calling).
+- **No `gen_ai.conversation.id` or `gen_ai.agent.name` from the framework.**
+  The example's observation handler copies both from a request-scoped bean
+  onto every `chat` and `embeddings` span, and its own stage spans set them
+  directly. Without that, only the root span would carry them.
+- **The agent and Micrometer both report JVM metrics.** Without the
+  `MeterFilter.deny` in the example's registry bridge, every JVM metric
+  arrives twice under the same name. See
+  [Layer 2](#layer-2-spring-ai-observations-micrometer-bridge).
+- **`error.type` is the exception class.** On a failed `chat` span the
+  example records the Java exception's simple name, `NonTransientAiException`
+  for a model Ollama does not have, so a provider error reads as the client
+  exception, not as the provider's reason. The provider's message is in the
+  span status.
+
+## What to Look For in Scout
+
+### Find one conversation
+
+Filter spans on `gen_ai.conversation.id` with the `conversationId` the
+`POST /api/chat` response returned. The trace runs `POST /api/chat`,
+`support_conversation`, the stage spans and, under them, `chat {model}`,
+`embeddings {model}`, `retrieval kb_articles` and `execute_tool {tool}`.
+
+### Find failed model calls and fallbacks
+
+Filter `chat` spans on `status = Error`. In the `model-not-found` scenario
+of the `failure-injection` profile, each attempt is one failed
+`chat no-such-model:latest` span with `error.type=NonTransientAiException`,
+then a `provider_fallback` event and a successful `chat` on the fallback
+model.
+`base14.gen_ai.retry.count`, `base14.gen_ai.fallback.count` and
+`base14.gen_ai.error.count` by `gen_ai.provider.name` count the same.
+
+### Find tool calls that failed inside a completed conversation
+
+Filter `execute_tool` spans on `status = Error`, or search for the
+`tool_execution_failed` event. The conversation still completes, so the
+root span stays clean. `base14.support.tool_calls` by
+`base14.support.tool_name` and `base14.support.tool_success` gives the rate.
+
+### Read tokens and cost by model
+
+Chart `gen_ai.client.token.usage` by `gen_ai.request.model` and
+`gen_ai.token.type` as a rate or an increase, since it is a counter. On
+spans, sum `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens` and
+`base14.gen_ai.cost_usd` on `chat` spans by `gen_ai.request.model`.
+
+### See retrieval quality and escalations
+
+Read `base14.support.rag.similarity` for the match quality behind each
+`retrieval kb_articles` span, and the `rag_retrieval_degraded` event where
+retrieval failed and the conversation went on without context. Escalations
+are `gen_ai.evaluation.result` events on the `escalation_check` span and the
+`base14.support.escalation.count` counter by reason.
+
 ## Running Your Application
 
 <div class="mdx-code-block">
@@ -3191,7 +3293,7 @@ produce telemetry when the agent is attached. Drop the agent and you need an
 
 ### What Spring AI versions are compatible?
 
-This guide uses Spring AI 2.0.0 with Spring Boot 4.0.7 and the OpenTelemetry
+This guide uses Spring AI 2.0.1 with Spring Boot 4.0.8 and the OpenTelemetry
 Java agent 2.31.1. The key requirement is that Spring AI must emit Micrometer
 observations (available since Spring AI 1.0.0-M1). Two details are specific to
 2.0: the default convention still emits the deprecated `gen_ai.system`, which
@@ -3350,7 +3452,7 @@ and JDBC database drivers:
 plugins {
     id 'java'
     id 'checkstyle'
-    id 'org.springframework.boot' version '4.0.7'
+    id 'org.springframework.boot' version '4.0.8'
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -3367,12 +3469,12 @@ repositories {
     mavenCentral()
 }
 
-// Spring Boot 4.0.7 manages OpenTelemetry 1.55.0; 1.62.0 fixes GHSA-rcgg-9c38-7xpx
+// Spring Boot 4.0.8 manages OpenTelemetry 1.55.0; 1.62.0 fixes GHSA-rcgg-9c38-7xpx
 ext['opentelemetry.version'] = '1.65.0'
 
 dependencyManagement {
     imports {
-        mavenBom "org.springframework.ai:spring-ai-bom:2.0.0"
+        mavenBom "org.springframework.ai:spring-ai-bom:2.0.1"
     }
 }
 

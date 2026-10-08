@@ -123,7 +123,8 @@ This guide demonstrates how to:
 Before starting, ensure you have:
 
 - **Rust 1.94 or later** installed (SQLx 0.9 requires it; 1.98+ recommended)
-- **An LLM API key** from at least one provider (OpenAI, Anthropic, or Google)
+- **Ollama on the host**, or an API key from OpenAI, Anthropic or Google. The
+  example defaults to Ollama with `qwen3.5:9B`
 - **Scout Collector** configured and accessible from your application
   - See
     [Docker Compose Setup](../../instrument/collector-setup/docker-compose-example.md)
@@ -149,7 +150,17 @@ Before starting, ensure you have:
 | Axum                  | 0.7+            | 0.8+        |
 | SQLx                  | 0.7+            | 0.9+        |
 
-Verified with Rust 1.98.1 and collector 0.161.0 on 2026-09-20.
+The example pins Rust 1.98 on edition 2024, `opentelemetry` 0.33.0,
+`tracing-opentelemetry` 0.34.0, `async-openai` 0.33, Axum 0.8, SQLx 0.9 and
+OpenTelemetry Collector Contrib 0.161.0.
+
+Last verified 2026-10-07 with those pins, against
+[`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai)
+at commit `4f85037` (2026-10-06), from the example's smoke tests and its Scout
+verification on Ollama 0.40.0 with `qwen3.5:9B`. The GenAI conventions are in
+Development status, and every GenAI attribute here is hand-written, so
+re-check the names against the conventions after each upgrade of this guide's
+example or your own code.
 
 ## The Unified Trace
 
@@ -1656,6 +1667,93 @@ span.add_event(
 - **Consider disabling prompt/completion events** in production if your data is
   subject to GDPR, HIPAA, or PCI-DSS compliance requirements by removing the
   `add_event` calls
+
+## Known Gaps
+
+As of `opentelemetry` 0.33.0, `tracing-opentelemetry` 0.34.0 and
+`async-openai` 0.33, verified 2026-10-07:
+
+- **No crate instruments LLM calls.** `async-openai` and the other provider
+  clients emit no spans, metrics or events. Every `chat` span and every
+  `gen_ai.client.*` metric in this guide is hand-written, so a change in the
+  conventions is yours to apply. See
+  [Custom LLM Instrumentation](#custom-llm-instrumentation).
+- **Span fields must be declared up front.** `tracing` records only the
+  fields named in the `info_span!` or `#[instrument]` declaration. A
+  `span.record` on an undeclared name is dropped without a warning, which is
+  why values known after the call are declared as `tracing::field::Empty`.
+- **Array attributes bypass `tracing`.** `tracing` fields are scalars, so
+  `gen_ai.response.finish_reasons`, an array in the conventions, is set
+  through `OpenTelemetrySpanExt::set_attribute` with an OpenTelemetry
+  `Value::Array`.
+- **`error.type` is the application's vocabulary.** On `chat` spans a failed
+  attempt carries a code classified from the provider's message:
+  `rate_limit`, `timeout`, `auth_error`, `invalid_request`, `server_error`,
+  `network_error` or `unknown_error`. A request for a model Ollama does not
+  have classifies as `unknown_error`. HTTP and pipeline spans carry
+  `validation_error`, `not_found`, `database_error`, `llm_error`,
+  `pipeline_error` or `internal_error`, and the example writes the
+  `exception` event itself.
+- **No `gen_ai.conversation.id`.** A report is one request, not a
+  conversation. The example correlates the other way round: the trace ID is
+  stored on the report record and returned in the API response. See
+  [How do I correlate traces with database records?](#how-do-i-correlate-traces-with-database-records).
+- **Content capture is an event, off by default.** With
+  `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true` the example adds
+  one `gen_ai.client.inference.operation.details` event per `chat` span,
+  scrubbed of emails, phone numbers and card-like numbers and truncated.
+  Nothing but the example reads the variable.
+- **Cost is zero on local models.** `base14.gen_ai.cost_usd` and the
+  `base14.gen_ai.cost` counter come from `_shared/pricing.json`. A model with
+  no row, such as `qwen3.5:9B`, costs 0, and nothing marks the value as a
+  placeholder.
+- **The default fallback is a model switch on one provider.** With
+  `FALLBACK_PROVIDER` equal to `LLM_PROVIDER`, as in the default `.env`, the
+  `provider_fallback` event and `base14.gen_ai.fallback.count` still fire,
+  but `gen_ai.provider.name` is the same on both sides. Group by
+  `gen_ai.request.model` to see the switch. The example's error endpoint
+  ends in success for the same reason: the fallback model works.
+- **Metrics leave every 15 seconds.** That is the `PeriodicReader` interval.
+  A run shorter than that shows its metrics only after shutdown flushes them.
+- **gRPC by default.** The exporters use `grpc-tonic` on port 4317. OTLP over
+  HTTP needs a different feature and endpoint. See
+  [How do I export OpenTelemetry data over HTTP instead of gRPC in Rust?](#how-do-i-export-opentelemetry-data-over-http-instead-of-grpc-in-rust).
+
+## What to Look For in Scout
+
+### Find one report's trace
+
+Filter spans on `base14.report.id`, or open the `trace_id` the
+`POST /api/reports` response carries. The trace runs `POST /api/reports`,
+`pipeline report`, the four `pipeline_stage` spans and the `chat {model}`
+spans under `analyze` and `generate`.
+
+### Find failed LLM calls
+
+Filter `chat` spans on `status = Error` and group by `error.type`. Each
+failed attempt is its own `chat` span with the classified code and an
+`exception` event. `base14.gen_ai.error.count` by `gen_ai.provider.name`
+and `error.type` counts the calls that failed after every retry.
+
+### See retries
+
+Open a trace and read the WARN `LLM call failed, retrying` lines, each with
+the attempt number and provider, on the `chat` span they belong to. Chart
+`base14.gen_ai.retry.count` by `gen_ai.provider.name` for the rate.
+
+### Read tokens and cost by model and stage
+
+Chart `gen_ai.client.token.usage` by `gen_ai.request.model` and
+`gen_ai.token.type`. On spans, group `gen_ai.usage.input_tokens`,
+`gen_ai.usage.output_tokens` and `base14.gen_ai.cost_usd` by
+`base14.report.stage`, which is `analyze` or `generate`.
+
+### Compare pipeline stages
+
+Group `pipeline_stage` spans by `base14.pipeline.stage` and read their
+durations. `retrieve` is the database read, `analyze` and `generate` each
+hold one model call, `format` is assembly. The `base14.report.generation.duration`
+histogram gives the same per report.
 
 ## Running Your Application
 

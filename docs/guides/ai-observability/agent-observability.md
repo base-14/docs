@@ -132,6 +132,16 @@ starting, ensure you have:
 | GenAI semantic conv.    | 1.36 (baseline) | 1.37+       |
 | Python (samples)        | 3.12            | 3.13+       |
 
+Last verified 2026-10-07 against two runs on local Ollama models: the
+`ai-kyc-onboarding` example on Pydantic AI 2.49.0 and Temporal Python SDK
+1.33.0, and the `agent-rebooking` example on Microsoft Agent Framework 1.23.0
+and the MCP C# SDK 2.2.0, each through its own Scout verification, with
+[`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai)
+at commit `4f85037` (2026-10-06). The agent conventions are in Development
+status, so pin each instrumentation to an exact version and re-check the
+spans after every upgrade. Framework-specific dates are on the framework
+pages under [What's Next](#whats-next).
+
 ## The Agent Timeline
 
 The core idea of agent observability is that **a GenAI span is not just an LLM
@@ -449,13 +459,15 @@ agent/tool attributes when recording:
 | ---------------------------------- | --------- | ---------------------------------- |
 | `gen_ai.client.token.usage`        | Histogram | `gen_ai.agent.name`, model         |
 | `gen_ai.client.operation.duration` | Histogram | `gen_ai.operation.name`, agent     |
-| `gen_ai.client.cost`               | Counter   | `gen_ai.agent.name`, model         |
-| `gen_ai.client.error.count`        | Counter   | `gen_ai.tool.name`, `error.type`   |
+| `base14.gen_ai.cost`               | Counter   | `gen_ai.agent.name`, model         |
+| `base14.gen_ai.error.count`        | Counter   | `gen_ai.tool.name`, `error.type`   |
 
-Recording `gen_ai.agent.name` on both spans and metrics lets you build
-`sum(gen_ai.client.cost) by (gen_ai.agent.name)` to find your most expensive
-agent, and `sum(gen_ai.client.error.count) by (gen_ai.tool.name)` to find your
-flakiest tool.
+The last two are application metrics. No framework records cost or an error
+count, and `gen_ai.*` belongs to the conventions, so the examples use the
+`base14.` prefix. Recording `gen_ai.agent.name` on both spans and metrics lets
+you build `sum(base14.gen_ai.cost) by (gen_ai.agent.name)` to find your most
+expensive agent, and `sum(base14.gen_ai.error.count) by (gen_ai.tool.name)` to
+find your flakiest tool.
 
 ## Evaluation and Quality
 
@@ -513,6 +525,106 @@ export OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental
 Set this when you want the current message and tool-call attribute formats.
 Without it, instrumentations default to the transition baseline. Pin your
 collector and backend expectations to the same convention version.
+
+## Known Gaps
+
+As of the GenAI conventions at commit `4f85037` (2026-10-06), checked
+2026-10-07 across the framework pages this guide links, each written from a
+run:
+
+- **No framework records a wait on a person.** Temporal parks a Pydantic AI
+  workflow, and Agent Framework parks a run on `RequestInfoEvent`, without a
+  span, a metric or a log line. The `kyc.await_review` span in the KYC
+  example and the `base14.approval.requested` and `decided` spans in the
+  rebooking example are application code. See
+  [Agent Approval Gates](./agent-approval-gates.md) and
+  [Pydantic AI on Temporal](../../instrument/apps/auto-instrumentation/pydantic-ai-temporal.md).
+- **`gen_ai.conversation.id` is never set for you.** Pydantic AI takes it as
+  `conversation_id` on `agent.run`, Strands through `trace_attributes` and
+  the OpenAI Agents SDK through `RunConfig(group_id=...)`. Agent Framework
+  and Google ADK set it only from a managed session ID, Mastra maps only
+  `threadId`, and Claude Code and Codex carry `session.id` instead. The
+  other examples set it in a span processor.
+- **`error.type` is missing on most frameworks' spans.** Pydantic AI,
+  Strands and Google ADK set error status and a recorded exception only;
+  the OpenAI Agents instrumentation sets `_OTHER`; Mastra reports `unknown`
+  on a failed model connection. Agent Framework sets it. The examples add it
+  in a span exporter.
+- **A failed tool call rarely fails the run.** `execute_tool` carries the
+  error and `invoke_agent` stays clean when the agent recovers: an unknown
+  booking in the rebooking example, a failed ranking fetch in the filing
+  analyst, a sanctions lookup retried under Temporal. Filter on tool spans
+  as well as run spans.
+- **A nested agent hides its failures from the caller.** Strands ends the
+  outer `execute_tool` without error when a tool inside the inner agent
+  fails, and Agent Framework handoffs have no span at all. Read nesting from
+  `gen_ai.agent.name` on each `invoke_agent` span.
+- **Metrics differ by framework.** Pydantic AI records
+  `gen_ai.client.token.usage` but no duration; Strands records `strands.*`
+  metrics; Vercel AI SDK 7 and Mastra record none, so their examples derive
+  `gen_ai.client.*` from spans in the collector; Claude Code and Codex export
+  their own counters. Google ADK and Agent Framework record both
+  conventional histograms.
+- **Cost is a price-table lookup, not a framework feature.** Pydantic AI
+  prices only models in its own table; no other framework records cost.
+  Every example adds `base14.gen_ai.cost` from a shared price table, zero and
+  flagged simulated on local models.
+- **`OTEL_SEMCONV_STABILITY_OPT_IN` reaches only some instrumentations.**
+  OpenTelemetry's own packages, Strands and OpenClaw read it; Pydantic AI,
+  Vercel AI SDK 7 and the Agent Framework .NET packages do not. Set it
+  anyway, so every instrumentation that does read it writes the same
+  attribute shapes.
+- **`OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT` is the same.** The
+  OpenAI Agents instrumentations read it; Pydantic AI, Strands and Agent
+  Framework need the application to map it onto their own switch. With
+  capture on, Agent Framework stores each message on the `chat` span and
+  again on the `invoke_agent` span above it.
+- **Content survives where telemetry does not reach.** Temporal history
+  keeps signal payloads and activity inputs whatever the capture setting
+  says.
+
+## What to Look For in Scout
+
+### Find every span of one run
+
+Filter on `gen_ai.conversation.id`. In the KYC example it is the case ID, so
+one filter returns the extraction and assessment runs across every document
+round. Where a framework does not set it, the example's own ID does the same
+job: `base14.run.id` in the rebooking example.
+
+### Separate failed runs from runs that recovered
+
+Filter `invoke_agent` spans on `status = Error` and group by `error.type`
+for runs that failed outright: `pydantic_ai.exceptions.UsageLimitExceeded`
+when a KYC run hits its request budget. Then filter `execute_tool` spans the
+same way for runs that recovered: an unknown booking in the rebooking example
+fails `tools/call lookup_booking` and `execute_tool lookup_booking` while the
+run completes.
+
+### Follow a handoff or a nested agent
+
+Group a trace's `invoke_agent` spans by `gen_ai.agent.name`. A nested agent
+sits under the caller's `execute_tool` span, as `invoke_agent ranking` does
+under `execute_tool rank_among_filers` in the filing analyst. An Agent
+Framework handoff is two `invoke_agent` spans in sequence, `triage` then
+`rebooking`, with the handoff tool listed in `gen_ai.tool.definitions` on the
+first.
+
+### See where a run waited for a person
+
+Read the wait span's duration: `kyc.await_review` in the KYC example, with
+the `base14.kyc.review.wait` histogram by `base14.kyc.review_decision`; or
+`base14.agent.approval.wait.duration` by `base14.approval.outcome` in the
+rebooking example, where the requested and decided spans sit in different
+traces and are joined by a span link.
+
+### Read tokens and cost per agent
+
+Sum `gen_ai.usage.input_tokens` and `gen_ai.usage.output_tokens` on `chat`
+spans grouped by `gen_ai.agent.name`, which Pydantic AI and Agent Framework
+set on `chat` spans as well as on `invoke_agent`. Read cost from
+`base14.gen_ai.cost` on the same spans, and treat
+`base14.gen_ai.cost.simulated=true` as a placeholder, not a price.
 
 ## Production Configuration
 
@@ -686,7 +798,7 @@ production unless needed, and add a collector redaction processor as a backstop.
 ### How do I find the most expensive or slowest agent?
 
 Record `gen_ai.agent.name` on both spans and metrics, then query
-`sum(gen_ai.client.cost) by (gen_ai.agent.name)` for cost and
+`sum(base14.gen_ai.cost) by (gen_ai.agent.name)` for cost and
 `histogram_quantile` over `gen_ai.client.operation.duration` grouped by agent
 for latency.
 
