@@ -1,85 +1,170 @@
 ---
 title: >
-  Kubernetes Cluster OpenTelemetry Monitoring - Deployment, Pod,
-  and Node State Metrics
+  Kubernetes Cluster OpenTelemetry Monitoring - Deployment, Pod, Node
+  State, Events, and Collector Setup
 sidebar_label: K8s Cluster
 id: collecting-k8s-cluster-telemetry
 sidebar_position: 47
 description: >
-  Collect cluster-level Kubernetes metrics with the OpenTelemetry
-  Collector's k8s_cluster receiver. Watch deployments, pods, nodes,
-  HPAs, and jobs from the API server and export to base14 Scout.
+  Collect cluster-level Kubernetes state with the OpenTelemetry Collector's
+  k8s_cluster receiver and events as logs with k8sobjects. Monitor replica
+  health, pod phases, restarts and node conditions in base14 Scout.
 keywords:
   - kubernetes cluster opentelemetry
   - k8s_cluster receiver
   - kubernetes object state metrics
   - k8s.deployment.available
-  - k8s.hpa.current_replicas
+  - k8s.container.restarts
   - kubernetes events as logs
-  - opentelemetry k8sobjects receiver
+  - k8sobjects receiver
   - kubernetes observability
 ---
 
 # K8s Cluster
 
-The OpenTelemetry Collector's `k8s_cluster` receiver watches the
-Kubernetes API server and synthesizes cluster-level metrics from object
-state - deployment and replicaset replica counts, pod phases, node
-conditions, HPA replicas, and job progress. It reports the desired and
-observed state the API server holds, not per-node runtime usage (that
-is the `kubeletstats` receiver's job).
+The Collector's `k8s_cluster` receiver watches the API server and turns
+object state into metrics: replicas available against desired, pod phases,
+container restarts, node conditions, autoscaler and job progress. It needs
+nothing deployed in the cluster beyond the Collector. Alongside it, the
+`k8sobjects` receiver turns Kubernetes events into log records, which is
+where reasons such as `OOMKilled` and `ImagePullBackOff` appear as text.
+Run one Collector replica for both; the API server holds the whole
+cluster. This guide covers the RBAC, both receivers, the tiers and
+shipping to base14 Scout.
 
-Run a single Collector for the cluster (a Deployment, not a DaemonSet):
-the receiver reads from the API server, so one instance sees the whole
-cluster. This guide configures the receiver, the ServiceAccount it
-needs, an optional events-to-logs stream, and ships everything to
-base14 Scout.
+For usage per node and pod, pair this guide with
+[Kubelet Stats](./kubelet-stats.md). For reasons as metrics, conditions by
+name and object labels, see [kube-state-metrics](./kube-state-metrics.md).
 
 ## Prerequisites
 
 | Requirement            | Minimum | Recommended |
 | ---------------------- | ------- | ----------- |
-| Kubernetes             | 1.27    | 1.34+       |
-| OTel Collector Contrib | 0.90.0  | 0.152+      |
+| Kubernetes             | 1.27    | 1.36        |
+| OTel Collector Contrib | 0.149.0 | Latest      |
 | base14 Scout           | Any     | -           |
+
+The Collector floor is about component names: the `otlp_http` exporter
+was `otlphttp` before contrib 0.149.0.
 
 Before starting:
 
-- A ServiceAccount the Collector runs as, with `get`/`list`/`watch` on
-  the cluster-shape resources the receiver counts (see Access Setup
-  below).
-- OTel Collector Contrib deployed as a single-replica Deployment - see
+- `kubectl` access with permission to create a ClusterRole.
+- The Collector deployed as a one-replica Deployment - see
   [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md).
-- At least one Deployment in the cluster. With no workloads, the
-  deployment, replicaset, and pod metric families stay empty - the
-  receiver only reports objects that exist.
+- A Scout account and OTLP endpoint.
 
 ## What You'll Monitor
 
-- **Workloads**: deployment available/desired replicas, replicaset
-  available/desired replicas, container readiness and restart counts.
-- **Pods**: pod phase (Pending, Running, Succeeded, Failed, Unknown)
-  and the status reason when a pod is not Running.
-- **Nodes**: node Ready condition across the cluster.
-- **Namespaces**: namespace phase (Active, Terminating).
-- **Autoscaling** (when an HPA exists): current, desired, min, and max
-  replicas the HPA observes.
-- **Jobs** (when a Job exists): active and successful pod counts.
+Metrics are grouped into three tiers by how you use them. Collect Core
+always, alert on Operational, and use Diagnostic during an incident or a
+capacity review.
 
-Full metric reference:
-[OTel k8s_cluster Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/k8sclusterreceiver)
+The receiver emits 38 metrics by default and 40 with `k8s.pod.status_reason`
+and `k8s.node.condition` turned on. Series scale with objects: one per
+deployment, replicaset, pod, container, job and node.
+
+### Core - are workloads where they should be
+
+| Metric | Type | What it tells you |
+| --- | --- | --- |
+| `k8s.node.condition_ready` | gauge | 1 when the node's Ready condition is true. |
+| `k8s.deployment.available`, `k8s.deployment.desired` | gauge | Available replicas against the spec, per Deployment. |
+| `k8s.pod.phase` | gauge | The pod's phase as an integer: Pending 1, Running 2, Succeeded 3, Failed 4, Unknown 5. |
+| `k8s.container.restarts` | gauge | Restarts per container. |
+
+### Operational - what to alert on
+
+| Metric | Type | What it tells you |
+| --- | --- | --- |
+| `k8s.container.ready` | gauge | 1 when the container's readiness probe passes. |
+| `k8s.job.failed_pods`, `k8s.job.active_pods` | gauge | Pods of a Job that failed, and that are running. |
+| `k8s.daemonset.ready_nodes`, `k8s.daemonset.desired_scheduled_nodes`, `k8s.daemonset.misscheduled_nodes` | gauge | DaemonSet pods ready against the nodes that need one. |
+| `k8s.statefulset.ready_pods`, `k8s.statefulset.desired_pods` | gauge | StatefulSet pods ready against the spec. |
+| `k8s.hpa.current_replicas`, `k8s.hpa.desired_replicas`, `k8s.hpa.max_replicas` | gauge | Where an autoscaler is against its ceiling. |
+| `k8s.replicaset.available`, `k8s.replicaset.desired` | gauge | ReplicaSet replicas, one per revision of a Deployment. |
+| `k8s.node.condition_memory_pressure`, `k8s.node.condition_disk_pressure`, `k8s.node.condition_pid_pressure` | gauge | 1 when the node reports pressure. |
+| `k8s.node.allocatable_cpu`, `k8s.node.allocatable_memory`, `k8s.node.allocatable_pods` | gauge | What the node can schedule. |
+| `k8s.pod.status_reason` | gauge | The node-level reason a pod is not running, as an integer. Optional; see below. |
+
+### Diagnostic - for investigation and tuning
+
+| Metric | What it tells you |
+| --- | --- |
+| `k8s.container.cpu_request`, `k8s.container.cpu_limit`, `k8s.container.memory_request`, `k8s.container.memory_limit` | Requests and limits per container, the denominators for usage ratios from Kubelet Stats. |
+| `k8s.job.desired_successful_pods`, `k8s.job.successful_pods`, `k8s.job.max_parallel_pods` | Job sizing and progress. |
+| `k8s.cronjob.active_jobs` | Jobs a CronJob has running. |
+| `k8s.hpa.min_replicas` | The autoscaler's floor. |
+| `k8s.statefulset.current_pods`, `k8s.statefulset.updated_pods` | StatefulSet rollout progress. |
+| `k8s.daemonset.current_scheduled_nodes` | DaemonSet pods scheduled. |
+| `k8s.node.allocatable_ephemeral_storage` | Ephemeral storage the node can schedule. |
+| `k8s.namespace.phase` | Active 1, Terminating 0. |
+| `k8s.node.condition` | One family with a `condition` attribute, alongside the `k8s.node.condition_*` families. Optional. |
+
+### Phases and reasons are integers
+
+`k8s.pod.phase` reads Pending 1, Running 2, Succeeded 3, Failed 4,
+Unknown 5. `k8s.pod.status_reason`, once enabled, reads Evicted 1,
+NodeAffinity 2, NodeLost 3, Shutdown 4, UnexpectedAdmissionError 5 and
+Unknown 6. On a healthy cluster every pod reads 6: the reason covers
+node-level evictions, not image pull or crash failures. Map the integers
+back to names in dashboards.
+
+### The termination reason is a resource attribute, not a metric
+
+With the `k8s.container.status.last_terminated_reason` resource attribute
+enabled, every container's series carry why it last died: `OOMKilled` on
+a container the kernel killed for memory, `Error` on one that exited
+non-zero, empty on one that never did. Group `k8s.container.restarts` by
+it to tell OOM kills from crash loops. Without it, the receiver counts
+restarts and says nothing about the cause.
+
+### Events carry the rest
+
+Image pull failures, crash loops, evictions and failed Jobs each raise a
+Kubernetes event with a `reason` such as `ImagePullBackOff`,
+`CrashLoopBackOff`, `OOMKilled`, `Evicted` or `BackoffLimitExceeded`. The
+`k8sobjects` receiver ships them as log records; see
+[Collecting logs](#collecting-logs).
+
+### One replica, not two
+
+The receiver reports every object in the cluster. A second Collector
+replica reports every object twice. Run one, and let the Deployment
+restart it.
+
+## Key Alerts to Configure
+
+Thresholds are a state read or a comparison between two gauges.
+Durations are the only knob; set them to the time your rollouts take.
+
+| Metric | Threshold | Why it matters |
+| --- | --- | --- |
+| `k8s.node.condition_ready` | `== 0` for one interval | A node is NotReady. |
+| `k8s.deployment.available` | `< k8s.deployment.desired` for 10 minutes | A rollout is stuck or pods are failing. |
+| `k8s.container.restarts` | `increase(...[15m]) > 0` | A crash loop or an OOM kill; group by the termination reason attribute. |
+| `k8s.pod.phase` | `== 1` for 10 minutes | A pod is Pending: unschedulable or waiting on an image. |
+| `k8s.job.failed_pods` | `> 0` | A Job exhausted its backoff. |
+| `k8s.node.condition_memory_pressure`, `k8s.node.condition_disk_pressure` | `== 1` | The kubelet is evicting. |
+| `k8s.hpa.current_replicas` | `== k8s.hpa.max_replicas`, sustained | The autoscaler is at its ceiling. |
 
 ## Access Setup
 
-The receiver authenticates to the API server with its ServiceAccount
-token (`auth_type: serviceAccount`). Grant that ServiceAccount
-`get`/`list`/`watch` on the object kinds it counts with a ClusterRole:
+The receiver authenticates to the API server with its service account
+token and needs `get`, `list` and `watch` on every kind it reports. The
+events rule serves the `k8sobjects` receiver as well:
 
-```yaml showLineNumbers title="k8s-cluster-rbac.yaml"
+```yaml showLineNumbers title="rbac.yaml"
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: otel-cluster
+  namespace: otel
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: otel-k8s-cluster
+  name: otel-cluster
 rules:
   - apiGroups: [""]
     resources:
@@ -90,42 +175,44 @@ rules:
       - nodes/spec
       - pods
       - pods/status
-      - persistentvolumeclaims
       - replicationcontrollers
       - replicationcontrollers/status
       - resourcequotas
       - services
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["events.k8s.io"]
-    resources: ["events"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["apps"]
-    resources: ["daemonsets", "deployments", "replicasets", "statefulsets"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["batch"]
-    resources: ["jobs", "cronjobs"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["autoscaling"]
-    resources: ["horizontalpodautoscalers"]
-    verbs: ["get", "list", "watch"]
+      - endpoints
+      - persistentvolumes
+      - persistentvolumeclaims
+    verbs: [get, list, watch]
+  - apiGroups: [apps]
+    resources: [daemonsets, deployments, replicasets, statefulsets]
+    verbs: [get, list, watch]
+  - apiGroups: [batch]
+    resources: [jobs, cronjobs]
+    verbs: [get, list, watch]
+  - apiGroups: [autoscaling]
+    resources: [horizontalpodautoscalers]
+    verbs: [get, list, watch]
+  - apiGroups: [events.k8s.io]
+    resources: [events]
+    verbs: [get, list, watch]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: otel-k8s-cluster
+  name: otel-cluster
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: otel-cluster
 subjects:
   - kind: ServiceAccount
-    name: otel-collector
-    namespace: observability
-roleRef:
-  kind: ClusterRole
-  name: otel-k8s-cluster
-  apiGroup: rbac.authorization.k8s.io
+    name: otel-cluster
+    namespace: otel
 ```
 
-A missing verb shows up as an informer cache-sync timeout in the
-Collector logs (for example, the HPA family needs the `autoscaling`
-rule). Keep the rules in sync with the object kinds you expect to see.
+A missing rule shows as an informer cache sync timeout in the Collector
+log, naming the kind. Run the Collector as a one-replica Deployment with
+`serviceAccountName: otel-cluster`.
 
 ## Configuration
 
@@ -133,132 +220,65 @@ rule). Keep the rules in sync with the object kinds you expect to see.
 receivers:
   k8s_cluster:
     auth_type: serviceAccount
-    collection_interval: 60s
-    # Node conditions to surface as k8s.node.condition_* metrics.
-    node_conditions_to_report:
-      [Ready, MemoryPressure, DiskPressure, PIDPressure, NetworkUnavailable]
-    # Node allocatable capacity to surface as k8s.node.allocatable_* metrics.
-    # `pods` is the denominator for per-node pod capacity.
-    allocatable_types_to_report:
-      [cpu, memory, ephemeral-storage, storage, pods]
-    resource_attributes:
-      # Why a container last died, e.g. OOMKilled.
-      k8s.container.status.last_terminated_reason:
-        enabled: true
-    # These are off by default and must be enabled explicitly.
+    collection_interval: 30s
+    node_conditions_to_report: [Ready, MemoryPressure, DiskPressure, PIDPressure]
+    allocatable_types_to_report: [cpu, memory, ephemeral-storage, pods]
     metrics:
       k8s.pod.status_reason:
         enabled: true
-      k8s.node.condition:
-        enabled: true
-      k8s.container.cpu_request:
-        enabled: true
-      k8s.container.memory_request:
-        enabled: true
-      k8s.container.cpu_limit:
-        enabled: true
-      k8s.container.memory_limit:
+    resource_attributes:
+      k8s.container.status.last_terminated_reason:
         enabled: true
 
 processors:
   resource:
     attributes:
-      - key: environment
-        value: ${env:ENVIRONMENT}
-        action: upsert
       - key: service.name
         value: ${env:SERVICE_NAME}
+        action: upsert
+      - key: deployment.environment.name
+        value: ${env:ENVIRONMENT}
+        action: upsert
+      - key: environment
+        value: ${env:ENVIRONMENT}
         action: upsert
 
   batch:
     timeout: 10s
     send_batch_size: 1024
 
-# Export to base14 Scout
 exporters:
-  otlphttp/b14:
+  otlp_http/b14:
     endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT}
-    tls:
-      insecure_skip_verify: true
 
 service:
   pipelines:
     metrics:
       receivers: [k8s_cluster]
       processors: [resource, batch]
-      exporters: [otlphttp/b14]
+      exporters: [otlp_http/b14]
 ```
+
+`node_conditions_to_report` names the `k8s.node.condition_*` families
+and `allocatable_types_to_report` the `k8s.node.allocatable_*` ones. The
+exporter name is `otlp_http` from contrib 0.144.0 on; the older
+`otlphttp` spelling still works.
 
 ### Environment Variables
 
 ```bash showLineNumbers title=".env"
+SERVICE_NAME=k8s-cluster
 ENVIRONMENT=your_environment
-SERVICE_NAME=your_service_name
 OTEL_EXPORTER_OTLP_ENDPOINT=https://<your-tenant>.base14.io
 ```
 
-## Metrics Reference
+## Collecting logs
 
-These metrics emit for any non-empty cluster. The receiver reports
-whatever objects the cluster has - deploy or scale workloads to see the
-counts move.
-
-Some are off by default and only appear once enabled in the `metrics:` block
-shown in Configuration above: `k8s.pod.status_reason`, `k8s.node.condition`,
-and the four container request and limit metrics.
-
-### Workloads
-
-| Metric | Type | Unit | Notes |
-| --- | --- | --- | --- |
-| `k8s.deployment.available` | gauge | `{pods}` | Available replicas of a Deployment. |
-| `k8s.deployment.desired` | gauge | `{pods}` | Desired replicas (the spec target). |
-| `k8s.replicaset.available` | gauge | `{pods}` | Available replicas of a ReplicaSet. |
-| `k8s.replicaset.desired` | gauge | `{pods}` | Desired replicas of a ReplicaSet. |
-| `k8s.container.ready` | gauge | `1` | 1 when the container's readiness probe passes. |
-| `k8s.container.restarts` | sum | `{restarts}` | Container restart count. |
-| `k8s.container.cpu_request` | gauge | `{cpu}` | CPU the container requests. |
-| `k8s.container.cpu_limit` | gauge | `{cpu}` | CPU ceiling for the container. |
-| `k8s.container.memory_request` | gauge | `By` | Memory the container requests. |
-| `k8s.container.memory_limit` | gauge | `By` | Memory ceiling for the container. |
-
-### Pods and namespaces
-
-| Metric | Type | Unit | Notes |
-| --- | --- | --- | --- |
-| `k8s.pod.phase` | gauge | `1` | Phase code (1=Pending, 2=Running, 3=Succeeded, 4=Failed, 5=Unknown). |
-| `k8s.pod.status_reason` | gauge | `1` | Reason code when a pod is not Running. |
-| `k8s.namespace.phase` | gauge | `1` | Namespace phase (1=Active, 0=Terminating). |
-
-### Nodes
-
-| Metric | Type | Unit | Notes |
-| --- | --- | --- | --- |
-| `k8s.node.condition_ready` | gauge | `1` | 1 when the node's Ready condition is true. |
-| `k8s.node.condition_memory_pressure` | gauge | `1` | 1 when the node reports memory pressure. |
-| `k8s.node.condition_disk_pressure` | gauge | `1` | 1 when the node reports disk pressure. |
-| `k8s.node.condition_pid_pressure` | gauge | `1` | 1 when the node reports PID pressure. |
-| `k8s.node.condition_network_unavailable` | gauge | `1` | 1 when the node's network is unavailable. |
-
-### Autoscaling and jobs (conditional)
-
-The HPA and Job families emit only when those objects exist in the
-cluster. Ship an HPA or run a Job to see them.
-
-| Metric | Type | Unit | Notes |
-| --- | --- | --- | --- |
-| `k8s.hpa.current_replicas` | gauge | `{pods}` | Current replicas the HPA observes. |
-| `k8s.hpa.desired_replicas` | gauge | `{pods}` | Replicas the HPA wants. |
-| `k8s.hpa.min_replicas` | gauge | `{pods}` | HPA floor. |
-| `k8s.hpa.max_replicas` | gauge | `{pods}` | HPA ceiling. |
-| `k8s.job.active_pods` | gauge | `{pods}` | Active pods of a Job. |
-| `k8s.job.successful_pods` | gauge | `{pods}` | Pods the Job completed successfully. |
-
-## Cluster Events as Logs
-
-To capture Kubernetes events (scheduling, scaling, image pulls, probe
-failures) as log records, add the `k8sobjects` receiver in `mode:
-watch` against the Events API. Each event becomes one log record.
+Add the `k8sobjects` receiver in watch mode on the Events API and a logs
+pipeline. Each event becomes one log record whose body is the Event
+object: `reason`, `note`, `regarding`, `type` and the count the API
+server keeps for repeated events. The resource carries
+`k8s.namespace.name`.
 
 ```yaml showLineNumbers title="config/otel-collector.yaml (events)"
 receivers:
@@ -267,7 +287,6 @@ receivers:
     objects:
       - name: events
         mode: watch
-        exclude_watch_type: [DELETED]
         group: events.k8s.io
 
 service:
@@ -275,113 +294,117 @@ service:
     logs:
       receivers: [k8sobjects]
       processors: [resource, batch]
-      exporters: [otlphttp/b14]
+      exporters: [otlp_http/b14]
 ```
 
-The ServiceAccount needs `get`/`list`/`watch` on `events` in both the
-core (`""`) and `events.k8s.io` API groups. Both rules are already in the
-ClusterRole above.
+Watch mode ships events as they happen. A busy cluster raises several a
+second during rollouts; the batch processor absorbs that.
 
 ## Verify the Setup
 
-Deploy the Collector and check that metrics flow within 60 seconds.
-The receiver scrapes a definition catalog before it has values, so
-allow one or two collection intervals before judging an empty result:
-
 ```bash showLineNumbers
-# Confirm the Collector pod is running (one replica for the cluster).
-kubectl -n observability get pods -l app=otel-collector
+# One replica
+kubectl -n otel get pods -l app=otel-cluster
 
-# Check the Collector logs for k8s_cluster activity.
-kubectl -n observability logs deployment/otel-collector \
-  | grep -i k8s_cluster
+# No informer timeouts, no watch errors
+kubectl -n otel logs deployment/otel-cluster | grep -iE "timeout|error"
 ```
 
-A quick way to confirm the receiver is emitting is to add a `debug`
-exporter (`verbosity: detailed`) to the metrics pipeline temporarily
-and watch for a real metric name such as `k8s.deployment.available` in
-the pod logs.
+The second command prints nothing when the RBAC is complete. Allow one
+interval before judging; the receiver lists every kind once at start.
+
+In Scout, filter on the service name you set. `k8s.node.condition_ready`
+should have one series per node, `k8s.deployment.available` one per
+Deployment, and the logs view should show an event record for each pod
+start.
 
 ## Troubleshooting
 
-### Informer cache-sync timeout on startup
+### Informer cache sync timeout on startup
 
-**Cause**: the Collector ServiceAccount lacks `get`/`list`/`watch` on
-one of the object kinds the receiver counts.
+**Cause**: The ClusterRole lacks `get`, `list` or `watch` on the kind
+named in the message.
 
-**Fix**:
+**Fix**: Add the rule for that kind's API group and restart the
+Collector.
 
-1. Apply the ClusterRole and ClusterRoleBinding from Access Setup.
-2. Confirm the Deployment's `serviceAccountName` matches the binding
-   subject.
-3. If only one family is missing (for example the HPA metrics), add the
-   matching API group to the ClusterRole.
+### Restarts rise but every reason reads the same
 
-### Deployment and pod metrics are empty
+**Cause**: `k8s.pod.status_reason` covers node-level evictions only, so it
+reads Unknown, 6, for image pull and crash failures.
 
-**Cause**: the cluster has no workloads, or the receiver is not reaching
-the API server.
-
-**Fix**:
-
-1. Confirm workloads exist: `kubectl get deployments -A`.
-2. Check the Collector logs for API connection errors.
-3. Allow one or two collection intervals after startup before judging.
+**Fix**: Enable the `k8s.container.status.last_terminated_reason` resource
+attribute for container deaths, and read the events for pull failures.
 
 ### HPA or Job metrics never appear
 
-**Cause**: those families only emit when an HPA or Job object exists.
+**Cause**: Those families exist only while an HPA or Job object does.
+
+**Fix**: `kubectl get hpa,jobs -A`, and confirm the `autoscaling` and
+`batch` rules are in the ClusterRole.
+
+### Every object is reported twice
+
+**Cause**: The Collector runs with more than one replica, or a second
+Collector carries the same receiver.
+
+**Fix**: Run one replica.
+
+### No metrics appearing in Scout
+
+**Cause**: Metrics are collected but not exported.
 
 **Fix**:
 
-1. Confirm the objects exist: `kubectl get hpa,jobs -A`.
-2. Verify the `autoscaling` and `batch` rules are in the ClusterRole.
+1. Check the Collector logs for export errors.
+2. Verify `OTEL_EXPORTER_OTLP_ENDPOINT` is set correctly.
+3. Confirm the pipelines include the receivers and the exporter.
 
 ## FAQ
 
+### When should I use this receiver instead of kube-state-metrics?
+
+When you want object state with nothing to deploy. kube-state-metrics
+adds the reasons as metrics, conditions by name, labels for joins and
+about six times the series. Many clusters run both; keep them apart by
+service name.
+
 ### Why one Collector for the cluster instead of one per node?
 
-The `k8s_cluster` receiver reads from the API server, which holds the
-state of every object in the cluster. A single Collector sees
-everything; running one per node would produce duplicate metrics for
-the same cluster-scope objects.
-
-### What is the difference between k8s_cluster and kubeletstats receivers?
-
-The `k8s_cluster` receiver reports object state from the API server -
-replica counts, phases, conditions. The `kubeletstats` receiver reads
-each node's kubelet for actual runtime resource usage - CPU, memory,
-network, filesystem. They are complementary: state versus usage.
+The receiver reads the API server, which holds every object. One
+Collector sees everything; one per node would repeat it.
 
 ### Why is `k8s.pod.phase` a number?
 
-The receiver encodes phase as an integer (1=Pending, 2=Running,
-3=Succeeded, 4=Failed, 5=Unknown) so it can be stored and queried as a
-gauge. Map the value back to the phase name when building dashboards.
+The receiver encodes phase as an integer so it can be stored as a gauge:
+Pending 1, Running 2, Succeeded 3, Failed 4, Unknown 5.
 
-### Do I need the Kubernetes events stream?
+### Do I need the events stream?
 
-No. Metrics work on their own. The `k8sobjects` events-to-logs stream
-is optional and useful when you want scheduling, scaling, and probe
-events alongside the state metrics.
-
-## What's Next?
-
-- **Create Dashboards**: Explore pre-built dashboards or build your own.
-  See
-  [Create Your First Dashboard](../../guides/create-your-first-dashboard.md)
-- **Monitor More Components**: Pair this with the kubelet stats receiver
-  for per-node runtime usage.
-- **Fine-tune Collection**: Adjust `collection_interval` based on how
-  quickly you need to see object-state shifts.
+No. The metrics stand on their own. The events add the reasons behind
+state changes as text, which the metrics do not carry.
 
 ## Related Guides
 
-- [k8X](../../operate/k8x/getting-started.md) — Explore this telemetry as
-  clusters, nodes, namespaces, and workloads in Scout
-- [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md) —
-  Deploy the Collector in your cluster
-- [OTel Collector Configuration](../collector-setup/otel-collector-config.md) —
-  Advanced collector configuration
+- [Kubelet Stats Monitoring](./kubelet-stats.md) - Usage per node, pod
+  and container, the other half of this picture.
+- [kube-state-metrics Monitoring](./kube-state-metrics.md) - State with
+  reasons, conditions and labels.
+- [K3s Monitoring](./k3s.md) - The control plane metrics this receiver
+  does not carry.
+- [k8X](../../operate/k8x/getting-started.md) - Explore this telemetry as
+  clusters, nodes, namespaces and workloads in Scout.
+- [Kubernetes Helm Setup](../collector-setup/kubernetes-helm-setup.md) -
+  Run the Collector in the cluster.
+- [Creating Alerts](../../guides/creating-alerts-with-logx.md) - Alert on
+  cluster state.
 
-Validated against: managed Kubernetes, OTel Collector Contrib 0.152.0.
+## What's Next?
+
+- **Create Dashboards**: Start with deployments below spec, pods by
+  phase, restarts by termination reason and node conditions. See
+  [Create Your First Dashboard](../../guides/create-your-first-dashboard.md).
+- **Set your durations**: Take a week of rollout times, then set the
+  alert durations above.
+- **Add usage**: Pair this guide with Kubelet Stats for the usage behind
+  the requests and limits.
