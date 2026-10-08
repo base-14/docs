@@ -78,6 +78,14 @@ does.
 - Carry a prompt version in run `metadata`.
 - Turn thinking off for Ollama models.
 
+### Signals
+
+| Signal | What Pydantic AI emits | What the [example](#complete-example) adds |
+| --- | --- | --- |
+| Traces | `invoke_agent`, `chat` and `execute_tool` spans with GenAI attributes, through the global tracer provider. | `error.type`, `base14.gen_ai.cost` and `base14.prompt.version` in a span exporter. FastAPI and psycopg spans, Temporal spans and five hand-written wait spans. |
+| Metrics | `gen_ai.client.token.usage` per request and token type. `operation.cost` only for models in its price table, and `gen_ai.client.operation.time_to_first_chunk` only for streamed responses. | `base14.kyc.*` counters and histograms from workflow code. `http.server.*` from the FastAPI instrumentation and the Temporal SDK metrics. |
+| Logs | None. Pydantic AI writes no log records. | OTLP logs through a replay-safe logger provider, so every line carries the trace and span ID. |
+
 ## Prerequisites
 
 - Python 3.10 or later. The example uses 3.14.
@@ -97,11 +105,22 @@ does.
 | `opentelemetry-instrumentation-fastapi`, `-psycopg`, `-logging` | 0.65b0 |
 | `fastapi` | 0.141.1 |
 | Python | 3.14 |
+| Ollama | 0.40.0, with `gemma4:e2b` and `qwen3.5:9B` |
 | OpenTelemetry Collector Contrib | 0.161.0 |
 | Example | [`ai-kyc-onboarding`](https://github.com/base-14/examples/tree/main/python/ai-kyc-onboarding) |
 
-Pin `pydantic-ai-slim` to an exact version and re-check the spans after each
+Last verified 2026-10-07 with Pydantic AI 2.49.0, against
+[`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai)
+at commit `4f85037` (2026-10-06). The GenAI conventions are in Development
+status, so attribute names can change between Pydantic AI releases. Pin
+`pydantic-ai-slim` to an exact version and re-check the spans after each
 upgrade.
+
+The example holds `opentelemetry-sdk` and `opentelemetry-api` at 1.44.0. The
+replay-safe logger in `temporalio` 1.33.0 lacks the `enabled()` method that
+the 1.45.0 API makes abstract, so the worker cannot build its logger provider
+on 1.45.0. Move the SDK pin when `temporalio` ships the method. See
+[Pydantic AI on Temporal](./pydantic-ai-temporal.md#compatibility-matrix).
 
 ## Installation
 
@@ -323,12 +342,21 @@ ASSESSMENT_MODEL=qwen3.5:9B
 EXTRACTION_PROMPT_VERSION=v1
 ASSESSMENT_PROMPT_VERSION=v3
 OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental
 OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true
 ```
 
 `OLLAMA_BASE_URL` has no `/v1`; the code adds it. On the host, use
 `http://localhost:11434` and `http://localhost:4318`. The OTLP exporters read
 `OTEL_EXPORTER_OTLP_ENDPOINT` and add each signal's path.
+
+Pydantic AI reads neither `OTEL_SEMCONV_STABILITY_OPT_IN` nor
+`OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT`. Its spans carry the
+current GenAI shape, with messages as attributes, whatever the first variable
+says, and the example maps the second onto `include_content` itself. The
+semconv variable is read by OpenTelemetry's own instrumentation packages, so
+set it anyway: an official GenAI instrumentation added later then writes the
+same attribute names as Pydantic AI.
 
 ```mdx-code-block
 </TabItem>
@@ -496,10 +524,11 @@ def _prompt_version_attributes(
 
 ## Adding Cost and Error Type with a Span Exporter
 
-Pydantic AI records token counts but no cost. To add cost, or any attribute
-derived from Pydantic AI's own, wrap the span exporter. A finished span
-cannot be changed. The wrapper rebuilds each GenAI span it changes before
-export and passes the rest through unchanged.
+Pydantic AI prices a request only when its price table knows the provider
+and model. Ollama models are not in it, so on Ollama there is no cost. To add
+cost, or any attribute derived from Pydantic AI's own, wrap the span
+exporter. A finished span cannot be changed. The wrapper rebuilds each GenAI
+span it changes before export and passes the rest through unchanged.
 
 A wrapper can add:
 
@@ -535,6 +564,84 @@ model profile matter on Ollama:
   Gemma models, that profile's JSON schema transformer moves `format: date`
   into the field description, and the model may then leave date fields
   empty.
+
+## Known Gaps
+
+As of Pydantic AI 2.49.0, verified 2026-10-07:
+
+- **No `error.type`.** A failed `chat` or `invoke_agent` span gets error
+  status and a recorded exception only, so Scout cannot group failures by
+  type. The example adds it in a span exporter. See
+  [Adding Cost and Error Type](#adding-cost-and-error-type-with-a-span-exporter).
+- **Cost only for priced models.** `operation.cost` on `chat` spans and the
+  `operation.cost` histogram appear only when Pydantic AI's price table knows
+  the provider and model. On Ollama nothing is recorded. The example adds
+  `base14.gen_ai.cost` with a simulated flag.
+- **No request duration metric.** Pydantic AI records
+  `gen_ai.client.token.usage` and, for streamed responses only,
+  `gen_ai.client.operation.time_to_first_chunk`. Read request latency from
+  `chat` span durations.
+- **No log records.** Pydantic AI writes nothing to the OpenTelemetry logs
+  API. Add the `LoggingHandler`, or in a Temporal worker the replay-safe
+  logger provider, yourself.
+- **The capture and semconv variables are not read.** Map
+  `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT` onto `include_content`
+  as in [Content Capture](#content-capture). `OTEL_SEMCONV_STABILITY_OPT_IN`
+  has no effect on Pydantic AI's spans.
+- **`metadata` is one JSON string** on `invoke_agent`. A filter on a value
+  inside it needs a flat copy, which the example's exporter makes for
+  `base14.prompt.version`.
+- **Run totals use Pydantic AI's own namespace.** `gen_ai.aggregated_usage.*`
+  on `invoke_agent` is not in the conventions, so a dashboard built on
+  `gen_ai.usage.*` sees per-request counts only.
+- **An output retry has no error status.** The first `chat` span of a
+  retried run ends clean; the retry shows only as an extra `chat` span. See
+  [Output Validation Retries](#output-validation-retries).
+- **The span shape depends on the format version.**
+  `InstrumentationSettings(version=...)` defaults to 5. Version 6 puts tool
+  results under the `tool` role instead of `user`, and versions 2 to 4 are
+  deprecated. Check the format version as well as the package version after
+  an upgrade.
+- **On Ollama, a `response_format` blocks tool calls and the Gemma profile
+  drops `format: date`.** Set the model profile as in
+  [Ollama Model Settings](#ollama-model-settings).
+
+## What to Look For in Scout
+
+### Follow one case across its agent runs
+
+Filter spans on `gen_ai.conversation.id` with the case ID. An auto-approved
+case shows two `invoke_agent kyc-extraction` runs with one `chat gemma4:e2b`
+each, then `invoke_agent kyc-assessment` with its `chat qwen3.5:9B` and
+`execute_tool` spans.
+
+### Find failed runs and why
+
+Filter spans on `status = Error` and group by `error.type`. In the example's
+`tight_budget` scenario, `invoke_agent kyc-assessment` carries
+`error.type=pydantic_ai.exceptions.UsageLimitExceeded`, and the `kyc.assess`
+span above it carries `base14.kyc.escalation_reason=budget`. The case still
+closes, approved by a reviewer.
+
+### Count output retries
+
+Count the `chat` children of each `invoke_agent` span. A run with no tools
+and no retries has one. In the `bad_output` scenario one extraction run has
+two, and the second span's `gen_ai.input.messages` holds the retry prompt.
+
+### Read tokens by model
+
+Sum `gen_ai.usage.input_tokens` and `gen_ai.usage.output_tokens` on `chat`
+spans grouped by `gen_ai.request.model`, or chart the
+`gen_ai.client.token.usage` histogram by `gen_ai.request.model` and
+`gen_ai.token.type`. For one run's total, read `gen_ai.aggregated_usage.*`
+on its `invoke_agent` span.
+
+### Compare prompt versions
+
+Group `invoke_agent` spans by `base14.prompt.version`. The example runs
+extraction on `v1` and assessment on `v3`, so a decision rate by version is
+one grouping on `kyc.assess` and its child `invoke_agent` spans.
 
 ## Running Your Application
 
@@ -643,9 +750,11 @@ Pass your ID as `conversation_id` to `agent.run`. It is recorded as
 
 ### Does Pydantic AI record cost?
 
-No, Pydantic AI records token counts but not cost. To add a cost attribute,
-wrap the span exporter and compute it from the token counts and a price
-table, as in
+Only for models in its price table. Pydantic AI then writes `operation.cost`
+on the `chat` span and records an `operation.cost` histogram. Ollama models
+have no price, so neither appears. To add a cost attribute for them, wrap the
+span exporter and compute it from the token counts and your own price table,
+as in
 [Adding Cost and Error Type](#adding-cost-and-error-type-with-a-span-exporter).
 
 ### How do I run Pydantic AI agents durably with tracing?

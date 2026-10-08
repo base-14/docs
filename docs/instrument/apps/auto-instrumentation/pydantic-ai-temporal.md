@@ -77,6 +77,14 @@ does.
 - Record application metrics from workflow code without double counting.
 - Know what Temporal history stores regardless of content capture.
 
+### Signals
+
+| Signal | What Temporal and Pydantic AI emit | What the [example](#complete-example) adds |
+| --- | --- | --- |
+| Traces | `StartWorkflow`, `RunWorkflow`, `StartActivity`, `RunActivity` and the signal, update and query spans from `OpenTelemetryPlugin`, with IDs that survive replay. Pydantic AI's `invoke_agent`, `chat` and `execute_tool` spans inside workflow code. | Five `kyc.*` wait and arrival spans, links from arrivals to their handler spans, `base14.kyc.*` attributes, `base14.temporal.activity.attempt` from an interceptor, cost and `error.type` from a span exporter. FastAPI and psycopg spans. |
+| Metrics | The Temporal SDK's `temporal_*` metrics from the client runtime. `gen_ai.client.token.usage` from Pydantic AI. | `base14.kyc.*` counters and histograms from workflow code through `ReplaySafeMeterProvider`. `http.server.*` from the FastAPI instrumentation. |
+| Logs | Python `logging` only. `workflow.logger` and `activity.logger` add the workflow and activity attributes to each line. Pydantic AI writes no log records. | OTLP export through `ReplaySafeLoggerProvider`, so every line carries its trace and span ID, and every case line `base14.kyc.case_id`. |
+
 ## Prerequisites
 
 - Python 3.14 and [uv](https://docs.astral.sh/uv/).
@@ -98,12 +106,24 @@ does.
 | Temporal server and admin tools | 1.32.0 |
 | Temporal UI | 2.54.1 |
 | PostgreSQL | 18.6 |
+| Ollama | 0.40.0, with `gemma4:e2b` and `qwen3.5:9B` |
 | OpenTelemetry Collector Contrib | 0.161.0 |
 | Example | [`ai-kyc-onboarding`](https://github.com/base-14/examples/tree/main/python/ai-kyc-onboarding) |
 
-`OpenTelemetryPlugin`, `create_tracer_provider` and the replay-safe providers
-are marked experimental in temporalio 1.33.0. Pin both `temporalio` and
-`pydantic-ai-slim` exactly.
+Last verified 2026-10-07 with Pydantic AI 2.49.0 and Temporal Python SDK
+1.33.0, against
+[`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai)
+at commit `4f85037` (2026-10-06). The GenAI conventions are in Development
+status, and `OpenTelemetryPlugin`, `create_tracer_provider` and the
+replay-safe providers are marked experimental in temporalio 1.33.0. Pin both
+`temporalio` and `pydantic-ai-slim` exactly and re-check the spans after each
+upgrade.
+
+The example holds `opentelemetry-sdk`, `opentelemetry-api` and the OTLP
+exporter at 1.44.0. The replay-safe logger in temporalio 1.33.0 lacks the
+`enabled()` method that the 1.45.0 API makes abstract, so the logger provider
+cannot be built on 1.45.0. Move the three pins together when temporalio ships
+the method.
 
 ## Installation
 
@@ -384,12 +404,16 @@ DOCUMENT_DEADLINE_DAYS=3
 REVIEW_DEADLINE_DAYS=2
 REQUEST_BUDGET=40
 OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental
 OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true
 ```
 
 `compose.yaml` sets `OTEL_SERVICE_NAME` to `ai-kyc-onboarding-api` and
 `ai-kyc-onboarding-worker`, `TEMPORAL_ADDRESS` to `temporal:7233` and
-`OTEL_METRIC_EXPORT_INTERVAL` to 10000 ms. Workflow code cannot read the
+`OTEL_METRIC_EXPORT_INTERVAL` to 10000 ms. Neither Pydantic AI nor the
+Temporal SDK reads `OTEL_SEMCONV_STABILITY_OPT_IN`; see
+[Environment Variables](./pydantic-ai.md#configuration) for why the example
+sets it anyway. Workflow code cannot read the
 environment, so the API passes deadlines and the budget into the workflow
 input when it starts a case.
 
@@ -772,6 +796,84 @@ The document text travels in the signal payloads and the activity inputs,
 and every model request and tool call is recorded in the case's history.
 Temporal stores it whatever the capture setting is. Encrypting history
 payloads is out of scope for the example.
+
+## Known Gaps
+
+As of Pydantic AI 2.49.0 and Temporal Python SDK 1.33.0, verified 2026-10-07:
+
+- **An open case has no root span.** `RunWorkflow` is exported when the case
+  closes, so a waiting case shows finished child spans under a missing
+  parent. Find it by `base14.kyc.case_id` or `gen_ai.conversation.id`
+  instead. See [Reading an Open Case](#reading-an-open-case).
+- **Handler spans sit in the sender's trace.** `HandleSignal:submit_document`
+  is in the `POST /cases/{case_id}/documents` trace, not the case trace. The
+  example links each arrival span to its handler. See
+  [Signals and Updates Link into the Case Trace](#signals-and-updates-link-into-the-case-trace).
+- **A killed worker loses its buffered spans.** In the `worker_crash`
+  scenario the killed model request exports nothing; the trace shows only the
+  rerun, one attempt higher. Temporal reruns the activity, so the case is
+  unaffected. See [Retries and Worker Crashes](#retries-and-worker-crashes).
+- **No attempt number on `RunActivity`.** Temporal's spans do not say which
+  attempt they are. The example's `ActivityAttemptInterceptor` sets
+  `base14.temporal.activity.attempt`. See
+  [Add the Attempt Interceptor](#6-add-the-attempt-interceptor-optional).
+- **`TracingInterceptor` workflow spans have no duration and can be missing.**
+  Pydantic AI's `LogfirePlugin` still uses it. Use `OpenTelemetryPlugin` with
+  `create_tracer_provider`. See
+  [Why Not `TracingInterceptor`](#why-not-tracinginterceptor).
+- **The Temporal runtime does not read `OTEL_EXPORTER_OTLP_ENDPOINT`.**
+  Without a full `/v1/metrics` URL in `OpenTelemetryConfig`, the SDK metrics
+  go nowhere. See [Temporal SDK Metrics](#temporal-sdk-metrics).
+- **temporalio 1.33.0 holds the OpenTelemetry SDK at 1.44.0.** Its
+  replay-safe logger lacks the `enabled()` method the 1.45.0 API requires, so
+  a library that needs 1.45.0 cannot share the worker's environment until
+  temporalio ships it.
+- **Temporal history holds the content whatever the capture setting.**
+  Document text travels in signal payloads and activity inputs. See
+  [Content Capture and Temporal History](#content-capture-and-temporal-history).
+- **Pydantic AI's own gaps apply inside the workflow.** No `error.type`, no
+  cost on Ollama and no log records. See
+  [Known Gaps](./pydantic-ai.md#known-gaps) on the Pydantic AI page.
+
+## What to Look For in Scout
+
+### Find a case by its ID
+
+Filter spans or logs on `base14.kyc.case_id`. The case's own trace starts at
+`POST /cases`; its document and review requests are separate traces that
+carry the same attribute. The GenAI spans carry the ID as
+`gen_ai.conversation.id` as well.
+
+### See why a case was escalated
+
+Filter `kyc.assess` spans on `base14.kyc.escalation_reason`. The example
+produces `risk` for a near sanctions match and `budget` when a run hits its
+request limit; `invalid_output` and `agent_error` come from output and
+activity failures. The `base14.kyc.cases` counter carries the same attribute
+for a rate.
+
+### Find failed activity attempts
+
+Filter `RunActivity:*` spans on `status = Error` and group by
+`base14.temporal.activity.attempt`. In the `model_unavailable` scenario,
+attempts 1 and 2 of `agent__kyc-extraction__model_request` fail and attempt
+3 succeeds, all under one `StartActivity`. In `sanctions_down`, attempts 1 to
+3 of each `screen_sanctions` call fail with
+`base14.kyc.sanctions.result=error`.
+
+### Spot a worker restart
+
+Open a case trace and group its spans by `service.instance.id`. The
+`worker_crash` scenario shows two worker instances in one trace, and the
+killed model request as one `RunActivity` span at attempt 2.
+`temporal_workflow_task_replay_latency` rises on the replacement worker.
+
+### Go from a document request to the case
+
+Open the `POST /cases/{case_id}/documents` trace, which ends at
+`HandleSignal:submit_document`. The case trace's `kyc.document_received` span
+links to it, so the link works in either direction. Reviews do the same
+through `HandleUpdate:submit_review` and `kyc.review_received`.
 
 ## Running Your Application
 
