@@ -68,6 +68,20 @@
   --ifm-color-content-secondary: var(--b14-400);
   --base14-caret-color: var(--b14-400); /* sidebar arrows, darker than item text */
 
+  /* Search dropdown (@easyops-cn/docusaurus-search-local). Built on the
+     b14 ramp so it flips with the theme. The plugin's defaults use
+     --ifm-color-primary for the selected hit, which this site maps to
+     the strongest text colour, and --ifm-background-color, which is
+     transparent here. */
+  --search-local-modal-background: var(--b14-black);
+  --search-local-modal-shadow: 0 0 0 1px var(--b14-800), 0 8px 24px rgba(0, 0, 0, 0.18);
+  --search-local-hit-background: var(--b14-950);
+  --search-local-hit-shadow: none;
+  --search-local-hit-color: var(--b14-200);
+  --search-local-muted-color: var(--b14-500);
+  --search-local-highlight-color: var(--b14-accent);
+  --search-local-hit-active-color: var(--b14-black);
+
   /* Glass Effects */
   --base14-glass-blur: 16px;
   --base14-glass-blur-strong: 20px;
