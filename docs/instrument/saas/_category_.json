@@ -1,0 +1,10 @@
+{
+    "label": "SaaS Integrations",
+    "position": 6,
+    "collapsed": false,
+    "link": {
+      "type": "generated-index",
+      "title": "SaaS Integrations",
+      "description": "Stream logs from SaaS services such as Auth0 into base14 Scout over HTTPS webhooks, with no collector to run."
+    }
+  }
