@@ -212,6 +212,16 @@ const config: Config = {
       },
     ],
     [
+      "@docusaurus/plugin-content-docs",
+      {
+        id: "evals",
+        path: "evals",
+        routeBasePath: "evals",
+        sidebarPath: "./sidebarsEvals.ts",
+        sidebarCollapsed: false,
+      },
+    ],
+    [
       "@docusaurus/plugin-client-redirects",
       {
         redirects: [
@@ -240,7 +250,7 @@ const config: Config = {
         // The Scout API reference lives under docs/api/ in the default docs
         // instance, whose routeBasePath is "/", so it is indexed by the
         // first entry here. No extra entry is needed for it.
-        docsRouteBasePath: ["/", "/scope"],
+        docsRouteBasePath: ["/", "/scope", "/evals"],
         blogRouteBasePath: "/blog",
         language: ["en"],
         searchBarShortcutHint: false,
@@ -320,6 +330,12 @@ const config: Config = {
           label: "Scope",
           position: "left",
           activeBaseRegex: "/scope/",
+        },
+        {
+          to: "/evals/",
+          label: "Evals",
+          position: "left",
+          activeBaseRegex: "/evals/",
         },
         {
           to: "/blog",
