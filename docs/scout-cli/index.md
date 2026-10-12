@@ -38,6 +38,7 @@ These commands require authentication with a
 | [traces](./scout-access/traces.md) | Query distributed traces |
 | [service-map](./scout-access/service-map.md) | Visualize service topology |
 | [artifacts](./scout-access/artifacts.md) | Upload debug artifacts for crash symbolication |
+| [gitops](./scout-access/gitops.md) | Test dashboards in your GitOps Developer Workspace |
 
 ## OTel Config
 

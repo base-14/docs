@@ -23,10 +23,11 @@ managing Grafana resources. Scout exposes a standard Grafana API, so you can
 define dashboards and folders in files, keep them in Git, and apply them from a
 pipeline.
 
-This guide covers dashboards and folders. Alert rules are not covered: the
-alerting resource API that `gcx resources` needs is not served by the Grafana
-build Scout runs, so alert rules cannot be managed as code against Scout today.
-Manage them in the Scout UI instead.
+This guide covers dashboards and folders. gcx cannot manage alert rules on
+Scout: the alerting resource API that `gcx resources` needs is not served by
+the Grafana build Scout runs. To keep alert rules in code, send them to
+Scout's alert rule API instead; see
+[Build Dashboards and Alerts with Jsonnet](./dashboards-as-code-jsonnet.md#deploy-from-ci).
 
 ## Requirements
 
@@ -307,9 +308,17 @@ builder code rather than templating YAML.
 
 If you generate dashboard JSON with Jsonnet today, you can keep doing so and
 wrap the output in the `spec` of a `Dashboard` resource before pushing it.
+[scout-jsonnet-libs](https://github.com/base-14/scout-jsonnet-libs) renders
+those resources directly; see
+[Build Dashboards and Alerts with Jsonnet](./dashboards-as-code-jsonnet.md)
+for a complete repository and pipeline.
 
 ## Related Guides
 
+- [GitOps Developer Workspaces](./gitops-workspaces.md) - Test new dashboards
+  before deploying them with this pipeline
+- [Build Dashboards and Alerts with Jsonnet](./dashboards-as-code-jsonnet.md) -
+  Generate dashboards and alert rules with scout-jsonnet-libs
 - [GitOps for Dashboards and Alerts](./dashboards-and-alerts.md) - The earlier
   Grizzly-based guide, kept for reference
 - [User Management](./user-management.md) - Roles and service accounts
