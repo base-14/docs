@@ -73,12 +73,12 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 
 # OpenTelemetry core
-opentelemetry = "0.29"
-opentelemetry_sdk = { version = "0.29", features = ["rt-tokio"] }
-opentelemetry-otlp = { version = "0.29", features = ["tonic"] }
+opentelemetry = "0.33"
+opentelemetry_sdk = { version = "0.33", features = ["rt-tokio"] }
+opentelemetry-otlp = { version = "0.33", features = ["grpc-tonic"] }
 
 # Tracing-OpenTelemetry bridge
-tracing-opentelemetry = "0.30"
+tracing-opentelemetry = "0.34"
 
 # Async runtime
 tokio = { version = "1", features = ["full"] }
@@ -115,7 +115,7 @@ pub fn init_telemetry(service_name: &str, otlp_endpoint: &str) -> TelemetryGuard
     global::set_text_map_propagator(TraceContextPropagator::new());
 
     let resource = Resource::builder()
-        .with_service_name(service_name)
+        .with_service_name(service_name.to_string())
         .with_attribute(KeyValue::new("environment", "production"))
         .build();
 
@@ -130,7 +130,7 @@ pub fn init_telemetry(service_name: &str, otlp_endpoint: &str) -> TelemetryGuard
         .with_batch_exporter(exporter)
         .build();
 
-    let tracer = tracer_provider.tracer(service_name);
+    let tracer = tracer_provider.tracer(service_name.to_string());
 
     let telemetry_layer = tracing_opentelemetry::layer().with_tracer(tracer);
 
