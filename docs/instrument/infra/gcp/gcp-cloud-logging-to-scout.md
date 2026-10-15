@@ -442,29 +442,6 @@ If using GKE Workload Identity, the WI binding uses the
 collector project's pool:
 `COLLECTOR_PROJECT.svc.id.goog[NAMESPACE/COLLECTOR_SERVICE_ACCOUNT]`.
 
-### If streaming pull keeps failing with `UNAVAILABLE`
-
-Pulling from a subscription in another project can fail even with
-correct IAM: the receiver's streaming pull breaks with gRPC
-`UNAVAILABLE` and restarts every few minutes, while the backlog grows.
-The receiver logs this only at `debug` level, so nothing shows at
-`info`.
-
-Keep the topic in `LOGS_PROJECT`, but create the subscription in
-`COLLECTOR_PROJECT`, attached to that topic:
-
-```bash showLineNumbers
-gcloud pubsub subscriptions create scout-logs-sub \
-  --topic=projects/LOGS_PROJECT/topics/scout-logs \
-  --ack-deadline=30 \
-  --project=COLLECTOR_PROJECT
-```
-
-The identity running this command needs `roles/pubsub.subscriber` on
-the topic. Then grant the collector's GSA Subscriber on the new
-subscription, and point the receiver's `project:` and `subscription:`
-at `COLLECTOR_PROJECT`.
-
 ---
 
 ## Troubleshooting
@@ -495,8 +472,6 @@ a missing file. On GKE, this means the Workload Identity
 binding or ServiceAccount annotation is missing.
 
 **Backlog never drains.** The collector is not consuming.
-For a cross-project subscription, see
-[If streaming pull keeps failing with `UNAVAILABLE`](#if-streaming-pull-keeps-failing-with-unavailable).
 This is almost always auth (above) or a missing pipeline.
 A draining backlog means the path works: acking is how
 Pub/Sub confirms delivery, and the data has gone to Scout
