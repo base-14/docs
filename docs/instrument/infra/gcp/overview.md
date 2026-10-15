@@ -309,6 +309,7 @@ for it in the other before concluding it failed.
 | [Pub/Sub](./pub-sub.md) | Cloud Monitoring | Topic and subscription health, backlog alerting |
 | [Cloud Run](./cloud-run.md) | OTLP sidecar | Application traces, platform metrics, request logs |
 | [VPC](./vpc.md) | Cloud Logging | Flow logs, Cloud NAT, network metrics |
+| [BigQuery](./bigquery.md) | Cloud Monitoring + Logging | Slot and query metrics, audit logs with per-job cost |
 
 ## FAQ
 
