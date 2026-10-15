@@ -31,6 +31,10 @@ drift from the visible text. `Organization` is emitted site-wide from
 `headTags` in `docusaurus.config.ts`; Docusaurus emits `BreadcrumbList` and
 `BlogPosting` on its own.
 
+FAQ answers render collapsed. `src/plugins/rehype-faq-details.ts` wraps each
+`###` question under `## FAQ` in a `<details>` at build time, so never write
+`<details>` by hand in an FAQ; keep the markdown as plain headings.
+
 Write FAQ questions as `###` headings under a `## FAQ` heading, phrased the
 way someone would ask them, and open each answer with a sentence that stands
 on its own. That first sentence is what answer engines quote.

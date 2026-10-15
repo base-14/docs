@@ -1,6 +1,7 @@
 import { themes as prismThemes } from "prism-react-renderer";
 import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
+import rehypeFaqDetails from "./src/plugins/rehype-faq-details";
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
@@ -133,6 +134,10 @@ const config: Config = {
           // it every generated reference page throws on mount. It renders
           // ordinary docs unchanged, through the same layout as DocItem.
           docItemComponent: "@theme/ApiItem",
+          rehypePlugins: [rehypeFaqDetails],
+        },
+        pages: {
+          rehypePlugins: [rehypeFaqDetails],
         },
         blog: {
           routeBasePath: "blog",
@@ -181,6 +186,8 @@ const config: Config = {
       } satisfies Preset.Options,
     ],
   ],
+
+  clientModules: [require.resolve("./src/clientModules/faq-anchor.ts")],
 
   plugins: [
     require.resolve("./src/plugins/noindex-thin-pages.ts"),
