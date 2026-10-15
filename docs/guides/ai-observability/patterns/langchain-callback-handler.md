@@ -2,7 +2,8 @@
 title:
   LangChain Callback Handler for OpenTelemetry - Writing Your Own GenAI Spans
 sidebar_label: LangChain Callback Handler
-sidebar_position: 12
+sidebar_position: 2
+slug: /guides/ai-observability/langchain-callback-handler
 description:
   Write a LangChain callback handler that maps the run tree onto OpenTelemetry
   GenAI spans, for chains the official instrumentation does not cover.
@@ -28,7 +29,7 @@ keywords:
 
 Write your own LangChain callback handler to turn LangChain's run tree into
 OpenTelemetry spans. Most applications do not need one: the official
-[LangChain instrumentation](../../instrument/apps/auto-instrumentation/langchain.md),
+[LangChain instrumentation](../../../instrument/apps/auto-instrumentation/langchain.md),
 `opentelemetry-instrumentation-genai-langchain`, is itself a callback handler
 and covers `create_agent` agents, chat models, tools and retrievers. Write
 your own when that package does not fit.
@@ -99,7 +100,7 @@ The excerpts below are trimmed; the full file is at that link.
 - LangChain with `langchain-core`. The callback API has been stable across the
   1.x line.
 - The OpenTelemetry SDK and an exporter, set up before the first run. See
-  [Python Custom Instrumentation](../../instrument/apps/custom-instrumentation/python.md).
+  [Python Custom Instrumentation](../../../instrument/apps/custom-instrumentation/python.md).
 
 ### Compatibility Matrix
 
@@ -416,18 +417,18 @@ the root span, as `on_chain_start` does above.
 
 ### Related Guides
 
-- [LangChain Instrumentation](../../instrument/apps/auto-instrumentation/langchain.md)
+- [LangChain Instrumentation](../../../instrument/apps/auto-instrumentation/langchain.md)
   \- The official package, with cost and scrubbing added in a span exporter.
-- [AI Agent Observability](./agent-observability.md) - Agent and tool tracing
+- [AI Agent Observability](../agent-observability.md) - Agent and tool tracing
   across frameworks.
-- [Python Custom Instrumentation](../../instrument/apps/custom-instrumentation/python.md)
+- [Python Custom Instrumentation](../../../instrument/apps/custom-instrumentation/python.md)
   \- Manual spans and metrics in Python.
 
 ### Scout Platform Features
 
-- [Creating Alerts](../creating-alerts-with-logx.md) - Alert on error rates
+- [Creating Alerts](../../creating-alerts-with-logx.md) - Alert on error rates
   and slow agent runs.
-- [Dashboard Creation](../create-your-first-dashboard.md) - Build token and
+- [Dashboard Creation](../../create-your-first-dashboard.md) - Build token and
   latency dashboards.
 
 ## References

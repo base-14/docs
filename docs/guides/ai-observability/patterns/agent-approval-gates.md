@@ -2,7 +2,8 @@
 title:
   Agent Approval Gates with OpenTelemetry - Tracing Human-in-the-Loop Agents
 sidebar_label: Agent Approval Gates
-sidebar_position: 11
+sidebar_position: 1
+slug: /guides/ai-observability/agent-approval-gates
 description:
   Trace human-in-the-loop approval gates in AI agents with OpenTelemetry. Span
   pairs, wait histograms, trace context across the pause and error status.
@@ -755,11 +756,11 @@ the app outside Compose. Leave them commented when using Compose.
 
 ### Related Guides
 
-- [AI Agent Observability](./agent-observability.md) covers the agent timeline,
+- [AI Agent Observability](../agent-observability.md) covers the agent timeline,
   operation types and conversation-id propagation.
-- [LLM Observability](./llm-observability.md) covers token and cost metrics and
+- [LLM Observability](../llm-observability.md) covers token and cost metrics and
   evaluation tracking in Python.
-- [Java AI Observability](./spring-ai-llm-observability.md) covers the same
+- [Java AI Observability](../spring-ai-llm-observability.md) covers the same
   ground for Spring AI.
 
 ## References

@@ -610,7 +610,7 @@ works for a local view during development.
 
 For approval gates, trace context across a pause and where the error status
 goes in a .NET agent, see
-[Agent Approval Gates](../../../guides/ai-observability/agent-approval-gates.md).
+[Agent Approval Gates](../../../guides/ai-observability/patterns/agent-approval-gates.md).
 
 ## Known Gaps
 

@@ -577,7 +577,7 @@ in conventions and defaults.
 Write one when the package does not fit: custom chains or runnables it does
 not trace, attributes it does not set that you cannot add in a span processor,
 or LangChain versions outside `>=0.3.21,<2`. The
-[LangChain callback handler guide](../../../guides/ai-observability/langchain-callback-handler.md)
+[LangChain callback handler guide](../../../guides/ai-observability/patterns/langchain-callback-handler.md)
 maps LangChain's run tree onto spans, step by step.
 
 ## Scout Wiring
@@ -836,7 +836,7 @@ open an `embeddings {model}` span yourself, as the example does.
 
 Only if the official package does not cover your chains or the attributes you
 need cannot be added in a span processor. See the
-[LangChain callback handler guide](../../../guides/ai-observability/langchain-callback-handler.md).
+[LangChain callback handler guide](../../../guides/ai-observability/patterns/langchain-callback-handler.md).
 
 ## What's Next?
 
@@ -900,4 +900,4 @@ docker compose up -d --build
 - [OpenTelemetry Python SDK](https://opentelemetry.io/docs/languages/python/)
 - [OpenTelemetry Collector Configuration](https://opentelemetry.io/docs/collector/configuration/)
 
-[callback-guide]: ../../../guides/ai-observability/langchain-callback-handler.md
+[callback-guide]: ../../../guides/ai-observability/patterns/langchain-callback-handler.md

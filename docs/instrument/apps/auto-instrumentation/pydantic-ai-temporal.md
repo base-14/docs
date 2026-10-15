@@ -1047,7 +1047,7 @@ that includes the document text.
 - [Pydantic AI](./pydantic-ai.md) - agent, model and tool spans, content
   capture and token metrics.
 - [Temporal](../../component/temporal.md) - Temporal server metrics.
-- [Agent Approval Gates](../../../guides/ai-observability/agent-approval-gates.md)
+- [Agent Approval Gates](../../../guides/ai-observability/patterns/agent-approval-gates.md)
   \- tracing an agent that waits for a person.
 - [AI Agent Observability](../../../guides/ai-observability/agent-observability.md)
   \- agent timelines and tool calls.

@@ -537,7 +537,7 @@ run:
   span, a metric or a log line. The `kyc.await_review` span in the KYC
   example and the `base14.approval.requested` and `decided` spans in the
   rebooking example are application code. See
-  [Agent Approval Gates](./agent-approval-gates.md) and
+  [Agent Approval Gates](./patterns/agent-approval-gates.md) and
   [Pydantic AI on Temporal](../../instrument/apps/auto-instrumentation/pydantic-ai-temporal.md).
 - **`gen_ai.conversation.id` is never set for you.** Pydantic AI takes it as
   `conversation_id` on `agent.run`, Strands through `trace_attributes` and
@@ -819,7 +819,7 @@ Grouped by how much telemetry the framework emits on its own.
 
 Native OpenTelemetry, enabled by configuration:
 
-- [Agent Approval Gates](./agent-approval-gates.md) \- Microsoft Agent
+- [Agent Approval Gates](./patterns/agent-approval-gates.md) \- Microsoft Agent
   Framework and the MCP C# SDK, with a human approval gate on top
 - [OpenClaw](../../instrument/component/openclaw.md) \- the gateway's
   `diagnostics-otel` plugin, run, model and tool spans, metrics and
@@ -865,8 +865,8 @@ Traced through the model SDK packages, with spans of your own where needed:
 - [LlamaIndex Instrumentation](../../instrument/apps/auto-instrumentation/llamaindex.md)
   \- model calls from the SDK packages, Ollama through `OpenAILike`,
   structured output corrections
-- [LangChain Callback Handler](./langchain-callback-handler.md) \- your own
-  handler, for chains the official package does not cover
+- [LangChain Callback Handler](./patterns/langchain-callback-handler.md) \- your
+  own handler, for chains the official package does not cover
 
 ### Runnable Examples
 
@@ -875,7 +875,7 @@ Traced through the model SDK packages, with spans of your own where needed:
   cost per run and tool-definition token metrics
 - [csharp/agent-rebooking](https://github.com/base-14/examples/tree/main/csharp/agent-rebooking)
   \- an agent handoff over MCP with a human approval gate, covered by
-  [Agent Approval Gates](./agent-approval-gates.md)
+  [Agent Approval Gates](./patterns/agent-approval-gates.md)
 - [python/ai-kyc-onboarding](https://github.com/base-14/examples/tree/main/python/ai-kyc-onboarding)
   \- a Pydantic AI agent inside a Temporal workflow, waiting on documents and
   a reviewer, covered by
@@ -928,7 +928,7 @@ Traced through the model SDK packages, with spans of your own where needed:
 - [Scout Exporter][scout-exporter] - configure base14 Scout authentication
 
 [llm-o11y]: ./llm-observability.md
-[approval-gates]: ./agent-approval-gates.md
+[approval-gates]: ./patterns/agent-approval-gates.md
 [langgraph]: ../../instrument/apps/auto-instrumentation/langgraph.md
 [scout-mcp]: ../../scout-mcp/setup.md
 [collector]: ../../instrument/collector-setup/otel-collector-config.md
