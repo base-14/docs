@@ -523,3 +523,5 @@ errors, and the receiver is actually referenced in a logs pipeline.
   used as this guide's example actually contain.
 - [Cloud Run](./cloud-run.md) - request and application logs, and when
   to use a sidecar instead of this path.
+- [BigQuery](./bigquery.md) - audit logs for completed jobs, and why
+  they need their own subscription to keep bytes billed.

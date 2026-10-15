@@ -364,7 +364,7 @@ Prefixes to use with Metrics Explorer or `metric_descriptor_filter`:
 | Cloud Load Balancing | `loadbalancing.googleapis.com/` | [Cloud Load Balancing](./load-balancing.md) |
 | API Gateway | `apigateway.googleapis.com/` | [API Gateway and nginx](./api-gateway.md) |
 | Cloud NAT | `router.googleapis.com/nat/` | [VPC](./vpc.md) |
-| BigQuery | `bigquery.googleapis.com/` | - |
+| [BigQuery](./bigquery.md) | `bigquery.googleapis.com/` | - |
 | Compute Engine | `compute.googleapis.com/` | - |
 | Cloud Storage | `storage.googleapis.com/` | - |
 
