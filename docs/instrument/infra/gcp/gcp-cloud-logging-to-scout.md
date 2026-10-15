@@ -386,6 +386,11 @@ to break it out without upgrading.
 
    Look for `PermissionDenied` or
    `could not find default credentials` messages.
+   Not every failure shows up here: the receiver logs a
+   streaming pull that breaks with gRPC `UNAVAILABLE`
+   only at `debug` level. If the backlog grows and these
+   logs are clean, set the collector's log level to
+   `debug` to see it.
 
 3. **The collector is consuming.** Once running, the
    subscription's **unacked message count drops** (the
@@ -420,6 +425,20 @@ processors:
 
 Add `transform/cloud_logging` to the pipeline's
 `processors` list (after `memory_limiter`, before `batch`).
+
+:::note Audit logs lose their service-specific fields
+
+On versions that parse Cloud Audit Logs into `gcp.audit.*`
+attributes, the extension does not map the `metadata`,
+`request` or `response` fields of `protoPayload`, and does
+not keep them in the body. Service-specific audit details
+live there, so they cannot be promoted with this processor.
+To keep them, read those entries from a separate
+subscription with the `text_encoding` extension and parse
+the JSON yourself. The [BigQuery](./bigquery.md) guide
+shows this for job statistics.
+
+:::
 
 ---
 
@@ -473,6 +492,9 @@ binding or ServiceAccount annotation is missing.
 
 **Backlog never drains.** The collector is not consuming.
 This is almost always auth (above) or a missing pipeline.
+If the collector logs show no errors, raise its log level
+to `debug`: the receiver logs streaming pull failures with
+gRPC `UNAVAILABLE` only at that level.
 A draining backlog means the path works: acking is how
 Pub/Sub confirms delivery, and the data has gone to Scout
 rather than being lost.
