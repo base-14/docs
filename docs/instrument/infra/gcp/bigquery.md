@@ -164,14 +164,7 @@ service:
 ```
 
 The `slots/assigned` and `slots/max_assigned` metrics only report
-data when the project has a reservation assignment it can see. On
-on-demand projects, and on editions projects that rely on autoscaling
-without a visible reservation, they never emit; drop them there and
-alert on absolute slot counts instead (see [Alert tuning](#alert-tuning)).
-
-Some projects emit only `query/statement_scanned_bytes_billed` and never
-`query/scanned_bytes_billed`. Collect the `statement_` variant either
-way; it is the one this page's alerts use.
+data on projects that use reservations. Drop them on on-demand projects.
 
 :::warning Leave out `query/execution_times`
 
@@ -294,7 +287,7 @@ processors:
 | Signal | Source | Warning | Critical | Notes |
 |---|---|---|---|---|
 | Slot saturation | `slots/allocated_for_project` / `slots/max_assigned` | > 0.85 for 15m | > 0.95 for 15m | Needs a reservation the project can see. Queries queue rather than fail. |
-| Slot usage, no ceiling visible | `slots/allocated_for_project` | Above your normal P99 for 5m | Above the P99 peak for 2m | Use when `slots/max_assigned` never emits. Set thresholds from a week of data. |
+| Slot usage, on-demand | `slots/allocated_for_project` | Above your normal P99 for 5m | Above the P99 peak for 2m | On-demand projects have no assigned ceiling. Set thresholds from a week of data. |
 | Queued jobs | `job/num_in_flight` with pending `state` | > 0 for 10m | > 0 for 30m | The user-visible effect of slot saturation. |
 | Billed bytes spike | `query/statement_scanned_bytes_billed` | 2x the same hour last week | 5x the same hour last week | On-demand pricing. Follow up in the audit log to find the job. |
 | Streaming stopped | `storage/insertall_inserted_rows` | 0 for 15m | 0 for 30m | Only for tables you expect to stream continuously. |
@@ -443,8 +436,7 @@ processors:
           - set(cache["e"], ParseJSON(body))
           - set(cache["p"], cache["e"]["protoPayload"])
           - set(cache["j"], cache["p"]["metadata"]["jobChange"]["job"])
-          # The text encoding sets no timestamp: use now, then the
-          # LogEntry timestamp when it parses.
+          # Use the LogEntry timestamp; fall back to now if it fails to parse.
           - set(time, Now())
           - set(time, Time(cache["e"]["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ"))
           - set(severity_text, cache["e"]["severity"])
@@ -456,9 +448,6 @@ processors:
           - set(attributes["gcp.bigquery.job.state"], cache["j"]["jobStatus"]["jobState"])
           - set(attributes["gcp.bigquery.statement_type"], cache["j"]["jobConfig"]["queryConfig"]["statementType"])
           - set(attributes["gcp.bigquery.priority"], cache["j"]["jobConfig"]["queryConfig"]["priority"])
-          # Scheduled queries carry their transfer config in job labels
-          - set(attributes["gcp.bigquery.dts.config_id"], cache["j"]["jobConfig"]["labels"]["dts_config_id"])
-          - set(attributes["gcp.bigquery.dts.run_id"], cache["j"]["jobConfig"]["labels"]["dts_run_id"])
           # Cost and duration
           - set(attributes["gcp.bigquery.job.billed_bytes"], Int(cache["j"]["jobStats"]["queryStats"]["totalBilledBytes"]))
           - set(attributes["gcp.bigquery.job.processed_bytes"], Int(cache["j"]["jobStats"]["queryStats"]["totalProcessedBytes"]))
@@ -506,19 +495,13 @@ body.
 
 Below collector 0.132, use the receiver's built-in `encoding: raw_text`
 instead of the extension; it also delivers the `LogEntry` as a JSON
-string, and the same transform applies. Do not use the built-in
-`cloud_logging` encoding for this subscription. It decodes
-`protoPayload` strictly against a compiled schema and rejects BigQuery
-entries carrying fields it does not know, such as
-`authenticationInfo.oauthInfo`, so messages are delivered but never
-acked.
+string, and the same transform applies.
 
 With these attributes in Scout, "which queries cost the most this week"
 is a sum of `gcp.bigquery.job.billed_bytes` grouped by `user.email` or
-`gcp.bigquery.statement_type`. For scheduled queries, group by
-`gcp.bigquery.dts.config_id` to find the most expensive schedule, or
-compare `gcp.bigquery.job.slot_ms` across runs of the same config to
-catch a run that suddenly costs more.
+`gcp.bigquery.statement_type`. Job labels you set yourself are in
+`jobConfig.labels`; extract the ones you group by with another `set`
+statement.
 
 ### Optional: table reads and writes
 
@@ -636,38 +619,20 @@ A distribution-valued metric was added, most likely
 includes it. Remove it and the batch recovers on the next scrape.
 
 **`query/scanned_bytes_billed` is empty.**
-It runs about 6 hours behind. If it is still empty the next day, the
-project may emit only `query/statement_scanned_bytes_billed`; check in
-Metrics Explorer which of the two has data.
+It runs about 6 hours behind. If it is still empty the next day, check
+that on-demand queries have run in the project during that window.
 
 **`slots/assigned` returns nothing.**
-The project has no reservation assignment it can see. On-demand projects
-use a shared pool, and editions projects using only autoscaling may not
-expose one either; neither reports assigned slots.
+The project has no reservation assignment. On-demand projects use a
+shared pool and do not report assigned slots.
 
-**The job subscription has a growing backlog, but nothing reaches Scout.**
-If the subscription lives in the BigQuery project and the collector
-runs in another, the receiver's streaming pull can fail with gRPC
-`UNAVAILABLE` and restart every few minutes. The receiver logs this only
-at `debug` level, so nothing shows at `info`. Create the subscription
-in the collector's project instead, attached to the topic in the
-BigQuery project, and point the receiver at it:
-
-```bash showLineNumbers
-gcloud pubsub subscriptions create scout-bigquery-jobs-sub \
-  --topic=projects/BQ_PROJECT_ID/topics/scout-bigquery-jobs \
-  --ack-deadline=60 \
-  --project=COLLECTOR_PROJECT_ID
-```
-
-Creating it requires `roles/pubsub.subscriber` on the topic for the
-identity running the command. Grant the collector Subscriber on the new
-subscription as usual.
-
-**Messages are delivered but never acked.**
-The receiver is using the built-in `cloud_logging` encoding, which
-rejects BigQuery audit entries with fields it does not know. Switch to
-`text_encoding` (or `raw_text` below 0.132) as shown above.
+**The job subscription has a growing backlog, but the collector logs no
+errors.**
+The receiver treats streaming pull failures such as gRPC `UNAVAILABLE`
+as transient and logs them only at `debug` level. Raise the collector's
+log level to `debug` to see why it is not consuming, then work through
+the checks in
+[GCP Cloud Logging troubleshooting](./gcp-cloud-logging-to-scout.md#troubleshooting).
 
 **Job records arrive, but `billed_bytes` is missing.**
 Either the records are decoded by the `google_cloud_logentry_encoding`
