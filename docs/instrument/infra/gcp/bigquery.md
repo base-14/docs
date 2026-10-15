@@ -164,7 +164,14 @@ service:
 ```
 
 The `slots/assigned` and `slots/max_assigned` metrics only report
-data on projects that use reservations. Drop them on on-demand projects.
+data when the project has a reservation assignment it can see. On
+on-demand projects, and on editions projects that rely on autoscaling
+without a visible reservation, they never emit; drop them there and
+alert on absolute slot counts instead (see [Alert tuning](#alert-tuning)).
+
+Some projects emit only `query/statement_scanned_bytes_billed` and never
+`query/scanned_bytes_billed`. Collect the `statement_` variant either
+way; it is the one this page's alerts use.
 
 :::warning Leave out `query/execution_times`
 
@@ -286,7 +293,8 @@ processors:
 
 | Signal | Source | Warning | Critical | Notes |
 |---|---|---|---|---|
-| Slot saturation | `slots/allocated_for_project` / `slots/max_assigned` | > 0.85 for 15m | > 0.95 for 15m | Capacity pricing only. Queries queue rather than fail. |
+| Slot saturation | `slots/allocated_for_project` / `slots/max_assigned` | > 0.85 for 15m | > 0.95 for 15m | Needs a reservation the project can see. Queries queue rather than fail. |
+| Slot usage, no ceiling visible | `slots/allocated_for_project` | Above your normal P99 for 5m | Above the P99 peak for 2m | Use when `slots/max_assigned` never emits. Set thresholds from a week of data. |
 | Queued jobs | `job/num_in_flight` with pending `state` | > 0 for 10m | > 0 for 30m | The user-visible effect of slot saturation. |
 | Billed bytes spike | `query/statement_scanned_bytes_billed` | 2x the same hour last week | 5x the same hour last week | On-demand pricing. Follow up in the audit log to find the job. |
 | Streaming stopped | `storage/insertall_inserted_rows` | 0 for 15m | 0 for 30m | Only for tables you expect to stream continuously. |
@@ -338,9 +346,14 @@ reads). The entry worth
 keeping is the final state change, which carries the full statistics:
 
 ```text
-resource.type="bigquery_project"
+logName="projects/PROJECT_ID/logs/cloudaudit.googleapis.com%2Fdata_access"
+protoPayload.serviceName="bigquery.googleapis.com"
 protoPayload.metadata.jobChange.after="DONE"
 ```
+
+BigQuery also writes a legacy `jobservice.jobcompleted` entry for the
+same job. Filtering on `protoPayload.metadata` excludes it, so each job
+arrives once.
 
 Dataset, table, routine and IAM changes are in the **Admin Activity**
 log under `resource.type="bigquery_dataset"`.
@@ -392,7 +405,7 @@ gcloud pubsub subscriptions create scout-bigquery-jobs-sub \
 
 gcloud logging sinks create scout-bigquery-jobs \
   pubsub.googleapis.com/projects/PROJECT_ID/topics/scout-bigquery-jobs \
-  --log-filter='resource.type="bigquery_project" AND protoPayload.metadata.jobChange.after="DONE"'
+  --log-filter='logName="projects/PROJECT_ID/logs/cloudaudit.googleapis.com%2Fdata_access" AND protoPayload.serviceName="bigquery.googleapis.com" AND protoPayload.metadata.jobChange.after="DONE"'
 ```
 
 Then add a receiver and pipeline:
@@ -410,7 +423,7 @@ receivers:
   googlecloudpubsub/bigquery_jobs:
     project: ${env:GCP_PROJECT_ID}
     subscription: projects/${env:GCP_PROJECT_ID}/subscriptions/scout-bigquery-jobs-sub
-    encoding: text_encoding/bigquery
+    encoding: text_encoding/bigquery    # raw_text below collector 0.132
 
 processors:
   resource/bigquery_jobs:
@@ -421,23 +434,48 @@ processors:
       - {key: cloud.account.id, value: "${env:GCP_PROJECT_ID}", action: insert}
 
   transform/bigquery_jobs:
+    # Missing paths (errorResult on success, queryStats on load jobs)
+    # resolve to nil, and set() with nil does nothing.
     error_mode: ignore
     log_statements:
       - context: log
         statements:
-          - merge_maps(cache, ParseJSON(body), "upsert")
-          - set(severity_text, cache["severity"])
-          - set(attributes["user.email"], cache["protoPayload"]["authenticationInfo"]["principalEmail"])
-          - set(attributes["gcp.bigquery.job.name"], cache["protoPayload"]["metadata"]["jobChange"]["job"]["jobName"])
-          - set(attributes["gcp.bigquery.statement_type"], cache["protoPayload"]["metadata"]["jobChange"]["job"]["jobConfig"]["queryConfig"]["statementType"])
-          - set(attributes["gcp.bigquery.job.billed_bytes"], Int(cache["protoPayload"]["metadata"]["jobChange"]["job"]["jobStats"]["queryStats"]["totalBilledBytes"]))
-          - set(attributes["gcp.bigquery.job.processed_bytes"], Int(cache["protoPayload"]["metadata"]["jobChange"]["job"]["jobStats"]["queryStats"]["totalProcessedBytes"]))
-          - set(attributes["gcp.bigquery.job.slot_ms"], Int(cache["protoPayload"]["metadata"]["jobChange"]["job"]["jobStats"]["totalSlotMs"]))
-          - set(attributes["gcp.bigquery.job.cache_hit"], cache["protoPayload"]["metadata"]["jobChange"]["job"]["jobStats"]["queryStats"]["cacheHit"])
-          - set(attributes["gcp.bigquery.job.referenced_tables"], cache["protoPayload"]["metadata"]["jobChange"]["job"]["jobStats"]["queryStats"]["referencedTables"])
-          - set(attributes["gcp.bigquery.job.error"], cache["protoPayload"]["metadata"]["jobChange"]["job"]["jobStatus"]["errorResult"]["message"])
-          # Replace the raw LogEntry with the SQL text as the log body
-          - set(body, cache["protoPayload"]["metadata"]["jobChange"]["job"]["jobConfig"]["queryConfig"]["query"])
+          - set(cache["e"], ParseJSON(body))
+          - set(cache["p"], cache["e"]["protoPayload"])
+          - set(cache["j"], cache["p"]["metadata"]["jobChange"]["job"])
+          # The text encoding sets no timestamp: use now, then the
+          # LogEntry timestamp when it parses.
+          - set(time, Now())
+          - set(time, Time(cache["e"]["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ"))
+          - set(severity_text, cache["e"]["severity"])
+          - set(attributes["gcp.bigquery.project_id"], cache["e"]["resource"]["labels"]["project_id"])
+          - set(attributes["gcp.bigquery.location"], cache["e"]["resource"]["labels"]["location"])
+          - set(attributes["user.email"], cache["p"]["authenticationInfo"]["principalEmail"])
+          # Job identity
+          - set(attributes["gcp.bigquery.job.name"], cache["j"]["jobName"])
+          - set(attributes["gcp.bigquery.job.state"], cache["j"]["jobStatus"]["jobState"])
+          - set(attributes["gcp.bigquery.statement_type"], cache["j"]["jobConfig"]["queryConfig"]["statementType"])
+          - set(attributes["gcp.bigquery.priority"], cache["j"]["jobConfig"]["queryConfig"]["priority"])
+          # Scheduled queries carry their transfer config in job labels
+          - set(attributes["gcp.bigquery.dts.config_id"], cache["j"]["jobConfig"]["labels"]["dts_config_id"])
+          - set(attributes["gcp.bigquery.dts.run_id"], cache["j"]["jobConfig"]["labels"]["dts_run_id"])
+          # Cost and duration
+          - set(attributes["gcp.bigquery.job.billed_bytes"], Int(cache["j"]["jobStats"]["queryStats"]["totalBilledBytes"]))
+          - set(attributes["gcp.bigquery.job.processed_bytes"], Int(cache["j"]["jobStats"]["queryStats"]["totalProcessedBytes"]))
+          - set(attributes["gcp.bigquery.job.slot_ms"], Int(cache["j"]["jobStats"]["totalSlotMs"]))
+          - set(attributes["gcp.bigquery.job.start_time"], cache["j"]["jobStats"]["startTime"])
+          - set(attributes["gcp.bigquery.job.end_time"], cache["j"]["jobStats"]["endTime"])
+          - set(attributes["gcp.bigquery.job.reservation"], cache["j"]["jobStats"]["reservation"])
+          - set(attributes["gcp.bigquery.job.cache_hit"], cache["j"]["jobStats"]["queryStats"]["cacheHit"])
+          - set(attributes["gcp.bigquery.job.referenced_tables"], cache["j"]["jobStats"]["queryStats"]["referencedTables"])
+          # Failures
+          - set(attributes["gcp.bigquery.job.error"], cache["j"]["jobStatus"]["errorResult"]["message"])
+          - set(attributes["gcp.bigquery.job.error_reason"], cache["j"]["jobStatus"]["errorResult"]["reason"])
+          # Drop the SQL text, then replace the raw JSON body with the
+          # scrubbed map. If parsing failed, never ship the raw string.
+          - delete_key(cache["e"]["protoPayload"]["metadata"]["jobChange"]["job"]["jobConfig"]["queryConfig"], "query")
+          - set(body, cache["e"])
+          - set(body, "unparsed bigquery audit entry") where cache["e"] == nil
 
 service:
   extensions: [text_encoding/bigquery]
@@ -449,26 +487,38 @@ service:
 ```
 
 Load, extract and copy jobs have no `queryConfig` or `queryStats`, so
-the query-specific attributes are absent on those records: a missing
-path resolves to nil, and `set` with a nil value does nothing. Their
-body stays the raw `LogEntry` JSON.
+the query-specific attributes are absent on those records.
 
-The record's timestamp is when the collector received it, which on a
-draining subscription is within seconds of the job finishing. During a
-backlog it can be later; the job's own times are in
-`jobStats.startTime` and `jobStats.endTime` if you need them.
+The record's timestamp comes from the `LogEntry`, so a backlog drained
+after a collector outage lands at the right time rather than at receive
+time.
 
-:::note The SQL text is in the log body
+:::note The SQL text is removed by default
 
-Audit entries include the full query, truncated at 50 KB. If queries
-embed sensitive literals, drop the last statement in the transform and
-keep the body as the job name instead.
+Audit entries include the full query, truncated at 50 KB, and queries
+often embed literals such as customer IDs or emails. The transform
+deletes it before export. To keep it, remove the `delete_key` statement;
+the query is then at
+`protoPayload.metadata.jobChange.job.jobConfig.queryConfig.query` in the
+body.
 
 :::
 
+Below collector 0.132, use the receiver's built-in `encoding: raw_text`
+instead of the extension; it also delivers the `LogEntry` as a JSON
+string, and the same transform applies. Do not use the built-in
+`cloud_logging` encoding for this subscription. It decodes
+`protoPayload` strictly against a compiled schema and rejects BigQuery
+entries carrying fields it does not know, such as
+`authenticationInfo.oauthInfo`, so messages are delivered but never
+acked.
+
 With these attributes in Scout, "which queries cost the most this week"
 is a sum of `gcp.bigquery.job.billed_bytes` grouped by `user.email` or
-`gcp.bigquery.statement_type`.
+`gcp.bigquery.statement_type`. For scheduled queries, group by
+`gcp.bigquery.dts.config_id` to find the most expensive schedule, or
+compare `gcp.bigquery.job.slot_ms` across runs of the same config to
+catch a run that suddenly costs more.
 
 ### Optional: table reads and writes
 
@@ -567,8 +617,8 @@ no query cost.
 
    ```sql showLineNumbers
    SELECT LogAttributes['user.email'] AS user,
-          LogAttributes['gcp.bigquery.job.billed_bytes'] AS billed_bytes,
-          Body
+          LogAttributes['gcp.bigquery.job.name'] AS job,
+          LogAttributes['gcp.bigquery.job.billed_bytes'] AS billed_bytes
    FROM otel_logs
    WHERE ServiceName = 'bigquery-jobs'
      AND TimestampTime >= now() - INTERVAL 1 HOUR
@@ -586,12 +636,38 @@ A distribution-valued metric was added, most likely
 includes it. Remove it and the batch recovers on the next scrape.
 
 **`query/scanned_bytes_billed` is empty.**
-It runs about 6 hours behind. If it is still empty the next day, check
-that on-demand queries have run in the project during that window.
+It runs about 6 hours behind. If it is still empty the next day, the
+project may emit only `query/statement_scanned_bytes_billed`; check in
+Metrics Explorer which of the two has data.
 
 **`slots/assigned` returns nothing.**
-The project has no reservation assignment. On-demand projects use a
-shared pool and do not report assigned slots.
+The project has no reservation assignment it can see. On-demand projects
+use a shared pool, and editions projects using only autoscaling may not
+expose one either; neither reports assigned slots.
+
+**The job subscription has a growing backlog, but nothing reaches Scout.**
+If the subscription lives in the BigQuery project and the collector
+runs in another, the receiver's streaming pull can fail with gRPC
+`UNAVAILABLE` and restart every few minutes. The receiver logs this only
+at `debug` level, so nothing shows at `info`. Create the subscription
+in the collector's project instead, attached to the topic in the
+BigQuery project, and point the receiver at it:
+
+```bash showLineNumbers
+gcloud pubsub subscriptions create scout-bigquery-jobs-sub \
+  --topic=projects/BQ_PROJECT_ID/topics/scout-bigquery-jobs \
+  --ack-deadline=60 \
+  --project=COLLECTOR_PROJECT_ID
+```
+
+Creating it requires `roles/pubsub.subscriber` on the topic for the
+identity running the command. Grant the collector Subscriber on the new
+subscription as usual.
+
+**Messages are delivered but never acked.**
+The receiver is using the built-in `cloud_logging` encoding, which
+rejects BigQuery audit entries with fields it does not know. Switch to
+`text_encoding` (or `raw_text` below 0.132) as shown above.
 
 **Job records arrive, but `billed_bytes` is missing.**
 Either the records are decoded by the `google_cloud_logentry_encoding`
