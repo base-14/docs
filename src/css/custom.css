@@ -1451,3 +1451,57 @@ code {
 }
 
 
+
+/* ========================================
+   FAQ collapsibles (src/plugins/rehype-faq-details.ts)
+   Undo the alert box Docusaurus gives <details> and draw a plain list of
+   questions separated by rules.
+   ======================================== */
+.markdown details.faq-item.alert {
+  --docusaurus-details-decoration-color: var(--ifm-color-emphasis-600);
+  --docusaurus-details-summary-arrow-size: 0.32rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: inherit;
+}
+
+.markdown details.faq-item:first-of-type {
+  border-top: 1px solid var(--ifm-color-emphasis-300);
+}
+
+.markdown details.faq-item > summary {
+  padding: 0.9rem 0 0.9rem 1.5rem;
+}
+
+.markdown details.faq-item > summary::before {
+  top: calc(0.9rem + 0.5em);
+  left: 0.25rem;
+}
+
+.markdown details.faq-item > summary:hover h3 {
+  color: var(--ifm-color-primary);
+}
+
+.markdown details.faq-item > summary h3 {
+  display: inline;
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+/* A click anywhere in <summary> toggles the answer, so the hash link there
+   would never navigate. */
+.markdown details.faq-item > summary .hash-link {
+  display: none;
+}
+
+.markdown details.faq-item [class*='collapsibleContent'] {
+  margin-top: 0;
+  padding: 0 0 1rem 1.5rem;
+  border-top: 0;
+}
