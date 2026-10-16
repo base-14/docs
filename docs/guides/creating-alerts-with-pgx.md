@@ -1,5 +1,7 @@
 ---
 title: Creating Alerts with pgX
+sidebar_label: Creating Alerts with pgX
+sidebar_position: 4.2
 description:
   Create alerts from pgX panel queries. Export ClickHouse queries to Grafana
   dashboards and configure alert rules with thresholds and notifications.
@@ -13,9 +15,9 @@ keywords:
   ]
 ---
 
-pgX provides a streamlined workflow for creating alerts based on the panels
-in the app. This guide walks you through exporting an alert query from a pgX
-panel and setting it up in Grafana's alerting system.
+pgX can turn any panel in the app into an alert-ready query. This guide covers
+exporting that query from a pgX panel and setting it up in Grafana's alerting
+system.
 
 :::note Running this in production
 
@@ -158,25 +160,22 @@ create the alert rule.
 2. Click the **panel title** or **three dots (⋮)** menu
 3. Select **"More..."** → **"New alert rule"**
 
-That's it! Now you can follow the comprehensive
-[Creating Alerts in Grafana](https://grafana.com/docs/grafana/latest/alerting/alerting-rules/create-grafana-managed-rule/)
-guide to configure your alert rule, set thresholds, configure notifications, and
-test your alert.
+The rest of the setup happens in the alert rule editor.
+[Create Your First Alert](creating-your-first-alert.md) picks up at exactly this
+point and covers:
 
-The general alerting guide covers:
-
-- Setting alert rule names and descriptions
-- Defining query conditions and thresholds
-- Configuring evaluation behavior and timing
-- Adding alert details and templates
-- Setting up notifications and contact points
-- Testing and troubleshooting alerts
-- Best practices for alerting
+- Naming the rule and building its condition with reduce and threshold
+  expressions
+- Setting the evaluation interval and pending period
+- Adding labels and annotations
+- Creating contact points and routing with notification policies
+- Silencing an alert during maintenance
 
 ## Verification
 
 1. Use **Preview alerts** to confirm the rule evaluates successfully
-2. Set a short evaluation interval temporarily to validate behavior
+2. Keep the evaluation interval at `5m` or longer - narrower windows can return
+   zero data points against ClickHouse
 3. Trigger a known database condition and verify the alert transitions to
    Firing (e.g., stop the monitored database to test a `pg_up` alert)
 
@@ -185,7 +184,7 @@ The general alerting guide covers:
 ### Query Scoping
 
 1. **Pick a specific cluster**: Always set the cluster filter in pgX before
-   exporting — alerts on the implicit "all clusters" set are usually noisy
+   exporting - alerts on the implicit "all clusters" set are usually noisy
 2. **Pick a specific database/user/query** when alerting on per-query metrics
    (Queries tab drawer) so the alert tracks one concrete thing
 
@@ -197,12 +196,14 @@ If the alert doesn't fire as expected:
 2. Verify the table is `otel_metrics_gauge` and the timestamp column is
    `TimeUnix` with type `DateTime64`
 3. Ensure the rule uses the same datasource and query as the panel
-4. Use an evaluation interval of at least 5 minutes — narrower windows can
+4. Use an evaluation interval of at least 5 minutes - narrower windows can
    give zero data points
 
 ## Next Steps
 
-- [Dashboards and Alerts](../operate/dashboards-and-alerts.md) - General
-  dashboard and alerting overview
+- [Create Your First Alert](creating-your-first-alert.md) - Configure the alert
+  rule, route notifications, and verify it fires
+- [Dashboards and Alerts as Code](../operate/dashboards-and-alerts.md) - Manage
+  the same alert rules declaratively with Grizzly
 - [Grafana Alerting Documentation](https://grafana.com/docs/grafana/latest/alerting/)
   \- Official Grafana alerting guide

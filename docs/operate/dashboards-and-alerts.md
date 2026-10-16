@@ -255,6 +255,8 @@ Grizzly repository, [contact the base14 team](mailto:support@base14.io).
 
 ## Related Guides
 
+- [Create Your First Alert](../guides/creating-your-first-alert.md) - Build the
+  same alert rules through the Scout UI
 - [Getting Started Guide](../introduction.md) - Overview of Scout observability
   platform
 - [Docker Compose Setup](../instrument/collector-setup/docker-compose-example.md)
