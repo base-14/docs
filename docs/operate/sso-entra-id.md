@@ -89,6 +89,17 @@ secret.
    registrations include it by default.
 3. If it is missing, select **Add a permission** → **Microsoft Graph** →
    **Delegated permissions**, add `User.Read`, and select **Add permissions**.
+4. Select **Grant admin consent for &lt;your tenant&gt;** and confirm.
+5. Confirm the **Status** column for `User.Read` shows **Granted for
+   &lt;your tenant&gt;**.
+
+:::warning Grant admin consent
+
+Do not skip admin consent. Without it, users either see a consent prompt they
+cannot approve, or sign-in fails after they authenticate with Microsoft. See
+[Sign-in fails after authenticating with Microsoft](#sign-in-fails-after-authenticating-with-microsoft).
+
+:::
 
 ## Step 4: Send the Details to base14
 
@@ -150,6 +161,23 @@ Create a new secret and send it to base14 Support.
 The user is signing in with an account from a different Entra ID tenant.
 Sign-in is restricted to your tenant. The user must sign in with their account
 in your directory.
+
+### "AADSTS65004: User declined to consent to access the app"
+
+The user cancelled the Microsoft consent prompt, or was shown a prompt that
+only an administrator can approve. Grant admin consent as described in
+[Step 3](#step-3-confirm-api-permissions) so users are not prompted.
+
+### Sign-in fails after authenticating with Microsoft
+
+Users enter their Microsoft credentials successfully, but are returned to
+Scout Console with an error. base14 sees this as Microsoft Graph refusing to
+return the user's profile (`Authorization_RequestDenied`).
+
+Admin consent has not been granted for `User.Read`. Return to
+[Step 3](#step-3-confirm-api-permissions), select
+**Grant admin consent for &lt;your tenant&gt;**, and confirm that the status
+shows **Granted**. No change is needed on the base14 side.
 
 ### Sign-in succeeds at Microsoft but Scout Console shows an error
 
