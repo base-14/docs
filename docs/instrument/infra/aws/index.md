@@ -33,6 +33,7 @@ instrumented applications. Use the guides below to wire up each AWS service.
 | [AWS Amazon MQ](./amazonMQ.md) | RabbitMQ and ActiveMQ broker metrics and logs. |
 | [AWS Lambda](./lambda.md) | Auto-instrument functions for traces, metrics, and logs. |
 | [AWS VPC Flow Logs](./aws-vpc.md) | Stream VPC flow logs to Scout via S3 and Lambda. |
+| [AWS Radar](./aws-radar.md) | Resource inventory and cost metrics across ~85 services. |
 
 ## Getting started with CloudWatch metrics
 
