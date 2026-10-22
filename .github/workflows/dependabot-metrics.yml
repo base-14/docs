@@ -1,0 +1,107 @@
+name: Dependabot Metrics
+
+# Hourly export of open Dependabot alert counts (+ a heartbeat gauge) to the
+# scout-leader collector as OTLP gauges. Alert rules live in scout-leader Grafana;
+# runbook: base14-infra/runbooks/systems/github/dependabot-metrics.md
+# No continue-on-error anywhere: shipping telemetry is this job's only purpose, so
+# every failure must go red. A failed/missing run trips the heartbeat alert within 3h.
+
+on:
+  schedule:
+    - cron: '23 * * * *'   # hourly, off the top-of-hour queue
+  workflow_dispatch: {}
+
+concurrency:
+  group: dependabot-metrics
+  cancel-in-progress: false
+
+permissions:
+  contents: read              # checkout: .github/dependabot.yml + the jq program
+  # Dependabot alerts read scope (GitHub workflow-syntax reference: "vulnerability-alerts: read|none").
+  # actionlint <= 1.7.12 predates this key and reports it as unknown; that is a stale linter, not an error.
+  vulnerability-alerts: read  # GET /repos/{owner}/{repo}/dependabot/alerts
+
+defaults:
+  run:
+    shell: bash               # bash -eo pipefail
+
+env:
+  OTLP_METRICS_URL: https://scout-leader-otel.tail80a7f0.ts.net/v1/metrics
+
+jobs:
+  export:
+    name: Export open alert counts to scout-leader
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Fetch open Dependabot alerts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # One JSON array per page. A non-2xx (403/404 = token lost vulnerability-alerts
+          # or Dependabot disabled) makes gh exit non-zero and fails the job on purpose:
+          # emitting zeros here would read as "all fixed".
+          gh api --paginate \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "/repos/${{ github.repository }}/dependabot/alerts?state=open&per_page=100" \
+            > alerts-pages.json
+          echo "open alerts: $(jq -s 'add // [] | length' alerts-pages.json)"
+
+      - name: Read declared Dependabot directories
+        run: |
+          # Repos without version-update config still get alerts; the jq always adds "root".
+          if [[ -f .github/dependabot.yml ]]; then
+            yq -o=json -I=0 '[.updates[].directory]' .github/dependabot.yml > declared-dirs.json
+          else
+            echo '[]' > declared-dirs.json
+          fi
+          cat declared-dirs.json
+
+      - name: Build OTLP metrics payload
+        run: |
+          TS_NANO=$(date +%s%N)
+          jq -n \
+            --slurpfile alerts alerts-pages.json \
+            --slurpfile declared declared-dirs.json \
+            --arg repo "${{ github.repository }}" \
+            --arg ts "$TS_NANO" \
+            -f .github/scripts/dependabot-metrics.jq > metrics.json
+          # Summary for the run log: datapoints per metric + open count by severity.
+          jq -c '.resourceMetrics[0].scopeMetrics[0].metrics[] | {name, datapoints: (.gauge.dataPoints | length)}' metrics.json
+          jq -r '.resourceMetrics[0].scopeMetrics[0].metrics[0].gauge.dataPoints
+                 | map({sev: (.attributes[] | select(.key == "severity") | .value.stringValue), n: (.asInt | tonumber)})
+                 | group_by(.sev) | map("\(.[0].sev)=\(map(.n) | add)") | join(" ")' metrics.json
+
+      - name: Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci,tag:gha
+
+      - name: Fetch OTel collector token
+        id: otel-auth
+        run: |
+          TOKEN=$(curl -sf -X POST "https://id.base14.io/realms/base14/protocol/openid-connect/token" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "grant_type=client_credentials" \
+            -d "client_id=${{ secrets.SCOUT_APP_NAME }}" \
+            -d "client_secret=${{ secrets.SCOUT_API_KEY }}" \
+            -d "audience=b14collector" | jq -r '.access_token')
+          # Under `bash -e` a failing `test a && test b` list does not stop the script; use one guarded test.
+          [[ -n "$TOKEN" && "$TOKEN" != "null" ]] || { echo "::error::Keycloak returned no access_token"; exit 1; }
+          echo "::add-mask::${TOKEN}"
+          echo "token=${TOKEN}" >> "$GITHUB_OUTPUT"
+
+      - name: POST /v1/metrics
+        run: |
+          curl -sS --fail-with-body --max-time 30 \
+            --retry 2 --retry-connrefused \
+            -X POST "$OTLP_METRICS_URL" \
+            -H "Authorization: Bearer ${{ steps.otel-auth.outputs.token }}" \
+            -H "Content-Type: application/json" \
+            --data-binary @metrics.json \
+            -w '\nHTTP %{http_code}\n'
