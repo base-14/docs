@@ -1,6 +1,6 @@
 ---
 id: aws-radar
-title: AWS Radar - resource inventory and cost metrics for base14 Scout
+title: Scout AWS Radar - resource inventory and cost metrics
 sidebar_label: AWS Radar
 sidebar_position: 8
 description:
@@ -44,6 +44,17 @@ same dashboards as their logs, metrics, and traces.
   needs a small extra grant.
 
 :::
+
+## What it looks like
+
+Once AWS Radar is scraping into Scout, you can build cost and inventory
+dashboards from its metrics - month-to-date and amortized spend, cost by
+service and region, and the daily trend of unblended vs amortized cost:
+
+<img
+  src="/img/aws-radar/cost-dashboard.png"
+  alt="Scout AWS Radar cost dashboard showing month-to-date and amortized spend, cost by service and region, and the daily cost trend"
+/>
 
 ## How it works
 
@@ -451,7 +462,7 @@ AWS Radar reads the export from
 calls `tag:GetResources` (already in the base policy) to attach each resource's
 tags to its cost.
 
-## Configuration reference
+## Helm values reference
 
 Common knobs - set under `common` for all instances, or on an `instances[]`
 entry to override one account.
@@ -468,6 +479,72 @@ entry to override one account.
 | `common.costExplorer.enabled` | `false` | Turn on Cost Explorer spend metrics. |
 | `common.costCUR.enabled` | `false` | Turn on CUR-based cost metrics. |
 | `common.resources` | 128Mi / 256Mi | Pod requests and limits. |
+
+## Container configuration
+
+The container reads a `config.yaml`. When you deploy with the Helm chart it
+renders this file into a ConfigMap from the values above - so on Kubernetes you
+configure through Helm, not this file directly. Running the image standalone
+(Docker, ECS), you write `config.yaml` yourself and mount it, or point
+`AWS_RADAR_CONFIG` at it.
+
+### config.yaml
+
+```yaml
+server:
+  port: 9090
+  metrics_path: /metrics
+  health_path: /health
+
+collection:
+  interval: 60s          # how often to poll the AWS APIs
+  timeout: 30s           # per-cycle timeout
+
+aws:
+  regions:
+    - us-east-1
+    - eu-west-1
+
+# Omit `collectors` to scan every supported service.
+collectors:
+  - ec2
+  - s3
+  - lambda
+
+cost_explorer:
+  enabled: false
+  frequency: daily       # hourly | daily | weekly | monthly
+
+cost_cur:
+  enabled: false
+  report_type: cur2      # cur (legacy CUR) | cur2 (CUR 2.0 / Data Exports)
+  bucket: ""
+  prefix: cur
+  report_name: ""
+  format: parquet        # parquet | csv ("" auto-detects from the manifest)
+  frequency: daily       # hourly | daily
+  region: us-east-1      # CUR lives in us-east-1
+  max_resources: 100     # top-N resources to attribute cost to
+  resource_tags: false   # enrich those resources with their tags
+
+logging:
+  level: info            # debug | info | warn | error
+  format: json           # json | text
+```
+
+The Helm values map onto these fields - for example `common.collection.interval`
+sets `collection.interval`, and `instances[].costCUR.reportType` sets
+`cost_cur.report_type`.
+
+### Environment variables
+
+| Variable | Description |
+| -------- | ----------- |
+| `AWS_ACCESS_KEY_ID` | AWS access key. Required. |
+| `AWS_SECRET_ACCESS_KEY` | AWS secret key. Required. |
+| `AWS_REGION` | Default region, used when none is set in `config.yaml`. Optional. |
+| `AWS_RADAR_CONFIG` | Path to the config file, overriding the default `./config.yaml` and `/app/config.yaml` lookup. |
+| `AWS_RADAR_ACCOUNT_NAME` | Account name used to label metrics. Optional; otherwise resolved via Organizations or the IAM account alias. |
 
 ## Metrics
 
