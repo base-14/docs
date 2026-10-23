@@ -169,6 +169,7 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 | Component     | Guide                                          | Key Metrics                                                     |
 | ------------- | ---------------------------------------------- | --------------------------------------------------------------- |
 | Apache APISIX | [Apache APISIX](./collecting-apisix-telemetry) | Per-route status and latency, rate-limit rejections, upstream health |
+| Tyk Gateway   | [Tyk Gateway](./collecting-tyk-telemetry)      | Requests by API and response flag, latency split, quota and auth rejections |
 
 ### Object Storage
 
