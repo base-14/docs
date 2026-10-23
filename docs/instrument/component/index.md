@@ -119,6 +119,7 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 |-----------------|--------------------------------------------------------|------------------------------------------------------------------------|
 | LiteLLM Gateway | [LiteLLM Gateway](./collecting-litellm-telemetry)      | Deployment health and cooldowns, request failures, latency split, token spend |
 | Bifrost         | [Bifrost](./collecting-bifrost-telemetry)              | LLM request outcomes, provider latency, token usage, streaming performance |
+| Apache APISIX   | [Apache APISIX](./collecting-apisix-telemetry#collecting-ai-metrics) | Model latency, prompt and completion tokens, in-flight model calls |
 
 ### AI Agent Runtimes
 
@@ -162,6 +163,12 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 | Traefik            | [Traefik](./collecting-traefik-telemetry)                     | Entrypoint requests, TLS, router stats, open conns   |
 | Envoy              | [Envoy](./collecting-envoy-telemetry)                         | Downstream connections, listeners, cluster manager   |
 | Caddy              | [Caddy](./collecting-caddy-telemetry)                         | Request rates, response codes, TLS handshakes        |
+
+### API Gateways
+
+| Component     | Guide                                          | Key Metrics                                                     |
+| ------------- | ---------------------------------------------- | --------------------------------------------------------------- |
+| Apache APISIX | [Apache APISIX](./collecting-apisix-telemetry) | Per-route status and latency, rate-limit rejections, upstream health |
 
 ### Object Storage
 
