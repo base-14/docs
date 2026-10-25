@@ -201,6 +201,12 @@ Prometheus scrape target and ships telemetry to base14 Scout.
 | Jetty     | [Jetty](./collecting-jetty-telemetry)           | Threads, I/O selects, sessions, request queue        |
 | WildFly   | [WildFly](./collecting-wildfly-telemetry)       | Undertow requests, datasource pools, transactions    |
 
+### DNS
+
+| Component | Guide                                     | Key Metrics                                                  |
+| --------- | ----------------------------------------- | ------------------------------------------------------------ |
+| CoreDNS   | [CoreDNS](./collecting-coredns-telemetry) | Query rates, SERVFAIL by zone, upstream health, cache hit ratio |
+
 ### Network & IoT Devices
 
 | Component | Guide                                       | Key Metrics                                                |
