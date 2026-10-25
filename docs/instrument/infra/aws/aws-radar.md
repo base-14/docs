@@ -53,7 +53,7 @@ service and region, and the daily trend of unblended vs amortized cost:
 
 <img
   src="/img/aws-radar/cost-dashboard.png"
-  alt="Scout AWS Radar cost dashboard showing month-to-date and amortized spend, cost by service and region, and the daily cost trend"
+  alt="Scout AWS Radar cost dashboard with spend by service, region, and day"
 />
 
 ## How it works
