@@ -39,7 +39,7 @@ Implement OpenTelemetry instrumentation for Litestar applications to capture
 distributed traces, metrics, and structured logs from your async Python APIs.
 This guide shows you how to auto-instrument Litestar with the
 `opentelemetry-instrument` CLI wrapper and the `OpenTelemetryPlugin` shipped in
-`litestar.contrib.opentelemetry`, so HTTP server spans, asyncpg queries, httpx
+`litestar.plugins.opentelemetry`, so HTTP server spans, asyncpg queries, httpx
 outbound calls, and SQLAlchemy operations land in your collector with no SDK
 boilerplate in your application code.
 
@@ -105,7 +105,7 @@ This documentation is designed for:
 This guide demonstrates how to:
 
 - Instrument a Litestar app using `OpenTelemetryPlugin` from the official
-  `litestar.contrib.opentelemetry` module.
+  `litestar.plugins.opentelemetry` module.
 - Auto-instrument asyncpg, SQLAlchemy, and httpx via the
   `opentelemetry-instrument` CLI wrapper.
 - Inject trace IDs onto every Python `LogRecord` via
@@ -122,7 +122,7 @@ Before starting, ensure you have:
 
 - **Python 3.11 or later** installed (Python 3.14 recommended for best
   performance and free-threaded build support).
-- **Litestar 2.0 or later** installed in your project (2.21.1 used in the
+- **Litestar 2.0 or later** installed in your project (2.22.0 used in the
   example).
 - **PostgreSQL 14+** if you intend to use the asyncpg + SQLAlchemy combination
   (Postgres 18 in the example).
@@ -140,10 +140,10 @@ Before starting, ensure you have:
 | Component                                | Minimum Version | Recommended Version | Notes                                                            |
 | ---------------------------------------- | --------------- | ------------------- | ---------------------------------------------------------------- |
 | **Python**                               | 3.11            | 3.14                | Litestar 2.x supports 3.8+; 3.11+ recommended for asyncio perf.  |
-| **Litestar**                             | 2.0             | 2.21.1+             | Earlier 1.x is the legacy "Starlite" name, schema differs.       |
-| **OpenTelemetry SDK**                    | 1.30.0          | 1.41+               | Core SDK for traces, metrics, logs.                              |
-| **OpenTelemetry contrib instrumentations** | 0.50b0          | 0.62b0+             | asyncpg, httpx, SQLAlchemy, logging packages.                    |
-| **opentelemetry-distro**                 | 0.50b0          | 0.62b0+             | Provides the `opentelemetry-instrument` CLI wrapper.             |
+| **Litestar**                             | 2.0             | 2.22.0+             | Earlier 1.x is the legacy "Starlite" name, schema differs.       |
+| **OpenTelemetry SDK**                    | 1.30.0          | 1.45+               | Core SDK for traces, metrics, logs.                              |
+| **OpenTelemetry contrib instrumentations** | 0.50b0          | 0.66b1+             | asyncpg, httpx, SQLAlchemy, logging packages.                    |
+| **opentelemetry-distro**                 | 0.50b0          | 0.66b1+             | Provides the `opentelemetry-instrument` CLI wrapper.             |
 | **asyncpg** (optional)                   | 0.27            | 0.31.0              | Native Postgres driver.                                          |
 | **SQLAlchemy** (optional)                | 2.0             | 2.0.49              | 2.x async API required for the example.                          |
 | **httpx** (optional)                     | 0.24            | 0.28.1              | For outbound HTTP tracing and W3C propagation.                   |
@@ -156,7 +156,7 @@ shipped at [python/litestar-postgres](https://github.com/base-14/examples/tree/m
 
 | Source                 | Telemetry produced                                                              | Driver                                              |
 | ---------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------- |
-| HTTP server            | One server span per request (method, route, status, duration)                   | `litestar.contrib.opentelemetry.OpenTelemetryPlugin` |
+| HTTP server            | One server span per request (method, route, status, duration)                   | `litestar.plugins.opentelemetry.OpenTelemetryPlugin` |
 | Database (Postgres)    | One client span per asyncpg statement (prepared statement text, duration)       | `opentelemetry-instrumentation-asyncpg`             |
 | ORM                    | One client span per SQLAlchemy operation (logical SQL, dialect)                 | `opentelemetry-instrumentation-sqlalchemy`          |
 | Outbound HTTP          | One client span per httpx call, with `traceparent` header injection             | `opentelemetry-instrumentation-httpx`               |
@@ -241,7 +241,7 @@ version = "0.1.0"
 description = "Litestar + PostgreSQL articles API with OpenTelemetry instrumentation"
 requires-python = ">=3.14"
 dependencies = [
-    "litestar[standard]==2.21.1",
+    "litestar[standard]==2.22.0",
     "msgspec==0.21.1",
     "sqlalchemy[asyncio]==2.0.49",
     "asyncpg==0.31.0",
@@ -250,16 +250,16 @@ dependencies = [
     "httpx==0.28.1",
     "python-json-logger==4.1.0",
     # OpenTelemetry — SDK + auto-instrumentation
-    "opentelemetry-api==1.41.0",
-    "opentelemetry-sdk==1.41.0",
-    "opentelemetry-exporter-otlp==1.41.0",
-    "opentelemetry-distro==0.62b0",
-    "opentelemetry-instrumentation==0.62b0",
-    "opentelemetry-instrumentation-asgi==0.62b0",
-    "opentelemetry-instrumentation-sqlalchemy==0.62b0",
-    "opentelemetry-instrumentation-httpx==0.62b0",
-    "opentelemetry-instrumentation-asyncpg==0.62b0",
-    "opentelemetry-instrumentation-logging==0.62b0",
+    "opentelemetry-api==1.45.1",
+    "opentelemetry-sdk==1.45.1",
+    "opentelemetry-exporter-otlp==1.45.1",
+    "opentelemetry-distro==0.66b1",
+    "opentelemetry-instrumentation==0.66b1",
+    "opentelemetry-instrumentation-asgi==0.66b1",
+    "opentelemetry-instrumentation-sqlalchemy==0.66b1",
+    "opentelemetry-instrumentation-httpx==0.66b1",
+    "opentelemetry-instrumentation-asyncpg==0.66b1",
+    "opentelemetry-instrumentation-logging==0.66b1",
 ]
 ```
 
@@ -286,7 +286,9 @@ your code, so the plugin picks up the same provider automatically.
 Litestar uses a custom router that does not match the generic ASGI app shape,
 so `opentelemetry-instrumentation-asgi` cannot produce HTTP server spans for
 it on its own. The Litestar team ships
-`litestar.contrib.opentelemetry.OpenTelemetryPlugin` precisely for this:
+`litestar.plugins.opentelemetry.OpenTelemetryPlugin` for this. Releases
+before 2.22 import it from `litestar.contrib.opentelemetry`, which is
+deprecated from 2.22 and removed in 3.0:
 
 ```python title="app/src/main.py" showLineNumbers
 from advanced_alchemy.extensions.litestar import (
@@ -295,7 +297,7 @@ from advanced_alchemy.extensions.litestar import (
     SQLAlchemyPlugin,
 )
 from litestar import Litestar
-from litestar.contrib.opentelemetry import OpenTelemetryConfig, OpenTelemetryPlugin
+from litestar.plugins.opentelemetry import OpenTelemetryConfig, OpenTelemetryPlugin
 from litestar.di import Provide
 
 from src.config import Settings
@@ -879,13 +881,14 @@ easier - the user can paste the ID into Scout to find the exact request:
 
 ```python showLineNumbers
 from litestar import Request, Response, get
+from litestar.params import FromPath
 from opentelemetry import trace
 
 
 @get("/api/articles/{article_id:int}")
 async def get_one_with_trace(
     request: Request,
-    article_id: int,
+    article_id: FromPath[int],
     repo: ArticleRepository,
 ) -> Response[ArticleRead]:
     article = await repo.get_one_or_none(id=article_id)
@@ -1008,7 +1011,7 @@ auto-patch alone cannot trace Litestar.
 **Fix**: Add the plugin to your Litestar instance:
 
 ```python
-from litestar.contrib.opentelemetry import OpenTelemetryConfig, OpenTelemetryPlugin
+from litestar.plugins.opentelemetry import OpenTelemetryConfig, OpenTelemetryPlugin
 
 app = Litestar(
     route_handlers=[...],
@@ -1235,9 +1238,9 @@ shared client in a service class and closes it on Litestar shutdown.
 Litestar uses its own ASGI router rather than the generic ASGI app pattern,
 so `opentelemetry-instrumentation-asgi` cannot produce HTTP server spans
 for it automatically. The `OpenTelemetryPlugin` from
-`litestar.contrib.opentelemetry` hooks into Litestar's request lifecycle
-directly. Set `OTEL_PYTHON_DISABLED_INSTRUMENTATIONS=asgi` to avoid double
-handling.
+`litestar.plugins.opentelemetry` (`litestar.contrib.opentelemetry` before
+2.22) hooks into Litestar's request lifecycle directly. Set
+`OTEL_PYTHON_DISABLED_INSTRUMENTATIONS=asgi` to avoid double handling.
 
 ### What is the performance overhead of OpenTelemetry on Litestar?
 
@@ -1249,10 +1252,10 @@ proportional to real traffic.
 
 ### Which Python and Litestar versions are supported?
 
-Python 3.11+ minimum (3.14 recommended), Litestar 2.0+ (2.21.1+
-recommended), OpenTelemetry SDK 1.30+ (1.41+ recommended), and contrib
-instrumentations 0.50b0+ (0.62b0+ recommended). The example pins Python
-3.14 and Litestar 2.21.1.
+Python 3.11+ minimum (3.14 recommended), Litestar 2.0+ (2.22.0+
+recommended), OpenTelemetry SDK 1.30+ (1.45+ recommended), and contrib
+instrumentations 0.50b0+ (0.66b1+ recommended). The example pins Python
+3.14 and Litestar 2.22.0.
 
 ### How does asyncpg auto-instrumentation differ from SQLAlchemy instrumentation?
 
@@ -1324,7 +1327,7 @@ packages - each contrib package registers itself under a short name.
 ### Can I use this guide with the legacy Starlite name?
 
 Starlite was renamed to Litestar at version 2.0. The
-`litestar.contrib.opentelemetry` plugin is only on the Litestar branch -
+`OpenTelemetryPlugin` exists only on the Litestar branch -
 on Starlite 1.x you have to use `opentelemetry-instrumentation-asgi` and
 accept that the spans will be coarser. Migrating to Litestar 2.x is the
 right answer.
@@ -1406,7 +1409,7 @@ import logging
 
 import msgspec
 from litestar import Controller, Litestar, get, post
-from litestar.contrib.opentelemetry import OpenTelemetryConfig, OpenTelemetryPlugin
+from litestar.plugins.opentelemetry import OpenTelemetryConfig, OpenTelemetryPlugin
 
 from src.logging_config import build_logging_config
 from src.telemetry import notifications_received
