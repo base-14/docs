@@ -1366,6 +1366,8 @@ query becomes a span with the SQL recorded on it. Set `DisableQuery: true` in
   \- Fiber + sqlx + River
 - [Chi Example](https://github.com/base-14/examples/tree/main/go/chi-inmemory)
   \- Chi + in-memory
+- [Temporal Example](https://github.com/base-14/examples/tree/main/go/go-temporal-postgres)
+  \- Temporal workflows + Echo + GORM
 
 ### Advanced Topics
 

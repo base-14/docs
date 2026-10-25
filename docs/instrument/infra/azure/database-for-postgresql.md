@@ -827,6 +827,9 @@ capture every statement (high volume; combine with sampling).
 
 ## Related Guides
 
+- [Runnable example](https://github.com/base-14/examples/tree/main/components/azure-database-postgresql-telemetry)
+  \- `examples/components/azure-database-postgresql-telemetry/` in the
+  examples repository.
 - [Self-hosted PostgreSQL](../../component/postgres.md) - the
   `postgresqlreceiver` reference for the in-database scrape. This
   guide layers Azure-specific deltas (firewall, `azure_pg_admin`,

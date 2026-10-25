@@ -1894,6 +1894,9 @@ refer to our example repository:
 
 **[Spring Boot OpenTelemetry Example](https://github.com/base-14/examples/tree/main/java/spring-boot-java25-postgresql)**
 
+Another example, on Java 17 with MySQL:
+[spring-boot-java17-mysql](https://github.com/base-14/examples/tree/main/java/spring-boot-java17-mysql)
+
 The example includes:
 
 - Complete Spring Boot 3.2 application with REST API

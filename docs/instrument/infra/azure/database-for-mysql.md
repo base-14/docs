@@ -855,6 +855,9 @@ such as `SELECT SLEEP(2)` when `long_query_time` is `1` second.
 
 ### Same surface, different paths
 
+- [Runnable example](https://github.com/base-14/examples/tree/main/components/azure-database-mysql-telemetry)
+  \- `examples/components/azure-database-mysql-telemetry/` in the
+  examples repository.
 - [Self-hosted MySQL](../../component/mysql.md) - the `mysqlreceiver`
   reference for the in-database scrape. This guide layers
   Azure-specific deltas (firewall, three-grant monitoring user,

@@ -714,6 +714,8 @@ collector but use different receivers and different metric or log signals.
   azuremonitorreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/azuremonitorreceiver)
 - [Receiver bug #45942 - case-mismatch dimension
   keys](https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/45942)
+- Runnable example:
+  [`examples/components/azure-api-management-telemetry/`](https://github.com/base-14/examples/tree/main/components/azure-api-management-telemetry)
 
 ## Related Guides
 

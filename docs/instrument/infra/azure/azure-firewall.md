@@ -657,6 +657,8 @@ metrics](https://learn.microsoft.com/azure/azure-monitor/reference/supported-met
   [Azure Firewall threat intelligence](https://learn.microsoft.com/azure/firewall/threat-intel).
 - **Capacity-unit reference.**
   [Azure Firewall performance](https://learn.microsoft.com/azure/firewall/firewall-performance).
+- Runnable example:
+  [`examples/components/azure-firewall-telemetry/`](https://github.com/base-14/examples/tree/main/components/azure-firewall-telemetry)
 
 ## Related Guides
 

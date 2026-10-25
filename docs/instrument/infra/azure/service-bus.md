@@ -753,6 +753,8 @@ for SLI and SLO dashboards and alerts, logs for incident investigation.
   [opentelemetry-collector-contrib / extension / azureauthextension](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/extension/azureauthextension).
 - **Azure Monitor metric reference.**
   [Microsoft.ServiceBus/namespaces metrics](https://learn.microsoft.com/azure/azure-monitor/reference/supported-metrics/microsoft-servicebus-namespaces-metrics).
+- Runnable example:
+  [`examples/components/azure-service-bus-telemetry/`](https://github.com/base-14/examples/tree/main/components/azure-service-bus-telemetry)
 
 ## Related Guides
 

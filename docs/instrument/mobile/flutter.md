@@ -670,6 +670,8 @@ ScoutFlutter.reportError(e, st);
 
 ## References
 
+- Example app:
+  [github.com/base-14/examples/tree/main/flutter/platform_design](https://github.com/base-14/examples/tree/main/flutter/platform_design)
 - scout_flutter repo:
   [github.com/base-14/scout-flutter](https://github.com/base-14/scout-flutter)
 - scout-react repo (web + RN companion):

@@ -906,6 +906,8 @@ doing real work. Subscription-scope routing is not real-time; plan for
   azuremonitorreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/azuremonitorreceiver)
 - [opentelemetry-collector-contrib
   azureeventhubreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/azureeventhubreceiver)
+- Runnable example:
+  [`examples/components/azure-network-primitives-telemetry/`](https://github.com/base-14/examples/tree/main/components/azure-network-primitives-telemetry)
 
 ## Related Guides
 

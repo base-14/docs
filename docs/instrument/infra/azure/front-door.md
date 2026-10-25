@@ -584,6 +584,9 @@ day before cardinality multiplication).
 
 ## Related Guides
 
+- [Runnable example](https://github.com/base-14/examples/tree/main/components/azure-front-door-telemetry)
+  \- `examples/components/azure-front-door-telemetry/` in the
+  examples repository.
 - [Azure Application Gateway](./application-gateway.md) - regional L7
   load balancer with WAF v2. Customers running both global edge and
   regional backend selection should monitor both surfaces.

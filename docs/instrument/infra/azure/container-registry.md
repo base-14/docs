@@ -543,6 +543,8 @@ unlike a subscription-scope Activity Log path.
   azuremonitorreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/azuremonitorreceiver)
 - [opentelemetry-collector-contrib
   azureeventhubreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/azureeventhubreceiver)
+- Runnable example:
+  [`examples/components/azure-container-registry-telemetry/`](https://github.com/base-14/examples/tree/main/components/azure-container-registry-telemetry)
 
 ## Related Guides
 

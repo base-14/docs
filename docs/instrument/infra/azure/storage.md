@@ -1111,6 +1111,8 @@ metrics](https://learn.microsoft.com/azure/azure-monitor/reference/supported-met
   [tableServices](https://learn.microsoft.com/azure/azure-monitor/reference/supported-metrics/microsoft-storage-storageaccounts-tableservices-metrics)
 ·
   [fileServices](https://learn.microsoft.com/azure/azure-monitor/reference/supported-metrics/microsoft-storage-storageaccounts-fileservices-metrics).
+- Runnable example:
+  [`examples/components/azure-storage-telemetry/`](https://github.com/base-14/examples/tree/main/components/azure-storage-telemetry)
 
 ## Related Guides
 

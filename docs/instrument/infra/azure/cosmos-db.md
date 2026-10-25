@@ -452,6 +452,8 @@ Monitor REST API.
 
 ## Related Guides
 
+- [Runnable example](https://github.com/base-14/examples/tree/main/components/azure-cosmosdb-telemetry)
+  \- `examples/components/azure-cosmosdb-telemetry/` in the examples repository.
 - [Azure SQL Database](./sql-database.md) - managed relational database.
   Pairs with the self-hosted
   [SQL Server guide](../../component/sqlserver.md).

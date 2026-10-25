@@ -928,6 +928,8 @@ VMSS and drop it again once the investigation closes. Add
   azuremonitorreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/azuremonitorreceiver)
 - [opentelemetry-collector-contrib
   azureeventhubreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/azureeventhubreceiver)
+- Runnable example:
+  [`examples/components/azure-compute-telemetry/`](https://github.com/base-14/examples/tree/main/components/azure-compute-telemetry)
 
 ## Related Guides
 

@@ -745,6 +745,9 @@ and rely on quota alerts in the Azure portal instead.
 
 ### Shared collector + Scout wiring
 
+- [Runnable example](https://github.com/base-14/examples/tree/main/components/azure-app-service-telemetry)
+  \- `examples/components/azure-app-service-telemetry/` in the
+  examples repository.
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
   the runtime that hosts both receivers in this guide.
 - [Kubernetes / Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -

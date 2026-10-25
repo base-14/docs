@@ -483,6 +483,8 @@ adds the Windows-only perfcounter metrics.
 
 ## Related Guides
 
+- [Runnable example](https://github.com/base-14/examples/tree/main/components/sqlserver-telemetry)
+  \- `examples/components/sqlserver-telemetry/` in the examples repository.
 - [Azure SQL Database](../infra/azure/sql-database.md) - The managed PaaS
   (Azure SQL Database / Managed Instance), collected via the `azure_monitor`
   receiver instead of `sqlserverreceiver`.

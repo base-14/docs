@@ -1473,8 +1473,8 @@ OTEL_LOGS_EXPORTER=otlp
 OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED=true
 ```
 
-This complete example is available in our
-[GitHub examples repository](https://github.com/base-14/examples/tree/main/scout-collector/docker/celery-demo).
+A runnable FastAPI, Celery and PostgreSQL example is in the
+[GitHub examples repository](https://github.com/base-14/examples/tree/main/python/fastapi-celery-postgres).
 
 With instrumentation in place, you can
 [trace distributed Celery tasks in Scout](https://base14.io/scout/traces)

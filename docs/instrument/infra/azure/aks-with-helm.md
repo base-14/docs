@@ -922,6 +922,8 @@ operational signals live.
 
 ## Related Guides
 
+- [Runnable example](https://github.com/base-14/examples/tree/main/components/azure-aks-telemetry)
+  \- `examples/components/azure-aks-telemetry/` in the examples repository.
 - [Azure Kubernetes Service (Operator)](aks.md) - the canonical pattern
   using the OpenTelemetry Operator and CRDs.
 - [Kubernetes (Scout Helm chart)][scout-helm] - alternative deployment

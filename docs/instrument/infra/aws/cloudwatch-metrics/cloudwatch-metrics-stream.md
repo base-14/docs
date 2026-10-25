@@ -476,6 +476,8 @@ a Lambda function that forwards the metrics to base14 Scout over OTLP.
 
 ## Related Guides
 
+- [Runnable example](https://github.com/base-14/examples/tree/main/aws-cloudwatch-stream)
+  \- `examples/aws-cloudwatch-stream/` in the examples repository.
 - [AWS CloudWatch Overview](./overview.md) - Compare all four approaches to
   get CloudWatch metrics into Scout.
 - [Firehose to the OTel Collector](./cloudwatch-firehose-receiver.md) - The

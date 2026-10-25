@@ -767,9 +767,9 @@ export const config = {
 
 ### Docker Compose Configuration
 
-Example `compose.yml` for production-like deployment:
+Example `compose.yaml` for production-like deployment:
 
-```yaml title="compose.yml" showLineNumbers
+```yaml title="compose.yaml" showLineNumbers
 services:
   app:
     build: .
@@ -815,7 +815,7 @@ volumes:
 
 > For a production-ready compose configuration with health checks, networks, and
 > env_file support, see the
-> [complete example](https://github.com/base-14/examples/tree/main/nodejs/express-typescript-mongodb/compose.yml).
+> [complete example](https://github.com/base-14/examples/tree/main/nodejs/express-typescript-mongodb/compose.yaml).
 
 ### Environment Variables Template
 
@@ -1951,6 +1951,9 @@ instrumentation is available at:
 **GitHub**:
 [base-14/examples/nodejs/express-typescript-mongodb](https://github.com/base-14/examples/tree/main/nodejs/express-typescript-mongodb)
 
+Another example, on Express 5 with PostgreSQL:
+[base-14/examples/nodejs/express5-postgres](https://github.com/base-14/examples/tree/main/nodejs/express5-postgres)
+
 **Features**:
 
 - Full auto-instrumentation with NodeSDK
@@ -2024,12 +2027,12 @@ For complete production-ready configuration files, see the example repository:
 - [.env.example][example-env] - All environment variables with Scout
   configuration
 - [Dockerfile][example-dockerfile] - Multi-stage production build
-- [compose.yml][example-compose] - Full stack with health checks and networks
+- [compose.yaml][example-compose] - Full stack with health checks and networks
 
 [example-telemetry]: https://github.com/base-14/examples/tree/main/nodejs/express-typescript-mongodb/src/telemetry.ts
 [example-env]: https://github.com/base-14/examples/tree/main/nodejs/express-typescript-mongodb/.env.example
 [example-dockerfile]: https://github.com/base-14/examples/tree/main/nodejs/express-typescript-mongodb/Dockerfile
-[example-compose]: https://github.com/base-14/examples/tree/main/nodejs/express-typescript-mongodb/compose.yml
+[example-compose]: https://github.com/base-14/examples/tree/main/nodejs/express-typescript-mongodb/compose.yaml
 
 With instrumentation configured, you can
 [track Express.js endpoints in Scout APM](https://base14.io/scout/apm)

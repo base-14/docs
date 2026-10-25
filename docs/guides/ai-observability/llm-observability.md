@@ -818,6 +818,8 @@ pages under [Agent Pipeline Spans](#agent-pipeline-spans).
 
 The code on this page comes from
 [`python/ai-sales-intelligence`](https://github.com/base-14/examples/tree/main/python/ai-sales-intelligence).
+A Go LLM application is in
+[`go/ai-data-analyst`](https://github.com/base-14/examples/tree/main/go/ai-data-analyst).
 
 ```text
 src/sales_intelligence/

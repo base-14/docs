@@ -627,6 +627,8 @@ configuration in this guide unless you operate Premium fleets.
   azuremonitorreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/azuremonitorreceiver)
 - [Self-hosted Redis component guide](../../component/redis.md) - the
   `redisreceiver` path for non-PaaS deployments.
+- Runnable example:
+  [`examples/components/azure-cache-for-redis-telemetry/`](https://github.com/base-14/examples/tree/main/components/azure-cache-for-redis-telemetry)
 
 ## Related Guides
 

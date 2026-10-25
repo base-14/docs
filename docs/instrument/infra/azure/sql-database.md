@@ -553,6 +553,9 @@ REST API.
 
 ## Related Guides
 
+- [Runnable example](https://github.com/base-14/examples/tree/main/components/azure-sql-database-telemetry)
+  \- `examples/components/azure-sql-database-telemetry/` in the
+  examples repository.
 - [Self-hosted SQL Server](../../component/sqlserver.md) - paired guide for SQL
   Server you run yourself (VM, on-prem, container). Uses `sqlserverreceiver`
   to scrape DMVs directly.

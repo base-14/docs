@@ -1088,6 +1088,9 @@ and cluster-state visibility.
 
 ## Related Guides
 
+- [Runnable example](https://github.com/base-14/examples/tree/main/components/azure-aks-operator-telemetry)
+  \- `examples/components/azure-aks-operator-telemetry/` in the
+  examples repository.
 - [Azure Kubernetes Service (Helm)](aks-with-helm.md) - alternative pattern
   using raw Helm releases, no operator required.
 - [OpenTelemetry Operator setup][otel-operator-setup] - generic operator

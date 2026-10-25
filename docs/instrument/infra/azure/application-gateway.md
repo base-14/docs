@@ -736,6 +736,8 @@ azureauthextension](https://github.com/open-telemetry/opentelemetry-collector-co
 - **Azure Monitor metric reference.**
   [Microsoft.Network/applicationGateways
 metrics](https://learn.microsoft.com/azure/azure-monitor/reference/supported-metrics/microsoft-network-applicationgateways-metrics).
+- Runnable example:
+  [`examples/components/azure-application-gateway-telemetry/`](https://github.com/base-14/examples/tree/main/components/azure-application-gateway-telemetry)
 
 ## Related Guides
 
