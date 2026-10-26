@@ -445,7 +445,7 @@ What it captures:
   `HIGHEST_PRECEDENCE`, creates the span itself with `SpanKind.CLIENT`, adds
   the typed token, finish-reason and `base14.gen_ai.cost_usd` attributes, and
   records the gated content-capture event
-- **Custom GenAI metrics** - operation duration histograms, cost counters,
+- **Custom GenAI metrics** - inference duration histograms, cost counters,
   retry counters, fallback counters, and error counters, recorded
   independently of the span through the `Meter` API
 - **Domain-specific pipeline spans** - `support_conversation`,
@@ -1102,17 +1102,29 @@ before delegating to `DefaultTracingObservationHandler.onError()`, which
 records the exception and marks the span `ERROR`. `LlmService` never touches
 span status directly - it owns the metrics around the call instead.
 
-`generateOnce()` records `gen_ai.client.operation.duration` on both success
-and failure, adding `error.type` only in the failure branch:
+Every `chatModel.call()` goes through `timedCall()`, which records
+`gen_ai.client.inference.duration` on both success and failure, adding
+`error.type` only in the failure branch. One point per model call matches one
+`chat {model}` span, and tool execution between calls is not timed:
 
 ```java showLineNumbers title="src/main/java/com/example/support/llm/LlmService.java"
-} catch (Exception e) {
-    operationDuration.record(elapsedSeconds(start), Attributes.of(
-        AttributeKey.stringKey(GenAi.OPERATION_NAME), "chat",
-        AttributeKey.stringKey(GenAi.PROVIDER_NAME), provider,
-        AttributeKey.stringKey(GenAi.REQUEST_MODEL), model,
-        AttributeKey.stringKey(GenAi.ERROR_TYPE), errorType(e)));
-    throw e;
+private ChatResponse timedCall(ChatModel chatModel, Prompt prompt, String provider, String model) {
+    long start = System.nanoTime();
+    try {
+        ChatResponse response = chatModel.call(prompt);
+        inferenceDuration.record(elapsedSeconds(start), Attributes.of(
+            AttributeKey.stringKey(GenAi.OPERATION_NAME), "chat",
+            AttributeKey.stringKey(GenAi.PROVIDER_NAME), provider,
+            AttributeKey.stringKey(GenAi.REQUEST_MODEL), model));
+        return response;
+    } catch (RuntimeException e) {
+        inferenceDuration.record(elapsedSeconds(start), Attributes.of(
+            AttributeKey.stringKey(GenAi.OPERATION_NAME), "chat",
+            AttributeKey.stringKey(GenAi.PROVIDER_NAME), provider,
+            AttributeKey.stringKey(GenAi.REQUEST_MODEL), model,
+            AttributeKey.stringKey(GenAi.ERROR_TYPE), errorType(e)));
+        throw e;
+    }
 }
 ```
 
@@ -1298,9 +1310,10 @@ rather than string literals for their names:
 
 ```java showLineNumbers title="src/main/java/com/example/support/llm/LlmService.java"
 var meter = telemetry.meter();
-this.operationDuration = meter.histogramBuilder(GenAi.OPERATION_DURATION_METRIC)
+this.inferenceDuration = meter.histogramBuilder(GenAi.INFERENCE_DURATION_METRIC)
     .setUnit("s")
-    .setDescription("Duration of GenAI operations")
+    .setDescription("GenAI client inference operation duration")
+    .setExplicitBucketBoundariesAdvice(GenAi.DURATION_BUCKETS)
     .build();
 this.retryCounter = meter.counterBuilder(GenAi.RETRY_METRIC)
     .setUnit("{retry}")
@@ -1321,10 +1334,11 @@ set as typed span attributes by `GenAiTracingObservationHandler`, not
 recorded as a separate metric. Each of the five metrics serves a specific
 observability purpose:
 
-- **`gen_ai.client.operation.duration`** - Histogram of LLM call duration in
-  seconds, recorded on both success and failure in `generateOnce()`. Captures
-  end-to-end latency including network round-trip and model inference. Use
-  this to track model performance degradation over time.
+- **`gen_ai.client.inference.duration`** - Histogram of LLM call duration in
+  seconds, recorded once per model call on both success and failure in
+  `timedCall()`, with the bucket boundaries the GenAI conventions advise.
+  Captures latency including network round-trip and model inference. Use this
+  to track model performance degradation over time.
 - **`base14.gen_ai.cost`** - Monotonic double counter of estimated cost in
   USD, recorded by `GenAiTracingObservationHandler` alongside the
   `base14.gen_ai.cost_usd` span attribute. Use this for real-time cost
@@ -1344,7 +1358,7 @@ observability purpose:
 
 | Metric Name | Type | Unit | Labels | Recorded In |
 | --- | --- | --- | --- | --- |
-| `gen_ai.client.operation.duration` | Histogram | `s` | `gen_ai.operation.name`, `gen_ai.provider.name`, `gen_ai.request.model`, `error.type` (on failure) | `generateOnce()` |
+| `gen_ai.client.inference.duration` | Histogram | `s` | `gen_ai.operation.name`, `gen_ai.provider.name`, `gen_ai.request.model`, `error.type` (on failure) | `timedCall()` |
 | `base14.gen_ai.cost` | DoubleCounter | `usd` | `gen_ai.operation.name`, `gen_ai.provider.name`, `gen_ai.request.model` | `GenAiTracingObservationHandler` |
 | `base14.gen_ai.retry.count` | LongCounter | `{retry}` | `gen_ai.provider.name`, `error.type`, `base14.retry.attempt` | `generateWithRetry()` |
 | `base14.gen_ai.fallback.count` | LongCounter | `{fallback}` | `gen_ai.provider.name`, `base14.gen_ai.fallback.provider` | `generate()` |
@@ -1437,16 +1451,11 @@ Key design decisions in the pricing implementation:
 Metrics are recorded at three points in the call chain, each capturing a
 different aspect of LLM operations.
 
-**Successful and failed calls in `generateOnce()`** - operation duration is
-recorded either way; cost is computed once and handed back through
-`LlmResponse` rather than recorded as a metric here:
+**Each model call in `timedCall()`, and the result in `generateOnce()`** -
+inference duration is recorded per call either way; cost is computed once and
+handed back through `LlmResponse` rather than recorded as a metric here:
 
 ```java showLineNumbers title="src/main/java/com/example/support/llm/LlmService.java"
-operationDuration.record(elapsedSeconds(start), Attributes.of(
-    AttributeKey.stringKey(GenAi.OPERATION_NAME), "chat",
-    AttributeKey.stringKey(GenAi.PROVIDER_NAME), provider,
-    AttributeKey.stringKey(GenAi.REQUEST_MODEL), model));
-
 return new LlmResponse(
     generation.getOutput().getText(), responseModel, provider,
     inputTokens, outputTokens,
@@ -2605,9 +2614,9 @@ As of Spring AI 2.0.1 and the OpenTelemetry Java agent 2.31.1, verified
   as a Micrometer counter, not the histogram the conventions describe. The
   example keeps it rather than count the same tokens twice. See
   [How Metrics Are Recorded](#how-metrics-are-recorded).
-- **No operation duration, no cost.** Spring AI records neither
-  `gen_ai.client.operation.duration` nor a cost. The example records the
-  duration around each call and `base14.gen_ai.cost` from its price table,
+- **No inference duration, no cost.** Spring AI records neither
+  `gen_ai.client.inference.duration` nor a cost. The example records the
+  duration around each model call and `base14.gen_ai.cost` from its price table,
   zero for Ollama models. See [Cost Calculation](#cost-calculation).
 - **Content capture is Spring AI's own switch.**
   `spring.ai.chat.observations.include-input` and `include-output` control
@@ -3537,60 +3546,64 @@ The core LLM call method. It does not create its own span - Spring AI's
 `ChatModel` observation produces the `chat {model}` span, and
 `GenAiChatObservationConvention` plus `GenAiTracingObservationHandler` tag,
 create, and enrich it, including the gated content-capture event. This method
-only records the operation-duration metric that sits outside a single model
-call, and drives the tool-calling loop, which Spring AI 2.0 leaves to the
-caller. See the [Custom LLM Instrumentation](#custom-llm-instrumentation)
-section for the full walkthrough.
+times each model call through `timedCall()` as
+`gen_ai.client.inference.duration`, and drives the tool-calling loop, which
+Spring AI 2.0 leaves to the caller. See the
+[Custom LLM Instrumentation](#custom-llm-instrumentation) section for the full
+walkthrough.
 
 ```java showLineNumbers title="src/main/java/com/example/support/llm/LlmService.java"
 private LlmResponse generateOnce(
     ChatModel chatModel, String provider, String model,
     String systemPrompt, String userPrompt, List<ToolCallback> toolCallbacks
 ) {
+    Prompt prompt = buildPrompt(chatModel, systemPrompt, userPrompt, model, toolCallbacks);
+    ChatResponse response = timedCall(chatModel, prompt, provider, model);
+
+    // Spring AI 2.0 leaves tool execution to the caller. Running it through the
+    // ToolCallingManager keeps the framework's execute_tool observation.
+    int toolRounds = 0;
+    while (response.hasToolCalls()) {
+        if (toolRounds >= MAX_TOOL_ROUNDS) {
+            conversations.recordOnConversation(GenAi.TOOL_LOOP_LIMIT_EVENT, Attributes.of(
+                AttributeKey.longKey(GenAi.TOOL_LOOP_ROUNDS), (long) toolRounds));
+            response = timedCall(chatModel,
+                toolFreePrompt(chatModel, prompt.getInstructions(), model), provider, model);
+            break;
+        }
+        ToolExecutionResult toolResult = toolCallingManager.executeToolCalls(prompt, response);
+        if (toolResult.returnDirect()) {
+            break;
+        }
+        prompt = new Prompt(toolResult.conversationHistory(), prompt.getOptions());
+        response = timedCall(chatModel, prompt, provider, model);
+        toolRounds++;
+    }
+
+    var generation = response.getResult();
+    var usage = response.getMetadata().getUsage();
+    int inputTokens = usage != null && usage.getPromptTokens() != null ? usage.getPromptTokens() : 0;
+    int outputTokens = usage != null && usage.getCompletionTokens() != null ? usage.getCompletionTokens() : 0;
+    String responseModel = /* response.getMetadata().getModel(), falling back to model */ model;
+    String finishReason = generation.getMetadata().getFinishReason();
+
+    return new LlmResponse(
+        generation.getOutput().getText(), responseModel, provider,
+        inputTokens, outputTokens,
+        pricing.calculateCost(responseModel, inputTokens, outputTokens), finishReason);
+}
+
+private ChatResponse timedCall(ChatModel chatModel, Prompt prompt, String provider, String model) {
     long start = System.nanoTime();
     try {
-        Prompt prompt = buildPrompt(chatModel, systemPrompt, userPrompt, model, toolCallbacks);
         ChatResponse response = chatModel.call(prompt);
-
-        // Spring AI 2.0 leaves tool execution to the caller. Running it through the
-        // ToolCallingManager keeps the framework's execute_tool observation.
-        int toolRounds = 0;
-        while (response.hasToolCalls()) {
-            if (toolRounds >= MAX_TOOL_ROUNDS) {
-                conversations.recordOnConversation(GenAi.TOOL_LOOP_LIMIT_EVENT, Attributes.of(
-                    AttributeKey.longKey(GenAi.TOOL_LOOP_ROUNDS), (long) toolRounds));
-                response = chatModel.call(
-                    toolFreePrompt(chatModel, prompt.getInstructions(), model));
-                break;
-            }
-            ToolExecutionResult toolResult = toolCallingManager.executeToolCalls(prompt, response);
-            if (toolResult.returnDirect()) {
-                break;
-            }
-            prompt = new Prompt(toolResult.conversationHistory(), prompt.getOptions());
-            response = chatModel.call(prompt);
-            toolRounds++;
-        }
-
-        var generation = response.getResult();
-        var usage = response.getMetadata().getUsage();
-        int inputTokens = usage != null && usage.getPromptTokens() != null ? usage.getPromptTokens() : 0;
-        int outputTokens = usage != null && usage.getCompletionTokens() != null ? usage.getCompletionTokens() : 0;
-        String responseModel = /* response.getMetadata().getModel(), falling back to model */ model;
-        String finishReason = generation.getMetadata().getFinishReason();
-
-        operationDuration.record(elapsedSeconds(start), Attributes.of(
+        inferenceDuration.record(elapsedSeconds(start), Attributes.of(
             AttributeKey.stringKey(GenAi.OPERATION_NAME), "chat",
             AttributeKey.stringKey(GenAi.PROVIDER_NAME), provider,
             AttributeKey.stringKey(GenAi.REQUEST_MODEL), model));
-
-        return new LlmResponse(
-            generation.getOutput().getText(), responseModel, provider,
-            inputTokens, outputTokens,
-            pricing.calculateCost(responseModel, inputTokens, outputTokens), finishReason);
-
-    } catch (Exception e) {
-        operationDuration.record(elapsedSeconds(start), Attributes.of(
+        return response;
+    } catch (RuntimeException e) {
+        inferenceDuration.record(elapsedSeconds(start), Attributes.of(
             AttributeKey.stringKey(GenAi.OPERATION_NAME), "chat",
             AttributeKey.stringKey(GenAi.PROVIDER_NAME), provider,
             AttributeKey.stringKey(GenAi.REQUEST_MODEL), model,

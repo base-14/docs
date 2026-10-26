@@ -90,7 +90,7 @@ does.
 | Signal | What `@ai-sdk/otel` emits | What the [example](#complete-example) adds |
 | --- | --- | --- |
 | Traces | `invoke_agent`, `step`, `chat` and `execute_tool` spans with GenAI attributes. | `gen_ai.conversation.id` and `base14.*` attributes through `enrichSpan`. `gen_ai.provider.name` and cost in span processors. HTTP spans from the Node auto-instrumentations. |
-| Metrics | None. Durations and token counts are span attributes. | Six run-level instruments under `base14.*`. `gen_ai.client.operation.duration` and `gen_ai.client.token.usage`, derived from `chat` spans in the collector. |
+| Metrics | None. Durations and token counts are span attributes. | Six run-level instruments under `base14.*`. `gen_ai.client.inference.duration` and the `gen_ai.client.inference.operation.*` token histograms, derived from `chat` spans in the collector. |
 | Logs | None. | `pino` records through the pino instrumentation, each with the trace and span ID. |
 
 ## Prerequisites
@@ -671,14 +671,15 @@ takes.
 ## GenAI Client Metrics from the Collector
 
 `@ai-sdk/otel` records no metrics, so a dashboard built on
-`gen_ai.client.operation.duration` and `gen_ai.client.token.usage` stays empty.
-The collector's `signal_to_metrics` connector derives both from `chat` spans:
+`gen_ai.client.inference.duration` and the
+`gen_ai.client.inference.operation.*` token histograms stays empty. The
+collector's `signal_to_metrics` connector derives all three from `chat` spans:
 
 ```yaml showLineNumbers title="config/otel-collector.yaml (excerpt)"
 connectors:
   signal_to_metrics:
     spans:
-      - name: gen_ai.client.operation.duration
+      - name: gen_ai.client.inference.duration
         description: Duration of GenAI model calls, from chat spans.
         unit: s
         conditions:
@@ -691,8 +692,8 @@ connectors:
         histogram:
           buckets: [0.01, 0.02, 0.04, 0.08, 0.16, 0.32, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 40.96, 81.92]
           value: Seconds(span.end_time - span.start_time)
-      - name: gen_ai.client.token.usage
-        description: Tokens per GenAI model call, from chat spans.
+      - name: gen_ai.client.inference.operation.input_tokens
+        description: Input tokens per GenAI model call, from chat spans.
         unit: "{token}"
         conditions:
           - span.attributes["gen_ai.operation.name"] == "chat" and span.attributes["gen_ai.usage.input_tokens"] != nil
@@ -701,13 +702,11 @@ connectors:
           - key: gen_ai.provider.name
           - key: gen_ai.request.model
           - key: gen_ai.response.model
-          - key: gen_ai.token.type
-            default_value: input
         histogram:
           buckets: [1, 4, 16, 64, 256, 1024, 4096, 16384, 65536, 262144, 1048576, 4194304, 16777216, 67108864]
           value: Int(span.attributes["gen_ai.usage.input_tokens"])
-      # A second gen_ai.client.token.usage entry reads gen_ai.usage.output_tokens
-      # with default_value: output.
+      # gen_ai.client.inference.operation.output_tokens reads
+      # gen_ai.usage.output_tokens the same way.
 
 service:
   pipelines:
@@ -719,15 +718,16 @@ service:
 
 - **`chat` spans only.** `invoke_agent` spans carry the run's tokens summed.
   Counting both doubles every token.
-- **`default_value` sets `gen_ai.token.type`.** The span has no such
-  attribute, so the default fills it in.
+- **One metric per direction.** The current GenAI conventions split input
+  and output tokens into separate histograms, replacing
+  `gen_ai.client.token.usage` and its `gen_ai.token.type` attribute.
 - **Buckets** are the boundaries the GenAI conventions advise.
 - **Delta temporality.** The connector emits delta histograms.
 - **Keep it in the traces exporters.** A second config file that replaces the
   traces `exporters` list has to include `signal_to_metrics`, or the metrics
   stop.
 
-The example runs collector contrib 0.161.0. That release also accepts the
+The example runs collector contrib 0.163.1. That release also accepts the
 name `signaltometrics`, with a deprecation warning.
 
 ## Logs and Trace Correlation
@@ -892,9 +892,10 @@ the trace.
 
 ### Read tokens and cost by model
 
-Chart `gen_ai.client.token.usage` grouped by `gen_ai.request.model` and
-`gen_ai.token.type`. For cost, sum `base14.gen_ai.cost` on `invoke_agent`
-spans, or read `base14.plan.cost` per run. Check
+Chart `gen_ai.client.inference.operation.input_tokens` and
+`.output_tokens` grouped by `gen_ai.request.model`. For cost, sum
+`base14.gen_ai.cost` on `invoke_agent` spans, or read `base14.plan.cost` per
+run. Check
 `base14.gen_ai.cost.simulated` before reading a cost as a bill.
 
 ### Compare the tool catalogues
@@ -966,7 +967,7 @@ The collector must be running on `http://localhost:4318`.
 ```
 
 `make verify` runs a plan and a declined topic, then checks the spans,
-attributes, log records, the six instruments and the two derived GenAI metrics
+attributes, log records, the six instruments and the three derived GenAI metrics
 in the collector's `debug` output. It does not need Scout.
 
 ## Troubleshooting
@@ -1066,9 +1067,9 @@ export function createSemconvMiddleware(
           span.setAttribute("gen_ai.usage.input_tokens", inputTokens);
           span.setAttribute("gen_ai.usage.output_tokens", outputTokens);
 
-          tokenUsageHistogram.record(inputTokens, { ...metricAttrs, "gen_ai.token.type": "input" });
-          tokenUsageHistogram.record(outputTokens, { ...metricAttrs, "gen_ai.token.type": "output" });
-          opDurationHistogram.record((Date.now() - startMs) / 1000, metricAttrs);
+          inputTokensHistogram.record(inputTokens, metricAttrs);
+          outputTokensHistogram.record(outputTokens, metricAttrs);
+          inferenceDurationHistogram.record((Date.now() - startMs) / 1000, metricAttrs);
 
           span.end();
           return result;
@@ -1090,7 +1091,8 @@ export function withSemconv(
 The full middleware in the example also:
 
 - Retries with backoff.
-- Sets `error.type` and an error status on failure.
+- Sets `error.type` and an error status on failure, and records the token
+  histograms (as 0) and the duration with that `error.type`.
 - Records cost.
 - Adds a `gen_ai.client.inference.operation.details` event with scrubbed,
   truncated content when capture is on.
@@ -1101,7 +1103,7 @@ out. The failed call and the successful call appear as two `chat` spans.
 | | AI SDK v6 middleware | AI SDK 7 `@ai-sdk/otel` |
 | --- | --- | --- |
 | Spans | One `chat` span per model call, written by you. | Agent, step, chat and tool spans from the SDK. |
-| Metrics | `gen_ai.client.token.usage` and `gen_ai.client.operation.duration` from the middleware. | None. Record your own. |
+| Metrics | `gen_ai.client.inference.operation.*` token histograms and `gen_ai.client.inference.duration` from the middleware. | None. Record your own. |
 | Streaming | Needs `wrapStream` as well. | Included. |
 | Run context | Set attributes on your own spans. | `enrichSpan` with runtime context. |
 
@@ -1121,9 +1123,10 @@ each `ToolLoopAgent`, `generateText` or `streamText` call produces
 ### Does `@ai-sdk/otel` record metrics?
 
 `@ai-sdk/otel` records no metrics, only span attributes. Derive
-`gen_ai.client.operation.duration` and `gen_ai.client.token.usage` from `chat`
-spans with the collector's `signal_to_metrics` connector, and record run-level
-metrics in your application.
+`gen_ai.client.inference.duration` and the
+`gen_ai.client.inference.operation.*` token histograms from `chat` spans with
+the collector's `signal_to_metrics` connector, and record run-level metrics in
+your application.
 
 ### Does `@ai-sdk/otel` export logs?
 

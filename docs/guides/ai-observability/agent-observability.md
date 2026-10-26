@@ -450,17 +450,21 @@ parallel sub-agents, name each one.
 
 Agent runs need the same GenAI metrics as LLM calls, dimensioned by agent and
 tool so you can answer "which agent is slowest?" and "which tool fails most?".
-Reuse the metric definitions from the
-[LLM Observability guide](./llm-observability.md#cost) and
-add
-agent/tool attributes when recording:
+Add agent and tool attributes when recording these metrics. The
+[LLM Observability guide](./llm-observability.md#cost) shows how the cost
+metric is recorded:
 
-| Metric                             | Type      | Key attributes                     |
-| ---------------------------------- | --------- | ---------------------------------- |
-| `gen_ai.client.token.usage`        | Histogram | `gen_ai.agent.name`, model         |
-| `gen_ai.client.operation.duration` | Histogram | `gen_ai.operation.name`, agent     |
-| `base14.gen_ai.cost`               | Counter   | `gen_ai.agent.name`, model         |
-| `base14.gen_ai.error.count`        | Counter   | `gen_ai.tool.name`, `error.type`   |
+| Metric                                            | Type      | Key attributes                   |
+| ------------------------------------------------- | --------- | -------------------------------- |
+| `gen_ai.client.inference.operation.input_tokens`  | Histogram | `gen_ai.agent.name`, model       |
+| `gen_ai.client.inference.operation.output_tokens` | Histogram | `gen_ai.agent.name`, model       |
+| `gen_ai.client.inference.duration`                | Histogram | `gen_ai.operation.name`, agent   |
+| `base14.gen_ai.cost`                              | Counter   | `gen_ai.agent.name`, model       |
+| `base14.gen_ai.error.count`                       | Counter   | `gen_ai.tool.name`, `error.type` |
+
+Instrumentation packages that predate the current conventions record
+`gen_ai.client.token.usage` and `gen_ai.client.operation.duration` instead. Add
+the same agent attributes to whichever names your SDK records.
 
 The last two are application metrics. No framework records cost or an error
 count, and `gen_ai.*` belongs to the conventions, so the examples use the
@@ -799,8 +803,9 @@ production unless needed, and add a collector redaction processor as a backstop.
 
 Record `gen_ai.agent.name` on both spans and metrics, then query
 `sum(base14.gen_ai.cost) by (gen_ai.agent.name)` for cost and
-`histogram_quantile` over `gen_ai.client.operation.duration` grouped by agent
-for latency.
+`histogram_quantile` over `gen_ai.client.inference.duration` grouped by agent
+for latency. Older instrumentation packages record the same latency as
+`gen_ai.client.operation.duration`.
 
 ## What's Next?
 

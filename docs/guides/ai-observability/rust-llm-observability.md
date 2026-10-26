@@ -56,7 +56,7 @@ Whether you are building AI pipelines with Axum, integrating OpenAI or Anthropic
 via `async-openai` or raw HTTP clients, or running local models through Ollama,
 this guide provides production-ready patterns for unified AI observability in
 Rust. You will learn how to set up three-pillar telemetry (traces, metrics,
-logs), create GenAI spans with the correct semantic conventions, define six
+logs), create GenAI spans with the correct semantic conventions, define seven
 standard LLM metrics, implement retry and fallback observability, and deploy
 with Docker Compose and the OpenTelemetry Collector - all visible in a single
 trace on base14 Scout.
@@ -64,7 +64,7 @@ trace on base14 Scout.
 :::tip TL;DR
 
 Instrument Rust AI applications with OpenTelemetry by creating manual GenAI
-spans with `tracing::info_span!`, defining six standard LLM metrics with
+spans with `tracing::info_span!`, defining seven standard LLM metrics with
 `LazyLock`, and bridging `tracing` to the OTLP exporter. This gives you unified
 traces from HTTP entry through pipeline stages to individual LLM completions,
 with token and cost tracking per provider and model.
@@ -585,20 +585,6 @@ pub async fn generate_once(
                 classify_error(&err),
             );
 
-            GEN_AI_ERROR_COUNT.add(
-                1,
-                &[
-                    KeyValue::new(
-                        "gen_ai.provider.name",
-                        provider_name.to_string(),
-                    ),
-                    KeyValue::new(
-                        "gen_ai.request.model",
-                        req.model.clone(),
-                    ),
-                ],
-            );
-
             Err(err)
         }
     }
@@ -620,9 +606,9 @@ Key patterns:
   the model name
 
 > **Note:** The complete `generate_once` function also records GenAI metrics
-> (token usage, cost, duration) alongside the span attributes shown above. See
-> [Token and Cost Tracking](#token-and-cost-tracking) for the metric recording
-> code that runs in the same `Ok(resp)` branch.
+> (token usage, cost, duration, errors) alongside the span attributes shown
+> above. See [Token and Cost Tracking](#token-and-cost-tracking) for the metric
+> recording code that runs in the same `Ok(resp)` and `Err(err)` branches.
 
 ### Error Classification
 
@@ -688,27 +674,45 @@ use std::sync::LazyLock;
 pub static METER: LazyLock<Meter> =
     LazyLock::new(|| global::meter("ai-report-generator"));
 
-// --- GenAI Contract Metrics (6 required) ---
+// --- GenAI Contract Metrics (7 required) ---
 
-pub static GEN_AI_TOKEN_USAGE: LazyLock<Histogram<f64>> =
+const TOKEN_BOUNDARIES: [f64; 14] = [
+    1.0, 4.0, 16.0, 64.0, 256.0, 1024.0, 4096.0, 16384.0, 65536.0,
+    262144.0, 1048576.0, 4194304.0, 16777216.0, 67108864.0,
+];
+
+const DURATION_BOUNDARIES: [f64; 14] = [
+    0.01, 0.02, 0.04, 0.08, 0.16, 0.32, 0.64, 1.28, 2.56, 5.12, 10.24,
+    20.48, 40.96, 81.92,
+];
+
+pub static GEN_AI_INPUT_TOKENS: LazyLock<Histogram<u64>> =
     LazyLock::new(|| {
         METER
-            .f64_histogram("gen_ai.client.token.usage")
-            .with_description(
-                "Number of tokens used per LLM call",
-            )
+            .u64_histogram("gen_ai.client.inference.operation.input_tokens")
+            .with_description("Input tokens per inference call")
             .with_unit("{token}")
+            .with_boundaries(TOKEN_BOUNDARIES.to_vec())
             .build()
     });
 
-pub static GEN_AI_OPERATION_DURATION: LazyLock<Histogram<f64>> =
+pub static GEN_AI_OUTPUT_TOKENS: LazyLock<Histogram<u64>> =
     LazyLock::new(|| {
         METER
-            .f64_histogram("gen_ai.client.operation.duration")
-            .with_description(
-                "Duration of LLM operations in seconds",
-            )
+            .u64_histogram("gen_ai.client.inference.operation.output_tokens")
+            .with_description("Output tokens per inference call")
+            .with_unit("{token}")
+            .with_boundaries(TOKEN_BOUNDARIES.to_vec())
+            .build()
+    });
+
+pub static GEN_AI_INFERENCE_DURATION: LazyLock<Histogram<f64>> =
+    LazyLock::new(|| {
+        METER
+            .f64_histogram("gen_ai.client.inference.duration")
+            .with_description("Wall-clock duration of an inference call")
             .with_unit("s")
+            .with_boundaries(DURATION_BOUNDARIES.to_vec())
             .build()
     });
 
@@ -755,58 +759,48 @@ pub static GEN_AI_ERROR_COUNT: LazyLock<Counter<u64>> =
 
 ### Recording Token and Cost Metrics
 
-After each successful LLM call, record token usage with provider and model
-dimensions:
+After each LLM call, record token usage and duration with provider and model
+dimensions. A failed call records 0 tokens and its duration with `error.type`,
+as the GenAI conventions ask:
 
 ```rust showLineNumbers title="src/llm/client.rs"
 use crate::telemetry::metrics::{
-    GEN_AI_COST, GEN_AI_OPERATION_DURATION, GEN_AI_TOKEN_USAGE,
+    GEN_AI_COST, GEN_AI_ERROR_COUNT, GEN_AI_INFERENCE_DURATION,
+    GEN_AI_INPUT_TOKENS, GEN_AI_OUTPUT_TOKENS,
 };
 
-// Inside the Ok(resp) branch of generate_once:
-let op_kv = KeyValue::new("gen_ai.operation.name", "chat");
-let provider_kv = KeyValue::new(
-    "gen_ai.provider.name",
-    provider_name.to_string(),
-);
-let model_kv = KeyValue::new(
-    "gen_ai.request.model",
-    resp.model.clone(),
-);
+let operation_attrs = [
+    KeyValue::new("gen_ai.operation.name", "chat"),
+    KeyValue::new("gen_ai.provider.name", provider_name.to_string()),
+    KeyValue::new("gen_ai.request.model", req.model.clone()),
+];
 
-GEN_AI_TOKEN_USAGE.record(
-    f64::from(resp.input_tokens),
-    &[
-        KeyValue::new("gen_ai.token.type", "input"),
-        op_kv.clone(),
-        provider_kv.clone(),
-        model_kv.clone(),
-    ],
-);
-
-GEN_AI_TOKEN_USAGE.record(
-    f64::from(resp.output_tokens),
-    &[
-        KeyValue::new("gen_ai.token.type", "output"),
-        op_kv.clone(),
-        provider_kv.clone(),
-        model_kv.clone(),
-    ],
-);
-
-GEN_AI_OPERATION_DURATION.record(
-    duration,
-    &[op_kv.clone(), provider_kv.clone(), model_kv.clone()],
-);
-
-GEN_AI_COST.add(
-    resp.cost_usd,
-    &[op_kv, provider_kv, model_kv],
-);
+match result {
+    Ok(resp) => {
+        GEN_AI_INPUT_TOKENS
+            .record(u64::from(resp.input_tokens), &operation_attrs);
+        GEN_AI_OUTPUT_TOKENS
+            .record(u64::from(resp.output_tokens), &operation_attrs);
+        GEN_AI_INFERENCE_DURATION.record(duration, &operation_attrs);
+        GEN_AI_COST.add(resp.cost_usd, &operation_attrs);
+        Ok(resp)
+    }
+    Err(err) => {
+        let mut error_attrs = operation_attrs.to_vec();
+        error_attrs.push(KeyValue::new("error.type", classify_error(&err)));
+        GEN_AI_INPUT_TOKENS.record(0, &error_attrs);
+        GEN_AI_OUTPUT_TOKENS.record(0, &error_attrs);
+        GEN_AI_INFERENCE_DURATION.record(duration, &error_attrs);
+        GEN_AI_ERROR_COUNT.add(1, &error_attrs);
+        Err(err)
+    }
+}
 ```
 
-The `gen_ai.token.type` dimension (`"input"` or `"output"`) lets you build
-dashboards that break down token consumption by direction, provider, and model.
+Input and output tokens are separate histograms in the current GenAI
+conventions, which replaced `gen_ai.client.token.usage` and its
+`gen_ai.token.type` attribute. Chart them side by side to break down token
+consumption by direction, provider, and model.
 
 ### Cost Calculation
 
@@ -1743,8 +1737,8 @@ the attempt number and provider, on the `chat` span they belong to. Chart
 
 ### Read tokens and cost by model and stage
 
-Chart `gen_ai.client.token.usage` by `gen_ai.request.model` and
-`gen_ai.token.type`. On spans, group `gen_ai.usage.input_tokens`,
+Chart `gen_ai.client.inference.operation.input_tokens` and `.output_tokens` by
+`gen_ai.request.model`. On spans, group `gen_ai.usage.input_tokens`,
 `gen_ai.usage.output_tokens` and `base14.gen_ai.cost_usd` by
 `base14.report.stage`, which is `analyze` or `generate`.
 

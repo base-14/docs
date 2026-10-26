@@ -94,7 +94,7 @@ does.
 | Signal | What Mastra emits through the bridge | What the [example](#complete-example) adds |
 | --- | --- | --- |
 | Traces | `invoke_agent`, `model_generation`, `agent_step`, `chat` and `execute_tool` spans with GenAI attributes, plus `model_chunk` and `processor_run` spans. | `gen_ai.conversation.id` and `base14.*` IDs on every Mastra span, cost on `chat` spans, a provider name of `ollama`. HTTP server and client spans from the Node.js auto-instrumentations. |
-| Metrics | None. | Application histograms under `base14.plan.*`. `gen_ai.client.token.usage` and `gen_ai.client.operation.duration` derived from `chat` spans in the Collector. |
+| Metrics | None. | Application histograms under `base14.plan.*`. `gen_ai.client.inference.duration` and the `gen_ai.client.inference.operation.*` token histograms, derived from `chat` spans in the Collector. |
 | Logs | Mastra's own log lines, when a logger provider is registered. | A logger provider, and pino records with the trace and span ID through the pino auto-instrumentation. |
 
 ## Prerequisites
@@ -726,8 +726,10 @@ Yes, on `chat` spans, as `gen_ai.usage.input_tokens` and
 
 ### Does Mastra emit OpenTelemetry metrics?
 
-No. The bridge emits spans only. Derive `gen_ai.client.token.usage` and
-`gen_ai.client.operation.duration` from the `chat` spans in the Collector.
+No. The bridge emits spans only. Derive the
+`gen_ai.client.inference.operation.input_tokens` and `.output_tokens`
+histograms and `gen_ai.client.inference.duration` from the `chat` spans in the
+Collector.
 
 ### Does Mastra record cost?
 
