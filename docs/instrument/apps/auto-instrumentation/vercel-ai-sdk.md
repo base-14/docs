@@ -1254,6 +1254,6 @@ fallback on Bun:
 ## References
 
 - [Vercel AI SDK telemetry](https://ai-sdk.dev/docs/ai-sdk-core/telemetry)
-- [OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/)
+- [OpenTelemetry GenAI semantic conventions](https://github.com/open-telemetry/semantic-conventions-genai/tree/main/docs/gen-ai)
 - [OpenTelemetry JavaScript SDK](https://opentelemetry.io/docs/languages/js/)
 - [OpenTelemetry Collector configuration](https://opentelemetry.io/docs/collector/configuration/)

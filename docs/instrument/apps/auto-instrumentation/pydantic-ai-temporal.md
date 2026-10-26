@@ -1094,5 +1094,5 @@ Source:
 - [Temporal Python SDK observability](https://docs.temporal.io/develop/python/platform/observability).
 - [OpenTelemetry Demo](https://github.com/open-telemetry/opentelemetry-demo),
   whose agent service is a LangGraph agent without durable execution.
-- [OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/),
+- [OpenTelemetry GenAI semantic conventions](https://github.com/open-telemetry/semantic-conventions-genai/tree/main/docs/gen-ai),
   in Development status as of September 2026.

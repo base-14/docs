@@ -444,7 +444,7 @@ async fn main() -> anyhow::Result<()> {
 
 Rust has no auto-instrumentation libraries for LLM SDKs. You create manual spans
 following the
-[OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/).
+[OpenTelemetry GenAI semantic conventions](https://github.com/open-telemetry/semantic-conventions-genai/tree/main/docs/gen-ai).
 This gives you the same standardized telemetry that Python and Node.js
 auto-instrumentors produce. The conventions are in Development status with no
 tagged release, so names can still change; this guide follows the
@@ -2321,7 +2321,7 @@ src/
 ## References
 
 - [OpenTelemetry Rust SDK](https://opentelemetry.io/docs/languages/rust/)
-- [OpenTelemetry GenAI Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/)
+- [OpenTelemetry GenAI Semantic Conventions](https://github.com/open-telemetry/semantic-conventions-genai/tree/main/docs/gen-ai)
 - [tracing-opentelemetry crate](https://docs.rs/tracing-opentelemetry/)
 - [async-openai crate](https://docs.rs/async-openai/)
 

@@ -752,5 +752,5 @@ Source:
 -
   [opentelemetry-instrumentation-genai-openai-agents](https://pypi.org/project/opentelemetry-instrumentation-genai-openai-agents/).
 - [opentelemetry-instrumentation-genai-openai](https://pypi.org/project/opentelemetry-instrumentation-genai-openai/).
-- [OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/).
+- [OpenTelemetry GenAI semantic conventions](https://github.com/open-telemetry/semantic-conventions-genai/tree/main/docs/gen-ai).
 - [SEC EDGAR APIs](https://www.sec.gov/search-filings/edgar-application-programming-interfaces).

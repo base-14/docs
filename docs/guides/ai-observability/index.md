@@ -116,10 +116,10 @@ LLM-specific layer:
 POST /api/generate                            4.2s  [auto: HTTP]
 ├─ db.query SELECT context                   15ms   [auto: DB]
 ├─ invoke_agent enrich                        1.8s  [custom: agent]
-│  └─ gen_ai.chat claude-sonnet-4             1.7s  [custom: LLM]
+│  └─ chat claude-sonnet-4                    1.7s  [custom: LLM]
 │     └─ HTTP POST api.anthropic.com          1.7s  [auto: httpx]
 ├─ invoke_agent draft                         2.3s  [custom: agent]
-│  └─ gen_ai.chat claude-sonnet-4             2.2s  [custom: LLM]
+│  └─ chat claude-sonnet-4                    2.2s  [custom: LLM]
 │     └─ HTTP POST api.anthropic.com          2.2s  [auto: httpx]
 └─ db.query INSERT result                     5ms   [auto: DB]
 ```
@@ -129,19 +129,23 @@ POST /api/generate                            4.2s  [auto: HTTP]
 ### GenAI Semantic Conventions
 
 OpenTelemetry defines
-[GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/)
-for standardized LLM telemetry. Key attributes:
+[GenAI semantic conventions](https://github.com/open-telemetry/semantic-conventions-genai/tree/main/docs/gen-ai)
+for standardized LLM telemetry. The conventions live in their own repository
+and are still in Development status, so names can change between releases.
+Key attributes:
 
-| Attribute                    | Example             | Purpose               |
-| ---------------------------- | ------------------- | --------------------- |
-| `gen_ai.operation.name`      | `"invoke_agent"`    | Operation type        |
-| `gen_ai.provider.name`       | `"anthropic"`       | LLM provider          |
-| `gen_ai.request.model`       | `"claude-sonnet-4"` | Model used            |
-| `gen_ai.usage.input_tokens`  | `1240`              | Tokens consumed       |
-| `gen_ai.usage.output_tokens` | `320`               | Tokens generated      |
-| `gen_ai.conversation.id`     | `"conv-8f2a"`       | Binds a full agent run|
-| `gen_ai.agent.name`          | `"draft"`           | Agent in pipeline     |
-| `gen_ai.tool.name`           | `"search_orders"`   | Tool an agent invoked |
+| Attribute                              | Example             | Purpose                         |
+| -------------------------------------- | ------------------- | ------------------------------- |
+| `gen_ai.operation.name`                | `"invoke_agent"`    | Operation type                  |
+| `gen_ai.provider.name`                 | `"anthropic"`       | LLM provider                    |
+| `gen_ai.request.model`                 | `"claude-sonnet-4"` | Model used                      |
+| `gen_ai.request.reasoning.level`       | `"high"`            | Requested reasoning effort      |
+| `gen_ai.usage.input_tokens`            | `1240`              | Tokens consumed                 |
+| `gen_ai.usage.output_tokens`           | `320`               | Tokens generated                |
+| `gen_ai.usage.cache_read.input_tokens` | `980`               | Input tokens served from cache  |
+| `gen_ai.conversation.id`               | `"conv-8f2a"`       | Binds a full agent run          |
+| `gen_ai.agent.name`                    | `"draft"`           | Agent in pipeline               |
+| `gen_ai.tool.name`                     | `"search_orders"`   | Tool an agent invoked           |
 
 For the agent-specific attributes (`gen_ai.conversation.id`,
 `gen_ai.tool.*`, multi-agent handoffs), see the
@@ -149,15 +153,37 @@ For the agent-specific attributes (`gen_ai.conversation.id`,
 
 ### GenAI Metrics
 
-Custom metrics for dashboards and alerting:
+Metrics defined by the GenAI semantic conventions:
 
-| Metric                             | Type      | Purpose                          |
-| ---------------------------------- | --------- | -------------------------------- |
-| `gen_ai.client.token.usage`        | Histogram | Token consumption by model/agent |
-| `gen_ai.client.operation.duration` | Histogram | LLM call latency                 |
-| `gen_ai.client.cost`               | Counter   | Cost in USD by model/agent       |
-| `gen_ai.evaluation.score`          | Histogram | Output quality scores            |
-| `gen_ai.client.error.count`        | Counter   | Errors by provider/type          |
+| Metric                                             | Type      | Purpose                            |
+| -------------------------------------------------- | --------- | ---------------------------------- |
+| `gen_ai.client.inference.duration`                 | Histogram | LLM call latency                   |
+| `gen_ai.client.inference.time_to_first_chunk`      | Histogram | Time to first streamed chunk       |
+| `gen_ai.client.inference.operation.input_tokens`   | Histogram | Input tokens per call              |
+| `gen_ai.client.inference.operation.output_tokens`  | Histogram | Output tokens per call             |
+| `gen_ai.client.inference.usage.input_tokens`       | Counter   | Total input token spend            |
+| `gen_ai.client.inference.usage.output_tokens`      | Counter   | Total output token spend           |
+| `gen_ai.invoke_agent.duration`                     | Histogram | End-to-end agent invocation time   |
+| `gen_ai.execute_tool.duration`                     | Histogram | Tool execution time                |
+
+The `gen_ai.client.inference.usage.*` counters also come in `cache_read`,
+`cache_write` and `reasoning` variants for cache and reasoning token spend.
+
+Most instrumentation libraries still emit the earlier
+`gen_ai.client.token.usage` and `gen_ai.client.operation.duration` metrics, so
+the guides that follow use those names. Build dashboards on whichever names
+your SDK emits, and check its release notes as it moves to the new ones.
+
+The conventions do not cover cost, quality, retries, or fallbacks, so the
+guides add custom metrics under a `base14.` prefix:
+
+| Metric                           | Type      | Purpose                         |
+| -------------------------------- | --------- | ------------------------------- |
+| `base14.gen_ai.cost`             | Counter   | Cost in USD by model/agent      |
+| `base14.gen_ai.evaluation.score` | Histogram | Output quality scores           |
+| `base14.gen_ai.error.count`      | Counter   | Errors by provider/type         |
+| `base14.gen_ai.retry.count`      | Counter   | Retries before a call succeeds  |
+| `base14.gen_ai.fallback.count`   | Counter   | Switches to a fallback provider |
 
 ## Next Steps
 

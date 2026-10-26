@@ -835,5 +835,5 @@ Source:
 - [Agent Framework observability](https://learn.microsoft.com/en-us/agent-framework/agents/observability).
 - [agent-framework-core](https://pypi.org/project/agent-framework-core/).
 - [agent-framework-ollama](https://pypi.org/project/agent-framework-ollama/).
-- [OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/).
+- [OpenTelemetry GenAI semantic conventions](https://github.com/open-telemetry/semantic-conventions-genai/tree/main/docs/gen-ai).
 - [SEC EDGAR APIs](https://www.sec.gov/search-filings/edgar-application-programming-interfaces).

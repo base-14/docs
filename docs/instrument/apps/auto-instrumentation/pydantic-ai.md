@@ -811,6 +811,6 @@ Source:
 
 - [Pydantic AI Logfire integration](https://pydantic.dev/docs/ai/integrations/logfire/),
   which also covers plain OpenTelemetry.
-- [OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/).
+- [OpenTelemetry GenAI semantic conventions](https://github.com/open-telemetry/semantic-conventions-genai/tree/main/docs/gen-ai).
 - [open-telemetry/semantic-conventions-genai](https://github.com/open-telemetry/semantic-conventions-genai).
 - [OpenTelemetry Python SDK](https://opentelemetry.io/docs/languages/python/).

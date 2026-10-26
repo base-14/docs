@@ -792,5 +792,5 @@ Source:
 
 - [Mastra OtelBridge](https://mastra.ai/docs/observability/tracing/bridges/otel).
 - [Mastra OtelExporter](https://mastra.ai/docs/observability/tracing/exporters/otel).
-- [OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/).
+- [OpenTelemetry GenAI semantic conventions](https://github.com/open-telemetry/semantic-conventions-genai/tree/main/docs/gen-ai).
 - [OpenTelemetry JavaScript SDK](https://opentelemetry.io/docs/languages/js/).

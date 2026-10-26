@@ -803,6 +803,6 @@ Source:
 
 - [ADK observability](https://google.github.io/adk-docs/observability/).
 - [ADK LiteLLM models](https://google.github.io/adk-docs/agents/models/litellm/).
-- [OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/).
+- [OpenTelemetry GenAI semantic conventions](https://github.com/open-telemetry/semantic-conventions-genai/tree/main/docs/gen-ai).
 - [OpenTelemetry Python SDK](https://opentelemetry.io/docs/languages/python/).
 - [SEC EDGAR APIs](https://www.sec.gov/search-filings/edgar-application-programming-interfaces).

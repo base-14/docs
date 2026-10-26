@@ -819,7 +819,7 @@ Source:
 
 - [Strands Agents traces](https://strandsagents.com/docs/user-guide/sdk/observability-evaluation/traces/).
 - [Strands Agents Ollama model provider](https://strandsagents.com/docs/user-guide/sdk/model-providers/ollama/).
-- [OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/).
+- [OpenTelemetry GenAI semantic conventions](https://github.com/open-telemetry/semantic-conventions-genai/tree/main/docs/gen-ai).
 - [open-telemetry/semantic-conventions-genai](https://github.com/open-telemetry/semantic-conventions-genai).
 - [OpenTelemetry Python SDK](https://opentelemetry.io/docs/languages/python/).
 - [SEC EDGAR APIs](https://www.sec.gov/search-filings/edgar-application-programming-interfaces).

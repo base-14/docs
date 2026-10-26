@@ -85,7 +85,7 @@ This guide shows you how to:
 - An OpenTelemetry SDK for your language, plus an OTLP exporter.
 - An OpenTelemetry Collector, or a direct OTLP endpoint.
 - An agent framework that emits GenAI spans, or manual spans that follow the
-  [GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/).
+  [GenAI semantic conventions](https://github.com/open-telemetry/semantic-conventions-genai/tree/main/docs/gen-ai).
 - A base14 Scout account for the Scout section.
 
 ### Compatibility Matrix
@@ -765,7 +765,7 @@ the app outside Compose. Leave them commented when using Compose.
 
 ## References
 
-- [OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/)
+- [OpenTelemetry GenAI semantic conventions](https://github.com/open-telemetry/semantic-conventions-genai/tree/main/docs/gen-ai)
 - [Microsoft Agent Framework tool
   approval](https://learn.microsoft.com/en-us/agent-framework/agents/tools/tool-approval)
 - [Microsoft Agent Framework handoff

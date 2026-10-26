@@ -1244,7 +1244,7 @@ OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true
 
 The following table summarizes all GenAI attributes set on `chat` spans.
 These follow the
-[OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-spans/).
+[OpenTelemetry GenAI semantic conventions](https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-spans.md).
 `gen_ai.provider.name` comes from the custom `GenAiChatObservationConvention`,
 which replaces Spring AI's deprecated `gen_ai.system`; the typed
 `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens`, and
@@ -3667,7 +3667,7 @@ and `memory_limiter`.
 
 ## References
 
-- [OpenTelemetry GenAI Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/)
+- [OpenTelemetry GenAI Semantic Conventions](https://github.com/open-telemetry/semantic-conventions-genai/tree/main/docs/gen-ai)
 - [Spring AI Documentation](https://docs.spring.io/spring-ai/reference/)
 - [OpenTelemetry Java Agent](https://opentelemetry.io/docs/zero-code/java/agent/)
 - [OpenTelemetry Java SDK](https://opentelemetry.io/docs/languages/java/)

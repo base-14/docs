@@ -557,6 +557,6 @@ docker compose up -d --build
 ## References
 
 - [OpenTelemetry GenAI instrumentation for Python](https://github.com/open-telemetry/opentelemetry-python-genai)
-- [OpenTelemetry GenAI Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/)
+- [OpenTelemetry GenAI Semantic Conventions](https://github.com/open-telemetry/semantic-conventions-genai/tree/main/docs/gen-ai)
 - [LlamaIndex OpenAILike](https://docs.llamaindex.ai/en/stable/api_reference/llms/openai_like/)
 - [OpenTelemetry Collector Configuration](https://opentelemetry.io/docs/collector/configuration/)

@@ -45,7 +45,7 @@ This guide is the framework-agnostic companion to the language-specific
 layer**: the spans, attributes, and conventions that turn a scattered set of
 LLM calls into a coherent agent timeline. Code samples use the OpenTelemetry
 Python SDK, but every pattern is portable - the attribute names are the
-[OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/),
+[OpenTelemetry GenAI semantic conventions](https://github.com/open-telemetry/semantic-conventions-genai/tree/main/docs/gen-ai),
 so the same telemetry works with any OpenTelemetry backend, including base14
 Scout.
 
@@ -912,8 +912,8 @@ Traced through the model SDK packages, with spans of your own where needed:
 
 - [Instrumenting AI Agents with OpenTelemetry (Honeycomb)](https://www.honeycomb.io/blog/instrumenting-ai-agents-agent-timeline-opentelemetry-guide)
 - [Inside the LLM Call: GenAI Observability with OpenTelemetry](https://opentelemetry.io/blog/2026/genai-observability/)
-- [OpenTelemetry GenAI Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/)
-- [OpenTelemetry GenAI Agent Spans](https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-agent-spans/)
+- [OpenTelemetry GenAI Semantic Conventions](https://github.com/open-telemetry/semantic-conventions-genai/tree/main/docs/gen-ai)
+- [OpenTelemetry GenAI Agent Spans](https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-agent-spans.md)
 - [Model Context Protocol](https://modelcontextprotocol.io/)
 
 ## Related Guides
