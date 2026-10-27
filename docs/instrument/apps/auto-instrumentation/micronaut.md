@@ -116,11 +116,13 @@ This guide demonstrates how to:
 
 Before starting, ensure you have:
 
-- **Java 17 or later** (Java 21+ recommended for best performance)
+- **Java 25** for Micronaut 5, or Java 17 or later for Micronaut 3 and 4
   - Eclipse Temurin or any OpenJDK distribution
-- **Micronaut 3.x or 4.x** installed
-  - Micronaut 4.x is recommended for optimal compatibility
-- **Gradle 8.x or Maven 3.9+** for build management
+- **Micronaut 3.x, 4.x or 5.x**
+- **Gradle 9.x or Maven 3.9+** for build management
+  - The Micronaut 5 Gradle plugin needs Gradle itself to run on JDK 25. If
+    `org.gradle.java.home` points at an older JDK, override it with
+    `-Dorg.gradle.java.home=/path/to/jdk-25`
 - **Scout Collector** configured and accessible
   - See
     [Docker Compose Setup](../../collector-setup/docker-compose-example.md)
@@ -131,11 +133,11 @@ Before starting, ensure you have:
 
 | Component              | Minimum Version | Recommended Version |
 | ---------------------- | --------------- | ------------------- |
-| Java                   | 17              | 21+                 |
-| Micronaut              | 3.0.0           | 4.8.0+              |
-| Gradle                 | 8.0             | 8.10+               |
-| OpenTelemetry Java Agent | 1.0.0         | 2.26+               |
-| Hibernate ORM          | 5.6.0           | 6.6.0+              |
+| Java                   | 17              | 25                  |
+| Micronaut              | 3.0.0           | 5.2.0+              |
+| Gradle                 | 8.0             | 9.8+                |
+| OpenTelemetry Java Agent | 1.0.0         | 2.33+               |
+| Hibernate ORM          | 5.6.0           | 7.4.0+              |
 | PostgreSQL Driver      | 42.5.0          | Latest stable       |
 
 ### Instrumented Components (Automatic)
@@ -156,7 +158,7 @@ The Java Agent instruments these components with zero code changes:
 
 This guide references the
 [micronaut-postgres](https://github.com/base-14/examples/tree/main/java/micronaut-postgres)
-example: a Micronaut 4.8 REST API with Hibernate JPA, a notification
+example: a Micronaut 5.2 REST API with Hibernate JPA, a notification
 microservice, and full OpenTelemetry instrumentation.
 
 ## Installation
@@ -166,9 +168,9 @@ microservice, and full OpenTelemetry instrumentation.
 Download the latest agent JAR from the official releases:
 
 ```bash
-# Download the agent (v2.26.1)
+# Download the agent (v2.33.1)
 curl -L -o opentelemetry-javaagent.jar \
-  https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.26.1/opentelemetry-javaagent.jar
+  https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.33.1/opentelemetry-javaagent.jar
 ```
 
 ### Step 2: Attach the Agent to the JVM
@@ -198,12 +200,13 @@ dependencies {
     implementation("io.micronaut.flyway:micronaut-flyway")
 
     // Optional: OTel API for custom metrics and spans
-    implementation("io.opentelemetry:opentelemetry-api:1.48.0")
+    implementation(platform("io.opentelemetry:opentelemetry-bom:1.67.0"))
+    implementation("io.opentelemetry:opentelemetry-api")
 
     // Runtime
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("ch.qos.logback:logback-classic")
-    runtimeOnly("net.logstash.logback:logstash-logback-encoder:8.0")
+    runtimeOnly("net.logstash.logback:logstash-logback-encoder:9.0")
 }
 ```
 
@@ -294,16 +297,17 @@ x-otel-env: &otel-env
   OTEL_METRICS_EXPORTER: otlp
   OTEL_LOGS_EXPORTER: otlp
   OTEL_METRIC_EXPORT_INTERVAL: "10000"
-  OTEL_RESOURCE_ATTRIBUTES: environment=development
+  OTEL_RESOURCE_ATTRIBUTES: deployment.environment.name=development,environment=development
 
 services:
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.161.0
+    image: otel/opentelemetry-collector-contrib:0.163.1
     container_name: micronaut-otel-collector
     command: ["--config=/etc/otelcol-contrib/config.yaml"]
     ports:
       - "4317:4317"
       - "4318:4318"
+      - "13133:13133"
     volumes:
       - ./config/otel-config.yaml:/etc/otelcol-contrib/config.yaml
     environment:
@@ -314,7 +318,7 @@ services:
     restart: unless-stopped
 
   db:
-    image: postgres:18-alpine
+    image: postgres:18
     container_name: micronaut-postgres
     environment:
       POSTGRES_DB: micronaut
@@ -323,7 +327,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -481,7 +485,7 @@ RUN apt-get update -qq && \
     apt-get install -y --no-install-recommends curl && \
     rm -rf /var/lib/apt/lists/*
 
-ARG OTEL_AGENT_VERSION=2.26.1
+ARG OTEL_AGENT_VERSION=2.33.1
 ADD https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${OTEL_AGENT_VERSION}/opentelemetry-javaagent.jar /app/opentelemetry-javaagent.jar
 
 RUN addgroup --gid 1001 appgroup && \
@@ -517,8 +521,8 @@ Here's the notification client from the example app:
 ```java title="src/main/java/com/example/service/NotificationClient.java" showLineNumbers
 package com.example.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.context.annotation.Value;
+import io.micronaut.json.JsonMapper;
 import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -534,17 +538,19 @@ public class NotificationClient {
     private static final Logger LOG = LoggerFactory.getLogger(NotificationClient.class);
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final JsonMapper jsonMapper;
     private final String notifyUrl;
 
     public NotificationClient(
-            @Value("${notify.url:`http://localhost:8081`}") String notifyUrl) {
+            @Value("${notify.url:`http://localhost:8081`}") String notifyUrl,
+            JsonMapper jsonMapper) {
         this.notifyUrl = notifyUrl;
+        this.jsonMapper = jsonMapper;
     }
 
     public void notify(Map<String, Object> payload) {
         try {
-            String json = objectMapper.writeValueAsString(payload);
+            String json = jsonMapper.writeValueAsString(payload);
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(notifyUrl + "/notify"))
                     .header("Content-Type", "application/json")
@@ -837,7 +843,7 @@ Run locally with Gradle and the Java Agent:
 ```bash
 # Download the agent (one-time)
 curl -L -o opentelemetry-javaagent.jar \
-  https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.26.1/opentelemetry-javaagent.jar
+  https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.33.1/opentelemetry-javaagent.jar
 
 # Set environment variables
 export JAVA_TOOL_OPTIONS="-javaagent:./opentelemetry-javaagent.jar"
@@ -926,7 +932,7 @@ docker compose exec app env | grep JAVA_TOOL_OPTIONS
 You should see a line like:
 
 ```plaintext
-[otel.javaagent] opentelemetry-javaagent - version: 2.26.1
+[otel.javaagent] opentelemetry-javaagent - version: 2.33.1
 ```
 
 ### Common Issues
@@ -1173,9 +1179,10 @@ there's a small startup cost (~1-3 seconds) but negligible runtime impact.
 
 ### Which Micronaut versions are supported?
 
-The OpenTelemetry Java Agent supports Micronaut 3.x and 4.x with Java 17+.
-Micronaut 4.x with Java 21+ is recommended. The agent instruments at the
-Netty and JDBC level, which is stable across Micronaut versions.
+The OpenTelemetry Java Agent works with Micronaut 3.x, 4.x and 5.x. Micronaut 5
+requires Java 25; Micronaut 3 and 4 run on Java 17 or later. The agent
+instruments at the Netty, JDBC and Hibernate level, which is stable across
+Micronaut versions.
 
 ### Are Hibernate JPA queries traced automatically?
 
