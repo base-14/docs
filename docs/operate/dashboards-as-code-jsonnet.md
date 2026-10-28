@@ -84,7 +84,7 @@ the templates into output for each destination:
 
 | Render | Output | Used by |
 | --- | --- | --- |
-| `workspace.jsonnet` | Plain dashboard JSON, with your username in each `uid` and title | `scout gitops push` |
+| `workspace.jsonnet` | Plain dashboard JSON, with your username in each `uid` and title | `scout resources push` |
 | `deploy.jsonnet` | Scout resource manifests for a folder and its dashboards | `gcx resources push` in CI |
 | `alerts.jsonnet` | One alert rule group per template | Scout's alert rule API, from CI |
 
@@ -259,7 +259,7 @@ List every template in one file, so both renders pick up new dashboards:
 ## Render for your workspace
 
 ```jsonnet showLineNumbers title="workspace.jsonnet"
-// Renders every dashboard for `scout gitops push`: one plain dashboard JSON
+// Renders every dashboard for `scout resources push`: one plain dashboard JSON
 // file each, with your username in the uid and title so a workspace copy
 // never collides with the deployed dashboard.
 local naming = import 'github.com/base-14/scout-jsonnet-libs/core/naming.libsonnet';
@@ -278,12 +278,12 @@ local ns = std.extVar('ns');
 ```
 
 Render with your workspace username, the `Username` that
-`scout gitops status` prints, and push:
+`scout resources status` prints, and push:
 
 ```bash
 mkdir -p out/workspace
 jsonnet -J vendor -m out/workspace --ext-str ns=jane-doe workspace.jsonnet
-scout gitops push out/workspace/
+scout resources push out/workspace/
 ```
 
 ```text
@@ -498,7 +498,7 @@ Make the script executable, mint a workspace token once, and run it:
 
 ```bash
 chmod +x scripts/check-alerts.sh
-scout gitops token > ~/.config/scout-gitops.token
+scout resources token > ~/.config/scout-gitops.token
 GRAFANA_SERVER=https://<your-scout> \
 GRAFANA_TOKEN=$(cat ~/.config/scout-gitops.token) \
   scripts/check-alerts.sh
@@ -516,7 +516,7 @@ the rule fire, lower the threshold, render, and check again.
 ## Makefile
 
 ```makefile showLineNumbers title="Makefile"
-NS ?= $(shell scout gitops status 2>/dev/null | awk '/^Username:/ {print $$2}')
+NS ?= $(shell scout resources status 2>/dev/null | awk '/^Username:/ {print $$2}')
 
 .PHONY: vendor workspace push resources validate deploy alerts check-alerts deploy-alerts
 
@@ -529,7 +529,7 @@ workspace: vendor
  jsonnet -J vendor -m out/workspace --ext-str ns=$(NS) workspace.jsonnet
 
 push: workspace
- scout gitops push out/workspace/
+ scout resources push out/workspace/
 
 resources: vendor
  rm -rf resources && mkdir -p resources
@@ -553,7 +553,7 @@ deploy-alerts: alerts
 ```
 
 `make push` is the whole dashboard test loop: it finds your username from
-`scout gitops status`, renders, and pushes. `make check-alerts` is the alert
+`scout resources status`, renders, and pushes. `make check-alerts` is the alert
 equivalent. Indent recipe lines with a tab.
 
 ## Deploy from CI
@@ -664,7 +664,7 @@ RabbitMQ. See its
 | `RUNTIME ERROR: Undefined external variable: ns` | `workspace.jsonnet` was rendered without a username | Pass `--ext-str ns=<username>` |
 | The Environment dropdown is empty | The probe metric is not in the gauge table, or no environment emitted it in the last hour | Choose a gauge metric every environment emits |
 | A panel shows no data | The metric name or an attribute filter does not match your telemetry | Check the metric in Scout's Explore, then the attribute's name and value |
-| `403 Access denied to save dashboard` on `scout gitops push` | The `uid` belongs to a dashboard outside your workspace | Render with `workspace.jsonnet`, which prefixes the `uid` |
+| `403 Access denied to save dashboard` on `scout resources push` | The `uid` belongs to a dashboard outside your workspace | Render with `workspace.jsonnet`, which prefixes the `uid` |
 | `403 ... not enough permissions to create a folder` from gcx | The token cannot create folders | Use the GitOps CI token, not a workspace token |
 | `check-alerts.sh` reports `0 series` | The alert query matches no data | Check the metric name and the `environment` value in `alertScope` |
 | `field missing_series_evals_to_resolve must be greater than 0` | The rule group was built without it | Render with `alerts.jsonnet`, which sets it |
@@ -678,7 +678,7 @@ RabbitMQ. See its
   before deploying them
 - [Dashboards as Code with gcx](./dashboards-as-code-gcx.md) - Apply
   dashboards from a pipeline
-- [scout gitops](../scout-cli/scout-access/gitops.md) - Command reference
+- [scout resources](../scout-cli/scout-access/resources.md) - Command reference
 - [scout-jsonnet-libs](https://github.com/base-14/scout-jsonnet-libs) - The
   library, its query builders, and mixins
 - [Creating Alerts with LogX](../guides/creating-alerts-with-logx.md) - Build
