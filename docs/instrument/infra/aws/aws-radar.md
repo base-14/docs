@@ -91,10 +91,29 @@ helm repo add base14 https://charts.base14.io
 helm repo update
 ```
 
-### 1. Create the credentials Secret
+### 1. Give AWS Radar credentials
 
-AWS Radar reads each account with an IAM user's access keys. Create the Secret
-in the target namespace:
+AWS Radar resolves credentials through the standard AWS credential chain, so it
+works with either an IAM **role** (recommended on EKS, no static keys) or with
+static access keys. Pick one.
+
+#### Option A - IAM role via EKS Pod Identity / IRSA (recommended)
+
+Nothing secret to store. Create an IAM role carrying the
+[read-only policy](#iam-permissions) and bind it to AWS Radar's ServiceAccount:
+
+- **EKS Pod Identity:** trust `pods.eks.amazonaws.com`, then add a Pod Identity
+  association pointing the role at namespace `aws-radar`, ServiceAccount
+  `aws-radar-<name>`.
+- **IRSA:** trust the cluster OIDC provider for that ServiceAccount, and set the
+  role ARN as the SA annotation `eks.amazonaws.com/role-arn`.
+
+The chart creates the ServiceAccount and runs the pod under it whenever you set
+`serviceAccount` in values (step 2); no static credentials are injected.
+
+#### Option B - static access keys (Secret)
+
+Create a Secret with an IAM user's keys in the target namespace:
 
 ```bash
 kubectl create namespace aws-radar
@@ -105,24 +124,23 @@ kubectl create secret generic aws-radar-credentials \
   --from-literal=AWS_SECRET_ACCESS_KEY=...
 ```
 
-:::note
-
 Using an external secrets manager? Point your `ExternalSecret` at a Secret with
-the same two keys (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`) and reference
-it by name below - the chart will skip creating its own Secret.
-
-:::
+those two keys and reference it below; the chart skips creating its own.
 
 ### 2. Write a values file
+
+**Role-based (Option A):**
 
 ```yaml
 # values.yaml
 instances:
   - name: prod
     awsAccountName: my-prod-account      # labels every metric from this account
-    secrets:
-      awsCredentials:
-        secretName: aws-radar-credentials
+    serviceAccount:
+      create: true
+      name: aws-radar-prod
+      annotations: {}                    # IRSA: eks.amazonaws.com/role-arn: <arn>
+                                         # Pod Identity: leave empty
     aws:
       regions:
         - us-east-1
@@ -132,6 +150,15 @@ common:
   # Poll interval. Longer intervals cost fewer API calls; tune per account.
   collection:
     interval: 1h
+```
+
+**Static keys (Option B):** drop the `serviceAccount` block and point the
+instance at your Secret instead:
+
+```yaml
+    secrets:
+      awsCredentials:
+        secretName: aws-radar-credentials
 ```
 
 By default AWS Radar scans every supported service. Narrow the set per instance
@@ -168,8 +195,11 @@ For the full pipeline, see
 
 ## IAM permissions
 
-AWS Radar is **read-only**. Create one IAM user per account, attach a policy,
-and put its access keys in the Secret above.
+AWS Radar is **read-only**. Attach the policy below to whatever principal AWS
+Radar uses per account: an IAM **role** (Option A - trust
+`pods.eks.amazonaws.com` for Pod Identity, or the cluster OIDC provider for
+IRSA) or an IAM **user** whose keys go in the Secret (Option B). The
+permissions are identical either way.
 
 ### Quick path - AWS managed policy
 
@@ -576,6 +606,15 @@ Cost metrics are `aws_cost_service_unblended_usd` (per service) and
 No. Every permission it uses is a `List`, `Describe`, or `Get`, plus
 `tag:GetResources` and `sts:GetCallerIdentity`. It never creates, modifies, or
 deletes anything.
+
+### Can AWS Radar use an IAM role instead of static keys?
+
+Yes - recommended on EKS. AWS Radar reads credentials from the default AWS
+credential chain, so it works with **EKS Pod Identity** or **IRSA** with no
+static keys. Set `serviceAccount` on the instance (step 2, Option A): the chart
+creates the ServiceAccount and injects no keys, and you bind it to an IAM role
+with the read-only policy via a Pod Identity association (or IRSA role-ARN
+annotation).
 
 ### How do I monitor more than one AWS account?
 
