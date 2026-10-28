@@ -61,7 +61,7 @@ self-service from the Scout CLI.
 Check your workspace:
 
 ```bash
-scout gitops status
+scout resources status
 ```
 
 ```text
@@ -121,7 +121,7 @@ deploys from CI.
 Push one file, several files, or a directory of `*.json` files:
 
 ```bash
-scout gitops push dashboards/
+scout resources push dashboards/
 ```
 
 ```text
@@ -130,7 +130,7 @@ dashboards/checkout-latency.json -> checkout-latency (success)
 Pushed 1 dashboard(s) into gitops-workspaces/jane-doe-dev.
 ```
 
-Open the URL from `scout gitops status` and check the dashboard against live
+Open the URL from `scout resources status` and check the dashboard against live
 data: queries, variables, panel layout. Change the JSON and push again; the
 same `uid` updates the same dashboard.
 
@@ -141,27 +141,43 @@ anything if:
 - Two files use the same `uid`.
 - A file is a symlink. Pass the file itself instead.
 
-Directories are read one level deep.
+Directories are walked recursively. A file goes to the folder named by the
+`_folder.json` beside it, or to your workspace folder when there is none.
+
+Alert rules push the same way, and need a `ruleGroup` as well as a `uid` and
+`title`. To work on one kind at a time:
+
+```bash
+scout resources push --only dashboards
+scout resources push --only alerts
+```
 
 ## Pull back to files
 
-Pull writes your workspace's dashboards to files, by default into
-`./dashboards`:
+Pull writes everything your token can read into a local tree, by default
+`./resources`:
 
 ```bash
-scout gitops pull
-scout gitops pull --dir path/to/dashboards
+scout resources pull
+scout resources pull --dir path/to/resources
 ```
 
-```text
-dashboards/checkout-latency.json <- checkout-latency
-Pulled 1 dashboard(s) from gitops-workspaces/jane-doe-dev.
+With your workspace token that is your workspace folder. The tree mirrors
+Scout's folder structure, and each directory carries a `_folder.json` naming
+the folder it stands for, which is how a later push sends each file back to
+the right place. A folder's alert rules go in its `alerts/` directory.
+
+To pull less than everything:
+
+```bash
+scout resources pull team-a/payments     # one folder and its subfolders
+scout resources pull --uid cdx7f2k9      # one dashboard or alert rule
+scout resources pull --only dashboards   # or --only alerts
 ```
 
-Files are named after the dashboard title. If two titles produce the same
-name, the `uid` is added to tell them apart. Pull leaves out the
-server-managed `id` and `version` fields, so pulling twice gives the same
-files and a push followed by a pull shows no changes in Git.
+Pull leaves out the server-managed `id` and `version` fields, so pulling
+twice gives the same files and a push followed by a pull shows no changes in
+Git.
 
 Pull overwrites files of the same name in the target directory. Commit or
 stash local edits before pulling.
@@ -182,7 +198,7 @@ To call the Scout dashboard API from a script or another tool, mint a token
 explicitly:
 
 ```bash
-scout gitops token > ~/.config/scout-gitops.token
+scout resources token > ~/.config/scout-gitops.token
 ```
 
 The token is printed once on standard output, and everything else goes to
@@ -190,7 +206,7 @@ standard error, so redirecting it captures only the token. It is sent as
 `Authorization: Bearer <token>` and has the same rights as a push: read
 access to your account's Scout, write access to your workspace folder.
 
-Each `scout gitops token` mints a new token, so mint once and keep it rather
+Each `scout resources token` mints a new token, so mint once and keep it rather
 than minting on every run.
 
 ### Use a token without logging in
@@ -201,13 +217,13 @@ write to the folder the token can edit:
 ```bash
 export SCOUT_GITOPS_TOKEN=$(cat ~/.config/scout-gitops.token)
 export SCOUT_GRAFANA_URL=https://<your-scout>
-scout gitops push dashboards/
+scout resources push dashboards/
 ```
 
 ### List and revoke
 
 ```bash
-scout gitops tokens
+scout resources tokens
 ```
 
 ```text
@@ -219,7 +235,7 @@ ff41d617-0fa6-414a-81ea-10648a4bdbbb   REVOKED  2026-10-11T15:13:47Z   2027-04-0
 Revoke one by its issuance id:
 
 ```bash
-scout gitops revoke dde6efd1-8cb1-4f0f-adf7-bbde89528651
+scout resources revoke dde6efd1-8cb1-4f0f-adf7-bbde89528651
 ```
 
 :::warning[Revoking does not stop a token immediately]
@@ -283,7 +299,7 @@ Scout, so nothing your team may have looked at disappears.
 | `... has no "uid"` | A dashboard file lacks a `uid` | Add a stable `uid` |
 | `... both use uid "x"` | Two files share a `uid` | Give each dashboard its own `uid` |
 | `The cached workspace token was rejected and has been cleared.` | The cached token expired or was cut off | Run the command again to mint a new one |
-| `SCOUT_GITOPS_TOKEN was rejected` | The token in the variable expired, or belongs to another Scout | Mint a new one with `scout gitops token` |
+| `SCOUT_GITOPS_TOKEN was rejected` | The token in the variable expired, or belongs to another Scout | Mint a new one with `scout resources token` |
 | `Not authenticated. Run scout login --account <account>.` | Your CLI session expired | Log in again |
 | `dashboard push failed (403 Forbidden): Access denied to save dashboard` | The `uid` belongs to a dashboard in another folder, or your workspace was disabled | Use a `uid` unique to your workspace; if that is not it, ask your account admin |
 | macOS asks whether `scout` may use the keychain | First run of a new Scout CLI version | Choose **Always Allow** |
@@ -319,7 +335,7 @@ without a `uid` for this reason.
 
 A workspace token lasts 180 days. The CLI renews its cached token
 automatically a day before expiry; tokens you minted yourself with
-`scout gitops token` need to be replaced by hand.
+`scout resources token` need to be replaced by hand.
 
 ## Related Guides
 
@@ -327,6 +343,6 @@ automatically a day before expiry; tokens you minted yourself with
   Generate dashboards, test them here, and deploy them from CI
 - [Dashboards as Code with gcx](./dashboards-as-code-gcx.md) - Apply shared
   dashboards from a pipeline
-- [scout gitops](../scout-cli/scout-access/gitops.md) - Command reference
+- [scout resources](../scout-cli/scout-access/resources.md) - Command reference
 - [Create Dashboards](../guides/create-your-first-dashboard.md) - Build
   dashboards in the Scout UI

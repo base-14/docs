@@ -234,6 +234,10 @@ const config: Config = {
             from: "/instrument/component/collecting-argocd-telemetry/",
             to: "/guides/cicd-observability/collecting-argocd-telemetry/",
           },
+          {
+            from: "/scout-cli/scout-access/gitops/",
+            to: "/scout-cli/scout-access/resources/",
+          },
         ],
       },
     ],
