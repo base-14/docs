@@ -201,6 +201,167 @@ scout:
         cpu: 400m
 ```
 
+## High Availability
+
+:::note
+
+High availability mode needs chart 0.10.0 or later and supervised collectors
+(`scout.supervisor`), which Scout manages over OpAMP. It is disabled by
+default; a release that does not enable it renders exactly as before.
+
+:::
+
+The agent runs as a single replica because adding replicas does not spread its
+work: every replica would run the same scrapes and send the same data twice.
+High availability mode splits the agent into two kinds of collector:
+
+- **A gateway** that receives OTLP and forwards it to Scout. It does no
+  scraping, so it scales horizontally with a HorizontalPodAutoscaler and a
+  PodDisruptionBudget. It takes over the agent's Service name,
+  `<release>-agent-collector`, so applications and daemons keep sending to the
+  same address.
+- **Named agents**, one replica each, that own the scrapes. You split your
+  scrape configuration across them, and each sends only to the gateway. An
+  agent is replaced rather than rolled, so two copies never scrape at once.
+
+The per-node daemon stays as it is and sends to the gateway.
+
+### Enabling it
+
+Turn off the single agent, enable HA, and give each named agent its own
+configuration and a new UUIDv7 instance ID:
+
+```yaml showLineNumbers title="values.yaml"
+scout:
+  agent:
+    enabled: false
+  supervisor:
+    agent:
+      enabled: false
+    daemon:
+      enabled: true
+  ha:
+    enabled: true
+    gateway:
+      autoscaling:
+        minReplicas: 2
+        maxReplicas: 6
+        targetCPUUtilizationPercentage: 70
+      disruptionBudget:
+        minAvailable: 1
+    agents:
+      # Cluster-wide receivers belong to exactly one agent.
+      cluster:
+        instanceId: 019a2b3c-4d5e-7f60-8a71-b2c3d4e5f601
+        config: |
+          receivers:
+            k8s_cluster:
+              auth_type: serviceAccount
+              collection_interval: 60s
+            k8sobjects:
+              objects:
+                - name: events
+                  mode: pull
+                  interval: 60s
+                  group: events.k8s.io
+          processors:
+            batch: {}
+          exporters:
+            otlp/gateway:
+              endpoint: {{ .Release.Name }}-agent-collector.{{ .Release.Namespace }}.svc.cluster.local:4317
+              tls: {insecure: true}
+          service:
+            pipelines:
+              metrics:
+                receivers: [k8s_cluster]
+                processors: [batch]
+                exporters: [otlp/gateway]
+              logs:
+                receivers: [k8sobjects]
+                processors: [batch]
+                exporters: [otlp/gateway]
+      clickhouse:
+        instanceId: 019a2b3c-4d5e-7f60-8a71-b2c3d4e5f602
+        config: |
+          receivers:
+            prometheus/clickhouse:
+              config:
+                scrape_configs:
+                  - job_name: clickhouse
+                    scrape_interval: 60s
+                    static_configs:
+                      - targets: ["clickhouse.clickhouse.svc:9363"]
+          processors:
+            batch: {}
+          exporters:
+            otlp/gateway:
+              endpoint: {{ .Release.Name }}-agent-collector.{{ .Release.Namespace }}.svc.cluster.local:4317
+              tls: {insecure: true}
+          service:
+            pipelines:
+              metrics:
+                receivers: [prometheus/clickhouse]
+                processors: [batch]
+                exporters: [otlp/gateway]
+```
+
+Leave `scout.ha.gateway.config` empty to use the generated gateway
+configuration, which receives OTLP and exports to Scout. Agent configurations
+go through Helm's `tpl`, so the gateway address follows your release name and
+namespace.
+
+With this file, `helm template` renders a gateway Deployment with its
+HorizontalPodAutoscaler and PodDisruptionBudget, one Deployment per named agent,
+and the daemon DaemonSet. Run it before installing to inspect the result.
+
+The gateway scales on CPU by default. Memory utilization is measured against
+the memory request, which a busy gateway sits above, so a memory target is off
+unless you set `targetMemoryUtilizationPercentage`.
+
+### What the chart refuses to render
+
+The chart checks the configurations at render time and fails, naming the
+receiver and the collector, when a setup would collect something twice or send
+around the gateway:
+
+- The gateway runs a receiver that fetches data, such as a scrape. Add it to
+  `scout.ha.gateway.allowReceivers` if it only reads the pod it runs in.
+- `k8s_cluster`, `k8sobjects` or `k8s_events` runs in more than one agent, on
+  the gateway, or on the daemon.
+- The daemon scrapes a fixed target that is not on its own node.
+- Two agents define the same receiver or scrape the same target. A per-pod
+  self-scrape such as `prometheus/self` on `${env:MY_POD_IP}` is allowed in
+  every agent.
+- A named agent exports, or sends its own telemetry, anywhere but the gateway.
+- Cluster metrics are enabled and no agent runs `k8s_cluster`. Add one, or set
+  `scout.metrics.cluster.enabled: false`.
+- Two agents share an instance ID, or an agent reuses the old single agent's.
+
+Scrapes that discover their targets (`kubernetes_sd_configs`) cannot be checked
+at render time; keep each one in a single agent.
+
+### Moving from a single agent
+
+1. Split the agent's configuration into named agents and give each a new
+   UUIDv7 instance ID. Reusing `scout.supervisor.agent.instanceId` is refused:
+   Scout would send the old configuration, every scrape included, to whichever
+   agent connected with it.
+2. Move any `scout.supervisor.agent` scheduling, sizing or volume settings
+   (`tolerations`, `nodeSelector`, `resources`, `extraVolumes`,
+   `extraVolumeMounts`) under `scout.ha.gateway` or `scout.ha.agents.<name>`.
+   HA mode does not read them.
+3. If your log collection excludes the collector's own pods by name, extend
+   the pattern to `supervisor-gateway-collector-*` and
+   `supervisor-agent-*-collector-*`.
+4. Sync with pruning enabled. Without it, the old agent keeps running every
+   scrape alongside the named agents and all of it is sent twice.
+
+With Scout Operator (`scout.supervisor.operator.enabled`), the chart renders
+`ScoutCollector` resources for the gateway and each agent instead of
+Deployments. The old agent's resource owns the Service, so the gateway can only
+recreate it once the prune removes the old resource, and senders lose the
+Service briefly during that sync.
+
 ## Configuration Guide
 
 ## Using Otelcol style configuration
