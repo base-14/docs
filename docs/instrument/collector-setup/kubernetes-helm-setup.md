@@ -205,9 +205,8 @@ scout:
 
 :::note
 
-High availability mode needs chart 0.10.0 or later and supervised collectors
-(`scout.supervisor`), which Scout manages over OpAMP. It is disabled by
-default; a release that does not enable it renders exactly as before.
+High availability mode needs chart 0.10.0 or later. It is disabled by default;
+a release that does not enable it renders exactly as before.
 
 :::
 
@@ -236,10 +235,8 @@ scout:
   agent:
     enabled: false
   supervisor:
-    agent:
-      enabled: false
     daemon:
-      enabled: true
+      enabled: true # the per-node daemon, sending to the gateway
   ha:
     enabled: true
     gateway:
@@ -343,13 +340,13 @@ at render time; keep each one in a single agent.
 ### Moving from a single agent
 
 1. Split the agent's configuration into named agents and give each a new
-   UUIDv7 instance ID. Reusing `scout.supervisor.agent.instanceId` is refused:
+   UUIDv7 instance ID. Reusing the old agent's instance ID is refused:
    Scout would send the old configuration, every scrape included, to whichever
    agent connected with it.
-2. Move any `scout.supervisor.agent` scheduling, sizing or volume settings
+2. Move the old agent's scheduling, sizing and volume settings
    (`tolerations`, `nodeSelector`, `resources`, `extraVolumes`,
    `extraVolumeMounts`) under `scout.ha.gateway` or `scout.ha.agents.<name>`.
-   HA mode does not read them.
+   HA mode does not read them from the old agent.
 3. If your log collection excludes the collector's own pods by name, extend
    the pattern to `supervisor-gateway-collector-*` and
    `supervisor-agent-*-collector-*`.
