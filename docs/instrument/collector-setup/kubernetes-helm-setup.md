@@ -16,6 +16,8 @@ tags: [kubernetes, opentelemetry, base14 scout]
 sidebar_position: 2
 ---
 
+import ArchifyEmbed from '@site/src/components/ArchifyEmbed';
+
 # Kubernetes using Helm
 
 Deploy and configure the Scout Collector on Kubernetes using Helm.
@@ -224,6 +226,11 @@ High availability mode splits the agent into two kinds of collector:
   agent is replaced rather than rolled, so two copies never scrape at once.
 
 The per-node daemon stays as it is and sends to the gateway.
+
+<ArchifyEmbed
+  src="/diagrams/collector-ha/k8s.html"
+  title="Scout collector high availability on Kubernetes"
+/>
 
 ### Enabling it
 
