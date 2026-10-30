@@ -492,6 +492,29 @@ AWS Radar reads the export from
 calls `tag:GetResources` (already in the base policy) to attach each resource's
 tags to its cost.
 
+### Legacy CUR (Athena / Hive-partitioned)
+
+AWS Radar also reads the **legacy Cost & Usage Report**, including the
+Athena-integrated variant whose parquet is Hive-partitioned
+(`.../<reportName>/year=YYYY/month=M/...snappy.parquet`). Use `reportType: cur`:
+
+```yaml
+    costCUR:
+      enabled: true
+      reportType: cur              # legacy CUR (incl. Athena/Hive parquet)
+      bucket: your-cur-bucket
+      prefix: cur-reports          # path before the report name
+      reportName: cost-and-usage-report
+      region: ap-south-1           # the CUR *bucket*'s region (legacy buckets can be anywhere)
+```
+
+AWS Radar locates the per-period manifest at
+`{prefix}/{reportName}/{YYYYMMDD}-{YYYYMMDD}/{reportName}-Manifest.json`; its
+`reportKeys` point at the data files wherever they live, so the Hive
+`year=/month=` partitions resolve automatically. Region, AZ and the
+instance/volume/engine spec come from the flat `product_*` columns legacy CUR
+uses (the CUR 2.0 `product` map is handled too).
+
 ## Helm values reference
 
 Common knobs - set under `common` for all instances, or on an `instances[]`
@@ -547,7 +570,7 @@ cost_explorer:
 
 cost_cur:
   enabled: false
-  report_type: cur2      # cur (legacy CUR) | cur2 (CUR 2.0 / Data Exports)
+  report_type: cur2      # cur (legacy CUR, incl. Athena/Hive) | cur2 (Data Exports)
   bucket: ""
   prefix: cur
   report_name: ""
