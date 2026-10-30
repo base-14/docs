@@ -81,7 +81,7 @@ is direct export with a CORS allow-list on the collector; the
 
 :::tip TL;DR
 
-Server side, create `instrumentation.ts` at the project root and dynamically
+Server side, create `src/instrumentation.ts` and dynamically
 import your `NodeSDK` setup only when `process.env.NEXT_RUNTIME === 'nodejs'`,
 so the SDK never loads in the Edge runtime. Browser side, call the web SDK
 bootstrap from a `'use client'` component mounted in the root layout, and point
@@ -114,9 +114,10 @@ This documentation is designed for:
 
 Before starting, ensure you have:
 
-- **Node.js 22 or later** - the example builds and runs on `node:22-alpine`.
+- **Node.js 22.15 or later**, which OpenTelemetry JS 3.0 requires. The
+  example builds and runs on `node:26-alpine`.
 - **Next.js 15 or later** using the App Router. The `instrumentation.ts`
-  register hook has been stable since 15; the example runs **Next.js 16.3**.
+  register hook has been stable since 15; the example runs **Next.js 16.4**.
 - **A Scout Collector** reachable from the Next.js server over OTLP/HTTP, with
   traces, metrics, and logs pipelines. See
   [Docker Compose collector setup](../../collector-setup/docker-compose-example.md).
@@ -126,17 +127,17 @@ Before starting, ensure you have:
 
 | Component | Version | Notes |
 | --- | --- | --- |
-| Next.js | 16.3.0 | App Router; register hook stable since 15 |
-| React | 19.2.8 | Error boundaries via `error.tsx` / `global-error.tsx` |
-| Node.js | 22 | Server runtime; Edge runtime is excluded by design |
+| Next.js | 16.4.3 | App Router; register hook stable since 15 |
+| React | 19.3.1 | Error boundaries via `error.tsx` / `global-error.tsx` |
+| Node.js | 26 | Server runtime; OpenTelemetry JS 3.0 needs 22.15 or later |
 | TypeScript | 6.0.3 | |
-| `@opentelemetry/api` | 1.9.1 | |
-| `@opentelemetry/sdk-node` | 0.221.0 | Server SDK, loaded from the register hook |
-| `@opentelemetry/auto-instrumentations-node` | 0.79.0 | HTTP, fetch, and runtime |
-| `@opentelemetry/sdk-trace-web` | 2.10.0 | Browser tracer provider |
-| `@opentelemetry/auto-instrumentations-web` | 0.66.0 | Document load, fetch, XHR, interactions |
-| `@opentelemetry/semantic-conventions` | 1.43.0 | `ATTR_*` constants |
-| `web-vitals` | 5.3.0 | CLS, LCP, TTFB, INP |
+| `@opentelemetry/api` | 1.10.0 | Also carries the Logs API |
+| `@opentelemetry/sdk-node` | 0.300.0 | Server SDK, loaded from the register hook |
+| `@opentelemetry/auto-instrumentations-node` | 0.82.0 | HTTP, fetch, and runtime |
+| `@opentelemetry/sdk-trace` | 3.0.0 | Tracer provider on both sides |
+| `@opentelemetry/auto-instrumentations-web` | 0.69.0 | Document load, fetch, XHR, interactions |
+| `@opentelemetry/semantic-conventions` | 1.44.0 | `ATTR_*` constants |
+| `web-vitals` | 6.2.3 | CLS, LCP, TTFB, INP |
 
 ### Instrumented Components
 
@@ -182,11 +183,10 @@ together because both bundles are built from one `package.json`.
 ```bash
 npm install \
   @opentelemetry/api \
-  @opentelemetry/api-logs \
+  @opentelemetry/core \
   @opentelemetry/sdk-node \
   @opentelemetry/auto-instrumentations-node \
-  @opentelemetry/sdk-trace-web \
-  @opentelemetry/sdk-trace-base \
+  @opentelemetry/sdk-trace \
   @opentelemetry/auto-instrumentations-web \
   @opentelemetry/instrumentation \
   @opentelemetry/context-zone \
@@ -208,11 +208,10 @@ npm install \
 ```bash
 yarn add \
   @opentelemetry/api \
-  @opentelemetry/api-logs \
+  @opentelemetry/core \
   @opentelemetry/sdk-node \
   @opentelemetry/auto-instrumentations-node \
-  @opentelemetry/sdk-trace-web \
-  @opentelemetry/sdk-trace-base \
+  @opentelemetry/sdk-trace \
   @opentelemetry/auto-instrumentations-web \
   @opentelemetry/instrumentation \
   @opentelemetry/context-zone \
@@ -234,11 +233,10 @@ yarn add \
 ```bash
 pnpm add \
   @opentelemetry/api \
-  @opentelemetry/api-logs \
+  @opentelemetry/core \
   @opentelemetry/sdk-node \
   @opentelemetry/auto-instrumentations-node \
-  @opentelemetry/sdk-trace-web \
-  @opentelemetry/sdk-trace-base \
+  @opentelemetry/sdk-trace \
   @opentelemetry/auto-instrumentations-web \
   @opentelemetry/instrumentation \
   @opentelemetry/context-zone \
@@ -298,11 +296,11 @@ Next.js calls the exported `register` function once per server runtime, before
 the first request is handled. It is the only hook that runs early enough for
 the Node SDK to instrument the first render.
 
-```typescript title="instrumentation.ts" showLineNumbers
+```typescript title="src/instrumentation.ts" showLineNumbers
 export async function register() {
   // Only load server-side OTel in the Node.js runtime (not Edge)
   if (process.env.NEXT_RUNTIME === 'nodejs') {
-    await import('./src/lib/server-telemetry');
+    await import('./lib/server-telemetry');
   }
 }
 ```
@@ -310,6 +308,11 @@ export async function register() {
 The import is dynamic, so the Node SDK is not resolved at module-evaluation
 time and never enters the Edge bundle. The `NEXT_RUNTIME` guard keeps the Edge
 runtime from throwing on Node.js built-ins the SDK depends on.
+
+Next.js accepts the hook next to `package.json` or inside `src/`. When the app
+directory is `src/app`, use the `src/` location: a root-level hook compiles,
+but `output: "standalone"` traces its dependencies into the image only from
+`src/instrumentation.ts`. See [Dockerfile](#dockerfile).
 
 ```mdx-code-block
 </TabItem>
@@ -368,10 +371,10 @@ import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
-import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
+import { BatchSpanProcessor } from '@opentelemetry/sdk-trace';
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { BatchLogRecordProcessor, LoggerProvider } from '@opentelemetry/sdk-logs';
-import { logs, SeverityNumber } from '@opentelemetry/api-logs';
+import { logs, SeverityNumber } from '@opentelemetry/api';
 
 const OTEL_ENDPOINT = process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4318';
 
@@ -385,19 +388,23 @@ const sdk = new NodeSDK({
   resource,
 
   // Traces - batch and export via OTLP HTTP
-  spanProcessor: new BatchSpanProcessor(
-    new OTLPTraceExporter({
-      url: `${OTEL_ENDPOINT}/v1/traces`,
-    })
-  ),
+  spanProcessors: [
+    new BatchSpanProcessor({
+      exporter: new OTLPTraceExporter({
+        url: `${OTEL_ENDPOINT}/v1/traces`,
+      }),
+    }),
+  ],
 
   // Metrics - periodic export every 10s
-  metricReader: new PeriodicExportingMetricReader({
-    exporter: new OTLPMetricExporter({
-      url: `${OTEL_ENDPOINT}/v1/metrics`,
+  metricReaders: [
+    new PeriodicExportingMetricReader({
+      exporter: new OTLPMetricExporter({
+        url: `${OTEL_ENDPOINT}/v1/metrics`,
+      }),
+      exportIntervalMillis: 10_000,
     }),
-    exportIntervalMillis: 10_000,
-  }),
+  ],
 
   // Logs - batch and export via OTLP HTTP
   logRecordProcessors: [
@@ -439,21 +446,22 @@ disk continuously during SSR.
 
 ### Browser SDK Setup
 
-The browser module registers a `WebTracerProvider` and guards against double
+The browser module builds a `TracerProvider`, registers it together with the
+Zone context manager and the W3C propagators, and guards against double
 initialization, because React strict mode mounts effects twice in development.
 
 ```typescript title="src/lib/browser-telemetry.ts" showLineNumbers
 'use client';
 
-import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
-import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
+import { TracerProvider, BatchSpanProcessor } from '@opentelemetry/sdk-trace';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { ZoneContextManager } from '@opentelemetry/context-zone';
+import { CompositePropagator, W3CBaggagePropagator, W3CTraceContextPropagator } from '@opentelemetry/core';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { getWebAutoInstrumentations } from '@opentelemetry/auto-instrumentations-web';
-import { trace, SpanStatusCode } from '@opentelemetry/api';
+import { context, propagation, trace, SpanStatusCode } from '@opentelemetry/api';
 import { onCLS, onLCP, onTTFB, onINP } from 'web-vitals';
 
 let initialized = false;
@@ -478,14 +486,20 @@ export function initBrowserTelemetry() {
     url: `${OTEL_ENDPOINT}/v1/traces`,
   });
 
-  const provider = new WebTracerProvider({
+  const provider = new TracerProvider({
     resource,
-    spanProcessors: [new BatchSpanProcessor(traceExporter)],
+    spanProcessors: [new BatchSpanProcessor({ exporter: traceExporter })],
   });
 
-  provider.register({
-    contextManager: new ZoneContextManager(),
-  });
+  const contextManager = new ZoneContextManager();
+  contextManager.enable();
+  context.setGlobalContextManager(contextManager);
+  propagation.setGlobalPropagator(
+    new CompositePropagator({
+      propagators: [new W3CTraceContextPropagator(), new W3CBaggagePropagator()],
+    })
+  );
+  trace.setGlobalTracerProvider(provider);
 
   // --- 2. Auto-Instrumentations (fetch, XHR, document load, user interaction) ---
   registerInstrumentations({
@@ -647,11 +661,12 @@ before the page unloads.
 
 ### Dockerfile
 
-A standalone build needs one extra copy step for instrumentation to reach the
-runtime image.
+The image copies the standalone bundle and the static assets. The register
+hook and its traced dependencies are part of the standalone bundle when the
+hook is at `src/instrumentation.ts`.
 
 ```dockerfile title="Dockerfile" showLineNumbers
-FROM node:22-alpine AS base
+FROM node:26-alpine AS base
 
 # Install dependencies
 FROM base AS deps
@@ -678,14 +693,11 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/public ./public
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-# Copy the full server build output (includes instrumentation chunks)
-COPY --from=builder --chown=nextjs:nodejs /app/.next/server ./.next/server
 
 USER nextjs
 EXPOSE 3000
@@ -695,18 +707,21 @@ ENV HOSTNAME="0.0.0.0"
 CMD ["node", "server.js"]
 ```
 
-The last `COPY` is required. `output: "standalone"` traces the module graph and
-emits a minimal bundle, but the compiled instrumentation hook lives in a server
-chunk that the trace does not reliably include. Without the full `.next/server`
-directory, the container starts, serves traffic, and emits no telemetry. It
-logs no error in this state, so check for the startup line described under
-[Troubleshooting](#no-server-spans-at-all-in-docker-only).
+`@opentelemetry/instrumentation-http` loads `forwarded-parse` through
+`createRequire`, which the Next.js file tracer cannot follow
+([opentelemetry-js#7229](https://github.com/open-telemetry/opentelemetry-js/issues/7229)).
+Without it the container starts, the hook fails with
+`Cannot find module 'forwarded-parse'`, and every request returns 500. Add the
+package to the trace:
 
 ```typescript title="next.config.ts" showLineNumbers
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  outputFileTracingIncludes: {
+    "/*": ["./node_modules/forwarded-parse/**/*"],
+  },
 };
 
 export default nextConfig;
@@ -824,7 +839,7 @@ bridged output from records emitted directly through the logger.
 For logs you emit yourself, use the logger directly rather than the bridge.
 
 ```typescript title="src/lib/logger.ts" showLineNumbers
-import { logs, SeverityNumber } from '@opentelemetry/api-logs';
+import { logs, SeverityNumber } from '@opentelemetry/api';
 
 const logger = logs.getLogger('sample-nextjs-app');
 
@@ -1211,16 +1226,17 @@ server telemetry and `sample-nextjs-app-browser` for browser telemetry.
 
 ### No server spans at all, in Docker only
 
-The instrumentation chunk is missing from the standalone image. `output:
-"standalone"` traces the module graph, and the compiled register hook is not
-always included. Confirm the Dockerfile copies the full server build:
+The register hook did not reach the standalone image, or it loaded and failed.
 
-```dockerfile
-COPY --from=builder --chown=nextjs:nodejs /app/.next/server ./.next/server
-```
+- The hook sits at the project root while the app lives under `src/app`.
+  Next.js compiles it, but `output: "standalone"` traces its dependencies only
+  from `src/instrumentation.ts`. The container starts, serves traffic, and
+  logs no error. Move the file.
+- The hook loaded but `forwarded-parse` is missing. The container logs
+  `Cannot find module 'forwarded-parse'` and every request returns 500. Add
+  the `outputFileTracingIncludes` entry shown under [Dockerfile](#dockerfile).
 
-Without it the container starts and serves traffic, and logs no error. Check
-for the startup line the server module prints:
+Check for the startup line the server module prints:
 
 ```bash
 docker compose logs nextjs-app | grep 'OTel'
@@ -1416,11 +1432,11 @@ the browser strips them before the request leaves.
 
 ### Do I need `output: "standalone"` for OpenTelemetry in a Next.js image?
 
-Standalone output is not required, but if you use it you must copy the full
-`.next/server` directory into the runtime image alongside the standalone
-bundle. The instrumentation hook is compiled into a separate server chunk that
-the standalone trace does not always include, so omitting it produces an image
-that starts cleanly and emits nothing.
+Standalone output is not required. If you use it, keep the register hook at
+`src/instrumentation.ts` when the app directory is `src/app`, and add
+`forwarded-parse` to `outputFileTracingIncludes`. The standalone trace then
+carries the hook, the `require-in-the-middle` and `import-in-the-middle`
+externals Turbopack emits for it, and the SDK.
 
 ### Does OpenTelemetry work with the Next.js Edge runtime?
 
@@ -1432,7 +1448,8 @@ auto-instrumentation.
 
 ### Which Next.js version does this guide target?
 
-The example runs Next.js 16.3 with React 19.2 on Node.js 22. The instrumentation
+The example runs Next.js 16.4 with React 19.3 on Node.js 26, with OpenTelemetry
+JS 3.0. The instrumentation
 hook has been stable since Next.js 15, so the server-side setup applies
 unchanged from 15 onward. The browser-side setup has no Next.js version
 dependency beyond the App Router and client components.
@@ -1467,14 +1484,14 @@ available at
 ```text
 nextjs-fullstack-otel/
 ├── docker-compose.yml
-├── Dockerfile                            # standalone build + .next/server copy
-├── next.config.ts                        # output: "standalone"
-├── instrumentation.ts                    # register hook, NEXT_RUNTIME guard
+├── Dockerfile                            # standalone build
+├── next.config.ts                        # output: "standalone", forwarded-parse include
 ├── config/otel-collector.yaml            # OTLP in, traces+metrics+logs pipelines
 └── src/
+    ├── instrumentation.ts                # register hook, NEXT_RUNTIME guard
     ├── lib/
     │   ├── server-telemetry.ts           # NodeSDK + console bridge
-    │   ├── browser-telemetry.ts          # WebTracerProvider, errors, Web Vitals
+    │   ├── browser-telemetry.ts          # TracerProvider, errors, Web Vitals
     │   └── logger.ts                     # structured OTel log helpers
     ├── components/TelemetryProvider.tsx  # mounts browser SDK on hydration
     └── app/
