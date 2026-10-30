@@ -363,7 +363,7 @@ OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 cargo run
     "open-telemetry/api": "^1.8",
     "open-telemetry/sdk": "^1.13",
     "open-telemetry/exporter-otlp": "^1.4",
-    "php-http/guzzle7-adapter": "^1.1"
+    "guzzlehttp/guzzle": "^8.3"
   }
 }
 ```

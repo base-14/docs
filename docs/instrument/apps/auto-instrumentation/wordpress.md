@@ -210,8 +210,8 @@ autoloader.
         "open-telemetry/exporter-otlp": "^1.4",
         "open-telemetry/opentelemetry-auto-wordpress": "^0.2",
         "open-telemetry/opentelemetry-auto-mysqli": "^0.4",
-        "php-http/guzzle7-adapter": "^1.1",
-        "guzzlehttp/psr7": "^2.8"
+        "guzzlehttp/guzzle": "^8.3",
+        "guzzlehttp/psr7": "^3.2"
     },
     "config": {
         "optimize-autoloader": true,
@@ -227,9 +227,9 @@ autoloader.
 }
 ```
 
-`php-http/guzzle7-adapter` and `guzzlehttp/psr7` pin a concrete PSR-18 HTTP
-client for the OTLP exporter. Without one, the exporter's client auto-discovery
-can fail and spans are dropped silently.
+`guzzlehttp/guzzle` and `guzzlehttp/psr7` pin a concrete PSR-18 HTTP client
+and PSR-7 factories for the OTLP exporter. Without them, the exporter's client
+auto-discovery can fail and spans are dropped silently.
 
 Both entries under `allow-plugins` are required. `tbachert/spi` registers the
 auto-instrumentation hooks and `php-http/discovery` wires the HTTP client, and
@@ -352,8 +352,8 @@ sudo env COMPOSER_ALLOW_SUPERUSER=1 composer require \
   open-telemetry/exporter-otlp:^1.4 \
   open-telemetry/opentelemetry-auto-wordpress:^0.2 \
   open-telemetry/opentelemetry-auto-mysqli:^0.4 \
-  php-http/guzzle7-adapter:^1.1 \
-  guzzlehttp/psr7:^2.8
+  guzzlehttp/guzzle:^8.3 \
+  guzzlehttp/psr7:^3.2
 ```
 
 Point `auto_prepend_file` at the autoloader. WordPress has no bootstrap file of
@@ -405,8 +405,8 @@ composer require \
   open-telemetry/exporter-otlp:^1.4 \
   open-telemetry/opentelemetry-auto-wordpress:^0.2 \
   open-telemetry/opentelemetry-auto-mysqli:^0.4 \
-  php-http/guzzle7-adapter:^1.1 \
-  guzzlehttp/psr7:^2.8
+  guzzlehttp/guzzle:^8.3 \
+  guzzlehttp/psr7:^3.2
 
 cat > /usr/local/etc/php/conf.d/99-otel.ini <<'EOF'
 extension=opentelemetry.so

@@ -209,8 +209,8 @@ composer require \
   open-telemetry/opentelemetry-auto-slim:^1.3 \
   open-telemetry/opentelemetry-auto-mongodb:^0.2 \
   open-telemetry/opentelemetry-logger-monolog:^1.1 \
-  php-http/guzzle7-adapter:^1.1 \
-  guzzlehttp/psr7:^2.8
+  guzzlehttp/guzzle:^8.3 \
+  guzzlehttp/psr7:^3.2
 ```
 
 ```mdx-code-block
@@ -249,7 +249,7 @@ Slim 4+. HTTP spans are created manually via `TelemetryMiddleware` (see
 | `opentelemetry-auto-slim`      | Auto-instruments every Slim 4 route (Slim 4 only)              |
 | `opentelemetry-auto-mongodb`   | Auto-creates spans for all MongoDB driver operations           |
 | `opentelemetry-logger-monolog` | Bridges Monolog to OTel logs with automatic `traceId`/`spanId` |
-| `guzzle7-adapter` + `psr7`     | HTTP transport for the OTLP exporter                           |
+| `guzzle` + `psr7`              | PSR-18 client and PSR-7 factories for the OTLP exporter        |
 | `slim/psr7` + `php-di/php-di`  | PSR-7 implementation and DI container (Slim 4 only)            |
 
 ## Environment Variables
@@ -1171,8 +1171,8 @@ Working examples with full source code, Docker Compose setup, and test scripts:
     "open-telemetry/opentelemetry-auto-slim": "^1.3",
     "open-telemetry/opentelemetry-auto-mongodb": "^0.2",
     "open-telemetry/opentelemetry-logger-monolog": "^1.1",
-    "php-http/guzzle7-adapter": "^1.1",
-    "guzzlehttp/psr7": "^2.8"
+    "guzzlehttp/guzzle": "^8.3",
+    "guzzlehttp/psr7": "^3.2"
   }
 }
 ```
