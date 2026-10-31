@@ -515,6 +515,33 @@ AWS Radar locates the per-period manifest at
 instance/volume/engine spec come from the flat `product_*` columns legacy CUR
 uses (the CUR 2.0 `product` map is handled too).
 
+#### Manifest-less Hive (`reportType: hive`)
+
+Some setups delete the per-period `*-Manifest.json` on a schedule (so
+Athena/Superset don't choke on it), leaving only the Hive-partitioned
+parquet. With no manifest to read, `reportType: cur` fails with a
+`NoSuchKey`. Use `reportType: hive` instead - it skips the manifest and
+lists the current month's partition
+(`{prefix}/{reportName}/year=YYYY/month=M/`, where `month` is **not**
+zero-padded) directly, parsing every `.parquet`/`.csv` it finds:
+
+```yaml
+    costCUR:
+      enabled: true
+      reportType: hive             # manifest-less: list year=/month= directly
+      bucket: app-finmo-cost-and-reports
+      prefix: CUR2.0               # path before the report name
+      reportName: cur1
+      region: us-east-1            # the CUR *bucket*'s region
+```
+
+This lists `s3://app-finmo-cost-and-reports/CUR2.0/cur1/year=2026/month=10/`
+for the current billing month. If your layout nests the report name twice
+(`{prefix}/{reportName}/{reportName}/year=.../month=.../`), fold the extra
+level into `prefix` (e.g. `prefix: cur-reports/cost-and-usage-report`,
+`reportName: cost-and-usage-report`). Region, AZ and spec resolve from the
+same flat `product_*` columns as `reportType: cur`.
+
 ## Helm values reference
 
 Common knobs - set under `common` for all instances, or on an `instances[]`
@@ -570,7 +597,7 @@ cost_explorer:
 
 cost_cur:
   enabled: false
-  report_type: cur2      # cur (legacy CUR, incl. Athena/Hive) | cur2 (Data Exports)
+  report_type: cur2      # cur (legacy) | cur2 (Data Exports) | hive (manifest-less)
   bucket: ""
   prefix: cur
   report_name: ""
