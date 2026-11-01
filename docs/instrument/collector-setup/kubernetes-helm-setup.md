@@ -366,6 +366,103 @@ Deployments. The old agent's resource owns the Service, so the gateway can only
 recreate it once the prune removes the old resource, and senders lose the
 Service briefly during that sync.
 
+## Scout Operator mode
+
+:::note
+
+Needs chart 0.10.0 or later, and the `ScoutCollector` CRD in the cluster.
+Disabled by default: a release that does not enable it renders exactly as
+before.
+
+:::
+
+By default this chart renders the collector Deployment and DaemonSet itself.
+In operator mode it renders [`ScoutCollector`](./scout-operator/scoutcollector.md)
+resources instead, and [Scout Operator](./scout-operator/index.md) creates the
+workloads from them. The chart still owns the Collector configuration, the
+credentials and the RBAC, so what each collector runs does not change.
+
+You get a recovery cache, so a pod restarting while Scout is unreachable
+starts on the configuration it was last given rather than the bundled
+fallback. See [Remote configuration](./scout-operator/remote-configuration.md).
+
+### Enabling it
+
+Install the operator first, then set `scout.supervisor.operator`:
+
+```yaml showLineNumbers title="values.yaml"
+scout:
+  # The supervised roles below replace these; setting both is refused.
+  agent:
+    enabled: false
+  daemon:
+    enabled: false
+  supervisor:
+    agent:
+      enabled: true
+    daemon:
+      enabled: true
+    operator:
+      enabled: true
+      # Literal, not an env reference: the resource cannot read
+      # ${env:K8S_CLUSTER_NAME} the way the supervisor config does.
+      cluster: __YOUR_CLUSTER_NAME__
+      bootstrap:
+        endpoint: __YOUR_SCOUT_ENDPOINT__
+        clientId: __YOUR_BOOTSTRAP_CLIENT_ID__
+        # Create this on the API Keys page in the Scout console. Supply the
+        # value inline, or point secret.name at a Secret you already manage.
+        clientSecret: __YOUR_BOOTSTRAP_CLIENT_SECRET__
+```
+
+### Reading the node's pod logs
+
+`/var/log/pods` is root-owned and unreadable to the user collectors run as. A
+`filelog` receiver pointed at it matches no files and reports no error, so the
+pipeline simply stays empty.
+
+Mount the path and let that role run as root. Set it only on the role that
+reads the node:
+
+```yaml showLineNumbers title="values.yaml"
+scout:
+  supervisor:
+    daemon:
+      runAsRoot: true
+      extraVolumes:
+        - name: varlogpods
+          hostPath:
+            path: /var/log/pods
+            type: Directory
+      extraVolumeMounts:
+        - name: varlogpods
+          mountPath: /var/log/pods
+          readOnly: true
+```
+
+`runAsRoot` grants the user id and nothing else: privilege escalation stays
+off, the root filesystem read-only, and every Linux capability dropped.
+
+Confirm it worked rather than assuming, since an empty pipeline and a
+permission error look identical from outside the pod:
+
+```bash
+kubectl exec -n scout ds/scout-collector-daemon -c supervisor -- ls /var/log/pods
+```
+
+### Moving an existing release
+
+The chart stops rendering the Deployment and DaemonSet, so the old workloads
+have to go in the same operation. Sync with pruning enabled, or delete them
+once the `ScoutCollector` resources are ready.
+
+Leaving both in place means either the same telemetry sent twice, or, for a
+DaemonSet using `hostNetwork`, new pods that cannot bind the node's ports and
+crash-loop with `address already in use`.
+
+Service names and ports are unchanged, so nothing sending telemetry has to be
+reconfigured.
+
 ## Configuration Guide
 
 ## Using Otelcol style configuration
