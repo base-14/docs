@@ -20,7 +20,7 @@ sidebar_position: 3
 # Remote configuration
 
 In Supervised mode, each collector pod runs the upstream OpAMP Supervisor,
-which starts the Collector and connects to Scout fleet management. You can then change a
+which starts the Collector and connects to Scout. You can then change a
 running collector's configuration with
 [`scout capo`](../../../scout-cli/scout-access/capo.md), with no redeploy and
 no change to the `ScoutCollector`.
@@ -68,11 +68,11 @@ Leave the cache to the operator:
 
 - Do not create, edit, or delete it, and keep it out of Helm charts and
   Argo CD applications.
-- If it is deleted after Scout fleet management has configured the collector, the operator
-  recreates it marked as requiring recovery. Pods then start only once Scout fleet management
+- If it is deleted after the collector has been configured, the operator
+  recreates it marked as requiring recovery. Pods then start only once Scout
   is reachable again.
 
-If configurations sent from Scout fleet management can contain literal credentials, store the
+If the configurations you send can contain literal credentials, store the
 cache in a Secret instead:
 
 ```yaml
@@ -195,8 +195,8 @@ and point `collector.healthCheck` at it, as the example does with 13134.
 Without `healthCheck`, a pod reports ready whenever the Supervisor is up,
 even if the Collector has exited.
 
-Because Scout fleet management can replace the whole configuration, a configuration sent from
-Scout fleet management that drops `health_check` makes every pod fail readiness. Keep
+Because a remote configuration replaces the whole file, one that drops
+`health_check` makes every pod fail readiness. Keep
 `health_check` in every configuration you send, or supply it as a config
 layer (below).
 
@@ -205,8 +205,8 @@ Supervisor with `supervisor.healthCheckPort`.
 
 ## How collectors appear in Scout
 
-Each supervised pod reports these attributes to Scout fleet management, which you can match
-with `scout capo agents drift` and `apply`:
+Each supervised pod reports these attributes, which you can match with
+`scout capo agents drift` and `apply`:
 
 | Attribute | Value |
 | --- | --- |
@@ -227,7 +227,7 @@ scout capo agents apply \
   --file gateway.yaml
 ```
 
-Each pod is a separate agent in Scout fleet management, and a restarted pod appears as a new
+Each pod is a separate agent, and a restarted pod appears as a new
 one. `scout.collector.key` stays the same across restarts and identifies the
 collector as a whole.
 
@@ -237,7 +237,7 @@ collector as a whole.
 | --- | --- | --- |
 | `supervisor.automaticConfigRollback` | `true` | Return to the previous configuration when a new one fails to start |
 | `supervisor.passthroughLogs` | `false` | Show the Collector's own output in `kubectl logs`. Leave it off on collectors that read pod logs from their own node, or they read their own output back |
-| `supervisor.configLayers` | none | Extra ConfigMap keys merged after the main configuration, for settings that must survive any configuration from Scout fleet management |
+| `supervisor.configLayers` | none | Extra ConfigMap keys merged after the main configuration, for settings that must survive any remote configuration |
 | `supervisor.capabilities` | remote config, restart, effective config, available components | OpAMP capabilities to advertise |
 | `supervisor.collectorInstall.baseUrl` | GitHub releases | Download mirror for clusters without access to GitHub |
 | `supervisor.bootstrap.timeout` | `30s` | How long `config-bootstrap` waits for Scout |
@@ -255,7 +255,7 @@ kubectl logs -n observability <pod> -c config-bootstrap
 | Message contains | Cause |
 | --- | --- |
 | `no valid committed cache is available` | First boot and Scout is unreachable. Check `bootstrap.endpoint` and network access to it |
-| `no committed revision for a previously initialized collector` | The cache was deleted or reset. Restore access, or assign a configuration in Scout fleet management |
+| `no committed revision for a previously initialized collector` | The cache was deleted or reset. Restore access, or assign a configuration in Scout |
 | `does not match` on the collector key | The cache belongs to another collector. Check `supervisor.cache.name` |
 | `bootstrap token endpoint returned HTTP`, or a 401 from the recovery request | Wrong bootstrap client ID, secret, or token URL |
 
@@ -267,16 +267,15 @@ and that the pod can reach the download URL.
 
 ### `CacheSynchronized` is `False`
 
-The operator could not reach Scout fleet management on its last refresh. The existing cache is
-kept, and running collectors are unaffected, because they receive
-configuration from Scout fleet management directly. The condition clears on the next
-successful refresh.
+The operator could not reach Scout on its last refresh. The existing cache is
+kept, and running collectors are unaffected, because they receive their
+configuration directly. The condition clears on the next successful refresh.
 
 ## FAQ
 
-### What happens to running collectors when Scout fleet management is down?
+### What happens to running collectors when Scout is unreachable?
 
-They keep running on the configuration they have. Scout fleet management is needed only to
+They keep running on the configuration they have. Scout is needed only to
 change configuration. Pods that restart during the outage start from the
 recovery cache.
 
@@ -288,7 +287,7 @@ unaffected.
 
 ### Does the fallback configuration change after the first boot?
 
-No, it is used only when Scout fleet management confirms the collector has never had an
+No, it is used only when Scout confirms the collector has never had an
 applied configuration. Editing it later has no effect on a collector that
 Scout has already configured. Send changes through Scout instead.
 
