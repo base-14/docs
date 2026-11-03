@@ -2,16 +2,19 @@
 title: Scout Operator for Kubernetes
 sidebar_label: Overview and install
 description:
-  Install Scout Operator on Kubernetes with Helm and manage Scout collectors
-  as ScoutCollector resources, with optional remote configuration from Scout.
+  Install Scout Operator on Kubernetes with Helm, manage Scout collectors as
+  ScoutCollector resources with optional remote configuration from Scout, and
+  add auto-instrumentation to application pods.
 keywords:
   [
     scout operator,
     kubernetes operator,
     scoutcollector,
+    scoutinstrumentation,
     opentelemetry collector operator,
     collector management,
     opamp supervisor,
+    kubernetes auto instrumentation,
   ]
 tags: [kubernetes, opentelemetry, base14 scout]
 sidebar_position: 1
@@ -32,12 +35,17 @@ A collector can run in one of two modes:
   send it new configuration at runtime. See
   [Remote configuration](./remote-configuration.md).
 
+The operator can also add OpenTelemetry auto-instrumentation to your
+application pods. You annotate a pod or namespace, and it injects the language
+agent when the pod starts. See [Auto-instrumentation](./auto-instrumentation.md).
+
 ## When to use it
 
 | You want to | Use |
 | --- | --- |
 | Run the Scout Collector from one Helm release with Scout's defaults | [Kubernetes Helm Setup](../kubernetes-helm-setup.md) |
 | Manage each collector role as its own resource, or change configuration from Scout without a redeploy | Scout Operator |
+| Instrument applications on Kubernetes without changing their images | [Scout Operator auto-instrumentation](./auto-instrumentation.md) |
 
 ## Prerequisites
 
@@ -59,14 +67,16 @@ helm install scout-operator base14/scout-operator \
   --create-namespace
 ```
 
-The chart installs the `ScoutCollector` CRD, the operator Deployment, and the
+The chart installs the `ScoutCollector` and `ScoutInstrumentation` CRDs, the
+operator Deployment, the admission webhooks auto-instrumentation uses, and the
 RBAC the operator needs. It watches every namespace by default.
 
-Check that the operator is running and the CRD is registered:
+Check that the operator is running and the CRDs are registered:
 
 ```bash
 kubectl get pods -n scout-operator-system
-kubectl get crd scoutcollectors.telemetry.scout.base14.io
+kubectl get crd scoutcollectors.telemetry.scout.base14.io \
+  scoutinstrumentations.telemetry.scout.base14.io
 ```
 
 ## Install into specific namespaces
@@ -91,6 +101,10 @@ after the `ScoutCollector` unless you set `workload.serviceAccountName`.
 
 A namespaced install requires `collectorRBACMode` to be `PreProvisioned` or
 `Disabled`. The chart refuses to render `Auto` with `scope: namespaced`.
+
+With auto-instrumentation on, the chart also creates one small ClusterRole so
+the operator can read namespace annotations and keep its two webhook
+configurations current. The webhooks only see pods in the watched namespaces.
 
 ## Upgrading
 
@@ -131,16 +145,18 @@ telemetry has to be reconfigured.
 ## Uninstall
 
 :::warning
-The chart owns the `ScoutCollector` CRD. `helm uninstall` removes the CRD, and
-Kubernetes then deletes every `ScoutCollector` and the collectors it runs.
+The chart owns the `ScoutCollector` and `ScoutInstrumentation` CRDs.
+`helm uninstall` removes them, and Kubernetes then deletes every
+`ScoutCollector` with the collectors it runs, and every `ScoutInstrumentation`.
+Instrumented pods keep their agent until they restart.
 :::
 
 ```bash
 helm uninstall scout-operator --namespace scout-operator-system
 ```
 
-To keep your collectors' definitions across a reinstall, manage the CRD
-outside the release and install with `--set crds.create=false`.
+To keep these definitions across a reinstall, manage the CRDs outside the
+release and install with `--set crds.create=false`.
 
 ## Chart values
 
@@ -151,7 +167,9 @@ outside the release and install with `--set crds.create=false`.
 | `manager.collectorRBACMode` | `Auto` | `Auto` lets the operator create Collector RBAC. `PreProvisioned` expects it to exist. `Disabled` rejects collectors that need it. |
 | `manager.cacheSync.enabled` | `true` | Copies each supervised collector's latest applied configuration into its recovery cache. |
 | `manager.cacheSync.interval` | `30s` | How often that copy runs. Each supervised collector makes one request per interval. |
-| `crds.create` | `true` | Set to `false` when the CRD is managed outside this release. |
+| `crds.create` | `true` | Set to `false` when the CRDs are managed outside this release. |
+| `instrumentation.enabled` | `true` | Turns auto-instrumentation on or off. Turning it off removes the `ScoutInstrumentation` CRD. See [Auto-instrumentation](./auto-instrumentation.md#chart-values) for the other `instrumentation.*` values. |
+| `instrumentation.tls.mode` | `selfManaged` | `selfManaged`: the operator manages its webhook certificate. `certManager`: an installed cert-manager issues it. |
 | `metrics.enabled` | `true` | Serves operator metrics over HTTPS on port 8443. |
 | `metrics.serviceMonitor.enabled` | `false` | Creates a ServiceMonitor. Requires the Prometheus Operator CRDs. |
 
@@ -161,6 +179,8 @@ outside the release and install with `--set crds.create=false`.
   and Gateway collectors.
 - [Remote configuration](./remote-configuration.md): let Scout configure a
   running collector.
+- [Auto-instrumentation](./auto-instrumentation.md): add OpenTelemetry agents
+  to application pods with an annotation.
 - [Deployment Topology](../collector-deployment-topology.md): how the three
   collector roles fit together.
 
