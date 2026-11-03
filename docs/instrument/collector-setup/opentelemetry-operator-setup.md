@@ -28,6 +28,13 @@ This is the recommended approach for deploying OpenTelemetry Collectors on
 Kubernetes with Scout.
 :::
 
+:::note
+Scout Operator offers the same auto-instrumentation through its own
+`ScoutInstrumentation` resource and `instrumentation.scout.base14.io/`
+annotations, and the two operators can run in one cluster. See
+[Scout Operator auto-instrumentation](./scout-operator/auto-instrumentation.md).
+:::
+
 ## Overview
 
 The OpenTelemetry Operator is a Kubernetes Operator that manages:

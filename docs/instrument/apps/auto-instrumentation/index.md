@@ -38,6 +38,17 @@ your collector is working first, try the
 | Fine-grained span control         | ❌ Use [custom instrumentation](../custom-instrumentation/) |
 | Legacy framework not supported    | ❌ Use [custom instrumentation](../custom-instrumentation/) |
 
+## On Kubernetes, Without Code Changes
+
+If your applications run on Kubernetes, Scout Operator can add the
+OpenTelemetry agent to a pod when it starts, with one annotation and no change
+to the image. It covers Java, Node.js, Python, .NET, Go, PHP, Ruby, Apache
+HTTPD, and nginx. See
+[Scout Operator auto-instrumentation](../../collector-setup/scout-operator/auto-instrumentation.md).
+
+Use the framework guides below when you add instrumentation in code, or need
+spans and metrics the agents do not produce.
+
 ## Frameworks by Language
 
 ### Python
