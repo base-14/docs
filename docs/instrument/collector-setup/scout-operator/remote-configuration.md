@@ -14,7 +14,7 @@ keywords:
     scoutcollector,
   ]
 tags: [kubernetes, opentelemetry, opamp, base14 scout]
-sidebar_position: 3
+sidebar_position: 4
 ---
 
 # Remote configuration
@@ -93,8 +93,15 @@ A supervised collector uses two OAuth2 clients, each in its own Secret:
   collector's last applied configuration when the pod starts.
 - the **OpAMP** client, used by the Supervisor for its own connection.
 
-Create both on the **API Keys** page in the Scout console, then store each
-one in its own Secret.
+Create the bootstrap client on the **API Keys** page in the Scout console,
+`https://console.base14.io/<your-org>/api-keys`: select **Create API Key**
+and set **Credential type** to **Capo Bootstrap**. Only that type carries the
+`capo:bootstrap` scope fleet management requires for the recovery read.
+Create one per cluster.
+
+The OpAMP client can be the same collector client the Gateway exports to
+Scout with, or another collector client of its own. Store each client in its
+own Secret.
 
 Each container mounts only its own Secret. Neither process can read the
 other's credential.
@@ -154,7 +161,7 @@ spec:
         amd64: "__SHA256_OF_LINUX_AMD64_TARBALL__"
         arm64: "__SHA256_OF_LINUX_ARM64_TARBALL__"
     opamp:
-      endpoint: __YOUR_OPAMP_ENDPOINT__
+      endpoint: wss://capo.base14.io/v1/connect
       auth:
         tokenURL: https://id.b14.dev/realms/__YOUR_TENANT__/protocol/openid-connect/token
         clientID: __YOUR_OPAMP_CLIENT_ID__
@@ -162,7 +169,7 @@ spec:
           name: gateway-opamp
           key: client-secret
     bootstrap:
-      endpoint: __YOUR_FLEET_ENDPOINT__
+      endpoint: https://capo.base14.io
       auth:
         tokenURL: https://id.b14.dev/realms/__YOUR_TENANT__/protocol/openid-connect/token
         clientID: __YOUR_BOOTSTRAP_CLIENT_ID__
