@@ -386,7 +386,7 @@ You get a recovery cache, so a pod restarting while Scout is unreachable
 starts on the configuration it was last given rather than the bundled
 fallback. See [Remote configuration](./scout-operator/remote-configuration.md).
 
-With Scout Operator 0.1.16 or later, a
+With Scout Operator 0.1.17 or later, a
 [ScoutInstallation](./scout-operator/scoutinstallation.md) can replace this
 chart entirely: the operator then holds the collector configuration too, and
 you turn coverage on or off with presets instead of values. It uses this
