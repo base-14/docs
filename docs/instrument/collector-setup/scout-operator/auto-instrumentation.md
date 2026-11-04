@@ -16,7 +16,7 @@ keywords:
     java agent injection,
   ]
 tags: [kubernetes, opentelemetry, base14 scout]
-sidebar_position: 4
+sidebar_position: 5
 ---
 
 # Auto-instrumentation

@@ -2,13 +2,15 @@
 title: Scout Operator for Kubernetes
 sidebar_label: Overview and install
 description:
-  Install Scout Operator on Kubernetes with Helm, manage Scout collectors as
-  ScoutCollector resources with optional remote configuration from Scout, and
-  add auto-instrumentation to application pods.
+  Install Scout Operator on Kubernetes with Helm, collect from a whole cluster
+  with one ScoutInstallation, manage collectors as ScoutCollector resources
+  with optional remote configuration from Scout, and add auto-instrumentation
+  to application pods.
 keywords:
   [
     scout operator,
     kubernetes operator,
+    scoutinstallation,
     scoutcollector,
     scoutinstrumentation,
     opentelemetry collector operator,
@@ -22,11 +24,17 @@ sidebar_position: 1
 
 # Scout Operator
 
-Scout Operator runs OpenTelemetry Collectors on Kubernetes from a single
-custom resource, `ScoutCollector`. You describe the collector you want, and
-the operator creates and keeps in step the Deployment or DaemonSet, Service,
-ServiceAccount, RBAC, HorizontalPodAutoscaler, and PodDisruptionBudget that
-run it.
+Scout Operator runs OpenTelemetry Collectors on Kubernetes from custom
+resources. A `ScoutInstallation` turns on Scout's standard collection for a
+whole cluster from one short resource: application telemetry, Kubernetes and
+host metrics, events, and container logs. See
+[ScoutInstallation](./scoutinstallation.md).
+
+For collectors you describe yourself, the `ScoutCollector` resource takes a
+configuration you write, and the operator creates and keeps in step the
+Deployment or DaemonSet, Service, ServiceAccount, RBAC,
+HorizontalPodAutoscaler, and PodDisruptionBudget that run it. A
+`ScoutInstallation` creates its collectors as `ScoutCollector` resources.
 
 A collector can run in one of two modes:
 
@@ -43,6 +51,7 @@ agent when the pod starts. See [Auto-instrumentation](./auto-instrumentation.md)
 
 | You want to | Use |
 | --- | --- |
+| Collect from a whole cluster with Scout's defaults, turning coverage off where you do not want it | [ScoutInstallation](./scoutinstallation.md) |
 | Run the Scout Collector from one Helm release with Scout's defaults | [Kubernetes Helm Setup](../kubernetes-helm-setup.md) |
 | Manage each collector role as its own resource, or change configuration from Scout without a redeploy | Scout Operator |
 | Instrument applications on Kubernetes without changing their images | [Scout Operator auto-instrumentation](./auto-instrumentation.md) |
@@ -67,15 +76,17 @@ helm install scout-operator base14/scout-operator \
   --create-namespace
 ```
 
-The chart installs the `ScoutCollector` and `ScoutInstrumentation` CRDs, the
-operator Deployment, the admission webhooks auto-instrumentation uses, and the
-RBAC the operator needs. It watches every namespace by default.
+The chart installs the `ScoutInstallation`, `ScoutCollector`, and
+`ScoutInstrumentation` CRDs, the operator Deployment, the admission webhooks
+auto-instrumentation uses, and the RBAC the operator needs. It watches every
+namespace by default.
 
 Check that the operator is running and the CRDs are registered:
 
 ```bash
 kubectl get pods -n scout-operator-system
-kubectl get crd scoutcollectors.telemetry.scout.base14.io \
+kubectl get crd scoutinstallations.telemetry.scout.base14.io \
+  scoutcollectors.telemetry.scout.base14.io \
   scoutinstrumentations.telemetry.scout.base14.io
 ```
 
@@ -101,6 +112,11 @@ after the `ScoutCollector` unless you set `workload.serviceAccountName`.
 
 A namespaced install requires `collectorRBACMode` to be `PreProvisioned` or
 `Disabled`. The chart refuses to render `Auto` with `scope: namespaced`.
+
+The same applies to a `ScoutInstallation` in a watched namespace: presets that
+read the Kubernetes API, such as `kubernetesMetrics` or
+`kubernetesAttributes`, need their ClusterRoles bound ahead of time. Presets
+that do not, such as `applicationTelemetry`, work without them.
 
 With auto-instrumentation on, the chart also creates one small ClusterRole so
 the operator can read namespace annotations and keep its two webhook
@@ -145,11 +161,17 @@ telemetry has to be reconfigured.
 ## Uninstall
 
 :::warning
-The chart owns the `ScoutCollector` and `ScoutInstrumentation` CRDs.
-`helm uninstall` removes them, and Kubernetes then deletes every
-`ScoutCollector` with the collectors it runs, and every `ScoutInstrumentation`.
-Instrumented pods keep their agent until they restart.
+The chart owns the `ScoutInstallation`, `ScoutCollector`, and
+`ScoutInstrumentation` CRDs. `helm uninstall` removes them, and Kubernetes then
+deletes every `ScoutInstallation` and `ScoutCollector` with the collectors they
+run, and every `ScoutInstrumentation`. Instrumented pods keep their agent until
+they restart.
 :::
+
+Delete your `ScoutInstallation` and `ScoutCollector` resources first, while
+the operator is still running. Collectors that hold cluster permissions keep a
+finalizer only the operator removes, so uninstalling first leaves them stuck
+in deletion.
 
 ```bash
 helm uninstall scout-operator --namespace scout-operator-system
@@ -175,6 +197,8 @@ release and install with `--set crds.create=false`.
 
 ## Next steps
 
+- [ScoutInstallation](./scoutinstallation.md): collect from the whole cluster
+  with one resource.
 - [ScoutCollector resource](./scoutcollector.md): deploy the Agent, Daemon,
   and Gateway collectors.
 - [Remote configuration](./remote-configuration.md): let Scout configure a

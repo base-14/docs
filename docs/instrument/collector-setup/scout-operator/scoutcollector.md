@@ -16,7 +16,7 @@ keywords:
     kubernetes collector rbac,
   ]
 tags: [kubernetes, opentelemetry, base14 scout]
-sidebar_position: 2
+sidebar_position: 3
 ---
 
 # ScoutCollector resource
@@ -25,6 +25,10 @@ A `ScoutCollector` describes one collector role: one workload whose pods all
 run the same configuration. To run the Agent, Daemon, and Gateway collectors
 from the [Deployment Topology](../collector-deployment-topology.md), create
 three `ScoutCollector` resources.
+
+For Scout's standard coverage of a whole cluster without writing
+configuration, use a [ScoutInstallation](./scoutinstallation.md) instead. It
+creates these collectors for you.
 
 From each one, the operator creates:
 
@@ -408,6 +412,10 @@ configuration only. If Scout later sends a configuration that adds, say,
 component in the fallback configuration, or list it as a preset.
 :::
 
+Deleting a collector removes the access it was granted. The ClusterRole behind
+a preset is shared by every collector that lists it, so it is removed once no
+collector uses it.
+
 To use an existing ServiceAccount and the RBAC already bound to it, set
 `workload.serviceAccountName`. The operator then creates no ServiceAccount.
 
@@ -485,6 +493,7 @@ readiness follows the Collector itself. See
 | Field | Description |
 | --- | --- |
 | `workload.nodeSelector`, `workload.tolerations`, `workload.affinity` | Standard pod scheduling |
+| `workload.priorityClassName` | An existing PriorityClass for the pods. None by default |
 | `workload.podLabels`, `workload.podAnnotations` | Added to every pod |
 | `workload.hostNetwork` | Runs pods on the node's network |
 | `workload.volumes`, `collector.volumeMounts` | Extra volumes for the collector. See [Reading files from the node](#reading-files-from-the-node) |
