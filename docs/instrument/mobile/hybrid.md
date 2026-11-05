@@ -80,8 +80,8 @@ OpenTelemetry instrumentation scopes, all under one `session.id`:
 
 | Requirement | Version |
 | --- | --- |
-| Android native SDK | `io.base14:scout-android:0.1.7` (Maven Central) |
-| Flutter SDK | `scout_flutter` `^0.2.0` |
+| Android native SDK | `io.base14:scout-android:0.1.12` (Maven Central) |
+| Flutter SDK | `scout_flutter` `^0.4.0` |
 | iOS native engine | Ships inside `scout_flutter`; no separate dependency |
 
 The hybrid bridge lands in `scout_flutter` 0.2.0. The `0.1.x` line does not
@@ -104,7 +104,7 @@ the sole exporter; `scout_flutter` detects it and bridges automatically.
 
 ```kotlin
 dependencies {
-    implementation("io.base14:scout-android:0.1.7")
+    implementation("io.base14:scout-android:0.1.12")
 }
 ```
 
@@ -112,7 +112,7 @@ dependencies {
 
 ```yaml
 dependencies:
-  scout_flutter: ^0.2.0
+  scout_flutter: ^0.4.0
 ```
 
 ### 2. Initialize the native SDK (session owner)
@@ -297,7 +297,7 @@ with the plugin (no separate native dependency).
 
 ```yaml
 dependencies:
-  scout_flutter: ^0.2.0
+  scout_flutter: ^0.4.0
 ```
 
 ### 2. Initialize scout_flutter
@@ -378,6 +378,12 @@ Calling `Scout.start` after Flutter has started has no effect. See
   `exportIntervalSeconds`, `maxExportBatchSize`, `maxQueueSize`, `maxRetries`,
   `metricExportIntervalSeconds`, `firstPartyHosts`, and `debugLogging`.
 - Crash and ANR/app-hang reporting is handled by the native side in hybrid mode.
+- Per-user sampling is decided by the native side, which owns the session.
+  `ScoutFlutter.setUserSampling`, `setUser`, and `clearUser` are forwarded to
+  it (`scout_flutter` 0.4.0 and `scout-android` 0.1.12 or later). In
+  [different-process](#different-process) mode, set the value in the main
+  process; the Flutter process follows it. See
+  [Per-user Sampling](./user-sampling.md).
 - For the per-layer configuration options, see the platform pages:
   [Android](./android.md), [iOS](./ios.md), and [Flutter](./flutter.md).
 

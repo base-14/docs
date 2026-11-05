@@ -102,7 +102,7 @@ Add it to your `pubspec.yaml`:
 ```yaml
 # pubspec.yaml
 dependencies:
-  scout_flutter: ^0.2.0
+  scout_flutter: ^0.4.0
 ```
 
 Or:
@@ -221,6 +221,25 @@ until cleared — bare attribute keys are auto-prefixed with `user.`, and
 keys already starting with `user.` pass through unchanged. `setUser`
 **replaces** the whole user map, so pass everything you want each call.
 
+### Per-user sampling
+
+To decide per user whether sessions are recorded, for example from your
+remote config, pass the cached value as `userSampling` in
+`ScoutFlutterConfig` and update it on login with
+`ScoutFlutter.setUserSampling(value)`, before `setUser`:
+
+```dart
+ScoutFlutter.setUserSampling(await remoteConfig.fetchRumEnabled(user.id));
+ScoutFlutter.setUser(id: user.id);
+```
+
+`true` records all of the user's sessions, `false` drops their spans (logs,
+metrics, and errors still flow), and `null` falls back to `sessionSampleRate`.
+A new value applies from the next session start, and `setUserSampling` is safe
+to call before `initialize`. `ScoutFlutter.sessionSamplingDecision` returns
+the current session's decision. See [Per-user Sampling](./user-sampling.md)
+for the full behavior.
+
 ### Setting session attributes
 
 Session attributes attach to every subsequent span, metric, and log for
@@ -276,6 +295,7 @@ opt-in.
 | `maxSessionDurationMinutes` | `int` | `60` | Hard cap on session lifetime; rotates on the next ID read past this age regardless of activity. `0` disables. |
 | `sessionSampleRate` | `double (0-100)` | `1.0` | Percent of sessions sampled — default **1%**. The decision is made once per session and applies uniformly to **spans, metrics, and logs**: a sampled session sends everything, an unsampled session sends nothing. |
 | `alwaysCaptureErrors` | `bool` | `true` | Error / crash / ANR-class spans and error-level logs bypass `sessionSampleRate` and are always exported. Set `false` to subject them to the same gate. |
+| `userSampling` | `bool?` | `null` | Per-user sampling decided by your app. `true` records all of this user's sessions, `false` drops their spans (logs, metrics, and errors still flow), `null` uses `sessionSampleRate`. Applies from the next session start and is persisted. See [Per-user Sampling](./user-sampling.md). |
 
 ### Thresholds
 

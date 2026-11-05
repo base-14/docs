@@ -106,7 +106,7 @@ dependencyResolutionManagement {
 
 // app/build.gradle.kts
 dependencies {
-  implementation("io.base14:scout-android:0.1.7")
+  implementation("io.base14:scout-android:0.1.12")
 }
 ```
 
@@ -191,6 +191,22 @@ Scout.clearUser()
 
 `user.id` and every attribute ride on every span until cleared.
 
+### Per-user sampling
+
+To decide per user whether sessions are recorded, for example from your
+remote config, pass the cached value at initialization with `userSampling`
+and update it on login with `Scout.setUserSampling(value)`, before `setUser`:
+
+```kotlin
+Scout.setUserSampling(remoteConfig.fetchRumEnabled(user.id))
+Scout.setUser(user.id)
+```
+
+`true` records all of the user's sessions, `false` drops their spans (logs,
+metrics, and errors still flow), and `null` falls back to `sessionSampleRate`.
+A new value applies from the next session start. See
+[Per-user Sampling](./user-sampling.md) for the full behavior.
+
 ### Setting session attributes
 
 ```kotlin
@@ -224,6 +240,7 @@ default.
 |---|---|---|---|
 | `sessionSampleRate` | `Double (0-100)` | `1.0` | Percent of sessions sampled — default **1%**. Decided once per session; a sampled session sends everything (spans, metrics, logs), an unsampled one sends nothing. |
 | `alwaysCaptureErrors` | `Boolean` | `true` | Error / crash / ANR-class spans bypass `sessionSampleRate` and are always exported. |
+| `userSampling` | `Boolean?` | `null` | Per-user sampling decided by your app. `true` records all of this user's sessions, `false` drops their spans (logs, metrics, and errors still flow), `null` uses `sessionSampleRate`. Applies from the next session start and is persisted. See [Per-user Sampling](./user-sampling.md). |
 | `sessionTimeoutMinutes` | `Int` | `30` | Inactivity timeout before a new `session.id` is minted. |
 | `maxSessionDurationMinutes` | `Int` | `60` | Hard cap on session lifetime. |
 
@@ -368,6 +385,7 @@ Every method is `@JvmStatic` and a no-op if the SDK is not initialized.
 |---|---|
 | `setScreen(name)` | Set the current screen (switches to manual mode). |
 | `setUser(id, attributes = {})` / `setUserAttributes(attributes)` / `clearUser()` | User identity. |
+| `setUserSampling(value)` | Per-user sampling (`true` / `false` / `null`), applied from the next session start. |
 | `setAccount(id, name = null)` / `clearAccount()` | Account / org context. |
 | `setFeatureFlag(name, value)` / `clearFeatureFlags()` | Feature-flag values. |
 | `setSessionAttributes(attributes)` / `clearSessionAttributes()` | Session attributes. |
