@@ -131,7 +131,7 @@ npm install @base-14/scout-react@latest
 Or pin to a specific version:
 
 ```bash
-npm install @base-14/scout-react@0.1.11
+npm install @base-14/scout-react@0.1.22
 ```
 
 ### Babel plugin (React Native only)
@@ -360,6 +360,7 @@ Every option you can pass to `Scout.initialize()`:
 |---|---|---|---|
 | `sessionTimeoutMinutes` | `number` | `30` | Inactivity before new session |
 | `sessionSampleRate` | `number (0-100)` | `1` | Per-session binary sampling rate. Default is `1` (1% of sessions) to bound telemetry volume for production. Error / crash / ANR / UI-hang spans bypass this gate (controlled by `alwaysCaptureErrors`) so failures are always captured regardless of sampling. Below `100`, full sessions are dropped (never partial) so traces stay coherent. `app_unclean_exit` is not crash-class: it follows the sampling decision of the session it describes. |
+| `userSampling` | `boolean \| null` | `null` | Per-user sampling decided by your app. `true` records all of this user's sessions, `false` drops their spans (logs, metrics, and errors still flow), `null` uses `sessionSampleRate`. Applies from the next session start and is persisted. See [Per-user Sampling](./user-sampling.md). |
 
 ### Thresholds
 
@@ -432,6 +433,21 @@ primary key; everything else in the `attributes` map is prefixed
 `user.<key>` so it lands as `user.email`, `user.plan`, etc. Errors
 and crashes captured after this call carry these attributes automatically —
 your dashboard can filter "errors for users on plan=pro."
+
+### `Scout.setUserSampling(value)` — per-user sampling
+
+```ts
+Scout.setUserSampling(await remoteConfig.fetchRumEnabled(user.id));
+Scout.setUser(user.id);
+```
+
+Decides per user whether sessions are recorded, typically from your remote
+config. Call it before `setUser` on login, and pass the cached value as
+`userSampling` at initialization. `true` records all of the user's sessions,
+`false` drops their spans (logs, metrics, and errors still flow), and `null`
+falls back to `sessionSampleRate`. A new value applies from the next session
+start, and the call is safe before `initialize`. See
+[Per-user Sampling](./user-sampling.md) for the full behavior.
 
 ### `Scout.setAccount(id, name?)` — B2B tenant
 

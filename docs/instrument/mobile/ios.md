@@ -97,7 +97,7 @@ Release tags are `ios-<version>` — **not** semver — so pin by
 dependencies: [
   .package(
     url: "https://github.com/base-14/scout-kotlin-multiplatform",
-    revision: "ios-0.1.9"
+    revision: "ios-0.1.12"
   )
 ],
 targets: [
@@ -112,7 +112,7 @@ targets: [
 
 In Xcode: **File → Add Package Dependencies…**, enter
 `https://github.com/base-14/scout-kotlin-multiplatform`, set the
-dependency rule to **Commit / Branch** = `ios-0.1.9`, and add the
+dependency rule to **Commit / Branch** = `ios-0.1.12`, and add the
 **Scout** library product.
 
 :::note
@@ -188,6 +188,22 @@ Scout.setUser(id: "user-123", attributes: [
 Scout.clearUser()
 ```
 
+### Per-user sampling
+
+To decide per user whether sessions are recorded, for example from your
+remote config, pass the cached value at initialization with `userSampling`
+and update it on login with `Scout.setUserSampling(_:)`, before `setUser`:
+
+```swift
+Scout.setUserSampling(remoteConfig.fetchRumEnabled(userId: user.id))
+Scout.setUser(id: user.id)
+```
+
+`true` records all of the user's sessions, `false` drops their spans (logs,
+metrics, and errors still flow), and `nil` falls back to `sessionSampleRate`.
+A new value applies from the next session start. See
+[Per-user Sampling](./user-sampling.md) for the full behavior.
+
 ### Setting session attributes
 
 ```swift
@@ -220,6 +236,7 @@ the session.
 |---|---|---|---|
 | `sessionSampleRate` | `Double (0-100)` | `1.0` | Percent of sessions sampled — default **1%**. Decided once per session; a sampled session sends everything (spans, metrics, logs), an unsampled one sends nothing. |
 | `alwaysCaptureErrors` | `Bool` | `true` | Error / crash / ANR-class spans bypass `sessionSampleRate` and are always exported. |
+| `userSampling` | `Bool?` | `nil` | Per-user sampling decided by your app. `true` records all of this user's sessions, `false` drops their spans (logs, metrics, and errors still flow), `nil` uses `sessionSampleRate`. Applies from the next session start and is persisted. The last parameter of `start(...)`. See [Per-user Sampling](./user-sampling.md). |
 | `sessionTimeoutMinutes` | `Int` | `30` | Inactivity timeout before a new `session.id` is minted. |
 | `maxSessionDurationMinutes` | `Int` | `60` | Hard cap on session lifetime. |
 
@@ -362,6 +379,7 @@ Scout.logEvent("promo_applied", attributes: ["code": "SAVE10"])
 // Identity
 Scout.setUser(id: "user-123", attributes: ["plan": "pro"])
 Scout.setUserAttributes(["role": "admin"]); Scout.clearUser()
+Scout.setUserSampling(false)                   // per-user sampling, next session
 
 // Session / account / feature flags
 Scout.setSessionAttributes(["tenant": "acme"]); Scout.clearSessionAttributes()
@@ -420,7 +438,7 @@ status to the console.
 | Crash button gives a graceful shutdown | You're calling `exit()`, which no crash reporter intercepts. Trigger a real fault (`fatalError()`, out-of-bounds access). |
 | `anr` never fires | The main thread genuinely isn't hanging, or `anrThresholdMs` is higher than your hang. Try a 6 s `Thread.sleep` on the main thread to confirm the watchdog is armed. |
 | Tap labels are class names like `ComposeCanvas` | The tapped surface is a single canvas view (SwiftUI/Compose) with no per-widget accessibility label. Add `.accessibilityLabel(...)` / `.accessibilityIdentifier(...)` to the tappable view. |
-| SPM can't resolve the package | Pin by `revision: "ios-0.1.9"` — the tags are not semver, so `from:` / `exact:` version rules won't match. |
+| SPM can't resolve the package | Pin by `revision: "ios-0.1.12"` — the tags are not semver, so `from:` / `exact:` version rules won't match. |
 | HTTP spans missing for a custom session | The pass-through `NSURLProtocol` covers `URLSession.shared` and default configs; a session with a custom `protocolClasses` that omits it won't be traced. |
 | No telemetry at all | Set `debugLogging: true` to print export attempts and their HTTP status, then confirm the endpoint is reachable from the device. Remember the default `sessionSampleRate` is **1%**. |
 

@@ -265,6 +265,16 @@ Scout.initialize({
 });
 ```
 
+### Per-user sampling
+
+To decide per user whether sessions are recorded, for example from your
+remote config, pass the cached value as `userSampling` at initialization and
+call `Scout.setUserSampling(value)` on login, before `Scout.setUser(id)`.
+`true` records all of the user's sessions, `false` drops their spans (logs,
+metrics, and errors still flow), and `null` falls back to `sessionSampleRate`.
+A new value applies from the next session start. See
+[Per-user Sampling](../../mobile/user-sampling.md) for the full behavior.
+
 ## Embedded in a native WebView
 
 A page hosted by a native app's WebView (Android System WebView, iOS
@@ -277,7 +287,10 @@ explicitly to override the heuristic either way.
 
 If the native app also runs Scout, hand the page the host's session so both
 report as one flow — `Scout.setWebViewBridge({ sessionId, anonymousId })` —
-and the page's own unclean-exit marker becomes redundant.
+and the page's own unclean-exit marker becomes redundant. Pass the host
+session's `sampled` and `samplingSource` too, so the page follows the host's
+sampling decision. The page needs 0.1.22 or later for this; the Flutter
+WebView bridge passes both automatically from `scout_flutter` 0.4.0.
 
 Web builds are tested down to Chrome / Android System WebView 87 (Android
 8.1). Nothing newer than that floor is called at runtime: for example CLS and

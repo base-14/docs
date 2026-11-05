@@ -71,7 +71,8 @@ Two separate attribute panels:
 ![Session Attributes panel with session.id, app_lifecycle.*, device, and user identifiers](/img/rum/sessions/session-attributes.png)
 
 - **Session Attributes** - `session.id`, `session.sample_rate`,
-  `session.sampled`, `session.start_time`, `session.type`,
+  `session.sampled`, `session.sampling_source`, `session.start_time`,
+  `session.type`,
   `app_lifecycle.id`, `app_lifecycle.state`, `app_lifecycle.timestamp`,
   device and OS identifiers, and (when the user is identified) `user.id`,
   `user.email`, `user.name`, `user.phone`, `user.plan`, `user.tenant`,
@@ -86,6 +87,13 @@ only recorded when `session.sampled` is true, so an unsampled session that
 crashed shows the crash without the timeline that led up to it. See
 [Sessions](../../instrument/mobile/flutter.md#sessions) in the
 instrumentation guide.
+
+`session.sampling_source` shows what made that decision: `fallback` means the
+sample rate decided it, and `user` means a per-user value your app set from
+its own remote config. A user set to `false` has `session.sampled=false` with
+`session.sampling_source=user`; their errors and logs still arrive, but screen
+views and network calls do not. See
+[Per-user Sampling](../../instrument/mobile/user-sampling.md).
 
 ![Resource Attributes (mobile) panel with app.*, device.*, os.*, and telemetry.sdk.* attributes](/img/rum/sessions/resource-attributes.png)
 
@@ -162,6 +170,13 @@ Session Attributes describe this session: its ID, sample rate, lifecycle state,
 start time, and the user when one is identified. Resource Attributes are the
 static context attached to every event in it, such as app version, device
 model, OS, and SDK version.
+
+### Why does one user have no timelines in any of their sessions?
+
+Their app likely set per-user sampling to `false` for them. Check
+`session.sampling_source`: when it is `user` and `session.sampled=false`,
+the app chose not to record that user's spans. Their errors and logs are still
+there. See [Per-user Sampling](../../instrument/mobile/user-sampling.md).
 
 ### What does `session.sample_rate` tell me?
 

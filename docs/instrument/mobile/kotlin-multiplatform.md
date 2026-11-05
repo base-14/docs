@@ -110,7 +110,7 @@ module's `commonMain`:
 kotlin {
   sourceSets {
     commonMain.dependencies {
-      implementation("io.base14:scout-kmp:0.1.9")
+      implementation("io.base14:scout-kmp:0.1.14")
     }
   }
 }
@@ -122,9 +122,9 @@ transitively — you don't add them yourself:
 
 | Module | Version | Reaches your build as |
 |---|---|---|
-| `scout-core` | 0.1.7 | Maven artifact `io.base14:scout-core` |
-| `scout-android` | 0.1.7 | Maven artifact `io.base14:scout-android` |
-| `scout-ios` | 0.1.9 | Kotlin/Native klib, linked into your iOS framework |
+| `scout-core` | 0.1.11 | Maven artifact `io.base14:scout-core` |
+| `scout-android` | 0.1.12 | Maven artifact `io.base14:scout-android` |
+| `scout-ios` | 0.1.12 | Kotlin/Native klib, linked into your iOS framework |
 
 A pure-Swift app consumes `scout-ios` differently — as the `Scout` SPM
 package described in the [iOS](/instrument/mobile/ios) docs. Under KMP
@@ -193,6 +193,22 @@ Scout.setSessionAttributes(mapOf("tenant" to "acme"))
 Scout.clearSessionAttributes()
 ```
 
+### Per-user sampling
+
+To decide per user whether sessions are recorded, for example from your
+remote config, pass the cached value at initialization with `userSampling`
+and update it on login with `Scout.setUserSampling(value)`, before `setUser`:
+
+```kotlin
+Scout.setUserSampling(remoteConfig.fetchRumEnabled(user.id))
+Scout.setUser(id = user.id)
+```
+
+`true` records all of the user's sessions, `false` drops their spans (logs,
+metrics, and errors still flow), and `null` falls back to `sessionSampleRate`.
+A new value applies from the next session start. See
+[Per-user Sampling](./user-sampling.md) for the full behavior.
+
 ## Configuration
 
 `ScoutConfig` is the single shared config object (from `scout-core`).
@@ -215,6 +231,7 @@ Scout.clearSessionAttributes()
 |---|---|---|---|
 | `sessionSampleRate` | `Double (0-100)` | `1.0` | Percent of sessions sampled — default **1%**. Decided once per session; a sampled session sends everything (spans, metrics, logs), an unsampled one sends nothing. |
 | `alwaysCaptureErrors` | `Boolean` | `true` | Error / crash / ANR-class spans bypass `sessionSampleRate` and are always exported. |
+| `userSampling` | `Boolean?` | `null` | Per-user sampling decided by your app. `true` records all of this user's sessions, `false` drops their spans (logs, metrics, and errors still flow), `null` uses `sessionSampleRate`. Applies from the next session start and is persisted. See [Per-user Sampling](./user-sampling.md). |
 | `sessionTimeoutMinutes` | `Int` | `30` | Inactivity timeout before a new session. |
 | `maxSessionDurationMinutes` | `Int` | `60` | Hard cap on session lifetime. |
 
@@ -329,6 +346,7 @@ The common `Scout` object exposes the same manual API on every platform
 |---|---|
 | `setScreen(name)` | Set the current screen / view name. |
 | `setUser(id)` / `setUser(id, attributes)` / `setUserAttributes(attributes)` / `clearUser()` | User identity. |
+| `setUserSampling(value)` | Per-user sampling (`true` / `false` / `null`), applied from the next session start. |
 | `setSessionAttributes(attributes)` / `clearSessionAttributes()` | Session attributes. |
 | `setAccount(id, name)` / `clearAccount()` | Account / org context. |
 | `setFeatureFlag(name, value)` / `clearFeatureFlags()` | Feature-flag values. |
