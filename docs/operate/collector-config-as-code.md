@@ -46,6 +46,8 @@ during an incident.
   pipeline installs.
 - An API key with the **Collectors Write** role, from **API Keys** in Scout.
   Store its client id and secret as secrets in your repository.
+- Collectors connected to fleet management. See
+  [Fleet management](../instrument/collector-setup/fleet-management.md).
 - Your collectors report an attribute your pipeline can select on, such as
   `k8s.cluster.name`.
 
