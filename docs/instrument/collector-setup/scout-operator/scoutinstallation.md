@@ -70,7 +70,7 @@ collect.
 
 ## Before you start
 
-You need Scout Operator 0.1.16 or later, from chart 0.1.13 or later. See
+You need Scout Operator 0.1.17 or later, from chart 0.1.14 or later. See
 [Install](./index.md#install).
 
 You need two credentials, each stored in a Secret:
@@ -127,14 +127,15 @@ spec:
     credentialsSecretRef:
       name: scout-credentials
   management:
-    opampEndpoint: wss://capo.base14.io/v1/connect
-    bootstrapEndpoint: https://capo.base14.io
     bootstrapCredentialsSecretRef:
       name: scout-bootstrap
 ```
 
 `clusterName` identifies the cluster in Scout and cannot change after the
-resource is created. The connection to fleet management uses
+resource is created. Collectors connect to Scout fleet management at
+`wss://capo.base14.io/v1/connect` and `https://capo.base14.io` by default;
+set `management.opampEndpoint` and `management.bootstrapEndpoint` only to use
+another one. The connection to fleet management uses
 `scout-credentials` unless you give it its own Secret. See
 [Credentials](#credentials).
 
@@ -399,7 +400,7 @@ spec:
 | `scout.credentialsSecretRef.name` | required | Secret with the Scout client ID and secret |
 | `scout.credentialsSecretRef.clientIDKey`, `clientSecretKey` | `clientId`, `clientSecret` | Keys in that Secret. The same two fields exist on every credentials reference |
 | `management.mode` | `Supervised` | `Supervised` or `Direct` |
-| `management.opampEndpoint`, `bootstrapEndpoint` | required when Supervised | Fleet management endpoints |
+| `management.opampEndpoint`, `bootstrapEndpoint` | `wss://capo.base14.io/v1/connect`, `https://capo.base14.io` | Fleet management endpoints, used in Supervised mode. `bootstrapEndpoint` has no path |
 | `management.credentialsSecretRef` | `scout.credentialsSecretRef` | See [Credentials](#credentials) |
 | `management.bootstrapCredentialsSecretRef` | `management.credentialsSecretRef` | See [Credentials](#credentials) |
 | `management.bootstrapScopes` | `[capo:bootstrap]` | Scopes requested for the bootstrap client |
@@ -434,7 +435,7 @@ Scout fleet management the collectors report the roles `daemon`, `agent`
 [How collectors appear in Scout](./remote-configuration.md#how-collectors-appear-in-scout).
 
 The Collector version is the one the operator pins, 0.161.0 in operator
-0.1.16. Upgrading the operator upgrades it.
+0.1.17. Upgrading the operator upgrades it.
 
 ## Moving from the scout-collector chart
 
