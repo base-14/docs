@@ -120,7 +120,7 @@ This guide demonstrates how to:
 
 Before starting, ensure you have:
 
-- **Python 3.11 or later** installed (Python 3.14 recommended for best
+- **Python 3.11 or later** installed (Python 3.15 recommended for best
   performance and free-threaded build support).
 - **Litestar 2.0 or later** installed in your project (2.22.0 used in the
   example).
@@ -139,7 +139,7 @@ Before starting, ensure you have:
 
 | Component                                | Minimum Version | Recommended Version | Notes                                                            |
 | ---------------------------------------- | --------------- | ------------------- | ---------------------------------------------------------------- |
-| **Python**                               | 3.11            | 3.14                | Litestar 2.x supports 3.8+; 3.11+ recommended for asyncio perf.  |
+| **Python**                               | 3.11            | 3.15                | Litestar 2.x supports 3.8+; 3.11+ recommended for asyncio perf.  |
 | **Litestar**                             | 2.0             | 2.22.0+             | Earlier 1.x is the legacy "Starlite" name, schema differs.       |
 | **OpenTelemetry SDK**                    | 1.30.0          | 1.45+               | Core SDK for traces, metrics, logs.                              |
 | **OpenTelemetry contrib instrumentations** | 0.50b0          | 0.66b1+             | asyncpg, httpx, SQLAlchemy, logging packages.                    |
@@ -239,7 +239,7 @@ your Litestar project. The example uses these versions in
 name = "litestar-articles"
 version = "0.1.0"
 description = "Litestar + PostgreSQL articles API with OpenTelemetry instrumentation"
-requires-python = ">=3.14"
+requires-python = ">=3.15"
 dependencies = [
     "litestar[standard]==2.22.0",
     "msgspec==0.21.1",
@@ -380,7 +380,7 @@ before traffic arrives, and the wrapper instruments the uvicorn process that
 follows.
 
 ```dockerfile title="app/Dockerfile" showLineNumbers
-FROM python:3.14-slim AS builder
+FROM python:3.15-slim AS builder
 
 COPY --from=ghcr.io/astral-sh/uv:0.6.12 /uv /usr/local/bin/uv
 
@@ -397,7 +397,7 @@ ENV UV_LINK_MODE=copy \
     UV_PROJECT_ENVIRONMENT=/app/.venv
 RUN uv sync --no-dev --frozen
 
-FROM python:3.14-slim
+FROM python:3.15-slim
 
 WORKDIR /app
 
@@ -1252,10 +1252,10 @@ proportional to real traffic.
 
 ### Which Python and Litestar versions are supported?
 
-Python 3.11+ minimum (3.14 recommended), Litestar 2.0+ (2.22.0+
+Python 3.11+ minimum (3.15 recommended), Litestar 2.0+ (2.22.0+
 recommended), OpenTelemetry SDK 1.30+ (1.45+ recommended), and contrib
 instrumentations 0.50b0+ (0.66b1+ recommended). The example pins Python
-3.14 and Litestar 2.22.0.
+3.15 and Litestar 2.22.0.
 
 ### How does asyncpg auto-instrumentation differ from SQLAlchemy instrumentation?
 

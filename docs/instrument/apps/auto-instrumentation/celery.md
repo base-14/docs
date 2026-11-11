@@ -109,8 +109,8 @@ This comprehensive guide demonstrates how to:
 Before starting, ensure you have:
 
 - **Python 3.10 or later** installed
-  - Python 3.14+ is recommended for best performance
-  - Python 3.14 is fully supported
+  - Python 3.15+ is recommended for best performance
+  - Python 3.15 is fully supported
 - **Celery 5.3 or later** installed
   - Celery 5.6+ is recommended for optimal OpenTelemetry support
 - **Message broker** configured (RabbitMQ or Redis)
@@ -125,13 +125,13 @@ Before starting, ensure you have:
 
 | Component        | Minimum Version | Recommended Version |
 | ---------------- | --------------- | ------------------- |
-| Python           | 3.10.0          | 3.14.0+             |
+| Python           | 3.10.0          | 3.15.0+             |
 | Celery           | 5.3.0           | 5.6.0+              |
 | RabbitMQ         | 3.8.0           | 4.0.0+              |
 | Redis            | 6.0.0           | 7.1.0+              |
 | opentelemetry-\* | 1.20.0          | 1.40+               |
 
-Verified with Python 3.14.7 and collector 0.161.0 on 2026-09-20.
+Verified with Python 3.15.2 and collector 0.163.1 on 2026-11-10.
 
 ## Required Packages
 
@@ -475,7 +475,7 @@ AWS_REGION=us-east-1
 ### Docker Production Configuration
 
 ```dockerfile showLineNumbers title="Dockerfile"
-FROM python:3.14-slim
+FROM python:3.15-slim
 
 RUN groupadd -r celeryuser && useradd -r -g celeryuser -m celeryuser
 
@@ -1154,7 +1154,7 @@ high-frequency tasks (>1000/second), consider using sampling.
 ### Which Celery versions are supported?
 
 OpenTelemetry supports Celery 5.3+ with Python 3.10+. Celery 5.6+ with Python
-3.14+ is recommended for optimal compatibility and performance.
+3.15+ is recommended for optimal compatibility and performance.
 
 ### How do I trace tasks across multiple services?
 
@@ -1285,7 +1285,7 @@ celery-demo/
 [project]
 name = "celery-demo"
 version = "0.1.0"
-requires-python = ">=3.14"
+requires-python = ">=3.15"
 
 dependencies = [
     "fastapi>=0.124.0",

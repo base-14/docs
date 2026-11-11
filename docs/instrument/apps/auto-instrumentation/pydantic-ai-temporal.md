@@ -87,7 +87,7 @@ does.
 
 ## Prerequisites
 
-- Python 3.14 and [uv](https://docs.astral.sh/uv/).
+- Python 3.15 and [uv](https://docs.astral.sh/uv/).
 - Docker and Docker Compose. The example runs Temporal, PostgreSQL and the
   collector in Compose, so the Temporal CLI is not needed on the host.
 - Ollama on the host with `gemma4:e2b` and `qwen3.5:9B` pulled.
