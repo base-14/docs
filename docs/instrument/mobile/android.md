@@ -207,6 +207,15 @@ metrics, and errors still flow), and `null` falls back to `sessionSampleRate`.
 A new value applies from the next session start. See
 [Per-user Sampling](./user-sampling.md) for the full behavior.
 
+### Turning RUM off at runtime
+
+To turn RUM fully off, for example outside working hours or when a background
+job wakes the app, pass `enabled` at initialization and call
+`Scout.setEnabled(true | false)` at runtime. While it is off, nothing leaves the
+device, errors and crashes included, and no session is counted. Turning it on
+always starts a new session. See
+[Turning RUM Off at Runtime](./runtime-enable.md) for the full behavior.
+
 ### Setting session attributes
 
 ```kotlin
@@ -241,6 +250,7 @@ default.
 | `sessionSampleRate` | `Double (0-100)` | `1.0` | Percent of sessions sampled — default **1%**. Decided once per session; a sampled session sends everything (spans, metrics, logs), an unsampled one sends nothing. |
 | `alwaysCaptureErrors` | `Boolean` | `true` | Error / crash / ANR-class spans bypass `sessionSampleRate` and are always exported. |
 | `userSampling` | `Boolean?` | `null` | Per-user sampling decided by your app. `true` records all of this user's sessions, `false` drops their spans (logs, metrics, and errors still flow), `null` uses `sessionSampleRate`. Applies from the next session start and is persisted. See [Per-user Sampling](./user-sampling.md). |
+| `enabled` | `Boolean` | `true` | Whether RUM is on for this launch. `false` sends nothing and creates no session until `Scout.setEnabled(true)`. Not persisted. See [Turning RUM Off at Runtime](./runtime-enable.md). |
 | `sessionTimeoutMinutes` | `Int` | `30` | Inactivity timeout before a new `session.id` is minted. |
 | `maxSessionDurationMinutes` | `Int` | `60` | Hard cap on session lifetime. |
 
@@ -386,6 +396,7 @@ Every method is `@JvmStatic` and a no-op if the SDK is not initialized.
 | `setScreen(name)` | Set the current screen (switches to manual mode). |
 | `setUser(id, attributes = {})` / `setUserAttributes(attributes)` / `clearUser()` | User identity. |
 | `setUserSampling(value)` | Per-user sampling (`true` / `false` / `null`), applied from the next session start. |
+| `setEnabled(value)` / `isEnabled` | Runtime kill switch: `false` stops all telemetry and ends the session, `true` starts a new session. |
 | `setAccount(id, name = null)` / `clearAccount()` | Account / org context. |
 | `setFeatureFlag(name, value)` / `clearFeatureFlags()` | Feature-flag values. |
 | `setSessionAttributes(attributes)` / `clearSessionAttributes()` | Session attributes. |

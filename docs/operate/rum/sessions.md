@@ -93,7 +93,10 @@ sample rate decided it, and `user` means a per-user value your app set from
 its own remote config. A user set to `false` has `session.sampled=false` with
 `session.sampling_source=user`; their errors and logs still arrive, but screen
 views and network calls do not. See
-[Per-user Sampling](../../instrument/mobile/user-sampling.md).
+[Per-user Sampling](../../instrument/mobile/user-sampling.md). An app that
+turns RUM off with the kill switch sends nothing and creates no session while
+it is off; see
+[Turning RUM Off at Runtime](../../instrument/mobile/runtime-enable.md).
 
 ![Resource Attributes (mobile) panel with app.*, device.*, os.*, and telemetry.sdk.* attributes](/img/rum/sessions/resource-attributes.png)
 

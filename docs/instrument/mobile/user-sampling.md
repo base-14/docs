@@ -13,7 +13,6 @@ keywords:
     user based sampling,
     session sampling,
     remote config sampling,
-    rum kill switch,
     setUserSampling,
     userSampling,
     scout-android,
@@ -65,7 +64,8 @@ does. [Check out Scout RUM](https://base14.io/scout/rum).
 `false` is not a full kill switch. A user set to `false` stops producing
 screen views, network calls, interactions, and other spans, but their logs,
 metrics, and error-class spans keep arriving, so you can still debug a
-failure for that user. Their logs carry `session.sampled=false`.
+failure for that user. Their logs carry `session.sampled=false`. To stop
+all of RUM, use [Turning RUM Off at Runtime](./runtime-enable.md).
 
 ## When a value takes effect
 
@@ -280,6 +280,8 @@ such as sessions, screens, and network calls.
 - [Android](./android.md), [iOS](./ios.md),
   [Kotlin Multiplatform](./kotlin-multiplatform.md), [Flutter](./flutter.md),
   and [React Native and React web](./react-native.md) - SDK setup
+- [Turning RUM Off at Runtime](./runtime-enable.md) - A kill switch for all
+  telemetry
 - [Hybrid (Native + Flutter)](./hybrid.md) - One session across native and
   Flutter
 - [RUM Sessions](../../operate/rum/sessions.md) - Session attributes and the
