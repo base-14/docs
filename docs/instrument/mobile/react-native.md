@@ -361,6 +361,7 @@ Every option you can pass to `Scout.initialize()`:
 | `sessionTimeoutMinutes` | `number` | `30` | Inactivity before new session |
 | `sessionSampleRate` | `number (0-100)` | `1` | Per-session binary sampling rate. Default is `1` (1% of sessions) to bound telemetry volume for production. Error / crash / ANR / UI-hang spans bypass this gate (controlled by `alwaysCaptureErrors`) so failures are always captured regardless of sampling. Below `100`, full sessions are dropped (never partial) so traces stay coherent. `app_unclean_exit` is not crash-class: it follows the sampling decision of the session it describes. |
 | `userSampling` | `boolean \| null` | `null` | Per-user sampling decided by your app. `true` records all of this user's sessions, `false` drops their spans (logs, metrics, and errors still flow), `null` uses `sessionSampleRate`. Applies from the next session start and is persisted. See [Per-user Sampling](./user-sampling.md). |
+| `enabled` | `boolean` | `true` | Whether RUM is on for this launch. `false` sends nothing and creates no session until `Scout.setEnabled(true)`. Not persisted. See [Turning RUM Off at Runtime](./runtime-enable.md). |
 
 ### Thresholds
 
@@ -448,6 +449,20 @@ config. Call it before `setUser` on login, and pass the cached value as
 falls back to `sessionSampleRate`. A new value applies from the next session
 start, and the call is safe before `initialize`. See
 [Per-user Sampling](./user-sampling.md) for the full behavior.
+
+### `Scout.setEnabled(value)` — runtime kill switch
+
+```ts
+Scout.initialize({ serviceName, endpoint, enabled: isWithinShiftWindow() });
+await Scout.setEnabled(true); // a new session starts
+```
+
+Turns RUM fully off and back on, for example outside working hours. Headless
+JS tasks and background wakes load the whole bundle, so pass `enabled` at
+initialization too. While it is off, nothing leaves the device, errors and
+crashes included, no session is counted, and `Scout.enabled` is `false`.
+Turning it on always starts a new session. See
+[Turning RUM Off at Runtime](./runtime-enable.md) for the full behavior.
 
 ### `Scout.setAccount(id, name?)` — B2B tenant
 

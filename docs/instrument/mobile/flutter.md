@@ -240,6 +240,15 @@ to call before `initialize`. `ScoutFlutter.sessionSamplingDecision` returns
 the current session's decision. See [Per-user Sampling](./user-sampling.md)
 for the full behavior.
 
+### Turning RUM off at runtime
+
+To turn RUM fully off, for example outside working hours or when a background
+job wakes the app, pass `enabled` at initialization and call
+`ScoutFlutter.setEnabled(true | false)` at runtime. The native SDK follows.
+While it is off, nothing leaves the device, errors and crashes included, and
+no session is counted. Turning it on always starts a new session. See
+[Turning RUM Off at Runtime](./runtime-enable.md) for the full behavior.
+
 ### Setting session attributes
 
 Session attributes attach to every subsequent span, metric, and log for
@@ -296,6 +305,7 @@ opt-in.
 | `sessionSampleRate` | `double (0-100)` | `1.0` | Percent of sessions sampled — default **1%**. The decision is made once per session and applies uniformly to **spans, metrics, and logs**: a sampled session sends everything, an unsampled session sends nothing. |
 | `alwaysCaptureErrors` | `bool` | `true` | Error / crash / ANR-class spans and error-level logs bypass `sessionSampleRate` and are always exported. Set `false` to subject them to the same gate. |
 | `userSampling` | `bool?` | `null` | Per-user sampling decided by your app. `true` records all of this user's sessions, `false` drops their spans (logs, metrics, and errors still flow), `null` uses `sessionSampleRate`. Applies from the next session start and is persisted. See [Per-user Sampling](./user-sampling.md). |
+| `enabled` | `bool` | `true` | Whether RUM is on for this launch, in Dart and the native SDK. `false` sends nothing and creates no session until `ScoutFlutter.setEnabled(true)`. Not persisted. See [Turning RUM Off at Runtime](./runtime-enable.md). |
 
 ### Thresholds
 

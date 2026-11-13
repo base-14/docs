@@ -384,6 +384,11 @@ Calling `Scout.start` after Flutter has started has no effect. See
   [different-process](#different-process) mode, set the value in the main
   process; the Flutter process follows it. See
   [Per-user Sampling](./user-sampling.md).
+- The kill switch covers both layers: `ScoutFlutter` passes `enabled` to the
+  native SDK and forwards `ScoutFlutter.setEnabled`, and Flutter follows the
+  native SDK's new session on enable (`scout_flutter` 0.5.0 and
+  `scout-android` 0.1.13 or later). See
+  [Turning RUM Off at Runtime](./runtime-enable.md).
 - For the per-layer configuration options, see the platform pages:
   [Android](./android.md), [iOS](./ios.md), and [Flutter](./flutter.md).
 

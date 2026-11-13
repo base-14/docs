@@ -275,6 +275,15 @@ metrics, and errors still flow), and `null` falls back to `sessionSampleRate`.
 A new value applies from the next session start. See
 [Per-user Sampling](../../mobile/user-sampling.md) for the full behavior.
 
+### Turning RUM off at runtime
+
+To turn RUM fully off, pass `enabled` at initialization and call
+`await Scout.setEnabled(true | false)` at runtime. While it is off, nothing
+leaves the page, errors included, and no session is counted. Turning it on
+always starts a new session. See
+[Turning RUM Off at Runtime](../../mobile/runtime-enable.md) for the full
+behavior.
+
 ## Embedded in a native WebView
 
 A page hosted by a native app's WebView (Android System WebView, iOS
