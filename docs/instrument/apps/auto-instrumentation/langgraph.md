@@ -104,19 +104,19 @@ does.
 
 | Component | Version in the example |
 | --- | --- |
-| `langgraph` | 1.2.11 |
+| `langgraph` | 1.2.20 |
 | `openai` | 3.7.0 |
-| `anthropic` | 0.125.0 |
+| `anthropic` | 2.2.0 |
 | `google-genai` | 2.21.0 |
-| `opentelemetry-instrumentation-genai-openai`, `-genai-anthropic` | 1.2b0 |
-| `opentelemetry-instrumentation-google-genai` | 1.2b0 |
-| `opentelemetry-sdk`, `opentelemetry-api` | 1.45.0 |
-| `opentelemetry-exporter-otlp-proto-http` | 1.45.0 |
-| `opentelemetry-instrumentation-fastapi`, `-sqlalchemy`, `-httpx`, `-logging` | 0.66b0 |
+| `opentelemetry-instrumentation-genai-openai`, `-genai-anthropic` | 1.3b0 |
+| `opentelemetry-instrumentation-google-genai` | 1.3b0 |
+| `opentelemetry-sdk`, `opentelemetry-api` | 1.45.2 |
+| `opentelemetry-exporter-otlp-proto-http` | 1.45.2 |
+| `opentelemetry-instrumentation-fastapi`, `-sqlalchemy`, `-httpx`, `-logging` | 0.66b2 |
 | `fastapi` | 0.141.1 |
 | Python | 3.14 |
 | Ollama | 0.34.2, with `qwen3.5:9B` |
-| OpenTelemetry Collector Contrib | 0.161.0 |
+| OpenTelemetry Collector Contrib | 0.163.1 |
 | Example | [`ai-sales-intelligence`](https://github.com/base-14/examples/tree/main/python/ai-sales-intelligence) |
 
 Last verified 2026-10-06: the example's verify script passed against Ollama

@@ -104,17 +104,17 @@ does.
 
 | Component | Version in the example |
 | --- | --- |
-| `openai-agents` | 0.22.3 |
-| `openai` | 3.20.0 |
-| `opentelemetry-instrumentation-genai-openai-agents` | 1.2b0 |
-| `opentelemetry-instrumentation-genai-openai` | 1.2b0 |
-| `opentelemetry-sdk`, `opentelemetry-api` | 1.45.0 |
-| `opentelemetry-exporter-otlp-proto-http` | 1.45.0 |
-| `opentelemetry-instrumentation-fastapi`, `-httpx`, `-psycopg`, `-logging` | 0.66b0 |
+| `openai-agents` | 0.24.0 |
+| `openai` | 3.42.0 |
+| `opentelemetry-instrumentation-genai-openai-agents` | 1.3b0 |
+| `opentelemetry-instrumentation-genai-openai` | 1.3b0 |
+| `opentelemetry-sdk`, `opentelemetry-api` | 1.45.2 |
+| `opentelemetry-exporter-otlp-proto-http` | 1.45.2 |
+| `opentelemetry-instrumentation-fastapi`, `-httpx`, `-psycopg`, `-logging` | 0.66b2 |
 | `fastapi` | 0.141.1 |
 | Python | 3.14 |
 | Ollama | 0.34.2, with `qwen3.5:9B` and `gemma4:e2b` |
-| OpenTelemetry Collector Contrib | 0.161.0 |
+| OpenTelemetry Collector Contrib | 0.163.1 |
 | Example | [`ai-filing-analyst`](https://github.com/base-14/examples/tree/main/python/ai-filing-analyst) with `FILING_FRAMEWORK=openai-agents` |
 
 Last verified 2026-09-29 with the OpenAI Agents SDK 0.22.3. The GenAI
@@ -134,8 +134,8 @@ import TabItem from '@theme/TabItem';
 
 ```bash showLineNumbers title="Terminal"
 uv add openai-agents==0.22.3 \
-  opentelemetry-instrumentation-genai-openai-agents==1.2b0 \
-  opentelemetry-instrumentation-genai-openai==1.2b0 \
+  opentelemetry-instrumentation-genai-openai-agents==1.3b0 \
+  opentelemetry-instrumentation-genai-openai==1.3b0 \
   opentelemetry-sdk==1.45.0 \
   opentelemetry-exporter-otlp-proto-http==1.45.0
 ```
@@ -147,8 +147,8 @@ uv add openai-agents==0.22.3 \
 
 ```bash showLineNumbers title="Terminal"
 pip install openai-agents==0.22.3 \
-  opentelemetry-instrumentation-genai-openai-agents==1.2b0 \
-  opentelemetry-instrumentation-genai-openai==1.2b0 \
+  opentelemetry-instrumentation-genai-openai-agents==1.3b0 \
+  opentelemetry-instrumentation-genai-openai==1.3b0 \
   opentelemetry-sdk==1.45.0 \
   opentelemetry-exporter-otlp-proto-http==1.45.0
 ```

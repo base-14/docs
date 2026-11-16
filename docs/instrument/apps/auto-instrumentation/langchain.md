@@ -117,18 +117,18 @@ workflow span and nothing for its nodes.
 
 | Component | Version in the example |
 | --- | --- |
-| `langchain` | 1.3.18 |
-| `langchain-core` | 1.6.1 |
-| `langgraph` | 1.2.12 |
+| `langchain` | 1.5.0 |
+| `langchain-core` | 1.8.0 |
+| `langgraph` | 1.2.20 |
 | `langchain-ollama` | 1.1.0 |
-| `opentelemetry-instrumentation-genai-langchain` | 1.2b0 |
-| `opentelemetry-util-genai` | 1.2b0 |
-| `opentelemetry-sdk`, `opentelemetry-api` | 1.45.0 |
-| `opentelemetry-exporter-otlp-proto-http` | 1.45.0 |
-| `opentelemetry-instrumentation-fastapi`, `-sqlalchemy`, `-httpx`, `-logging` | 0.66b0 |
+| `opentelemetry-instrumentation-genai-langchain` | 1.3b0 |
+| `opentelemetry-util-genai` | 1.3b0 |
+| `opentelemetry-sdk`, `opentelemetry-api` | 1.45.2 |
+| `opentelemetry-exporter-otlp-proto-http` | 1.45.2 |
+| `opentelemetry-instrumentation-fastapi`, `-sqlalchemy`, `-httpx`, `-logging` | 0.66b2 |
 | Python | 3.14 |
 | Ollama | 0.34.2, with `qwen3.5:9B` and `embeddinggemma` |
-| OpenTelemetry Collector Contrib | 0.161.0 |
+| OpenTelemetry Collector Contrib | 0.163.1 |
 | Example | [`ai-runbook-assistant`](https://github.com/base-14/examples/tree/main/python/ai-runbook-assistant) |
 
 Last verified 2026-10-06 with LangChain 1.3.18 and

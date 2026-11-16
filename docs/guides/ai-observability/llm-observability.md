@@ -113,17 +113,17 @@ does.
 
 | Component | Version in the example |
 | --- | --- |
-| `opentelemetry-instrumentation-genai-openai` | 1.2b0, for `openai>=1.26.0,<4` |
-| `opentelemetry-instrumentation-genai-anthropic` | 1.2b0, for `anthropic>=0.51.0,<2` |
-| `opentelemetry-instrumentation-google-genai` | 1.2b0, for `google-genai>=1.32.0,<3` |
+| `opentelemetry-instrumentation-genai-openai` | 1.3b0, for `openai>=1.26.0,<4` |
+| `opentelemetry-instrumentation-genai-anthropic` | 1.3b0, for `anthropic>=0.51.0,<3` |
+| `opentelemetry-instrumentation-google-genai` | 1.3b0, for `google-genai>=1.32.0,<3` |
 | `openai` | 3.7.0 |
-| `anthropic` | 0.125.0 |
+| `anthropic` | 2.2.0 |
 | `google-genai` | 2.21.0 |
-| `opentelemetry-sdk`, `opentelemetry-api` | 1.45.0 |
-| `opentelemetry-instrumentation-fastapi`, `-sqlalchemy`, `-httpx`, `-logging` | 0.66b0 |
-| `langgraph` | 1.2.11 |
+| `opentelemetry-sdk`, `opentelemetry-api` | 1.45.2 |
+| `opentelemetry-instrumentation-fastapi`, `-sqlalchemy`, `-httpx`, `-logging` | 0.66b2 |
+| `langgraph` | 1.2.20 |
 | Python | 3.14 |
-| OpenTelemetry Collector Contrib | 0.161.0 |
+| OpenTelemetry Collector Contrib | 0.163.1 |
 | Example | [`ai-sales-intelligence`](https://github.com/base-14/examples/tree/main/python/ai-sales-intelligence) |
 
 Last verified 2026-10-06: the example's verify script passed against Ollama

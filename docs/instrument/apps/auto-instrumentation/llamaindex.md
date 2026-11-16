@@ -100,17 +100,17 @@ does.
 
 | Component | Version in the example |
 | --- | --- |
-| `llama-index-core` | 0.14.24 |
+| `llama-index-core` | 0.14.25 |
 | `llama-index-llms-openai-like` | 0.8.1 |
 | `llama-index-llms-openai`, `-anthropic`, `-google-genai` | 0.8.0, 0.12.0, 0.11.0 |
-| `openai`, `anthropic`, `google-genai` | 2.54.0, 0.125.0, 2.28.0 |
-| `opentelemetry-instrumentation-genai-openai`, `-genai-anthropic` | 1.2b0 |
-| `opentelemetry-instrumentation-google-genai` | 1.2b0 |
-| `opentelemetry-sdk`, `opentelemetry-api` | 1.45.0 |
-| `opentelemetry-instrumentation-fastapi`, `-logging` | 0.66b0 |
-| Python | 3.14 |
+| `openai`, `anthropic`, `google-genai` | 2.54.0, 0.125.0, 2.34.0 |
+| `opentelemetry-instrumentation-genai-openai`, `-genai-anthropic` | 1.3b0 |
+| `opentelemetry-instrumentation-google-genai` | 1.3b0 |
+| `opentelemetry-sdk`, `opentelemetry-api` | 1.45.2 |
+| `opentelemetry-instrumentation-fastapi`, `-logging` | 0.66b2 |
+| Python | 3.15 |
 | Ollama | 0.34.2, with `qwen3.5:9B` |
-| OpenTelemetry Collector Contrib | 0.161.0 |
+| OpenTelemetry Collector Contrib | 0.163.1 |
 | Example | [`ai-content-quality`](https://github.com/base-14/examples/tree/main/python/ai-content-quality) |
 
 Last verified 2026-10-06: the example's verify script passed against Ollama
