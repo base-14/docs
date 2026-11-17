@@ -22,6 +22,7 @@ These flags are available on every Scout CLI command.
 |------|------|-------------|
 | `-v, --verbose` | bool | Enable verbose debug logging to stderr. Useful for troubleshooting authentication, API requests, and config parsing |
 | `-a, --account <NAME>` | string | Override the active account context for this command. Equivalent to running `scout context set <NAME>` temporarily |
+| `--region <NAME>` | string | Use another region of the account for this command. Equivalent to running `scout context set-region <NAME>` temporarily |
 
 ## Examples
 
@@ -35,6 +36,12 @@ Run a command against a different account without switching context:
 
 ```bash
 scout -a staging-org alerts --since 1h
+```
+
+Run a command against another region without switching:
+
+```bash
+scout --region eu apm services
 ```
 
 Combine both flags:

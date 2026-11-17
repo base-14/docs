@@ -67,7 +67,7 @@ scout login
 2. Starts a local HTTP listener for the OAuth2 callback
 3. Opens your browser to the authorization URL
 4. Exchanges the authorization code for access and refresh tokens
-5. Discovers the Scout API URL via the accounts API
+5. Discovers the Scout API URL and regions via the accounts API
 6. Stores tokens in your system keychain (falls back to
    `~/.scout/credentials.json` with mode `0600`)
 
