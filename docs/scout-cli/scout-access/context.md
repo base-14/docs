@@ -4,19 +4,21 @@ sidebar_label: context
 sidebar_position: 4
 description:
   Manage multiple Scout account contexts. Switch between organizations, view
-  context details, and configure API endpoints.
+  context details, and switch regions.
 keywords:
   - scout context
   - account management
   - scout cli accounts
   - multi-account
   - switch organization
+  - scout cli regions
 ---
 
 # scout context
 
 Manage authentication contexts when working with multiple Scout organizations.
-Each context stores an account name, authentication endpoint, and Scout API URL.
+Each context stores an account name, authentication endpoint, Scout API URL and
+regions.
 
 ![scout context demo](/img/scout-cli/03-context.gif)
 
@@ -34,7 +36,8 @@ scout context <SUBCOMMAND>
 | `set <NAME>` | Set the active context |
 | `show` | Display details of the current context |
 | `delete <NAME>` | Delete a context and its credentials |
-| `set-api-url <URL>` | Set the Scout API URL for a context |
+| `regions` | List the account's regions and their API URLs |
+| `set-region [NAME]` | Set the active region |
 
 ## scout context list
 
@@ -67,7 +70,7 @@ scout context set staging-org
 ## scout context show
 
 Display details of the current active context, including name, endpoint, account
-slug, and API URL.
+slug, API URL and region.
 
 ```bash
 scout context show
@@ -93,31 +96,33 @@ scout context delete <NAME>
 scout context delete old-org
 ```
 
-## scout context set-api-url
+## scout context regions
 
-Override the Scout API URL for a context. Useful when connecting to a
-self-hosted Scout instance.
+List the regions of the current account. The active region is marked with `*`.
 
 ```bash
-scout context set-api-url <URL>
+scout context regions
+```
+
+## scout context set-region
+
+Switch to a different region of the current account. Prompts for one when no
+name is given.
+
+```bash
+scout context set-region [NAME]
 ```
 
 **Arguments:**
 
 | Argument | Type | Description |
 |----------|------|-------------|
-| `URL` | string | Scout API endpoint URL |
-
-**Flags:**
-
-| Flag | Type | Default | Description |
-|------|------|---------|-------------|
-| `-a, --account` | string | active context | Target a specific context instead of the active one |
+| `NAME` | string | Region name to activate |
 
 **Example:**
 
 ```bash
-scout context set-api-url https://scout-api.internal.example.com
+scout context set-region eu
 ```
 
 ## Example Workflow
