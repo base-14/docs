@@ -106,8 +106,8 @@ does.
 | `agent-framework-ollama` | 1.0.0b260813, which pins `ollama` 0.5.3 |
 | `opentelemetry-sdk`, `opentelemetry-api` | 1.45.0 |
 | `opentelemetry-exporter-otlp-proto-http` | 1.45.0 |
-| `opentelemetry-instrumentation-fastapi`, `-httpx`, `-psycopg`, `-logging` | 0.66b0 |
-| `fastapi` | 0.141.1 |
+| `opentelemetry-instrumentation-httpx`, `-psycopg`, `-logging` | 0.66b0 |
+| `fastapi` | 0.163.1 |
 | Python | 3.14 |
 | Ollama | 0.34.2, with `qwen3.5:9B` and `gemma4:e2b` |
 | OpenTelemetry Collector Contrib | 0.161.0 |
@@ -241,6 +241,25 @@ def from_settings(settings: Settings) -> MafFramework:
     return MafFramework(ollama_clients(settings.ollama_base_url), settings.ollama_think)
 ```
 
+### FastAPI Requests
+
+FastAPI 0.142 and later traces requests itself once the tracer and meter
+providers are set, so the example installs no FastAPI instrumentation package.
+Its server spans are named `METHOD /route` under the `fastapi` scope, and it
+records `http.server.request.duration` and `http.server.active_requests`. The
+example turns off FastAPI's operation spans, so `trace.get_current_span()` in a
+route returns the server span:
+
+```python showLineNumbers title="telemetry.py"
+# Routes, and the spans they start, run directly under the server span rather than
+# under FastAPI's operation spans, so trace.get_current_span() in a route is the request span.
+FASTAPI_TELEMETRY: TelemetryConfig = {"operation_spans": False}
+```
+
+`TelemetryConfig` comes from `fastapi.telemetry`, and `main.py` passes the
+config to the app as `telemetry=FASTAPI_TELEMETRY`. For FastAPI 0.141 and
+earlier, see [FastAPI](./fast-api.md#fastapi-0141-and-earlier).
+
 ### Environment Variables
 
 | Variable | Value in the example | Read by |
@@ -258,8 +277,7 @@ def from_settings(settings: Settings) -> MafFramework:
 ## What Agent Framework Emits
 
 This is the ranking question from the example, one trace per HTTP request.
-The psycopg `SELECT` and `INSERT` spans and the ASGI `http receive` and
-`http send` spans are left out.
+The psycopg `SELECT` and `INSERT` spans are left out.
 
 ```text showLineNumbers title="One ranking question"
 POST /questions

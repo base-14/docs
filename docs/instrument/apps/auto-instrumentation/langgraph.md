@@ -112,8 +112,8 @@ does.
 | `opentelemetry-instrumentation-google-genai` | 1.3b0 |
 | `opentelemetry-sdk`, `opentelemetry-api` | 1.45.2 |
 | `opentelemetry-exporter-otlp-proto-http` | 1.45.2 |
-| `opentelemetry-instrumentation-fastapi`, `-sqlalchemy`, `-httpx`, `-logging` | 0.66b2 |
-| `fastapi` | 0.141.1 |
+| `opentelemetry-instrumentation-sqlalchemy`, `-httpx`, `-logging` | 0.66b2 |
+| `fastapi` | 0.163.1 |
 | Python | 3.14 |
 | Ollama | 0.34.2, with `qwen3.5:9B` |
 | OpenTelemetry Collector Contrib | 0.163.1 |
@@ -163,6 +163,28 @@ uv add \
 Add `opentelemetry-instrumentation-genai-anthropic` for the Anthropic SDK and
 `opentelemetry-instrumentation-google-genai` for the Google Gen AI SDK. All
 three are beta, from the OpenTelemetry GenAI SIG.
+
+A graph served by FastAPI 0.142 or later needs no FastAPI instrumentation
+package: FastAPI traces requests itself once the tracer and meter providers are
+set, with server spans named `METHOD /route` under the `fastapi` scope and the
+`http.server.request.duration` and `http.server.active_requests` metrics. The
+example keeps the health check out and turns off FastAPI's operation spans, so
+`trace.get_current_span()` in a route returns the server span:
+
+```python showLineNumbers title="src/sales_intelligence/telemetry.py"
+def skip_health_check(scope: MutableMapping[str, Any]) -> bool:
+    """Keep the health check out of FastAPI's request spans and metrics."""
+    return bool(scope.get("path") == "/health")
+
+
+# Routes, and the spans they start, run directly under the server span rather than
+# under FastAPI's operation spans, so trace.get_current_span() in a route is the request span.
+FASTAPI_TELEMETRY: TelemetryConfig = {"exclude": skip_health_check, "operation_spans": False}
+```
+
+`TelemetryConfig` comes from `fastapi.telemetry`, and `main.py` passes the
+config to the app as `telemetry=FASTAPI_TELEMETRY`. For FastAPI 0.141 and
+earlier, see [FastAPI](./fast-api.md#fastapi-0141-and-earlier).
 
 ## Quick Start
 

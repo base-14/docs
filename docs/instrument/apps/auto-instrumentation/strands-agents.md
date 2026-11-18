@@ -87,7 +87,7 @@ does.
 | Signal | What Strands emits | What the [example](#complete-example) adds |
 | --- | --- | --- |
 | Traces | `invoke_agent`, `execute_event_loop_cycle`, `chat` and `execute_tool` spans with GenAI attributes. | `gen_ai.provider.name`, `server.address` and request IDs through `trace_attributes`. `error.type` and cost in a span exporter. FastAPI, httpx and psycopg spans, and one hand-written span. |
-| Metrics | `strands.event_loop.*`, `strands.tool.*` and `strands.model.time_to_first_token`. | Application counters and a duration histogram under `base14.filing.*`. `http.server.*` and `http.client.duration` from the FastAPI and httpx instrumentations. |
+| Metrics | `strands.event_loop.*`, `strands.tool.*` and `strands.model.time_to_first_token`. | Application counters and a duration histogram under `base14.filing.*`. `http.server.*` from FastAPI and `http.client.duration` from the httpx instrumentation. |
 | Logs | Standard `logging` only, not exported. | The OpenTelemetry `LoggingHandler` on the root logger, so every line carries the trace and span ID. |
 
 ## Prerequisites
@@ -107,8 +107,8 @@ does.
 | `strands-agents` | 1.57.1, with the `otel` and `ollama` extras |
 | `opentelemetry-sdk`, `opentelemetry-api` | 1.45.0 |
 | `opentelemetry-exporter-otlp-proto-http` | 1.45.0 |
-| `opentelemetry-instrumentation-fastapi`, `-httpx`, `-psycopg`, `-logging` | 0.66b0 |
-| `fastapi` | 0.141.1 |
+| `opentelemetry-instrumentation-httpx`, `-psycopg`, `-logging` | 0.66b0 |
+| `fastapi` | 0.163.1 |
 | Python | 3.14 |
 | Ollama | 0.34.2, with `qwen3.5:9B` and `gemma4:e2b` |
 | OpenTelemetry Collector Contrib | 0.161.0 |
@@ -280,8 +280,27 @@ def configure_telemetry() -> None:
 ```
 
 The example also wraps the span exporter to add cost and `error.type`, maps
-the content capture variable onto Strands' redaction, and instruments FastAPI,
-httpx and psycopg. Each is covered below.
+the content capture variable onto Strands' redaction, and instruments httpx
+and psycopg. FastAPI traces its own requests. Each is covered below.
+
+### FastAPI Requests
+
+FastAPI 0.142 and later traces requests itself once the tracer and meter
+providers are set, so the example installs no FastAPI instrumentation package.
+Its server spans are named `METHOD /route` under the `fastapi` scope, and it
+records `http.server.request.duration` and `http.server.active_requests`. The
+example turns off FastAPI's operation spans, so `trace.get_current_span()` in a
+route returns the server span:
+
+```python showLineNumbers title="telemetry.py"
+# Routes, and the spans they start, run directly under the server span rather than
+# under FastAPI's operation spans, so trace.get_current_span() in a route is the request span.
+FASTAPI_TELEMETRY: TelemetryConfig = {"operation_spans": False}
+```
+
+`TelemetryConfig` comes from `fastapi.telemetry`, and `main.py` passes the
+config to the app as `telemetry=FASTAPI_TELEMETRY`. For FastAPI 0.141 and
+earlier, see [FastAPI](./fast-api.md#fastapi-0141-and-earlier).
 
 ### Environment Variables
 
@@ -301,8 +320,7 @@ Strands writes message content as span events instead of attributes.
 ## What Strands Emits
 
 This is the ranking question from the example, one trace per HTTP request.
-The psycopg `SELECT` and `INSERT` spans and the ASGI `http receive` and
-`http send` spans are left out.
+The psycopg `SELECT` and `INSERT` spans are left out.
 
 ```text showLineNumbers title="One ranking question"
 POST /questions

@@ -93,7 +93,7 @@ does.
 
 | Signal | What the instrumentation emits | What the [example](#complete-example) adds |
 | --- | --- | --- |
-| Traces | `chat {model}` spans from the GenAI packages, `generate_content {model}` for Google; FastAPI and SQLAlchemy spans. | Agent, business ID, provider and cost on chat spans; pipeline, agent and per-item spans; a retrieval span; `provider_fallback` and `gen_ai.evaluation.result` events. |
+| Traces | `chat {model}` spans from the GenAI packages, `generate_content {model}` for Google; FastAPI's own request spans and SQLAlchemy spans. | Agent, business ID, provider and cost on chat spans; pipeline, agent and per-item spans; a retrieval span; `provider_fallback` and `gen_ai.evaluation.result` events. |
 | Metrics | `gen_ai.client.token.usage` and `gen_ai.client.operation.duration`. | `base14.gen_ai.cost`, `.retry.count`, `.fallback.count`, `.error.count` and `.evaluation.score`. |
 | Logs | None. | Trace and span IDs on log lines through the logging instrumentation. |
 
@@ -120,7 +120,8 @@ does.
 | `anthropic` | 2.2.0 |
 | `google-genai` | 2.21.0 |
 | `opentelemetry-sdk`, `opentelemetry-api` | 1.45.2 |
-| `opentelemetry-instrumentation-fastapi`, `-sqlalchemy`, `-httpx`, `-logging` | 0.66b2 |
+| `opentelemetry-instrumentation-sqlalchemy`, `-httpx`, `-logging` | 0.66b2 |
+| `fastapi` | 0.163.1 |
 | `langgraph` | 1.2.20 |
 | Python | 3.14 |
 | OpenTelemetry Collector Contrib | 0.163.1 |
@@ -185,7 +186,6 @@ pip install \
   opentelemetry-instrumentation-genai-openai \
   opentelemetry-instrumentation-genai-anthropic \
   opentelemetry-instrumentation-google-genai \
-  opentelemetry-instrumentation-fastapi \
   opentelemetry-instrumentation-sqlalchemy \
   opentelemetry-instrumentation-logging
 ```
@@ -202,7 +202,6 @@ uv add \
   opentelemetry-instrumentation-genai-openai \
   opentelemetry-instrumentation-genai-anthropic \
   opentelemetry-instrumentation-google-genai \
-  opentelemetry-instrumentation-fastapi \
   opentelemetry-instrumentation-sqlalchemy \
   opentelemetry-instrumentation-logging
 ```
@@ -216,6 +215,29 @@ Install only the GenAI packages for the SDKs you use. They are beta, from the
 OpenTelemetry GenAI SIG, and move as one release line: bump them together.
 `opentelemetry-instrumentation-genai-openai` continues the package published as
 `opentelemetry-instrumentation-openai-v2`.
+
+FastAPI 0.142 and later traces requests itself once the tracer and meter
+providers are set, so it needs no instrumentation package. Its server spans are
+named `METHOD /route` under the `fastapi` instrumentation scope, and it records
+`http.server.request.duration` and `http.server.active_requests`. The example
+keeps the health check out and turns off FastAPI's operation spans, so
+`trace.get_current_span()` in a route returns the server span:
+
+```python showLineNumbers title="src/sales_intelligence/telemetry.py"
+def skip_health_check(scope: MutableMapping[str, Any]) -> bool:
+    """Keep the health check out of FastAPI's request spans and metrics."""
+    return bool(scope.get("path") == "/health")
+
+
+# Routes, and the spans they start, run directly under the server span rather than
+# under FastAPI's operation spans, so trace.get_current_span() in a route is the request span.
+FASTAPI_TELEMETRY: TelemetryConfig = {"exclude": skip_health_check, "operation_spans": False}
+```
+
+`TelemetryConfig` comes from `fastapi.telemetry`, and `main.py` passes the
+config to the app as `telemetry=FASTAPI_TELEMETRY`. For FastAPI 0.141 and
+earlier, see
+[FastAPI](../../instrument/apps/auto-instrumentation/fast-api.md#fastapi-0141-and-earlier).
 
 ## Instrumenting the Model SDKs
 

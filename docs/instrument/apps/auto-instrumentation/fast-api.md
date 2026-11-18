@@ -1,68 +1,71 @@
 ---
-title: FastAPI OpenTelemetry Instrumentation - Traces, Metrics & Logs Setup
+title: FastAPI OpenTelemetry - Native Telemetry Setup for Traces and Metrics
 sidebar_label: FastAPI
 sidebar_position: 4
 description:
-  FastAPI OpenTelemetry instrumentation for HTTP, SQLAlchemy, and async calls.
-  pip install opentelemetry-instrumentation-fastapi with a working config.
+  Trace FastAPI with its native OpenTelemetry support in 0.142+. Route-named
+  spans and HTTP metrics with no FastAPI instrumentation package.
 keywords:
   [
+    fastapi opentelemetry,
+    fastapi native opentelemetry,
+    fastapi telemetry config,
+    fastapi opentelemetry without instrumentation,
     fastapi opentelemetry instrumentation,
+    fastapi distributed tracing,
     fastapi monitoring,
     fastapi apm,
-    fastapi distributed tracing,
-    python fastapi observability,
-    fastapi performance monitoring,
-    opentelemetry python fastapi,
-    fastapi telemetry,
+    fastapi observability,
     fastapi metrics,
     fastapi traces,
-    fastapi sqlalchemy monitoring,
-    fastapi production monitoring,
-    python async monitoring,
-    fastapi instrumentation guide,
-    fastapi application monitoring,
-    fastapi opentelemetry setup,
-    python web framework monitoring,
-    fastapi debugging,
-    fastapi observability platform,
+    fastapi operation spans,
+    fastapi exclude health check tracing,
+    fastapiinstrumentor,
+    fastapi sqlalchemy tracing,
+    opentelemetry python fastapi,
     fastapi otlp exporter,
+    fastapi http server request duration,
   ]
 ---
 
-Implement OpenTelemetry instrumentation for FastAPI applications to enable
-comprehensive application performance monitoring (APM), distributed tracing, and
-observability. This guide shows you how to auto-instrument your FastAPI
-application to collect traces and metrics from HTTP requests, database queries,
-and external API calls using the OpenTelemetry Python SDK with minimal code
-changes.
+```mdx-code-block
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+```
 
-FastAPI is a modern, async-first Python framework in the same ASGI space as
+FastAPI 0.142 and later include OpenTelemetry support in the framework. Once
+your application registers a tracer provider and a meter provider, FastAPI
+creates a server span for every request, names it after the matched route,
+records the HTTP server metrics, and logs unhandled exceptions. There is no
+FastAPI instrumentation package to install and nothing to call on the app.
+This guide sets that up, adds SQLAlchemy and outbound HTTP spans, and exports
+everything over OTLP to an OpenTelemetry Collector.
+
+FastAPI is an async-first Python framework in the same ASGI space as
 [Litestar](./litestar.md). [Flask](./flask.md) and [Django](./django.md) are the
-established synchronous options.
+established synchronous options. FastAPI's telemetry sits inside the
+application, so it sees things an outer ASGI middleware does not: the route
+template, dependency resolution, the endpoint call, response serialization and
+background tasks. Each of those can become its own span.
 
-FastAPI applications benefit from automatic instrumentation of the framework
-itself, as well as popular libraries including SQLAlchemy, Redis, PostgreSQL,
-and dozens of commonly used Python components. With OpenTelemetry, you can
-monitor production performance, debug slow requests, trace distributed
-transactions across microservices, and identify database query bottlenecks
-without significant code modifications. The async-native design of FastAPI works
-seamlessly with OpenTelemetry's context propagation.
-
-Whether you're implementing observability for the first time, migrating from
-commercial APM solutions like DataDog or New Relic, or troubleshooting
-performance issues in production, this guide provides production-ready
-configurations and best practices for FastAPI OpenTelemetry instrumentation.
-You'll learn how to set up auto-instrumentation, configure custom spans for
-business logic, optimize performance, and deploy with Docker.
+Applications on FastAPI 0.141 and earlier use `FastAPIInstrumentor` from
+`opentelemetry-instrumentation-fastapi`. That setup is covered in
+[FastAPI 0.141 and earlier](#fastapi-0141-and-earlier), along with request
+hooks and header capture, which only the instrumentor provides. The rest of the
+page describes the native setup, using the
+[fastapi-postgres example](https://github.com/base-14/examples/tree/main/python/fastapi-postgres)
+as the reference application.
 
 :::tip TL;DR
 
-Install `opentelemetry-instrumentation-fastapi` and call
-`FastAPIInstrumentor().instrument_app(app)` at startup. SQLAlchemy, Redis, and
-HTTP client libraries are instrumented automatically via the bootstrap command.
-Use `BatchSpanProcessor` with the OTLP exporter to send traces and metrics to
-base14 Scout with no changes to your route handlers.
+On FastAPI 0.142 or later, configure an OpenTelemetry tracer provider and meter
+provider before requests arrive, and FastAPI traces itself: route-named server
+spans from the `fastapi` scope, plus `http.server.request.duration` and
+`http.server.active_requests`. Tune it with `FastAPI(telemetry={...})`, for
+example `exclude` to skip health checks and `operation_spans` to control the
+internal spans. On FastAPI 0.141 and earlier, install
+`opentelemetry-instrumentation-fastapi` and call
+`FastAPIInstrumentor.instrument_app(app)`.
 
 :::
 
@@ -75,935 +78,884 @@ Storing and querying this data at production volume is what base14 Scout does.
 
 ## Overview
 
-This guide demonstrates how to:
+This guide shows how to:
 
-- Set up OpenTelemetry instrumentation for FastAPI applications
-- Configure automatic request and response tracing for HTTP endpoints
-- Instrument database operations with SQLAlchemy auto-instrumentation
-- Implement custom spans for business logic and external API calls
-- Collect and export HTTP metrics using custom middleware
-- Configure production-ready telemetry with BatchSpanProcessor
-- Export telemetry data to base14 Scout via OTLP
-- Deploy instrumented applications with Docker and Docker Compose
-- Troubleshoot common instrumentation issues
-- Optimize performance impact in production environments
+- Configure tracer and meter providers so FastAPI's native telemetry turns on.
+- Tune it with the `telemetry=` options: `exclude`, `operation_spans`,
+  explicit providers and `auto_configure`.
+- Add SQLAlchemy query spans and outbound `requests` spans.
+- Add a custom metric and manual spans next to FastAPI's own.
+- Run FastAPI 0.141 and earlier with `FastAPIInstrumentor`, and move off it.
+- Export to base14 Scout through an OpenTelemetry Collector.
+- Troubleshoot missing spans, misplaced attributes and duplicate setups.
 
 ## Who This Guide Is For
 
-This documentation is designed for:
-
-- **FastAPI developers**: implementing observability and distributed tracing for
-  the first time in async Python applications
-- **DevOps engineers**: deploying FastAPI applications with production
-  monitoring requirements and container orchestration
-- **Engineering teams**: migrating from DataDog, New Relic, or other commercial
-  APM solutions to open-source observability
-- **Backend developers**: debugging performance issues, slow database queries,
-  or async operation bottlenecks in FastAPI services
-- **Platform teams**: standardizing observability across multiple FastAPI
-  microservices with consistent instrumentation patterns
+- **FastAPI developers** adding tracing and metrics to an async Python service
+  for the first time.
+- **Teams upgrading FastAPI** who already run `FastAPIInstrumentor` and want to
+  know what changes on 0.142 and later.
+- **Platform teams** standardizing telemetry setup across several FastAPI
+  services.
+- **Backend developers** chasing slow endpoints, slow dependencies or slow
+  database queries.
+- **DevOps engineers** deploying FastAPI in containers with a Collector
+  alongside.
 
 ## Prerequisites
 
-Before starting, ensure you have:
-
-- **Python 3.10 or later** installed (Python 3.15+ recommended for best
-  performance)
-- **FastAPI 0.100.0 or later** installed in your project (0.115.6+ recommended)
-- **Scout Collector** configured and accessible from your application
-  - See [Docker Compose Setup](../../collector-setup/docker-compose-example.md)
-    for local development
-  - See [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md)
-    for production deployment
-- **Basic understanding** of OpenTelemetry concepts (traces, spans, attributes)
-- Access to package installation via `pip` or your preferred package manager
+- **Python 3.10 or later** for FastAPI 0.142. FastAPI 0.163.1 requires 3.11;
+  the example runs on Python 3.15.
+- **FastAPI 0.142.0 or later** for native telemetry. Older versions follow
+  [FastAPI 0.141 and earlier](#fastapi-0141-and-earlier).
+- **An OpenTelemetry Collector** reachable from the application:
+  - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) for
+    local development.
+  - [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) for
+    production.
+- **Basic OpenTelemetry concepts**: traces, spans, attributes and providers.
 
 ### Compatibility Matrix
 
-| Component                         | Minimum Version | Recommended Version | Notes                                                  |
-| --------------------------------- | --------------- | ------------------- | ------------------------------------------------------ |
-| **Python**                        | 3.10            | 3.15+               | Python 3.15+ offers best performance and type system   |
-| **FastAPI**                       | 0.100.0         | 0.133.1+            | Full Pydantic v2 and modern dependency injection       |
-| **OpenTelemetry SDK**             | 1.20.0          | 1.39+               | Core SDK for traces and metrics                        |
-| **OpenTelemetry Instrumentation** | 0.41b0          | 0.60b1+             | FastAPI auto-instrumentation                           |
-| **SQLAlchemy** (optional)         | 1.4+            | 2.0.47+             | For database instrumentation                           |
-| **Pydantic**                      | 2.0+            | 2.12.5+             | Included with FastAPI, v2 required for modern patterns |
+| Component                                 | Minimum | Recommended | Notes                                                              |
+| ----------------------------------------- | ------- | ----------- | ------------------------------------------------------------------ |
+| **Python**                                | 3.10    | 3.15        | FastAPI 0.163.1 requires 3.11 or later                             |
+| **FastAPI**                               | 0.142.0 | 0.163.1     | Native telemetry from 0.142.0; `auto_configure` is opt-in from 0.143.0 |
+| **OpenTelemetry API and SDK**             | 1.44.0  | 1.45.2      | FastAPI 0.163.1 depends on `opentelemetry-api` 1.44.0 or later     |
+| **OTLP exporter**                         | 1.44.0  | 1.45.2      | `opentelemetry-exporter-otlp`                                      |
+| **SQLAlchemy and requests instrumentation** | 0.65b0 | 0.66b2     | `opentelemetry-instrumentation-sqlalchemy`, `-requests`            |
+| **SQLAlchemy**                            | 2.0.47  | 2.0.58      | Below 2.1: the 0.66b2 instrumentation supports `sqlalchemy < 2.1.0` |
+| **Pydantic**                              | 2.12.5  | 2.14.3      | Installed with FastAPI                                             |
+| **OpenTelemetry Collector Contrib**       | 0.165.0 | 0.165.0     | Version used by the example                                        |
+| **opentelemetry-instrumentation-fastapi** | 0.66b2  | 0.66b2      | FastAPI 0.141 and earlier only; declares support for `fastapi ~= 0.92` |
 
-Verified with Python 3.15.2 and collector 0.163.1 on 2026-11-10.
+Verified on 2026-11-17 with the fastapi-postgres example: FastAPI 0.163.1,
+OpenTelemetry SDK 1.45.2, Python 3.15 and Collector Contrib 0.165.0.
+Route-named server spans from the `fastapi` scope,
+`http.server.request.duration` and `http.server.active_requests` reached the
+Collector, all nine verify checks passed, and no spans came from the
+`opentelemetry.instrumentation.fastapi` scope.
 
-### Supported Libraries
+### What Gets Instrumented
 
-OpenTelemetry automatically instruments these commonly used libraries:
+| Source                                   | What it produces                                                                 |
+| ---------------------------------------- | -------------------------------------------------------------------------------- |
+| FastAPI native telemetry                 | Server span per request, operation spans, HTTP server metrics, exception logs    |
+| `opentelemetry-instrumentation-sqlalchemy` | A client span per SQL statement                                                |
+| `opentelemetry-instrumentation-requests` | A client span per outbound `requests` call, with trace context injected          |
+| Your code                                | Manual spans and application metrics, such as the example's `http_requests_total` |
 
-- **Web frameworks**: FastAPI, Starlette
-- **Databases**: SQLAlchemy, asyncpg, psycopg2, pymongo
-- **HTTP clients**: requests, httpx, aiohttp
-- **Task queues**: Celery (with additional instrumentation)
-- **Caching**: Redis, memcached
+Other libraries (httpx, Redis, Celery, asyncpg) have their own
+`opentelemetry-instrumentation-*` packages and work alongside FastAPI's
+telemetry the same way.
 
 ## Installation
 
-### Core Packages
+FastAPI depends on `opentelemetry-api` directly. The `fastapi[all]`,
+`fastapi[standard]` and `fastapi[opentelemetry]` extras also install
+`opentelemetry-sdk` and `opentelemetry-exporter-otlp-proto-http`. You still add
+the SDK and exporter explicitly so their versions are pinned, plus an
+instrumentation package for each library you want spans from. There is no
+FastAPI instrumentation package on 0.142 and later.
 
-Install the required OpenTelemetry packages for FastAPI instrumentation:
-
-```bash
-pip install opentelemetry-api
-pip install opentelemetry-sdk
-pip install opentelemetry-instrumentation-fastapi
-pip install opentelemetry-exporter-otlp
+```mdx-code-block
+<Tabs>
+<TabItem value="pip" label="pip (requirements.txt)" default>
 ```
 
-### Optional Instrumentation Libraries
+The example's `requirements.txt`:
 
-Add these packages to instrument additional components:
-
-```bash
-# HTTP client instrumentation
-pip install opentelemetry-instrumentation-requests
-pip install opentelemetry-instrumentation-httpx
-
-# Database instrumentation
-pip install opentelemetry-instrumentation-sqlalchemy
-
-# Redis instrumentation
-pip install opentelemetry-instrumentation-redis
+```text title="requirements.txt" showLineNumbers
+fastapi[all]==0.163.1
+pydantic==2.14.3
+psycopg2-binary==2.9.13
+SQLAlchemy==2.0.58
+email-validator==2.4.0
+pwdlib[bcrypt]==0.4.2
+bcrypt==5.0.0
+PyJWT==2.15.1
+python-multipart==0.0.33
+alembic==1.20.1
+pydantic_settings==2.16.3
+opentelemetry-instrumentation-sqlalchemy>=0.61b0
+opentelemetry-sdk==1.45.2
+opentelemetry-instrumentation-requests>=0.61b0
+requests==2.34.2
+opentelemetry-exporter-otlp==1.45.2
+opentelemetry-api==1.45.2
 ```
-
-### Complete Requirements File
-
-For production applications, add all dependencies to `requirements.txt`:
-
-```plaintext title="requirements.txt" showLineNumbers
-# Web framework
-fastapi[all]
-uvicorn[standard]
-
-# OpenTelemetry core
-opentelemetry-api
-opentelemetry-sdk
-opentelemetry-exporter-otlp
-
-# OpenTelemetry instrumentation
-opentelemetry-instrumentation-fastapi
-opentelemetry-instrumentation-requests
-opentelemetry-instrumentation-sqlalchemy
-
-# Optional: Application dependencies
-sqlalchemy
-psycopg2-binary
-pydantic-settings
-```
-
-Then install all dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
+```mdx-code-block
+</TabItem>
+<TabItem value="uv" label="uv (pyproject.toml)">
+```
+
+The dependency list from the example's `pyproject.toml`:
+
+```toml title="pyproject.toml" showLineNumbers
+dependencies = [
+    "fastapi[all]>=0.142",
+    "pydantic>=2.12.5",
+    "pydantic-settings>=2.14.2",
+    "psycopg2-binary>=2.9.11",
+    "SQLAlchemy>=2.0.47,<2.1",
+    "email-validator>=2.3",
+    "pwdlib[bcrypt]>=0.3",
+    "bcrypt>=5.0",
+    "PyJWT>=2.13.0",
+    "python-multipart>=0.0.31",
+    "alembic>=1.18",
+    "requests>=2.34.2",
+    "opentelemetry-sdk>=1.44",
+    "opentelemetry-exporter-otlp>=1.44",
+    "opentelemetry-api>=1.44",
+    "opentelemetry-instrumentation-sqlalchemy>=0.65b0",
+    "opentelemetry-instrumentation-requests>=0.65b0",
+]
+```
+
+```bash
+uv sync
+```
+
+```mdx-code-block
+</TabItem>
+<TabItem value="poetry" label="Poetry">
+```
+
+```bash
+poetry add "fastapi[all]>=0.142" \
+  opentelemetry-sdk \
+  opentelemetry-exporter-otlp \
+  opentelemetry-instrumentation-sqlalchemy \
+  opentelemetry-instrumentation-requests
+```
+
+```mdx-code-block
+</TabItem>
+</Tabs>
+```
+
+If an older setup left `opentelemetry-instrumentation-fastapi` in your
+dependencies, remove it. It is harmless while unused, but `opentelemetry-instrument`
+picks it up automatically (see
+[Troubleshooting](#spans-come-from-opentelemetryinstrumentationfastapi-instead-of-fastapi)).
+
 ## Configuration
 
-FastAPI OpenTelemetry instrumentation can be configured in multiple ways
-depending on your application architecture and deployment requirements. This
-section covers different setup approaches and advanced configuration options.
+FastAPI's telemetry is on by default and does nothing until a provider exists.
+For each request it checks whether a tracer, meter or logger provider is
+configured, either globally or through `telemetry=`, and records only the
+signals that have one. Because the check runs per request, the providers can be
+registered before or after the `FastAPI()` object is created.
 
 ### Setup Approaches
 
-Choose the initialization method that best fits your application architecture:
-
 ```mdx-code-block
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-
 <Tabs>
-<TabItem value="inline" label="Inline (Quick Start)" default>
+<TabItem value="global" label="Global Providers (Recommended)" default>
 ```
 
-#### Inline Configuration (Quick Start)
+Register global providers in a telemetry module and call it at startup. This
+is the example's `app/telemetry.py`:
 
-The simplest approach is to configure OpenTelemetry directly in your main
-application file. This works well for small applications and development
-environments.
-
-```python title="main.py" showLineNumbers
-from fastapi import FastAPI
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry import trace
+```python title="app/telemetry.py" showLineNumbers
+from opentelemetry import metrics, trace
+from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 
-# Configure trace provider with service name
-resource = Resource.create({"service.name": "my-fastapi-service"})
-trace.set_tracer_provider(TracerProvider(resource=resource))
 
-# Set up trace exporter
-trace.get_tracer_provider().add_span_processor(
-    BatchSpanProcessor(
-        OTLPSpanExporter(endpoint="http://localhost:4318/v1/traces")
-    )
-)
+def setup_telemetry():
+    resource = Resource.create()
 
-# Create FastAPI app
+    trace.set_tracer_provider(TracerProvider(resource=resource))
+    trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(OTLPSpanExporter()))
+
+    metric_reader = PeriodicExportingMetricReader(OTLPMetricExporter())
+    metrics.set_meter_provider(MeterProvider(resource=resource, metric_readers=[metric_reader]))
+```
+
+`Resource.create()` reads `OTEL_SERVICE_NAME` and `OTEL_RESOURCE_ATTRIBUTES`,
+and the OTLP exporters read `OTEL_EXPORTER_OTLP_ENDPOINT`, so the module has no
+hard-coded names or URLs.
+
+`app/main.py` calls `setup_telemetry()` and then creates the app with no
+telemetry arguments:
+
+```python title="app/main.py" showLineNumbers
+import os
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from opentelemetry.instrumentation.requests import RequestsInstrumentor
+
+from .MetricsMiddleware import MetricsMiddleware
+from .routers import auth, post, user, vote
+from .telemetry import setup_telemetry
+
+setup_telemetry()
+
 app = FastAPI()
 
-# Instrument the FastAPI app
-FastAPIInstrumentor.instrument_app(app)
+app.add_middleware(MetricsMiddleware)
+RequestsInstrumentor().instrument()
+
+origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
+)
+
+app.include_router(post.router)
+app.include_router(user.router)
+app.include_router(auth.router)
+app.include_router(vote.router)
+
 
 @app.get("/")
 def root():
     return {"message": "Hello World"}
 ```
 
-This configuration automatically captures:
+```mdx-code-block
+</TabItem>
+<TabItem value="env" label="Environment Variables">
+```
 
-- HTTP request method, path, and status code
-- Request duration and timing
-- Error and exception information
-- Request headers (configurable)
-- Query parameters and path parameters
+The provider code above stays the same across environments. The service name,
+resource attributes and Collector endpoint come from the environment. These are
+the OpenTelemetry lines in the example's `.env.example`:
+
+```bash title=".env.example" showLineNumbers
+# OpenTelemetry Configuration (Optional)
+OTEL_SERVICE_NAME=fastapi-postgres-app
+OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+OTEL_RESOURCE_ATTRIBUTES=deployment.environment.name=development,environment=development,service.version=1.0.0
+```
+
+`OTEL_EXPORTER_OTLP_ENDPOINT` is the base URL. The HTTP exporters append
+`/v1/traces` and `/v1/metrics` themselves.
+
+FastAPI reads one more variable of its own:
+`OTEL_INSTRUMENTATION_HTTP_KNOWN_METHODS`, a comma-separated list that replaces
+the set of HTTP methods it reports by name.
 
 ```mdx-code-block
 </TabItem>
-<TabItem value="module" label="Telemetry Module (Recommended)">
+<TabItem value="auto" label="auto_configure">
 ```
 
-#### Separate Telemetry Module (Recommended)
+FastAPI can attach OTLP exporters from the `OTEL_*` variables itself. This is
+off by default. Turn it on in code:
 
-For better code organization and reusability, create a dedicated telemetry
-module. This approach is recommended for production applications.
+```python title="main.py"
+from fastapi import FastAPI
 
-```python title="app/telemetry.py" showLineNumbers
-import os
-from opentelemetry import trace, metrics
-from opentelemetry.sdk.resources import Resource
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
+app = FastAPI(telemetry={"auto_configure": True})
+```
+
+or with an environment variable, which an explicit `auto_configure` value
+overrides:
+
+```bash
+export FASTAPI_OTEL_AUTO_CONFIGURE=true
+export OTEL_SERVICE_NAME=fastapi-app
+export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+```
+
+At ASGI lifespan startup, FastAPI adds a batch span processor, a periodic metric
+reader and a batch log processor with OTLP HTTP exporters for each signal that
+has an endpoint. If a global provider already exists it adds the exporter to
+it; if none exists it creates one. Limits to know about:
+
+- It needs `opentelemetry-sdk` and `opentelemetry-exporter-otlp-proto-http`,
+  which the `opentelemetry`, `standard` and `all` extras install.
+- It supports only `OTEL_{SIGNAL}_EXPORTER=otlp` or `none`, and only the
+  `http/protobuf` protocol. Anything else logs a warning
+  ("FastAPI automatic telemetry configuration failed") and the app starts
+  without the exporters.
+- It respects `OTEL_SDK_DISABLED=true`.
+
+Use it for quick setups. For production, configure providers yourself as in
+the first tab, so the resource, processors and exporters are explicit.
+
+```mdx-code-block
+</TabItem>
+<TabItem value="explicit" label="Explicit Providers">
+```
+
+When the application does not set global providers, for example when a library
+or test harness owns them, pass providers to FastAPI directly. A minimal sketch:
+
+```python title="main.py"
+from fastapi import FastAPI
 from opentelemetry.sdk.metrics import MeterProvider
-from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
-from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
-from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
+from opentelemetry.sdk.trace import TracerProvider
 
-def setup_telemetry(otel_endpoint: str) -> None:
-    """
-    Initialize OpenTelemetry tracing and metrics.
+tracer_provider = TracerProvider()
+meter_provider = MeterProvider()
 
-    Args:
-        otel_endpoint: OTLP collector endpoint (e.g., "localhost:4318")
-    """
-    # Get service name from environment or use default
-    service_name = os.getenv("OTEL_SERVICE_NAME", "fastapi-app")
-
-    # Create resource with service identification
-    resource = Resource.create({
-        "service.name": service_name,
-        "service.version": os.getenv("APP_VERSION", "1.0.0"),
-        "environment": os.getenv("ENVIRONMENT", "development")
-    })
-
-    # Configure trace provider
-    provider = TracerProvider(resource=resource)
-    provider.add_span_processor(
-        BatchSpanProcessor(
-            OTLPSpanExporter(endpoint=f"http://{otel_endpoint}/v1/traces")
-        )
-    )
-    trace.set_tracer_provider(provider)
-
-    # Configure metrics provider
-    metric_reader = PeriodicExportingMetricReader(
-        OTLPMetricExporter(endpoint=f"http://{otel_endpoint}/v1/metrics"),
-        export_interval_millis=5000  # Export every 5 seconds
-    )
-    metrics.set_meter_provider(
-        MeterProvider(resource=resource, metric_readers=[metric_reader])
-    )
+app = FastAPI(
+    telemetry={
+        "tracer_provider": tracer_provider,
+        "meter_provider": meter_provider,
+    }
+)
 ```
 
-Then use it in your main application file:
+FastAPI uses these instead of the global providers. It never shuts down
+providers your application supplies, so flush and shut them down on exit
+yourself. Other instrumentations (SQLAlchemy, requests) still read the global
+providers unless you pass `tracer_provider=` to them too.
 
-```python title="app/main.py" showLineNumbers
+```mdx-code-block
+</TabItem>
+</Tabs>
+```
+
+### Telemetry Options
+
+`telemetry=` takes a `TelemetryConfig` dictionary from `fastapi.telemetry`.
+Omitted keys keep their defaults.
+
+| Key               | Default | Effect                                                                                                |
+| ----------------- | ------- | ----------------------------------------------------------------------------------------------------- |
+| `tracer_provider` | `None`  | Use this provider instead of the global tracer provider                                               |
+| `meter_provider`  | `None`  | Use this provider instead of the global meter provider                                                |
+| `logger_provider` | `None`  | Use this provider instead of the global logger provider                                               |
+| `tracing`         | `True`  | Server spans for HTTP requests and WebSocket connections                                              |
+| `metrics`         | `True`  | `http.server.request.duration` and `http.server.active_requests`                                      |
+| `logs`            | `True`  | Log records for validation failures and unhandled exceptions                                          |
+| `operation_spans` | `True`  | Internal spans for dependencies, endpoint, serialization and background tasks                         |
+| `auto_configure`  | `False` | Add OTLP exporters from `OTEL_*` variables; `FASTAPI_OTEL_AUTO_CONFIGURE=true` changes the default     |
+| `exclude`         | `None`  | A function that receives the ASGI scope; return `True` to skip telemetry for that request             |
+
+To turn a signal off, set its key to `False`:
+
+```python title="main.py"
+app = FastAPI(telemetry={"logs": False})
+```
+
+### Excluding Health Checks
+
+`exclude` receives the ASGI scope and returns `True` for requests FastAPI
+should not observe. An excluded request gets no server span, no operation
+spans, no metric points and no logs from FastAPI. The
+[ai-sales-intelligence example](https://github.com/base-14/examples/tree/main/python/ai-sales-intelligence)
+keeps its health check out this way:
+
+```python title="src/sales_intelligence/telemetry.py" showLineNumbers
+def skip_health_check(scope: MutableMapping[str, Any]) -> bool:
+    """Keep the health check out of FastAPI's request spans and metrics."""
+    return bool(scope.get("path") == "/health")
+
+
+# Routes, and the spans they start, run directly under the server span rather than
+# under FastAPI's operation spans, so trace.get_current_span() in a route is the request span.
+FASTAPI_TELEMETRY: TelemetryConfig = {"exclude": skip_health_check, "operation_spans": False}
+```
+
+and passes the config when it creates the app:
+
+```python title="src/sales_intelligence/main.py" showLineNumbers
+app = FastAPI(
+    title="AI Sales Intelligence",
+    description="AI-powered sales prospecting and outreach automation",
+    version="2.0.0",
+    lifespan=lifespan,
+    telemetry=FASTAPI_TELEMETRY,
+)
+```
+
+The scope carries `path`, `method`, `headers`, `type` and the rest of the ASGI
+connection data, so the function can match on any of them. Spans from other
+instrumentations, such as a SQLAlchemy query run during an excluded request,
+are still recorded and have no FastAPI server span as their parent.
+
+The fastapi-postgres example has no health route and leaves `exclude` unset.
+Its Collector drops health spans with a `filter` processor instead, which also
+works for services you cannot change.
+
+### Operation Spans
+
+With `operation_spans` on (the default), FastAPI adds internal spans under the
+server span:
+
+| Span                     | Covers                                                         |
+| ------------------------ | -------------------------------------------------------------- |
+| `fastapi.dependencies`   | Resolving the route's dependencies, including nested ones      |
+| `fastapi.endpoint`       | Calling the route function                                     |
+| `fastapi.serialization`  | Validating and serializing the response model                  |
+| `fastapi.background_task` | Each background task, run after the response is sent          |
+
+Each carries `code.function.name`, the module and qualified name of the route
+function or task. When the wrapped code raises an exception other than
+`HTTPException` or a validation error, the operation span gets status ERROR
+and `error.type`. Background task spans record any exception.
+
+The consequence for application code: inside a route function,
+`trace.get_current_span()` returns `fastapi.endpoint`, not the server span. An
+attribute set on it lands on the endpoint span, and a server-span query in
+Scout (by `http.route`, for example) does not see it. Applications that tag the
+request span from route code set `operation_spans` to `False`, as the
+ai-sales-intelligence example does above. With operation spans off, the
+current span inside a route is the server span.
+
+Middleware is not affected. It runs inside the server span but outside the
+operation spans, so `trace.get_current_span()` in a middleware is always the
+server span.
+
+### Reading Request Data in Processors
+
+`fastapi.telemetry.get_telemetry_data()` returns a `TelemetryData` object for
+the request being handled, or `None` outside one. It is meant for synchronous
+span or log processors that need request details FastAPI does not put on spans:
+
+| Field       | Available                                           |
+| ----------- | --------------------------------------------------- |
+| `request`   | When the route handler starts                       |
+| `websocket` | When a WebSocket handler starts                     |
+| `body`      | The body FastAPI read, before validation            |
+| `values`    | The parsed arguments, after dependency resolution   |
+| `errors`    | Validation errors, including the original input     |
+
+Treat the data as read-only and redact it before any of it reaches an
+exporter. It is cleared when the request finishes, so read it synchronously
+inside the processor callback, not from a background thread.
+
+```python
+from fastapi.telemetry import get_telemetry_data
+```
+
+## FastAPI 0.141 and earlier
+
+FastAPI before 0.142 has no built-in telemetry. Use `FastAPIInstrumentor`,
+which wraps the app in the ASGI `OpenTelemetryMiddleware`. It also works on
+any later version, and it is the only way to get request and response hooks
+or header capture, which the native support does not offer.
+
+### Install the Instrumentor
+
+```bash
+pip install opentelemetry-instrumentation-fastapi
+```
+
+### Instrument the App
+
+Set up providers as in [Configuration](#configuration), then instrument the
+app after creating it. A minimal sketch:
+
+```python title="app/main.py"
 from fastapi import FastAPI
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.instrumentation.requests import RequestsInstrumentor
-import os
 
 from .telemetry import setup_telemetry
 
-# Initialize telemetry before creating the app
-otel_endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "localhost:4318")
-setup_telemetry(otel_endpoint)
-
-# Create FastAPI app
-app = FastAPI()
-
-# Instrument FastAPI and HTTP clients
-FastAPIInstrumentor.instrument_app(app)
-RequestsInstrumentor().instrument()
-
-@app.get("/")
-def root():
-    return {"message": "Hello World"}
-```
-
-```mdx-code-block
-</TabItem>
-<TabItem value="cli" label="CLI Auto-Instrumentation">
-```
-
-#### CLI Auto-Instrumentation (Zero-Code)
-
-The simplest approach for containerized deployments uses the OpenTelemetry CLI
-tool for zero-code instrumentation. This is the **recommended starting point**
-for new projects.
-
-**Installation:**
-
-```bash
-# Install the distro package (includes CLI tools)
-pip install opentelemetry-distro
-pip install opentelemetry-exporter-otlp
-
-# Bootstrap auto-instrumentation (installs all available instrumentations)
-opentelemetry-bootstrap -a install
-```
-
-**Development mode** (console output):
-
-```bash
-opentelemetry-instrument \
-    --traces_exporter console \
-    --metrics_exporter console \
-    --service_name fastapi-app \
-    uvicorn app.main:app --reload
-```
-
-**Production mode** (OTLP export):
-
-```bash
-# Set environment variables
-export OTEL_SERVICE_NAME="fastapi-app"
-export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4318"
-export OTEL_TRACES_EXPORTER="otlp"
-export OTEL_METRICS_EXPORTER="otlp"
-
-# Run with auto-instrumentation (no code changes needed!)
-opentelemetry-instrument uvicorn app.main:app --host 0.0.0.0 --port 8000
-```
-
-**Docker deployment:**
-
-```dockerfile title="Dockerfile" showLineNumbers
-FROM python:3.15-slim
-
-WORKDIR /app
-
-# Install dependencies including OpenTelemetry
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt && \
-    pip install opentelemetry-distro opentelemetry-exporter-otlp && \
-    opentelemetry-bootstrap -a install
-
-# Copy application
-COPY ./app ./app
-
-# Run with auto-instrumentation
-CMD ["opentelemetry-instrument", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-```
-
-**Advantages:**
-
-- ✅ Zero code changes required
-- ✅ Automatic instrumentation of FastAPI, database clients, HTTP clients
-- ✅ Easy to enable/disable via environment variables
-- ✅ Perfect for containerized deployments
-
-**When to use:** Production deployments where you want automatic instrumentation
-without modifying application code.
-
-```mdx-code-block
-</TabItem>
-</Tabs>
-```
-
-### Advanced Configuration
-
-Fine-tune instrumentation behavior for specific requirements:
-
-```mdx-code-block
-<Tabs>
-<TabItem value="selective" label="Selective Instrumentation" default>
-```
-
-#### Selective Instrumentation
-
-To instrument only specific components or exclude certain endpoints:
-
-```python title="main.py" showLineNumbers
-from fastapi import FastAPI
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry import trace
-
-# ... telemetry setup ...
+setup_telemetry()
 
 app = FastAPI()
 
-# Instrument with custom configuration
 FastAPIInstrumentor.instrument_app(
     app,
-    excluded_urls="/health,/metrics,/docs,/openapi.json",  # Skip these endpoints
-    tracer_provider=trace.get_tracer_provider(),
+    excluded_urls="/health,/metrics",
+    exclude_spans=["receive", "send"],
 )
-
-@app.get("/health")
-def health_check():
-    """This endpoint won't be traced"""
-    return {"status": "healthy"}
-
-@app.get("/api/users")
-def get_users():
-    """This endpoint will be traced"""
-    return {"users": []}
 ```
 
-```mdx-code-block
-</TabItem>
-<TabItem value="hooks" label="Request/Response Hooks">
-```
+`excluded_urls` is a comma-separated list of regular expressions matched
+against the URL. `OTEL_PYTHON_FASTAPI_EXCLUDED_URLS` sets the same list from
+the environment. `exclude_spans=["receive", "send"]` drops the internal spans
+the ASGI middleware creates for each `receive` and `send` call, which are
+usually noise.
 
-### Approach 5: Request/Response Hooks
+The instrumentor emits the older HTTP semantic conventions by default, so its
+duration metric is `http.server.duration` in milliseconds. Set
+`OTEL_SEMCONV_STABILITY_OPT_IN=http` to get `http.server.request.duration` in
+seconds, the name FastAPI's native telemetry uses.
 
-Add custom attributes to spans using hooks for advanced use cases:
+### Request and Response Hooks
 
-```python title="app/main.py" showLineNumbers
+Hooks run on every request and let you add attributes from the ASGI scope or
+messages. Their signatures:
+
+- `server_request_hook(span, scope)` runs for the server span.
+- `client_request_hook(span, scope, message)` runs for each `receive` call.
+- `client_response_hook(span, scope, message)` runs for each `send` call.
+
+A minimal sketch:
+
+```python title="app/main.py"
 from typing import Any
-from fastapi import FastAPI
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+
 from opentelemetry.trace import Span
 
-app = FastAPI()
 
 def server_request_hook(span: Span, scope: dict[str, Any]) -> None:
-    """
-    Hook called when a request is received.
-    Add custom attributes based on request data.
-    """
     if span and span.is_recording():
-        # Add custom business context
-        span.set_attribute("app.user_tier", scope.get("user_tier", "free"))
-        span.set_attribute("app.request_id", scope.get("request_id"))
+        span.set_attribute("app.root_path", scope.get("root_path", ""))
 
-        # Add query parameters as attributes
-        query_string = scope.get("query_string", b"").decode()
-        if query_string:
-            span.set_attribute("http.query_string", query_string)
 
-def client_request_hook(span: Span, scope: dict[str, Any]) -> None:
-    """Hook for outbound HTTP requests."""
-    if span and span.is_recording():
-        span.set_attribute("app.calling_service", "fastapi-app")
+FastAPIInstrumentor.instrument_app(app, server_request_hook=server_request_hook)
+```
 
-def client_response_hook(span: Span, message: dict[str, Any]) -> None:
-    """Hook called when a response is received."""
-    if span and span.is_recording():
-        # Track response metadata
-        content_type = message.get("headers", {}).get("content-type")
-        if content_type:
-            span.set_attribute("http.response.content_type", content_type)
+The client hooks run on the `receive` and `send` spans, so they have nothing to
+attach to if you exclude those spans.
 
-# Instrument with hooks
+### HTTP Header Capture
+
+The instrumentor can record selected request and response headers as span
+attributes:
+
+```python title="app/main.py"
 FastAPIInstrumentor.instrument_app(
     app,
-    server_request_hook=server_request_hook,
-    client_request_hook=client_request_hook,
-    client_response_hook=client_response_hook,
+    http_capture_headers_server_request=["content-type", "user-agent", "x-request-id"],
+    http_capture_headers_server_response=["content-type", "content-length"],
+    http_capture_headers_sanitize_fields=["authorization", "cookie", "set-cookie"],
 )
 ```
 
-```mdx-code-block
-</TabItem>
-<TabItem value="headers" label="HTTP Header Capture">
-```
+Captured headers appear as `http.request.header.<name>` and
+`http.response.header.<name>`, lowercased with dashes turned into underscores
+(`http.request.header.user_agent`). Headers listed in the sanitize fields are
+recorded with a redacted value. The environment equivalents are
+`OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_SERVER_REQUEST`,
+`OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_SERVER_RESPONSE` and
+`OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_SANITIZE_FIELDS`.
 
-### Approach 6: HTTP Header Capture
+### Moving to FastAPI 0.142 or Later
 
-Capture and sanitize HTTP headers automatically:
-
-```python title="app/main.py" showLineNumbers
-from fastapi import FastAPI
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-
-app = FastAPI()
-
-# Configure header capture with sanitization
-FastAPIInstrumentor.instrument_app(
-    app,
-    # Capture specific request headers (lowercase with underscores)
-    http_capture_headers_server_request=[
-        "content-type",
-        "user-agent",
-        "accept",
-        "x-request-id",
-    ],
-    # Capture specific response headers
-    http_capture_headers_server_response=[
-        "content-type",
-        "content-length",
-        "x-correlation-id",
-    ],
-    # IMPORTANT: Sanitize sensitive headers (never capture these)
-    # This prevents accidental leaking of secrets
-    # Note: Even if listed above, these will be redacted
-    excluded_urls="/health,/metrics",
-)
-
-# Headers appear as span attributes:
-# http.request.header.content_type
-# http.request.header.user_agent
-# http.response.header.content_type
-```
-
-**Security Note:** Never capture authorization headers, cookies, API keys, or
-any authentication tokens. Use sanitization to protect sensitive data.
-
-```mdx-code-block
-</TabItem>
-</Tabs>
-```
+Upgrade FastAPI, then remove the `FastAPIInstrumentor.instrument_app` call and
+the `opentelemetry-instrumentation-fastapi` dependency. FastAPI's own
+telemetry takes over with the providers you already configure. Until you
+remove the instrumentor, FastAPI detects its `OpenTelemetryMiddleware` in the
+middleware stack and keeps its own tracing, metrics and logs off, so nothing
+is recorded twice. Move `excluded_urls` to an `exclude` function. If you rely
+on hooks or header capture, keep the instrumentor; that is a supported setup
+on any FastAPI version.
 
 ## Traces
 
-Traces provide the complete picture of what happens when a request flows through
-your FastAPI application. They capture the entire lifecycle from the incoming
-HTTP request, through your business logic, database queries, external API calls,
-and finally the response sent back to the client.
+FastAPI creates one server span per HTTP request and per WebSocket connection,
+from the instrumentation scope `fastapi`.
 
-### Automatic Trace Collection
+### Server Span
 
-Once instrumented, FastAPI automatically captures detailed trace information for
-every request:
+The span starts as soon as the request enters the app and is renamed once the
+router resolves a route:
 
-**Captured Information:**
+| Request                         | Span name           |
+| ------------------------------- | ------------------- |
+| `GET /posts/42`                 | `GET /posts/{id}`   |
+| WebSocket on `/ws`              | `WS /ws`            |
+| Unknown method on a route       | `HTTP /posts/{id}`  |
+| No route matched (404)          | `GET`               |
 
-- HTTP method, path, and status code
-- Request duration and timing breakdown
-- Request and response headers (configurable)
-- Query parameters and path parameters
-- Error and exception stack traces
-- Distributed trace context propagation (W3C Trace Context)
+Attributes on the server span:
 
-**Trace Hierarchy:**
+| Attribute                      | Example or note                                                         |
+| ------------------------------ | ----------------------------------------------------------------------- |
+| `http.request.method`          | `GET`; unknown methods become `_OTHER`                                  |
+| `http.request.method_original` | Set only when the method is reported as `_OTHER`                        |
+| `http.route`                   | `/posts/{id}`, including mount prefixes                                 |
+| `http.response.status_code`    | `200`                                                                   |
+| `url.scheme`                   | `http`                                                                  |
+| `url.path`                     | `/posts/42`                                                             |
+| `url.query`                    | Query string, with signed-URL parameters redacted                       |
+| `server.address`, `server.port` | From the `Host` header                                                 |
+| `network.protocol.version`     | `1.1`                                                                   |
+| `error.type`                   | Exception type, or the status code, on failed requests                  |
+
+The status is ERROR for 5xx responses and unhandled exceptions. Client errors
+(4xx) leave it UNSET, following the HTTP semantic conventions for server spans.
+
+FastAPI extracts the incoming trace context with the global propagator, which
+is W3C Trace Context and Baggage unless you change it. A request that carries a
+`traceparent` header continues the caller's trace.
+
+### Span Hierarchy
+
+A `GET /posts/{id}` request in the example, which resolves the current user
+through a dependency and then queries the post, produces this shape:
 
 ```text
-HTTP Request Span (root)
-├── Route Handler Span
-│   ├── Database Query Span
-│   ├── External API Call Span
-│   └── Business Logic Span
-└── Response Span
+GET /posts/{id}                          SERVER    scope: fastapi
+├── fastapi.dependencies                 INTERNAL  (get_current_user queries the user)
+│   └── SELECT python-fastapi-dev        CLIENT    scope: opentelemetry.instrumentation.sqlalchemy
+├── fastapi.endpoint                     INTERNAL  (get_post)
+│   └── SELECT python-fastapi-dev        CLIENT    scope: opentelemetry.instrumentation.sqlalchemy
+└── fastapi.serialization                INTERNAL  (response_model=PostOut)
 ```
 
-### Key Tracing Features
+With `operation_spans` off, the SQL spans sit directly under the server span.
 
-- **Automatic HTTP tracking**: Every endpoint is automatically traced with no
-  code changes
-- **Error capturing**: Exceptions are automatically recorded with full stack
-  traces
-- **Context propagation**: Distributed traces work across microservices using
-  W3C Trace Context headers
-- **Custom attributes**: Add business-specific metadata to spans (covered in
-  Custom Instrumentation section)
-- **Async support**: Full support for FastAPI's async/await patterns
+### Reference
 
-> View traces in your base14 Scout dashboard to analyze request flows and
-> identify bottlenecks.
-
-#### Reference
-
-[Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
+[OpenTelemetry Traces](https://opentelemetry.io/docs/concepts/signals/traces/)
+and the
+[HTTP span conventions](https://opentelemetry.io/docs/specs/semconv/http/http-spans/).
 
 ## Metrics
 
-OpenTelemetry metrics capture runtime measurements of your FastAPI application
-including HTTP request counts, latencies, response status codes, and custom
-business metrics. Unlike traces that show individual request flows, metrics
-aggregate data over time for monitoring trends and alerting.
+FastAPI records two HTTP server metrics from the meter `fastapi`. WebSocket
+connections are not measured.
 
-### Custom Metrics Middleware
+| Metric                         | Type          | Unit        | Attributes                                                                                       |
+| ------------------------------ | ------------- | ----------- | ------------------------------------------------------------------------------------------------ |
+| `http.server.request.duration` | Histogram     | `s`         | `http.request.method`, `url.scheme`, `network.protocol.version`, `http.route`, `http.response.status_code`, `error.type` |
+| `http.server.active_requests`  | UpDownCounter | `{request}` | `http.request.method`, `url.scheme`                                                              |
 
-Create a custom middleware to capture HTTP metrics for all requests:
+The duration histogram uses the semantic-convention bucket boundaries from
+5 ms to 10 s. Because it is labelled with `http.route` rather than the raw
+path, its cardinality stays bounded by the number of routes.
 
-```python title="app/metrics_middleware.py" showLineNumbers
+### Application Metrics
+
+Everything beyond those two is yours to add. The example keeps a small
+middleware that counts requests per path, under its own metric name:
+
+```python title="app/MetricsMiddleware.py" showLineNumbers
 import os
-import time
-from starlette.middleware.base import BaseHTTPMiddleware
+
 from opentelemetry.metrics import get_meter
+from starlette.middleware.base import BaseHTTPMiddleware
+
 
 class MetricsMiddleware(BaseHTTPMiddleware):
     def __init__(self, app):
         super().__init__(app)
-        service_name = os.getenv("OTEL_SERVICE_NAME", "fastapi-app")
+        service_name = os.getenv("OTEL_SERVICE_NAME", "fastapi-postgres-app")
         self.meter = get_meter(service_name)
-
-        # Create metrics instruments
         self.http_requests_counter = self.meter.create_counter(
-            name="http.server.requests",
-            unit="1",
-            description="Total number of HTTP requests"
-        )
-
-        self.http_request_duration = self.meter.create_histogram(
-            name="http.server.duration",
-            unit="ms",
-            description="HTTP request duration in milliseconds"
+            name="http_requests_total", unit="1", description="Number of HTTP requests per route"
         )
 
     async def dispatch(self, request, call_next):
-        start_time = time.time()
-
-        # Process request
         response = await call_next(request)
-
-        # Calculate duration
-        duration_ms = (time.time() - start_time) * 1000
-
-        # Record metrics with attributes
-        attributes = {
-            "http.method": request.method,
-            "http.route": request.url.path,
-            "http.status_code": response.status_code,
-        }
-
-        self.http_requests_counter.add(1, attributes)
-        self.http_request_duration.record(duration_ms, attributes)
-
+        self.http_requests_counter.add(
+            1,
+            {
+                "method": request.method,
+                "path": request.url.path,
+                "status_code": str(response.status_code),
+            },
+        )
         return response
 ```
 
-Add the middleware to your FastAPI application:
+This counter is labelled with `request.url.path`, so `/posts/1` and `/posts/2`
+are separate series. For request counts by route, use the count of
+`http.server.request.duration` instead; a custom middleware is worth keeping
+for business dimensions FastAPI does not know about.
 
-```python title="app/main.py" showLineNumbers
-from fastapi import FastAPI
-from .metrics_middleware import MetricsMiddleware
-from .telemetry import setup_telemetry
+## Logs
 
-# Initialize telemetry
-setup_telemetry("localhost:4318")
+When a logger provider is configured, FastAPI emits log records from the
+`fastapi` scope:
 
-app = FastAPI()
+| Event name                       | Severity | When                                                       |
+| -------------------------------- | -------- | ---------------------------------------------------------- |
+| `http.server.request.exception`  | ERROR    | An unhandled exception in a request, with the stack trace  |
+| `fastapi.validation.failed`      | WARN     | Request validation fails; attributes `fastapi.validation.error_count` and `http.route` |
+| `fastapi.websocket.exception`    | ERROR    | An unhandled exception in a WebSocket connection           |
 
-# Add metrics middleware BEFORE FastAPI instrumentation
-app.add_middleware(MetricsMiddleware)
+The fastapi-postgres example does not configure a logger provider, so it emits
+none of these. To add one, register a provider next to the trace and metric
+providers. A minimal sketch:
 
-# Then add FastAPI instrumentation
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-FastAPIInstrumentor.instrument_app(app)
+```python title="app/telemetry.py"
+from opentelemetry._logs import set_logger_provider
+from opentelemetry.exporter.otlp.proto.http._log_exporter import OTLPLogExporter
+from opentelemetry.sdk._logs import LoggerProvider
+from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
+
+logger_provider = LoggerProvider(resource=resource)
+logger_provider.add_log_record_processor(BatchLogRecordProcessor(OTLPLogExporter()))
+set_logger_provider(logger_provider)
 ```
-
-### Available Metrics
-
-Once configured, these metrics are automatically collected:
-
-| Metric Name                   | Type          | Description                 | Attributes                 |
-| ----------------------------- | ------------- | --------------------------- | -------------------------- |
-| `http.server.requests`        | Counter       | Total HTTP requests         | method, route, status_code |
-| `http.server.duration`        | Histogram     | Request duration in ms      | method, route, status_code |
-| `http.server.active_requests` | UpDownCounter | Currently active requests   | method, route              |
-| `http.server.response.size`   | Histogram     | Response body size in bytes | method, route, status_code |
-
-> View these metrics in base14 Scout to create dashboards, set up alerts, and
-> monitor application health.
 
 ## Production Configuration
 
-Production environments require careful configuration of OpenTelemetry to
-balance observability needs with performance and reliability. This section
-covers production-ready patterns.
+### Batch Span Processor
 
-### BatchSpanProcessor Configuration
+`BatchSpanProcessor` takes its limits as arguments or from
+`OTEL_BSP_*` variables. The example uses the defaults. To set them in code:
 
-Configure BatchSpanProcessor parameters for optimal performance:
-
-```python title="app/telemetry.py" showLineNumbers
+```python title="app/telemetry.py"
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 
-# Production-optimized batch processor
-batch_processor = BatchSpanProcessor(
-    OTLPSpanExporter(endpoint="http://otel-collector:4318/v1/traces"),
-    max_queue_size=2048,           # Maximum spans in queue
-    schedule_delay_millis=5000,    # Export every 5 seconds
-    max_export_batch_size=512,     # Maximum spans per export
-    export_timeout_millis=30000    # Timeout for export operation
+processor = BatchSpanProcessor(
+    OTLPSpanExporter(),
+    max_queue_size=2048,
+    schedule_delay_millis=5000,
+    max_export_batch_size=512,
+    export_timeout_millis=30000,
 )
-
-trace.get_tracer_provider().add_span_processor(batch_processor)
 ```
 
-### Resource Attributes for Production
+Or from the environment:
 
-Add comprehensive resource attributes to identify your service:
-
-```python title="app/telemetry.py" showLineNumbers
-import os
-import socket
-from opentelemetry.sdk.resources import Resource
-
-resource = Resource.create({
-    # Service identification
-    "service.name": os.getenv("OTEL_SERVICE_NAME", "fastapi-app"),
-    "service.version": os.getenv("APP_VERSION", "1.0.0"),
-    "service.namespace": os.getenv("SERVICE_NAMESPACE", "production"),
-
-    # Deployment information
-    "environment": os.getenv("ENVIRONMENT", "development"),
-    "deployment.region": os.getenv("AWS_REGION", "us-east-1"),
-
-    # Instance identification
-    "service.instance.id": socket.gethostname(),
-    "host.name": socket.gethostname(),
-    "host.type": os.getenv("HOST_TYPE", "container"),
-
-    # Container information (if applicable)
-    "container.id": os.getenv("HOSTNAME", ""),
-    "container.name": os.getenv("CONTAINER_NAME", ""),
-
-    # Kubernetes information (if applicable)
-    "k8s.namespace.name": os.getenv("K8S_NAMESPACE", ""),
-    "k8s.pod.name": os.getenv("K8S_POD_NAME", ""),
-    "k8s.deployment.name": os.getenv("K8S_DEPLOYMENT_NAME", ""),
-})
+```bash
+export OTEL_BSP_MAX_QUEUE_SIZE=2048
+export OTEL_BSP_SCHEDULE_DELAY=5000
+export OTEL_BSP_MAX_EXPORT_BATCH_SIZE=512
 ```
 
-### Environment-Based Configuration
+`PeriodicExportingMetricReader` exports every 60 seconds by default;
+`export_interval_millis` or `OTEL_METRIC_EXPORT_INTERVAL` changes that.
 
-Use environment variables to configure telemetry without code changes:
+### Compression and the Collector
 
-```python title="app/telemetry.py" showLineNumbers
-import os
-import logging
-from opentelemetry import trace, metrics
-from opentelemetry.sdk.resources import Resource
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
-from opentelemetry.sdk.metrics import MeterProvider
-from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
-from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
-from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
+Set `OTEL_EXPORTER_OTLP_COMPRESSION=gzip` to compress the app's OTLP requests.
+Between the Collector and Scout, the example's Collector exporter compresses
+and retries:
 
-logger = logging.getLogger(__name__)
-
-def setup_telemetry() -> None:
-    """Initialize telemetry with environment-based configuration."""
-    # Get configuration from environment
-    otel_endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4318")
-    environment = os.getenv("ENVIRONMENT", "development")
-    service_name = os.getenv("OTEL_SERVICE_NAME", "fastapi-app")
-
-    # Create resource
-    resource = Resource.create({
-        "service.name": service_name,
-        "environment": environment,
-        "service.version": os.getenv("APP_VERSION", "dev"),
-    })
-
-    # Configure trace provider
-    provider = TracerProvider(resource=resource)
-
-    # Add exporters based on environment
-    if environment == "development":
-        # Console exporter for development
-        provider.add_span_processor(BatchSpanProcessor(ConsoleSpanExporter()))
-        logger.info("Using console exporter for traces")
-    else:
-        # OTLP exporter for production/staging
-        provider.add_span_processor(
-            BatchSpanProcessor(
-                OTLPSpanExporter(endpoint=f"{otel_endpoint}/v1/traces"),
-                max_queue_size=2048,
-                schedule_delay_millis=5000,
-            )
-        )
-        logger.info(f"Using OTLP exporter at {otel_endpoint}")
-
-    trace.set_tracer_provider(provider)
-
-    # Configure metrics
-    if environment != "development":
-        metric_reader = PeriodicExportingMetricReader(
-            OTLPMetricExporter(endpoint=f"{otel_endpoint}/v1/metrics"),
-            export_interval_millis=5000
-        )
-        metrics.set_meter_provider(
-            MeterProvider(resource=resource, metric_readers=[metric_reader])
-        )
+```yaml title="config/otel-config.yaml" showLineNumbers
+exporters:
+  otlp_http/b14:
+    endpoint: ${SCOUT_ENDPOINT}
+    auth:
+      authenticator: oauth2client
+    tls:
+      insecure_skip_verify: true
+    compression: gzip
+    timeout: 30s
+    retry_on_failure:
+      enabled: true
+      initial_interval: 1s
+      max_interval: 30s
+      max_elapsed_time: 300s
 ```
 
-### Docker Compose Configuration
+### Resource Attributes
 
-Example `docker-compose.yml` for production-like deployment:
+Keep identity in the environment so one image runs everywhere. The example's
+`compose.yaml` sets the service name and resource attributes on the app
+container:
 
-```yaml title="docker-compose.yml" showLineNumbers
-services:
-  app:
-    build: .
-    ports:
-      - "8000:8000"
-    environment:
-      # Application config
-      ENVIRONMENT: development
-      APP_VERSION: "1.2.0"
-
-      # OpenTelemetry config
-      OTEL_SERVICE_NAME: fastapi-app
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
-
-      # Database config
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: myapp
-    depends_on:
-      - postgres
-      - otel-collector
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
-
-  postgres:
-    image: postgres:18
-    environment:
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: myapp
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  otel-collector:
-    image: otel/opentelemetry-collector-contrib:latest
-    command: ["--config=/etc/otel-collector-config.yaml"]
-    volumes:
-      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
-    ports:
-      - "4318:4318" # OTLP HTTP receiver
-      - "55679:55679" # zpages for debugging
-
-volumes:
-  postgres_data:
+```yaml title="compose.yaml" showLineNumbers
+      - OTEL_SERVICE_NAME=fastapi-postgres-app
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+      - OTEL_RESOURCE_ATTRIBUTES=${OTEL_RESOURCE_ATTRIBUTES:-deployment.environment.name=development,environment=development,service.version=1.0.0}
 ```
 
-### Environment Variables Template
+In Kubernetes, add `k8s.*` attributes through the Collector's
+`k8sattributes` processor rather than from application code.
 
-Create a `.env.example` file for your team:
+### Dockerfile
 
-```bash title=".env.example" showLineNumbers
-# Application
-ENVIRONMENT=development
-APP_VERSION=1.0.0
-SERVICE_NAMESPACE=my-company
-
-# OpenTelemetry
-OTEL_SERVICE_NAME=fastapi-app
-OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
-
-# Database
-DB_HOST=postgres
-DB_PORT=5432
-DB_NAME=myapp
-DB_USER=postgres
-DB_PASSWORD=changeme
-
-# Security (for production, use secrets management)
-SECRET_KEY=your-secret-key-here
-JWT_ALGORITHM=HS256
-JWT_EXPIRE_MINUTES=60
-```
-
-### Dockerfile with OpenTelemetry
-
-Build a production-ready Docker image:
+The example's multi-stage Dockerfile. No `opentelemetry-instrument` wrapper is
+needed; telemetry is configured in code.
 
 ```dockerfile title="Dockerfile" showLineNumbers
+# Build stage
+FROM python:3.15-slim AS builder
+
+WORKDIR /app
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir --user -r requirements.txt
+
+# Runtime stage
 FROM python:3.15-slim
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/* \
+    && adduser --disabled-password --gecos '' --uid 1000 appuser
 
-# Copy requirements and install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy Python packages from builder
+COPY --from=builder /root/.local /home/appuser/.local
 
 # Copy application code
-COPY ./app ./app
+COPY --chown=appuser:appuser . .
 
-# Create non-root user
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+# Make sure scripts are in PATH
+ENV PATH=/home/appuser/.local/bin:$PATH
+
+# Switch to non-root user
 USER appuser
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8000/health')"
+# Expose port
+EXPOSE 8000
 
-# Run application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:8000/ || exit 1
+
+# Run the application
+CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
 ```
+
+### Multiple Workers
+
+Each Uvicorn or Gunicorn worker is a separate process with its own providers.
+Call `setup_telemetry()` at module import, as the example does, so every worker
+configures its own providers when it loads `app.main`.
+
+### Multi-Service Tracing
+
+FastAPI continues incoming traces from the `traceparent` header.
+`RequestsInstrumentor` injects the current context into outbound `requests`
+calls, and `opentelemetry-instrumentation-httpx` does the same for httpx. With
+both sides instrumented, a call from one FastAPI service to another appears as
+one trace in Scout.
 
 ## Framework-Specific Features
 
-FastAPI's integration with OpenTelemetry automatically instruments several
-framework components and commonly used libraries. This section covers automatic
-instrumentation for databases, HTTP clients, and other integrations.
+### SQLAlchemy
 
-### SQLAlchemy Database Instrumentation
-
-OpenTelemetry automatically instruments SQLAlchemy database queries, providing
-detailed visibility into database operations.
-
-**Installation:**
-
-```bash
-pip install opentelemetry-instrumentation-sqlalchemy
-```
-
-**Automatic Instrumentation:**
+The example instruments its engine where it creates it:
 
 ```python title="app/database.py" showLineNumbers
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
-# Create database engine
-DATABASE_URL = "postgresql://user:password@localhost:5432/mydb"
-engine = create_engine(DATABASE_URL)
+from .config import settings
 
-# Instrument SQLAlchemy BEFORE creating sessions
-SQLAlchemyInstrumentor().instrument(
-    engine=engine,
-    service="fastapi-app",
-    enable_commenter=True,  # Add SQL comments with trace context
+SQLALCHEMY_DATABASE_URL = (
+    f"postgresql+psycopg2://"
+    f"{settings.db_username}:{settings.db_password}"
+    f"@{settings.db_hostname}:{settings.db_port}"
+    f"/{settings.db_name}"
 )
 
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
+
+# Instrument SQLAlchemy for automatic query tracing
+SQLAlchemyInstrumentor().instrument(engine=engine)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-```
 
-This automatically captures:
+Base = declarative_base()
 
-- SQL query text with parameters
-- Query execution time
-- Database connection details
-- Transaction boundaries
-- N+1 query detection (via span hierarchy)
-
-**Example Traced Query:**
-
-```python title="app/routers/users.py" showLineNumbers
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-from ..database import SessionLocal
-from .. import models
-
-router = APIRouter()
 
 def get_db():
     db = SessionLocal()
@@ -1011,990 +963,584 @@ def get_db():
         yield db
     finally:
         db.close()
-
-@router.get("/users/{user_id}")
-def get_user(user_id: int, db: Session = Depends(get_db)):
-    # This query is automatically traced with full SQL details
-    user = db.query(models.User).filter(models.User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
 ```
 
-### HTTP Client Instrumentation
+Every statement becomes a client span with the SQL text and database
+attributes. For an async engine, pass its `sync_engine`:
 
-Trace outbound HTTP requests to external APIs and services.
-
-**For `requests` library:**
-
-```bash
-pip install opentelemetry-instrumentation-requests
+```python
+SQLAlchemyInstrumentor().instrument(engine=engine.sync_engine)
 ```
 
-```python title="app/main.py" showLineNumbers
-from opentelemetry.instrumentation.requests import RequestsInstrumentor
+Queries made while resolving a dependency, like `get_current_user` in the
+example, appear under `fastapi.dependencies`; queries in the route body appear
+under `fastapi.endpoint`.
 
-# Instrument requests library globally
-RequestsInstrumentor().instrument()
+### Outbound HTTP
 
-# Now all requests calls are automatically traced
-import requests
+`RequestsInstrumentor().instrument()` in `app/main.py` traces every `requests`
+call. For httpx, install `opentelemetry-instrumentation-httpx`:
 
-@app.get("/external-api")
-async def call_external_api():
-    # This HTTP call is automatically traced
-    response = requests.get("https://api.example.com/data")
-    return response.json()
-```
-
-**For `httpx` library (async HTTP):**
-
-```bash
-pip install opentelemetry-instrumentation-httpx
-```
-
-```python title="app/main.py" showLineNumbers
+```python
 from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
-import httpx
 
-# Instrument httpx globally
 HTTPXClientInstrumentor().instrument()
-
-@app.get("/async-external-api")
-async def call_async_external_api():
-    async with httpx.AsyncClient() as client:
-        # This async HTTP call is automatically traced
-        response = await client.get("https://api.example.com/data")
-        return response.json()
 ```
 
-### Dependency Injection with Tracing
+### Dependencies and Background Tasks
 
-FastAPI's dependency injection system works seamlessly with OpenTelemetry:
+Dependency resolution and background tasks are traced by FastAPI itself
+through the operation spans. A background task added with
+`BackgroundTasks.add_task` gets a `fastapi.background_task` span in the same
+trace as the request, starting after the response has been sent. No manual
+span is needed to see that a task ran or how long it took.
 
-```python title="app/dependencies.py" showLineNumbers
-from typing import Annotated
-from fastapi import Depends, Header, HTTPException
-from opentelemetry import trace
+### Mounted Applications
 
-tracer = trace.get_tracer(__name__)
+When a FastAPI app is mounted inside another, only the outer app records the
+request, and `http.route` includes the mount prefix: an `/items/{id}` route in
+an app mounted at `/api` produces `GET /api/items/{id}`.
 
-def get_current_user(token: Annotated[str, Header()]) -> dict[str, str]:
-    """Dependency that validates user token - automatically traced"""
-    with tracer.start_as_current_span("validate_user_token"):
-        # Token validation logic
-        if not validate_token(token):
-            raise HTTPException(status_code=401, detail="Invalid token")
-        return get_user_from_token(token)
+### WebSockets
 
-@app.get("/protected")
-def protected_endpoint(
-    user: Annotated[dict[str, str], Depends(get_current_user)]
-) -> dict[str, dict[str, str]]:
-    """The dependency span appears as a child of the HTTP request span"""
-    return {"user": user}
-```
-
-### Background Tasks with Tracing
-
-Trace FastAPI background tasks:
-
-```python title="app/main.py" showLineNumbers
-from fastapi import BackgroundTasks
-from opentelemetry import trace
-
-tracer = trace.get_tracer(__name__)
-
-def send_email(email: str, message: str) -> None:
-    """Background task - create manual span"""
-    with tracer.start_as_current_span("send_email") as span:
-        span.set_attribute("email.to", email)
-        span.set_attribute("email.message_length", len(message))
-        # Email sending logic
-        print(f"Sending email to {email}")
-
-@app.post("/register")
-async def register_user(
-    email: str,
-    background_tasks: BackgroundTasks
-) -> dict[str, str]:
-    # Add background task
-    background_tasks.add_task(send_email, email, "Welcome!")
-    return {"message": "User registered"}
-```
+WebSocket connections get a `WS /route` server span covering the connection,
+with `network.protocol.name` set to `websocket`. Normal closes (codes 1000 and
+1001) are not errors. The HTTP server metrics do not include WebSocket
+connections.
 
 ## Custom Instrumentation
 
-While auto-instrumentation captures HTTP requests and database queries, custom
-instrumentation lets you trace business logic, add contextual attributes, and
-instrument specific operations.
+### Manual Spans
 
-### Creating Custom Spans
+Create a tracer and wrap the work you want to see. A minimal sketch:
 
-Add manual spans to trace specific operations:
-
-```python title="app/services/order_service.py" showLineNumbers
-from typing import Annotated
-from fastapi import APIRouter, HTTPException, Body
-from pydantic import BaseModel
+```python title="app/routers/orders.py"
 from opentelemetry import trace
 
-router = APIRouter()
 tracer = trace.get_tracer(__name__)
 
-class OrderCreate(BaseModel):
-    product_id: int
-    quantity: int
-    payment_method: str
-    order_type: str
-    amount: float
-
-class OrderResponse(BaseModel):
-    order_id: int
-    status: str
 
 @router.post("/orders")
-async def create_order(
-    order: Annotated[OrderCreate, Body()]
-) -> OrderResponse:
-    # Parent span is automatically the HTTP request span
-    with tracer.start_as_current_span("create_order") as span:
-        # Add custom attributes
-        span.set_attribute("order.type", order.order_type)
-        span.set_attribute("order.amount", order.amount)
-        span.set_attribute("order.quantity", order.quantity)
-
-        # Nested span for inventory check
-        with tracer.start_as_current_span("check_inventory") as inventory_span:
-            inventory_span.set_attribute("product.id", order.product_id)
-            available = await check_product_availability(order.product_id)
-            inventory_span.set_attribute("inventory.available", available)
-
-            if not available:
-                span.set_status(trace.Status(trace.StatusCode.ERROR, "Out of stock"))
-                raise HTTPException(status_code=400, detail="Product out of stock")
-
-        # Nested span for payment processing
-        with tracer.start_as_current_span("process_payment") as payment_span:
-            payment_span.set_attribute("payment.method", order.payment_method)
-            payment_result = await process_payment(order)
-            payment_span.set_attribute("payment.transaction_id", payment_result["transaction_id"])
-
-        span.add_event("Order created successfully")
-        return OrderResponse(order_id=123, status="created")
+def create_order(order: OrderCreate):
+    with tracer.start_as_current_span("check_inventory") as span:
+        span.set_attribute("order.product_id", order.product_id)
+        ...
 ```
 
-### Adding Custom Attributes
+With operation spans on, `check_inventory` is a child of `fastapi.endpoint`.
 
-Enrich spans with business-specific metadata:
+### Tagging the Request Span
 
-```python title="app/routers/posts.py" showLineNumbers
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from opentelemetry import trace
+To put a business attribute on the server span, so it can be filtered next to
+`http.route` and `http.response.status_code`, either turn operation spans off
+and use the current span:
 
-router = APIRouter()
+```python title="main.py"
+app = FastAPI(telemetry={"operation_spans": False})
 
-class Post(BaseModel):
-    id: int
-    title: str
-    author_id: int
-    category: str
-    published: bool
 
-@router.get("/posts/{post_id}")
-async def get_post(post_id: int) -> Post:
-    # Get current span (automatically created by FastAPI instrumentation)
-    current_span = trace.get_current_span()
-
-    # Add custom attributes to existing span
-    current_span.set_attribute("post.id", post_id)
-    current_span.set_attribute("user.action", "view_post")
-
-    # Fetch post
-    post = await fetch_post_from_db(post_id)
-
-    if not post:
-        current_span.set_attribute("post.found", False)
-        raise HTTPException(status_code=404, detail="Post not found")
-
-    current_span.set_attribute("post.found", True)
-    current_span.set_attribute("post.author_id", post.author_id)
-    current_span.set_attribute("post.category", post.category)
-    current_span.set_attribute("post.published", post.published)
-
-    return post
+@app.get("/accounts/{account_id}")
+def get_account(account_id: str):
+    trace.get_current_span().set_attribute("app.account_id", account_id)
+    ...
 ```
 
-### Error Handling and Status
+or keep operation spans and set the attribute from a middleware, where the
+current span is always the server span.
 
-Record errors and exceptions in spans:
+### Marking Client Errors as Failures
 
-```python title="app/services/external_api.py" showLineNumbers
+FastAPI leaves 4xx server spans UNSET. The ai-sales-intelligence example treats
+client errors as failures with a middleware:
+
+```python title="src/sales_intelligence/middleware/span_status.py" showLineNumbers
+"""Marks the HTTP server span as failed for error responses.
+
+FastAPI's telemetry sets ERROR only from status 500 up. Client errors are
+failures of the request too, so this middleware sets ERROR from 400 up on the
+server span, which is the current span while the middleware runs.
+"""
+
+from collections.abc import Awaitable, Callable
+
+from fastapi import Request, Response
 from opentelemetry import trace
 from opentelemetry.trace import Status, StatusCode
-import requests
+from starlette.middleware.base import BaseHTTPMiddleware
 
-tracer = trace.get_tracer(__name__)
 
-def call_external_service(url: str):
-    with tracer.start_as_current_span("external_api_call") as span:
-        span.set_attribute("http.url", url)
+class SpanStatusMiddleware(BaseHTTPMiddleware):
+    """Sets ERROR on the server span for responses with status 400 and above."""
 
-        try:
-            response = requests.get(url, timeout=5)
-            response.raise_for_status()
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
+        response = await call_next(request)
 
-            span.set_attribute("http.status_code", response.status_code)
-            span.set_status(Status(StatusCode.OK))
-
-            return response.json()
-
-        except requests.exceptions.Timeout as e:
-            # Record exception details
-            span.record_exception(e)
-            span.set_status(Status(StatusCode.ERROR, "Request timeout"))
-            raise
-
-        except requests.exceptions.HTTPError as e:
-            span.record_exception(e)
+        if response.status_code >= 400:
+            span = trace.get_current_span()
+            span.set_attribute("error.type", str(response.status_code))
             span.set_status(Status(StatusCode.ERROR, f"HTTP {response.status_code}"))
-            raise
 
-        except Exception as e:
-            span.record_exception(e)
-            span.set_status(Status(StatusCode.ERROR, "Unknown error"))
-            raise
+        return response
 ```
 
-### Span Events
+It is registered with `app.add_middleware(SpanStatusMiddleware)`.
 
-Add timestamped events to spans for debugging:
+### Custom Metrics
 
-```python title="app/services/data_processor.py" showLineNumbers
-from typing import Any
-from opentelemetry import trace
+Get a meter and create instruments once, at import time. A minimal sketch:
 
-tracer = trace.get_tracer(__name__)
+```python title="app/metrics.py"
+from opentelemetry import metrics
 
-async def process_large_dataset(data: list[dict[str, Any]]) -> dict[str, int]:
-    """Process large dataset in chunks with tracing."""
-    with tracer.start_as_current_span("process_dataset") as span:
-        span.set_attribute("dataset.size", len(data))
-        span.add_event("Processing started")
+meter = metrics.get_meter(__name__)
 
-        # Process in chunks
-        chunk_size = 100
-        processed_count = 0
-
-        for i in range(0, len(data), chunk_size):
-            chunk = data[i:i + chunk_size]
-            await process_chunk(chunk)
-            processed_count += len(chunk)
-
-            # Add event for each chunk
-            span.add_event(
-                "Chunk processed",
-                attributes={
-                    "chunk.index": i // chunk_size,
-                    "chunk.size": len(chunk),
-                    "total.processed": processed_count
-                }
-            )
-
-        span.add_event("Processing completed")
-        span.set_attribute("dataset.processed", processed_count)
-        return {"processed": processed_count}
+orders_created = meter.create_counter(
+    "app.orders.created", unit="{order}", description="Orders created"
+)
 ```
 
-### Semantic Conventions
+```python
+orders_created.add(1, {"order.type": order.order_type})
+```
 
-Use OpenTelemetry semantic conventions for consistent attribute naming:
+Keep attribute values to small, fixed sets; IDs and paths make a series per
+value.
 
-```python title="app/services/user_service.py" showLineNumbers
+### Trace ID in Responses
+
+Returning the trace ID lets a client or support ticket point at the exact
+trace. A minimal sketch of a middleware that adds it as a header:
+
+```python title="app/main.py"
 from opentelemetry import trace
-from opentelemetry.semconv.trace import SpanAttributes
 
-tracer = trace.get_tracer(__name__)
 
-@app.post("/login")
-async def login(username: str, password: str):
-    with tracer.start_as_current_span("user.login") as span:
-        # Use semantic conventions for HTTP attributes
-        span.set_attribute(SpanAttributes.HTTP_METHOD, "POST")
-        span.set_attribute(SpanAttributes.HTTP_ROUTE, "/login")
-
-        # Use semantic conventions for user attributes
-        span.set_attribute(SpanAttributes.ENDUSER_ID, username)
-
-        # Authentication logic
-        if authenticate(username, password):
-            span.set_attribute("auth.success", True)
-            return {"token": generate_token(username)}
-        else:
-            span.set_attribute("auth.success", False)
-            span.set_status(Status(StatusCode.ERROR, "Authentication failed"))
-            raise HTTPException(status_code=401, detail="Invalid credentials")
+@app.middleware("http")
+async def add_trace_id(request, call_next):
+    response = await call_next(request)
+    context = trace.get_current_span().get_span_context()
+    if context.is_valid:
+        response.headers["x-trace-id"] = format(context.trace_id, "032x")
+    return response
 ```
 
 ## Running Your Application
 
-### Development Mode
+### Local Development
 
-Run with console output for local development:
-
-```python title="app/telemetry.py" showLineNumbers
-from opentelemetry.sdk.trace.export import ConsoleSpanExporter, BatchSpanProcessor
-
-# Development configuration - print spans to console
-if os.getenv("ENVIRONMENT") == "development":
-    console_processor = BatchSpanProcessor(ConsoleSpanExporter())
-    trace.get_tracer_provider().add_span_processor(console_processor)
-```
-
-Start the application:
+From the example directory, with a Collector listening on `localhost:4318`:
 
 ```bash
-# Set environment to development
-export ENVIRONMENT=development
-export OTEL_SERVICE_NAME=fastapi-app
-
-# Run with uvicorn
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+export OTEL_SERVICE_NAME=fastapi-postgres-app
+export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+make dev
 ```
 
-### Production Mode
-
-Run with OTLP exporter pointing to Scout Collector:
+`make dev` runs:
 
 ```bash
-# Set production environment variables
-export ENVIRONMENT=development
-export OTEL_SERVICE_NAME=fastapi-app
-export OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
-export APP_VERSION=1.0.0
-
-# Run with production settings
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
+uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### Docker Deployment
+### Docker Compose
 
-Build and run with Docker:
+The example's `compose.yaml` starts the app, PostgreSQL 18 and Collector
+Contrib 0.165.0:
 
 ```bash
-# Build image
-docker build -t fastapi-app:latest .
-
-# Run container
-docker run -d \
-  --name fastapi-app \
-  -p 8000:8000 \
-  -e OTEL_SERVICE_NAME=fastapi-app \
-  -e OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318 \
-  -e ENVIRONMENT=development \
-  fastapi-app:latest
+cp .env.example .env
+docker compose up -d --build
 ```
 
-Or use Docker Compose (see Production Configuration section above).
+Set `DB_PASSWORD`, `SECRET_KEY` and the `SCOUT_*` values in `.env` first.
+
+### Verify
+
+Send a few requests:
+
+```bash
+curl -s http://localhost:8000/
+curl -s -X POST http://localhost:8000/users/ \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"securepass123"}'
+```
+
+Then run the example's checks, which exercise the API and look for spans and
+`service.name` in the Collector's debug output:
+
+```bash
+make test-api
+make verify-scout
+```
+
+In the Collector logs, server spans show `InstrumentationScope fastapi` with
+names like `POST /users/` and `GET /posts/{id}`, and the metrics include
+`http.server.request.duration` and `http.server.active_requests`:
+
+```bash
+docker compose logs otel-collector | grep -E "InstrumentationScope|http.server"
+```
 
 ## Troubleshooting
 
-### Verifying Instrumentation
+### No spans because no provider is set
 
-Create a test endpoint to verify OpenTelemetry is working:
+FastAPI's telemetry is a no-op until a tracer provider exists. If the app runs
+but nothing from the `fastapi` scope reaches the Collector:
 
-```python title="app/main.py" showLineNumbers
-from opentelemetry import trace
-
-@app.get("/health")
-def health_check():
-    """Health check endpoint that verifies tracing"""
-    current_span = trace.get_current_span()
-
-    if current_span.is_recording():
-        return {
-            "status": "healthy",
-            "tracing": "enabled",
-            "trace_id": format(current_span.get_span_context().trace_id, '032x'),
-            "span_id": format(current_span.get_span_context().span_id, '016x')
-        }
-    else:
-        return {
-            "status": "healthy",
-            "tracing": "disabled"
-        }
-```
-
-### Common Issues
-
-#### Issue: No traces appearing in Scout
-
-**Solutions:**
-
-1. Verify OTLP endpoint is accessible:
-
-   ```bash
-   curl http://otel-collector:4318/v1/traces
-   ```
-
-2. Check telemetry initialization happens before FastAPI app creation:
+1. Confirm `setup_telemetry()` (or your equivalent) runs in the process that
+   serves requests, including every worker.
+2. Confirm it calls `trace.set_tracer_provider(...)` and
+   `metrics.set_meter_provider(...)`. An SDK provider that is neither
+   registered globally nor passed to `telemetry=` is invisible to FastAPI,
+   which then sees only the default proxy provider.
+3. Print spans locally to separate "not created" from "not exported":
 
    ```python
-   # Correct order:
-   setup_telemetry()  # First
-   app = FastAPI()    # Second
-   FastAPIInstrumentor.instrument_app(app)  # Third
+   from opentelemetry.sdk.trace.export import ConsoleSpanExporter, SimpleSpanProcessor
+
+   trace.get_tracer_provider().add_span_processor(SimpleSpanProcessor(ConsoleSpanExporter()))
    ```
 
-3. Enable console exporter to verify spans are being created:
+4. Check `OTEL_EXPORTER_OTLP_ENDPOINT` points at the Collector's HTTP port
+   (4318) and that `OTEL_SDK_DISABLED` is not `true`.
 
-   ```python
-   from opentelemetry.sdk.trace.export import ConsoleSpanExporter
-   trace.get_tracer_provider().add_span_processor(
-       BatchSpanProcessor(ConsoleSpanExporter())
-   )
-   ```
+### Attributes set in a route land on fastapi.endpoint
 
-#### Issue: ImportError for OpenTelemetry packages
+With operation spans on, `trace.get_current_span()` inside a route returns
+`fastapi.endpoint`. Attributes set there do not appear on the server span, so
+queries by `http.route` miss them. Set `operation_spans` to `False`, or set the
+attribute from a middleware (see
+[Tagging the Request Span](#tagging-the-request-span)).
 
-**Solutions:**
+### Spans come from opentelemetry.instrumentation.fastapi instead of fastapi
 
-1. Verify all packages are installed:
+FastAPI turns its own telemetry off when the contrib `OpenTelemetryMiddleware`
+is in its middleware stack. That happens when:
 
-   ```bash
-   pip list | grep opentelemetry
-   ```
+- The code still calls `FastAPIInstrumentor.instrument_app(app)` or
+  `FastAPIInstrumentor().instrument()`. Remove the call.
+- The app runs under `opentelemetry-instrument` with
+  `opentelemetry-instrumentation-fastapi` installed, for example after
+  `opentelemetry-bootstrap -a install`. Uninstall the package or set
+  `OTEL_PYTHON_DISABLED_INSTRUMENTATIONS=fastapi`.
 
-2. Reinstall with specific versions:
+Nothing is duplicated in either case; you get the instrumentor's spans
+and metric names instead of FastAPI's.
 
-   ```bash
-   pip install --upgrade opentelemetry-api opentelemetry-sdk
-   pip install --upgrade opentelemetry-instrumentation-fastapi
-   ```
+### Server spans named GET with no http.route
 
-3. Check for conflicting packages:
+The span is renamed when a route matches. Requests that match no route (404s)
+keep the bare method name and have no `http.route`. A request missing a
+trailing slash is named after the matching route (`POST /users/`) with status
+307, followed by a second span for the redirected request. Spans named `HTTP`
+are requests with a method outside the known set; set
+`OTEL_INSTRUMENTATION_HTTP_KNOWN_METHODS` if your API uses custom methods.
 
-   ```bash
-   pip check
-   ```
+### 4xx responses do not show as errors
 
-#### Issue: Database queries not traced
+This follows the HTTP semantic conventions: a server span is ERROR only for 5xx
+responses and unhandled exceptions. Operation spans also skip `HTTPException`
+and validation errors. If your dashboards should count client errors as
+failures, add a middleware like
+[the one above](#marking-client-errors-as-failures), or filter on
+`http.response.status_code` in Scout.
 
-**Solutions:**
+### Database queries not traced
 
-1. Ensure SQLAlchemy instrumentation is called BEFORE creating the engine:
+`SQLAlchemyInstrumentor().instrument(engine=engine)` must receive the engine
+the sessions use. For async engines pass `engine.sync_engine`.
+`opentelemetry-instrumentation-sqlalchemy` 0.66b2 supports `sqlalchemy < 2.1.0`
+and instruments nothing on 2.1, with only a log warning; keep SQLAlchemy on 2.0
+until the instrumentation supports 2.1. Check the package is installed:
 
-   ```python
-   from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
-
-   engine = create_engine(DATABASE_URL)
-   SQLAlchemyInstrumentor().instrument(engine=engine)
-   ```
-
-2. Verify the instrumentation package is installed:
-
-   ```bash
-   pip install opentelemetry-instrumentation-sqlalchemy
-   ```
-
-#### Issue: High memory usage or performance degradation
-
-**Solutions:**
-
-1. Configure BatchSpanProcessor with appropriate limits:
-
-   ```python
-   batch_processor = BatchSpanProcessor(
-       exporter,
-       max_queue_size=2048,        # Reduce if memory is constrained
-       schedule_delay_millis=5000,  # Increase to batch more spans
-       max_export_batch_size=512
-   )
-   ```
-
-2. Exclude high-volume endpoints:
-
-   ```python
-   FastAPIInstrumentor.instrument_app(
-       app,
-       excluded_urls="/health,/metrics"
-   )
-   ```
-
-#### Issue: Middleware ordering problems
-
-**Solution:** Ensure correct middleware order (metrics before instrumentation):
-
-```python
-app = FastAPI()
-app.add_middleware(MetricsMiddleware)  # Custom middleware first
-FastAPIInstrumentor.instrument_app(app)  # Then instrument
+```bash
+pip show opentelemetry-instrumentation-sqlalchemy
 ```
 
 ## Security Considerations
 
-### Sensitive Data in Spans
+### What FastAPI Records
 
-Avoid capturing sensitive information in span attributes:
+- **Query strings**: `url.query` holds the full query string. Only the
+  signed-URL parameters `X-Amz-Signature`, `X-Amz-Credential`,
+  `X-Amz-Security-Token`, `sig` and `X-Goog-Signature` are replaced with
+  `REDACTED`. Other parameters, such as `token` or `api_key`, are recorded as
+  sent. Keep secrets out of query strings, or remove the attribute in the
+  Collector.
+- **Headers**: native telemetry records none.
+- **Exception logs**: `http.server.request.exception` records carry the
+  exception message and stack trace. Set `logs` to `False` if exception
+  messages can contain user data.
+- **Request data for processors**: `get_telemetry_data()` exposes the body and
+  validation errors with the original input. Redact before exporting anything
+  derived from them.
 
-**Bad Example:**
+To drop the query string for every service, delete the attribute in the
+Collector:
+
+```yaml title="otel-collector-config.yaml"
+processors:
+  attributes/drop-query:
+    actions:
+      - key: url.query
+        action: delete
+```
+
+Add `attributes/drop-query` to the traces pipeline's processors.
+
+### Sensitive Data in Custom Attributes
+
+Record references, not values:
 
 ```python
-# DON'T DO THIS
-span.set_attribute("user.password", password)
-span.set_attribute("credit_card.number", card_number)
-span.set_attribute("user.ssn", ssn)
+span.set_attribute("user.id", user.id)
+span.set_attribute("payment.method", "card")
 ```
 
-**Good Example:**
+Never set passwords, tokens, card numbers or personal identifiers as span or
+metric attributes.
 
-```python
-# DO THIS INSTEAD
-span.set_attribute("user.id", user_id)  # Reference, not sensitive data
-span.set_attribute("payment.method", "credit_card")  # Type, not details
-span.set_attribute("user.email_domain", email.split("@")[1])  # Partial info
-```
+### SQL Statements
 
-### HTTP Header Filtering
+The SQLAlchemy instrumentation records the statement text it sends. ORM queries
+use bind parameters, so values do not appear in the text; raw SQL with values
+written into the string does. Use bound parameters for raw SQL.
 
-Filter sensitive headers from traces:
+### Header Capture on the Instrumentor
 
-```python title="app/telemetry.py" showLineNumbers
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+If you run `FastAPIInstrumentor` for header capture, list only the headers you
+need and put `authorization`, `cookie` and `set-cookie` in
+`http_capture_headers_sanitize_fields`.
 
-# Exclude sensitive headers from capture
-FastAPIInstrumentor.instrument_app(
-    app,
-    http_capture_headers_server_request=["content-type", "user-agent"],
-    # DO NOT include: authorization, cookie, api-key, etc.
-)
-```
+### Credentials
 
-### SQL Query Obfuscation
-
-SQLAlchemy instrumentation automatically obfuscates query parameters, but verify
-this is enabled:
-
-```python title="app/database.py" showLineNumbers
-from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
-
-SQLAlchemyInstrumentor().instrument(
-    engine=engine,
-    enable_commenter=True,
-    # Query parameters are automatically obfuscated
-)
-```
-
-### Environment Variable Security
-
-Never commit sensitive values to version control:
-
-```bash title=".env" showLineNumbers
-# ❌ BAD - Don't commit this file
-SECRET_KEY=actual-secret-key
-DB_PASSWORD=actual-password
-
-# ✅ GOOD - Use secrets management in production
-# AWS Secrets Manager, Vault, Kubernetes Secrets, etc.
-```
-
-In production, use environment-specific secrets management:
-
-- AWS Secrets Manager
-- HashiCorp Vault
-- Kubernetes Secrets
-- Azure Key Vault
+The example keeps `SCOUT_CLIENT_ID` and `SCOUT_CLIENT_SECRET` in `.env`, read
+only by the Collector container. The application needs no Scout credentials;
+it sends to the Collector. In production, load these from your secrets manager.
 
 ## Performance Considerations
 
-### Expected Performance Impact
+### Span Volume
 
-OpenTelemetry instrumentation adds minimal overhead when properly configured:
+Each request produces one server span plus up to four operation spans
+(dependencies, endpoint, serialization, background task), plus a span per SQL
+statement and outbound call. If you do not need the operation spans, setting
+`operation_spans` to `False` removes them and leaves the server span and the
+library spans.
 
-| Metric      | Impact               | Notes                     |
-| ----------- | -------------------- | ------------------------- |
-| **Latency** | +0.5-2ms per request | Mostly from span creation |
-| **CPU**     | +2-5%                | Primarily during export   |
-| **Memory**  | +10-50MB             | BatchSpanProcessor queue  |
-| **Network** | +1-5KB per trace     | OTLP compressed payload   |
+### Health Checks and Probes
 
-### Optimization Strategies
+Kubernetes probes and load balancer checks can outnumber real traffic. Exclude
+them with `exclude` so they create no spans and no metric points, or drop them
+in the Collector as the example does:
 
-#### 1. Use BatchSpanProcessor in Production
-
-Always use `BatchSpanProcessor` (never `SimpleSpanProcessor`) for production:
-
-```python title="app/telemetry.py" showLineNumbers
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-
-# ✅ GOOD - Batches spans for efficient export
-batch_processor = BatchSpanProcessor(
-    exporter,
-    max_queue_size=2048,
-    schedule_delay_millis=5000,
-    max_export_batch_size=512
-)
-
-# ❌ BAD - Exports each span immediately (only for debugging)
-# simple_processor = SimpleSpanProcessor(exporter)
+```yaml title="config/otel-config.yaml" showLineNumbers
+  filter/noisy:
+    error_mode: ignore
+    traces:
+      span:
+        - 'IsMatch(name, ".*/health.*")'
 ```
 
-#### 2. Skip Non-Critical Endpoints
+The Collector filter removes the spans but not the metric points, which are
+recorded in the app. `exclude` stops both.
 
-Exclude health checks and metrics endpoints:
+### Batching
 
-```python title="app/main.py" showLineNumbers
-FastAPIInstrumentor.instrument_app(
-    app,
-    excluded_urls="/health,/metrics,/favicon.ico,/docs,/openapi.json"
-)
-```
+Use `BatchSpanProcessor` outside local debugging; `SimpleSpanProcessor`
+exports each span synchronously on the request path. Tune the queue and batch
+size as in [Batch Span Processor](#batch-span-processor).
 
-#### 3. Limit Attribute Sizes
+### Metric Cardinality
 
-Prevent large attributes from consuming memory:
-
-```python title="app/services/data_service.py" showLineNumbers
-def add_safe_attribute(span, key: str, value: str, max_length: int = 256):
-    """Add attribute with size limit"""
-    if isinstance(value, str) and len(value) > max_length:
-        value = value[:max_length] + "... (truncated)"
-    span.set_attribute(key, value)
-
-# Usage
-span = trace.get_current_span()
-add_safe_attribute(span, "response.body", large_response)
-```
-
-#### 5. Optimize Database Instrumentation
-
-For high-traffic endpoints with many queries:
-
-```python title="app/database.py" showLineNumbers
-from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
-
-# Disable commenter for performance (optional)
-SQLAlchemyInstrumentor().instrument(
-    engine=engine,
-    enable_commenter=False,  # Reduces overhead slightly
-)
-```
+FastAPI's metrics are labelled by `http.route`, so the number of series grows
+with routes and status codes, not with URLs. Custom metrics labelled with raw
+paths or IDs, like the example's `http_requests_total`, grow with traffic.
 
 ## FAQ
 
-### Does FastAPI instrumentation work with async/await?
+### Does FastAPI have built-in OpenTelemetry support?
 
-Yes, OpenTelemetry fully supports FastAPI's async/await patterns. Context
-propagation works automatically across async operations, ensuring parent-child
-span relationships are maintained correctly.
+Yes, FastAPI 0.142.0 and later trace requests and record HTTP server metrics
+on their own once an OpenTelemetry tracer provider and meter provider are
+configured. You configure the providers and exporters; FastAPI creates the
+spans, metrics and exception logs. Configuration goes through
+`FastAPI(telemetry={...})`.
 
-### What is the performance impact of OpenTelemetry on FastAPI?
+### Do I need opentelemetry-instrumentation-fastapi on FastAPI 0.142+?
 
-Typical overhead is 0.5-2ms added latency per request, 2-5% CPU increase, and
-10-50MB additional memory. This impact is minimal and acceptable for most
-production applications.
+No, not for request spans and HTTP metrics. Keep it only if you need request
+and response hooks or header capture, which FastAPI's native support does not
+provide. On FastAPI 0.141 and earlier it is still required.
 
-### Which Python and FastAPI versions are supported?
+### Does FastAPIInstrumentor duplicate FastAPI's native spans?
 
-- **Python**: 3.10+ minimum (Python 3.15+ recommended for best performance)
-- **FastAPI**: 0.100.0+ (0.115.6+ recommended for Pydantic v2)
-- **OpenTelemetry**: SDK 1.20+ (1.29+ recommended, always use latest stable)
+No, FastAPI turns its own tracing, metrics and logs off when it finds the
+instrumentor's `OpenTelemetryMiddleware` in the middleware stack. You get the
+instrumentor's telemetry only. Remove the instrumentor to switch to FastAPI's.
 
-### How do I instrument SQLAlchemy database queries?
+### Why does trace.get_current_span() in a FastAPI route return fastapi.endpoint?
 
-Install `opentelemetry-instrumentation-sqlalchemy` and instrument your engine:
+Because operation spans are on by default, and the route function runs inside
+the `fastapi.endpoint` span. Set `FastAPI(telemetry={"operation_spans": False})`
+to make the server span current inside routes, or set request-level attributes
+from a middleware.
 
-```python
-from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
-SQLAlchemyInstrumentor().instrument(engine=engine)
-```
+### How do I exclude health checks from FastAPI tracing?
 
-All queries will automatically be traced with full SQL details.
+Pass an `exclude` function that returns `True` for the health check path, for
+example `FastAPI(telemetry={"exclude": lambda scope: scope.get("path") == "/health"})`.
+Excluded requests get no FastAPI spans, metrics or logs.
 
-### How does distributed tracing work across microservices?
+### Which metrics does FastAPI's native OpenTelemetry support emit?
 
-OpenTelemetry uses W3C Trace Context headers (`traceparent`, `tracestate`) to
-propagate trace context between services. FastAPI instrumentation automatically
-extracts and injects these headers, enabling distributed traces across your
-entire system.
+FastAPI emits `http.server.request.duration`, a histogram in seconds, and
+`http.server.active_requests`, an up-down counter, both from the meter
+`fastapi`. Duration carries `http.route`, method, status code and
+`error.type`. WebSocket connections are not measured.
 
-### What's the difference between traces and metrics?
+### Why are 4xx responses not marked as errors in FastAPI traces?
 
-- **Traces**: Show individual request flows with detailed timing (e.g., "this
-  specific request took 150ms")
-- **Metrics**: Aggregate measurements over time (e.g., "average response time is
-  120ms")
+FastAPI follows the OpenTelemetry HTTP conventions, which mark a server span as
+an error only for 5xx responses and unhandled exceptions. A 404 or 422 keeps
+status UNSET with `http.response.status_code` set. Add a middleware that sets
+ERROR from 400 up if you want client errors counted as failures.
 
-Use both: traces for debugging specific issues, metrics for monitoring overall
-health.
+### Can FastAPI export telemetry without provider setup code?
 
-### How do I detect N+1 database queries in FastAPI with OpenTelemetry?
+Yes, with `auto_configure`: set `FASTAPI_OTEL_AUTO_CONFIGURE=true` or pass
+`telemetry={"auto_configure": True}`, and FastAPI adds OTLP HTTP exporters from
+the `OTEL_*` variables at startup. It is off by default and supports only the
+`http/protobuf` protocol. Explicit providers give you control over the
+resource and processors.
 
-View the span hierarchy in base14 Scout. N+1 queries appear as many sequential
-database spans under a single parent span. The trace visualization clearly shows
-the query pattern, making N+1 issues obvious.
+### How do I capture request headers on FastAPI spans?
 
-### Can I use OpenTelemetry with Pydantic v2?
+Use `FastAPIInstrumentor` with `http_capture_headers_server_request`, because
+FastAPI's native telemetry does not record headers. Sanitize `authorization`
+and cookies with `http_capture_headers_sanitize_fields`. See
+[HTTP Header Capture](#http-header-capture).
 
-Yes, OpenTelemetry works with both Pydantic v1 and v2. FastAPI automatically
-handles Pydantic model serialization, and instrumentation captures the HTTP
-layer regardless of Pydantic version.
+### Does FastAPI's native telemetry work with async routes and background tasks?
 
-### How do I instrument background tasks and Celery?
+Yes, async and sync routes are both traced, and each background task gets a
+`fastapi.background_task` span in the request's trace. Context propagates
+through `await`, so spans from async database or HTTP clients nest under the
+right parent.
 
-For FastAPI background tasks, manually create spans (see Background Tasks
-section). For Celery, install `opentelemetry-instrumentation-celery`:
+### How do I trace SQLAlchemy queries in a FastAPI app?
 
-```bash
-pip install opentelemetry-instrumentation-celery
-```
-
-### Does OpenTelemetry instrumentation affect FastAPI WebSocket connections?
-
-FastAPI WebSocket connections are automatically traced. Each WebSocket
-connection creates a long-lived span that tracks the entire connection duration
-and messages exchanged.
-
-### How do I handle multi-tenancy in traces?
-
-Add tenant identification to resource attributes or span attributes:
-
-```python
-span.set_attribute("tenant.id", tenant_id)
-span.set_attribute("tenant.name", tenant_name)
-```
-
-Then filter and query by tenant in base14 Scout.
+Install `opentelemetry-instrumentation-sqlalchemy` and call
+`SQLAlchemyInstrumentor().instrument(engine=engine)` where the engine is
+created. Each statement becomes a client span under the FastAPI operation or
+server span that issued it.
 
 ## What's Next?
 
 ### Advanced Topics
 
 - [Python Custom Instrumentation](../custom-instrumentation/python.md) - Manual
-  spans, metrics, and advanced patterns
+  spans, metrics, and advanced patterns.
 - [OpenTelemetry Collector Configuration](../../collector-setup/otel-collector-config.md)
-  \- Advanced collector features
+  \- Advanced collector features.
 
 ### base14 Scout Platform Features
 
 - [Creating Alerts](../../../guides/creating-alerts-with-logx.md) - Set up
-  alerts based on traces and metrics
+  alerts based on traces and metrics.
 - [Dashboard Creation](../../../guides/create-your-first-dashboard.md) - Build
-  custom dashboards
+  custom dashboards.
 
 ### Deployment and Operations
 
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) -
-  Local development environment
+  Local development environment.
 - [Kubernetes Helm Setup](../../collector-setup/kubernetes-helm-setup.md) -
-  Production Kubernetes deployment
+  Production Kubernetes deployment.
 - [Scout Exporter Configuration](../../collector-setup/scout-exporter.md) -
-  Configure authentication and endpoints
+  Configure authentication and endpoints.
 
 ## Complete Example
 
-Here's a complete production-ready FastAPI application with OpenTelemetry
-instrumentation:
+The [fastapi-postgres example](https://github.com/base-14/examples/tree/main/python/fastapi-postgres)
+is a FastAPI posts-and-votes API on PostgreSQL with native FastAPI telemetry,
+SQLAlchemy and `requests` instrumentation, a custom request counter, and a
+Collector that exports to Scout.
 
-### Complete requirements.txt
+### Project Structure
 
-```plaintext title="requirements.txt" showLineNumbers
-# Web framework
-fastapi[all]==0.115.6
-uvicorn[standard]==0.32.0
-
-# Database
-sqlalchemy==2.0.36
-psycopg2-binary==2.9.10
-alembic==1.14.0
-
-# Authentication
-python-jose[cryptography]==3.3.0
-passlib[bcrypt]==1.7.4
-python-multipart==0.0.20
-
-# OpenTelemetry core
-opentelemetry-api==1.29.0
-opentelemetry-sdk==1.29.0
-opentelemetry-exporter-otlp==1.29.0
-
-# OpenTelemetry instrumentation
-opentelemetry-instrumentation-fastapi==0.50b0
-opentelemetry-instrumentation-sqlalchemy==0.50b0
-opentelemetry-instrumentation-requests==0.50b0
-opentelemetry-instrumentation-httpx==0.50b0
-
-# Utilities
-pydantic==2.10.3
-pydantic-settings==2.6.1
-python-dotenv==1.0.1
+```text
+fastapi-postgres/
+├── app/
+│   ├── main.py               # setup_telemetry(), FastAPI(), middleware, routers
+│   ├── telemetry.py          # tracer and meter providers with OTLP exporters
+│   ├── database.py           # engine and SQLAlchemyInstrumentor
+│   ├── MetricsMiddleware.py  # http_requests_total counter
+│   ├── oauth2.py             # get_current_user dependency
+│   └── routers/              # auth, post, user, vote
+├── config/
+│   └── otel-config.yaml      # Collector: OTLP in, Scout and debug out
+├── scripts/
+│   ├── test-api.sh
+│   └── verify-scout.sh
+├── compose.yaml
+├── Dockerfile
+├── pyproject.toml
+├── requirements.txt
+└── uv.lock
 ```
 
-### Complete telemetry.py
+### How the Pieces Fit
 
-```python title="app/telemetry.py" showLineNumbers
-import os
-import socket
-from opentelemetry import trace, metrics
-from opentelemetry.sdk.resources import Resource
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
-from opentelemetry.sdk.metrics import MeterProvider
-from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
-from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
-from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
+1. `app/main.py` calls `setup_telemetry()`, which registers global tracer and
+   meter providers with OTLP HTTP exporters.
+2. `FastAPI()` is created with no telemetry config. FastAPI finds the global
+   providers and traces every request.
+3. `app/database.py` instruments the SQLAlchemy engine, and `app/main.py`
+   instruments `requests`.
+4. `MetricsMiddleware` adds the `http_requests_total` counter.
+5. The Collector receives OTLP on 4318, drops health spans, and exports to
+   Scout and the debug exporter.
 
-def setup_telemetry(otel_endpoint: str = None):
-    """
-    Initialize OpenTelemetry tracing and metrics with production-ready configuration.
+The full files are in [Configuration](#setup-approaches),
+[SQLAlchemy](#sqlalchemy) and [Application Metrics](#application-metrics).
 
-    Args:
-        otel_endpoint: OTLP collector endpoint (e.g., "localhost:4318")
-    """
-    # Get configuration from environment
-    service_name = os.getenv("OTEL_SERVICE_NAME", "fastapi-app")
-    environment = os.getenv("ENVIRONMENT", "development")
-    otel_endpoint = otel_endpoint or os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "localhost:4318")
+### Run It
 
-    # Create comprehensive resource attributes
-    resource = Resource.create({
-        "service.name": service_name,
-        "service.version": os.getenv("APP_VERSION", "1.0.0"),
-        "service.namespace": os.getenv("SERVICE_NAMESPACE", "default"),
-        "environment": environment,
-        "service.instance.id": socket.gethostname(),
-        "host.name": socket.gethostname(),
-    })
-
-    # Configure trace provider
-    provider = TracerProvider(resource=resource)
-
-    # Add OTLP exporter for production/staging
-    if environment in ["production", "staging"]:
-        otlp_processor = BatchSpanProcessor(
-            OTLPSpanExporter(endpoint=f"http://{otel_endpoint}/v1/traces"),
-            max_queue_size=2048,
-            schedule_delay_millis=5000,
-            max_export_batch_size=512,
-            export_timeout_millis=30000
-        )
-        provider.add_span_processor(otlp_processor)
-    else:
-        # Add console exporter for development
-        console_processor = BatchSpanProcessor(ConsoleSpanExporter())
-        provider.add_span_processor(console_processor)
-
-    trace.set_tracer_provider(provider)
-
-    # Configure metrics provider
-    metric_reader = PeriodicExportingMetricReader(
-        OTLPMetricExporter(endpoint=f"http://{otel_endpoint}/v1/metrics"),
-        export_interval_millis=5000
-    )
-    metrics.set_meter_provider(
-        MeterProvider(resource=resource, metric_readers=[metric_reader])
-    )
-
-    print(f"✅ OpenTelemetry initialized: {service_name} ({environment})")
+```bash
+git clone https://github.com/base-14/examples.git
+cd examples/python/fastapi-postgres
+cp .env.example .env
+docker compose up -d --build
+make test-api
+make verify-scout
 ```
-
-### Complete main.py
-
-```python title="app/main.py" showLineNumbers
-import os
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.instrumentation.requests import RequestsInstrumentor
-from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
-
-from .telemetry import setup_telemetry
-from .metrics_middleware import MetricsMiddleware
-from .database import engine
-from .routers import users, posts
-
-# Initialize telemetry FIRST
-otel_endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "localhost:4318")
-setup_telemetry(otel_endpoint)
-
-# Instrument SQLAlchemy
-SQLAlchemyInstrumentor().instrument(engine=engine)
-
-# Create FastAPI app
-app = FastAPI(
-    title="FastAPI with OpenTelemetry",
-    version="1.0.0",
-    description="Production-ready FastAPI with full observability"
-)
-
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Add custom metrics middleware
-app.add_middleware(MetricsMiddleware)
-
-# Instrument FastAPI (excludes health/metrics endpoints)
-FastAPIInstrumentor.instrument_app(
-    app,
-    excluded_urls="/health,/metrics"
-)
-
-# Instrument HTTP clients
-RequestsInstrumentor().instrument()
-
-# Include routers
-app.include_router(users.router, prefix="/api", tags=["users"])
-app.include_router(posts.router, prefix="/api", tags=["posts"])
-
-@app.get("/")
-def root():
-    return {"message": "Hello World", "status": "operational"}
-
-@app.get("/health")
-def health_check():
-    from opentelemetry import trace
-    current_span = trace.get_current_span()
-
-    return {
-        "status": "healthy",
-        "tracing": "enabled" if current_span.is_recording() else "disabled"
-    }
-```
-
-### Repository Link
-
-A complete working example with database integration, authentication, and full
-instrumentation is available at:
-
-[GitHub: base-14/examples/python/fastapi-postgres](https://github.com/base-14/examples/tree/main/python/fastapi-postgres)
 
 Once telemetry is flowing, you can
-[monitor FastAPI performance in Scout APM](https://base14.io/scout/apm)
-— track request latency, error rates, and database query traces across
-all your endpoints.
+[track FastAPI route latency and errors in Scout APM](https://base14.io/scout/apm)
+alongside the SQL spans behind each endpoint.
 
 ## References
 
-- [Official OpenTelemetry Python Documentation](https://opentelemetry.io/docs/languages/python/)
+- [OpenTelemetry Python Documentation](https://opentelemetry.io/docs/languages/python/)
 - [FastAPI Documentation](https://fastapi.tiangolo.com/)
-- [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/)
-- [Official Metrics Documentation](https://opentelemetry.io/docs/concepts/signals/metrics/)
-- [Official Traces Documentation](https://opentelemetry.io/docs/concepts/signals/traces/)
+- [HTTP Span Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/http/http-spans/)
+- [HTTP Metric Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/http/http-metrics/)
+- [OpenTelemetry Metrics](https://opentelemetry.io/docs/concepts/signals/metrics/)
+- [OpenTelemetry Traces](https://opentelemetry.io/docs/concepts/signals/traces/)
 
 ## Related Guides
 
-- [Django Instrumentation](./django.md) - Full-featured Python framework with ORM
-- [Flask Instrumentation](./flask.md) - Lightweight Python web framework
+- [Django Instrumentation](./django.md) - Full-featured Python framework with
+  ORM.
+- [Flask Instrumentation](./flask.md) - Lightweight Python web framework.
+- [Litestar Instrumentation](./litestar.md) - Another ASGI framework.
 - [Docker Compose Setup](../../collector-setup/docker-compose-example.md) - Set
-  up collector for local development
+  up the Collector for local development.
 - [Python Custom Instrumentation](../custom-instrumentation/python.md) - Manual
-  spans and advanced patterns
+  spans and advanced patterns.
 - [All framework guides](/instrument/apps/auto-instrumentation/) -
-  Auto-instrumentation overview for every language
+  Auto-instrumentation overview for every language.

@@ -125,7 +125,8 @@ workflow span and nothing for its nodes.
 | `opentelemetry-util-genai` | 1.3b0 |
 | `opentelemetry-sdk`, `opentelemetry-api` | 1.45.2 |
 | `opentelemetry-exporter-otlp-proto-http` | 1.45.2 |
-| `opentelemetry-instrumentation-fastapi`, `-sqlalchemy`, `-httpx`, `-logging` | 0.66b2 |
+| `opentelemetry-instrumentation-sqlalchemy`, `-httpx`, `-logging` | 0.66b2 |
+| `fastapi` | 0.163.1 |
 | Python | 3.14 |
 | Ollama | 0.34.2, with `qwen3.5:9B` and `embeddinggemma` |
 | OpenTelemetry Collector Contrib | 0.163.1 |
@@ -175,9 +176,34 @@ uv add \
 ```
 
 Swap `langchain-ollama` for `langchain-anthropic`, `langchain-openai` or
-`langchain-google-genai` to match your provider. Add the FastAPI, SQLAlchemy
-and httpx instrumentations so the agent's spans join the same trace as your
-HTTP and database calls.
+`langchain-google-genai` to match your provider. Add the SQLAlchemy and httpx
+instrumentations so the agent's spans join the same trace as your HTTP and
+database calls.
+
+FastAPI 0.142 and later traces requests itself once the tracer and meter
+providers are set, so it needs no instrumentation package. Its server spans are
+named `METHOD /route` under the `fastapi` scope, and it records
+`http.server.request.duration` and `http.server.active_requests`. The example
+keeps the health probes out and turns off FastAPI's operation spans, so
+`trace.get_current_span()` in a route returns the server span:
+
+```python showLineNumbers title="src/runbook_assistant/telemetry/setup.py"
+HEALTH_CHECK_PATHS = frozenset({"/healthz", "/readyz"})
+
+
+def skip_health_checks(scope: MutableMapping[str, Any]) -> bool:
+    """Keep the health checks out of FastAPI's request spans and metrics."""
+    return scope.get("path") in HEALTH_CHECK_PATHS
+
+
+# Routes, and the spans they start, run directly under the server span rather than
+# under FastAPI's operation spans, so trace.get_current_span() in a route is the request span.
+FASTAPI_TELEMETRY: TelemetryConfig = {"exclude": skip_health_checks, "operation_spans": False}
+```
+
+`TelemetryConfig` comes from `fastapi.telemetry`, and `main.py` passes the
+config to the app as `telemetry=FASTAPI_TELEMETRY`. For FastAPI 0.141 and
+earlier, see [FastAPI](./fast-api.md#fastapi-0141-and-earlier).
 
 :::warning Two packages, similar names
 

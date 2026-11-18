@@ -82,7 +82,7 @@ does.
 | Signal | What Temporal and Pydantic AI emit | What the [example](#complete-example) adds |
 | --- | --- | --- |
 | Traces | `StartWorkflow`, `RunWorkflow`, `StartActivity`, `RunActivity` and the signal, update and query spans from `OpenTelemetryPlugin`, with IDs that survive replay. Pydantic AI's `invoke_agent`, `chat` and `execute_tool` spans inside workflow code. | Five `kyc.*` wait and arrival spans, links from arrivals to their handler spans, `base14.kyc.*` attributes, `base14.temporal.activity.attempt` from an interceptor, cost and `error.type` from a span exporter. FastAPI and psycopg spans. |
-| Metrics | The Temporal SDK's `temporal_*` metrics from the client runtime. `gen_ai.client.token.usage` from Pydantic AI. | `base14.kyc.*` counters and histograms from workflow code through `ReplaySafeMeterProvider`. `http.server.*` from the FastAPI instrumentation. |
+| Metrics | The Temporal SDK's `temporal_*` metrics from the client runtime. `gen_ai.client.token.usage` from Pydantic AI. | `base14.kyc.*` counters and histograms from workflow code through `ReplaySafeMeterProvider`. `http.server.*` from FastAPI. |
 | Logs | Python `logging` only. `workflow.logger` and `activity.logger` add the workflow and activity attributes to each line. Pydantic AI writes no log records. | OTLP export through `ReplaySafeLoggerProvider`, so every line carries its trace and span ID, and every case line `base14.kyc.case_id`. |
 
 ## Prerequisites
@@ -101,8 +101,8 @@ does.
 | `pydantic-ai-slim` | 2.49.0, with the `temporal` and `openai` extras |
 | `temporalio` | 1.33.0, with the `opentelemetry` extra |
 | `opentelemetry-sdk`, `opentelemetry-api`, OTLP HTTP exporter | 1.44.0 |
-| `opentelemetry-instrumentation-fastapi`, `-psycopg`, `-logging` | 0.65b0 |
-| `fastapi` / `uvicorn` | 0.141.1 / 0.53.0 |
+| `opentelemetry-instrumentation-psycopg`, `-logging` | 0.65b0 |
+| `fastapi` / `uvicorn` | 0.163.1 / 0.53.0 |
 | Temporal server and admin tools | 1.32.0 |
 | Temporal UI | 2.54.1 |
 | PostgreSQL | 18.6 |
@@ -161,8 +161,26 @@ pip install "pydantic-ai-slim[temporal,openai]==2.49.0" \
 </Tabs>
 ```
 
-Add the FastAPI and psycopg instrumentations if your service uses them, as
-the example does.
+Add the psycopg instrumentation if your service uses it, as the example does.
+
+FastAPI 0.142 and later traces requests itself once the tracer and meter
+providers are set, so the example installs no FastAPI instrumentation package.
+Its server spans are named `METHOD /route` under the `fastapi` scope, and it
+records `http.server.request.duration` and `http.server.active_requests`. The
+example turns off FastAPI's operation spans, so `trace.get_current_span()` in a
+route returns the server span:
+
+```python showLineNumbers title="src/kyc_onboarding/telemetry.py (excerpt)"
+# Routes, and the spans they start, run directly under the server span rather than
+# under FastAPI's operation spans, so trace.get_current_span() in a route is the request span.
+FASTAPI_TELEMETRY: FastAPITelemetryConfig = {"operation_spans": False}
+```
+
+The type is imported as
+`from fastapi.telemetry import TelemetryConfig as FastAPITelemetryConfig`,
+which keeps it apart from temporalio's `TelemetryConfig`. `main.py` passes the
+config to the app as `telemetry=FASTAPI_TELEMETRY`. For FastAPI 0.141 and
+earlier, see [FastAPI](./fast-api.md#fastapi-0141-and-earlier).
 
 ## Configuration
 
@@ -772,8 +790,8 @@ GROUP BY t
 ORDER BY t
 ```
 
-Pydantic AI adds `gen_ai.client.token.usage`, and the FastAPI instrumentation
-adds the `http.server.*` metrics.
+Pydantic AI adds `gen_ai.client.token.usage`, and FastAPI records
+`http.server.request.duration` and `http.server.active_requests`.
 
 ### Temporal SDK Metrics
 

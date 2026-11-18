@@ -83,7 +83,7 @@ does.
 | Signal | What Pydantic AI emits | What the [example](#complete-example) adds |
 | --- | --- | --- |
 | Traces | `invoke_agent`, `chat` and `execute_tool` spans with GenAI attributes, through the global tracer provider. | `error.type`, `base14.gen_ai.cost` and `base14.prompt.version` in a span exporter. FastAPI and psycopg spans, Temporal spans and five hand-written wait spans. |
-| Metrics | `gen_ai.client.token.usage` per request and token type. `operation.cost` only for models in its price table, and `gen_ai.client.operation.time_to_first_chunk` only for streamed responses. | `base14.kyc.*` counters and histograms from workflow code. `http.server.*` from the FastAPI instrumentation and the Temporal SDK metrics. |
+| Metrics | `gen_ai.client.token.usage` per request and token type. `operation.cost` only for models in its price table, and `gen_ai.client.operation.time_to_first_chunk` only for streamed responses. | `base14.kyc.*` counters and histograms from workflow code. `http.server.*` from FastAPI and the Temporal SDK metrics. |
 | Logs | None. Pydantic AI writes no log records. | OTLP logs through a replay-safe logger provider, so every line carries the trace and span ID. |
 
 ## Prerequisites
@@ -102,8 +102,8 @@ does.
 | `pydantic-ai-slim` | 2.49.0, with the `openai` extra |
 | `opentelemetry-sdk`, `opentelemetry-api` | 1.44.0 |
 | `opentelemetry-exporter-otlp-proto-http` | 1.44.0 |
-| `opentelemetry-instrumentation-fastapi`, `-psycopg`, `-logging` | 0.65b0 |
-| `fastapi` | 0.141.1 |
+| `opentelemetry-instrumentation-psycopg`, `-logging` | 0.65b0 |
+| `fastapi` | 0.163.1 |
 | Python | 3.14 |
 | Ollama | 0.40.0, with `gemma4:e2b` and `qwen3.5:9B` |
 | OpenTelemetry Collector Contrib | 0.161.0 |
@@ -362,6 +362,27 @@ same attribute names as Pydantic AI.
 </TabItem>
 </Tabs>
 ```
+
+### FastAPI Requests
+
+FastAPI 0.142 and later traces requests itself once the tracer and meter
+providers are set, so the example installs no FastAPI instrumentation package.
+Its server spans are named `METHOD /route` under the `fastapi` scope, and it
+records `http.server.request.duration` and `http.server.active_requests`. The
+example turns off FastAPI's operation spans, so `trace.get_current_span()` in a
+route returns the server span:
+
+```python showLineNumbers title="src/kyc_onboarding/telemetry.py (excerpt)"
+# Routes, and the spans they start, run directly under the server span rather than
+# under FastAPI's operation spans, so trace.get_current_span() in a route is the request span.
+FASTAPI_TELEMETRY: FastAPITelemetryConfig = {"operation_spans": False}
+```
+
+The type is imported as
+`from fastapi.telemetry import TelemetryConfig as FastAPITelemetryConfig`,
+which keeps it apart from temporalio's `TelemetryConfig`. `main.py` passes the
+config to the app as `telemetry=FASTAPI_TELEMETRY`. For FastAPI 0.141 and
+earlier, see [FastAPI](./fast-api.md#fastapi-0141-and-earlier).
 
 ## What Pydantic AI Emits
 

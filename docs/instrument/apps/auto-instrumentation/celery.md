@@ -609,12 +609,12 @@ def process_task(self, task_id: int):
 ```python showLineNumbers title="app/main.py"
 from fastapi import FastAPI
 from opentelemetry.propagate import inject
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from . import tasks
+from .database import engine
 from .telemetry import setup_telemetry
 
 app = FastAPI()
-setup_telemetry(app)
+setup_telemetry(engine)
 
 @app.post("/orders/")
 def create_order(order_data: dict):
@@ -1288,7 +1288,7 @@ version = "0.1.0"
 requires-python = ">=3.15"
 
 dependencies = [
-    "fastapi>=0.124.0",
+    "fastapi>=0.142,<1.0.0",
     "uvicorn[standard]>=0.38.0",
     "celery>=5.4.0",
     "redis>=5.0.0",
@@ -1296,7 +1296,6 @@ dependencies = [
     "opentelemetry-distro>=0.48b0",
     "opentelemetry-exporter-otlp>=1.27.0",
     "opentelemetry-instrumentation-celery>=0.48b0",
-    "opentelemetry-instrumentation-fastapi>=0.48b0",
     "opentelemetry-instrumentation-sqlalchemy>=0.48b0",
     "opentelemetry-instrumentation-redis>=0.48b0",
     "opentelemetry-instrumentation-logging>=0.48b0",
@@ -1304,6 +1303,12 @@ dependencies = [
 ```
 
 ### Telemetry Setup
+
+FastAPI 0.142 and later traces requests and records
+`http.server.request.duration` and `http.server.active_requests` itself once
+the tracer and meter providers are set, so `setup_telemetry` instruments only
+SQLAlchemy, Celery and Redis. For FastAPI 0.141 and earlier, see
+[FastAPI Instrumentation](./fast-api.md#fastapi-0141-and-earlier).
 
 ```python showLineNumbers title="celery_demo/telemetry.py"
 import logging
@@ -1316,7 +1321,6 @@ from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 from opentelemetry.instrumentation.celery import CeleryInstrumentor
 from opentelemetry.instrumentation.redis import RedisInstrumentor
@@ -1367,11 +1371,13 @@ def init_telemetry():
     logger.info(f"OpenTelemetry initialized for service: {OTEL_SERVICE_NAME}")
 
 
-def setup_telemetry(app, engine):
+def setup_telemetry(engine):
     """Configure auto-instrumentation for all components."""
     init_telemetry()
 
-    FastAPIInstrumentor.instrument_app(app)
+    # FastAPI traces requests and records the HTTP server metrics itself once the
+    # providers above are set.
+
     SQLAlchemyInstrumentor().instrument(engine=engine)
     CeleryInstrumentor().instrument()
     RedisInstrumentor().instrument()
@@ -1392,7 +1398,7 @@ from .telemetry import setup_telemetry
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-setup_telemetry(app, engine)
+setup_telemetry(engine)
 
 
 def get_db():
