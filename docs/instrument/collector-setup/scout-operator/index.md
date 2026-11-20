@@ -189,6 +189,9 @@ release and install with `--set crds.create=false`.
 | `manager.collectorRBACMode` | `Auto` | `Auto` lets the operator create Collector RBAC. `PreProvisioned` expects it to exist. `Disabled` rejects collectors that need it. |
 | `manager.cacheSync.enabled` | `true` | Copies each supervised collector's latest applied configuration into its recovery cache. |
 | `manager.cacheSync.interval` | `30s` | How often that copy runs. Each supervised collector makes one request per interval. |
+| `collectorCache.enabled` | `auto` | Serves the `otelcol-contrib` release to supervised collectors so each version is downloaded once. `auto` turns it on for the `cluster` scope and off for `namespaced`. See [Collector cache](./remote-configuration.md#collector-cache). |
+| `collectorCache.storage.type` | `emptyDir` | `emptyDir` downloads again after each operator restart. `pvc` keeps the cache on a volume claim, so each version is downloaded once per cluster. |
+| `collectorCache.networkPolicy.create` | `false` | Allows collector pods to reach the cache when a default-deny NetworkPolicy covers the operator's namespace. |
 | `crds.create` | `true` | Set to `false` when the CRDs are managed outside this release. |
 | `instrumentation.enabled` | `true` | Turns auto-instrumentation on or off. Turning it off removes the `ScoutInstrumentation` CRD. See [Auto-instrumentation](./auto-instrumentation.md#chart-values) for the other `instrumentation.*` values. |
 | `instrumentation.tls.mode` | `selfManaged` | `selfManaged`: the operator manages its webhook certificate. `certManager`: an installed cert-manager issues it. |

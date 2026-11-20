@@ -33,8 +33,10 @@ restart the pods.
 
 Each pod runs two init containers before the Supervisor:
 
-1. `install-otelcol` downloads the pinned `otelcol-contrib` release and checks
-   its SHA-256 checksum. The pod stops here if the checksum does not match.
+1. `install-otelcol` fetches the pinned `otelcol-contrib` release and checks
+   its SHA-256 checksum. It asks the Scout Operator's collector cache first and
+   downloads from GitHub only when the cache cannot answer. The pod stops here
+   if the checksum does not match.
 2. `config-bootstrap` chooses the configuration the Collector starts with, and
    writes it to a volume shared with the Supervisor.
 3. `supervisor` runs `opampsupervisor`, which starts the Collector from that
@@ -247,7 +249,24 @@ collector as a whole.
 | `supervisor.configLayers` | none | Extra ConfigMap keys merged after the main configuration, for settings that must survive any remote configuration |
 | `supervisor.capabilities` | remote config, restart, effective config, available components | OpAMP capabilities to advertise |
 | `supervisor.collectorInstall.baseUrl` | GitHub releases | Download mirror for clusters without access to GitHub |
+| `supervisor.collectorInstall.useOperatorCache` | `true` | Fetch the release from the operator's [collector cache](#collector-cache). Set `false` to always download from `baseUrl` |
 | `supervisor.bootstrap.timeout` | `30s` | How long `config-bootstrap` waits for Scout |
+
+## Collector cache
+
+The `otelcol-contrib` release is about 95 MiB. Instead of every pod downloading
+it from GitHub on each start, the operator downloads each version once and
+serves it to `install-otelcol` from inside the cluster:
+
+- The operator only fetches releases that a supervised collector names, and
+  stores one only if it matches the collector's SHA-256 checksum. The pod
+  checks the checksum again.
+- If the cache cannot answer, the pod downloads from `baseUrl` itself, so an
+  operator outage never stops a collector from starting.
+- The operator needs network access to GitHub, or to your `baseUrl` mirror.
+
+The cache is on by default for a cluster-wide install and off for a namespaced
+one. See the [chart values](./index.md#chart-values).
 
 ## Troubleshooting
 
@@ -271,6 +290,18 @@ kubectl logs -n observability <pod> -c config-bootstrap
 The download failed or the checksum did not match. Check that
 `collectorInstall.version` and both checksums belong to the same release,
 and that the pod can reach the download URL.
+
+Its log says where the release came from:
+
+```bash
+kubectl logs -n observability <pod> -c install-otelcol
+```
+
+| Message contains | Meaning |
+| --- | --- |
+| `from the Scout Operator collector cache` | Served by the operator |
+| `collector cache is unreachable` | The operator is down, or a NetworkPolicy blocks port 8090. The pod downloaded from `baseUrl` instead |
+| `collector cache could not serve` | The operator could not download or verify the release. Check its logs for `checksum mismatch` or a download error |
 
 ### `CacheSynchronized` is `False`
 
