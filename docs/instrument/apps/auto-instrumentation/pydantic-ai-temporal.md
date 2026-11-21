@@ -98,32 +98,26 @@ does.
 
 | Component | Version in the example |
 | --- | --- |
-| `pydantic-ai-slim` | 2.49.0, with the `temporal` and `openai` extras |
-| `temporalio` | 1.33.0, with the `opentelemetry` extra |
-| `opentelemetry-sdk`, `opentelemetry-api`, OTLP HTTP exporter | 1.44.0 |
-| `opentelemetry-instrumentation-psycopg`, `-logging` | 0.65b0 |
-| `fastapi` / `uvicorn` | 0.163.1 / 0.53.0 |
+| `pydantic-ai-slim` | 2.68.0, with the `temporal` and `openai` extras |
+| `temporalio` | 1.36.1, with the `opentelemetry` extra |
+| `opentelemetry-sdk`, `opentelemetry-api`, OTLP HTTP exporter | 1.45.2 |
+| `opentelemetry-instrumentation-psycopg`, `-logging` | 0.66b2 |
+| `fastapi` / `uvicorn` | 0.163.1 / 0.54.0 |
 | Temporal server and admin tools | 1.32.0 |
 | Temporal UI | 2.54.1 |
 | PostgreSQL | 18.6 |
-| Ollama | 0.40.0, with `gemma4:e2b` and `qwen3.5:9B` |
-| OpenTelemetry Collector Contrib | 0.161.0 |
+| Ollama | 0.40.16, with `gemma4:e2b` and `qwen3.5:9B` |
+| OpenTelemetry Collector Contrib | 0.165.0 |
 | Example | [`ai-kyc-onboarding`](https://github.com/base-14/examples/tree/main/python/ai-kyc-onboarding) |
 
-Last verified 2026-10-07 with Pydantic AI 2.49.0 and Temporal Python SDK
-1.33.0, against
+Last verified 2026-11-21 with Pydantic AI 2.68.0 and Temporal Python SDK
+1.36.1, against
 [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai)
 at commit `4f85037` (2026-10-06). The GenAI conventions are in Development
 status, and `OpenTelemetryPlugin`, `create_tracer_provider` and the
-replay-safe providers are marked experimental in temporalio 1.33.0. Pin both
+replay-safe providers are marked experimental in temporalio 1.36.1. Pin both
 `temporalio` and `pydantic-ai-slim` exactly and re-check the spans after each
 upgrade.
-
-The example holds `opentelemetry-sdk`, `opentelemetry-api` and the OTLP
-exporter at 1.44.0. The replay-safe logger in temporalio 1.33.0 lacks the
-`enabled()` method that the 1.45.0 API makes abstract, so the logger provider
-cannot be built on 1.45.0. Move the three pins together when temporalio ships
-the method.
 
 ## Installation
 
@@ -136,11 +130,11 @@ import TabItem from '@theme/TabItem';
 ```
 
 ```bash showLineNumbers title="Terminal"
-uv add "pydantic-ai-slim[temporal,openai]==2.49.0" \
-  "temporalio[opentelemetry]==1.33.0" \
-  opentelemetry-sdk==1.44.0 \
-  opentelemetry-exporter-otlp-proto-http==1.44.0 \
-  opentelemetry-instrumentation-logging==0.65b0
+uv add "pydantic-ai-slim[temporal,openai]==2.68.0" \
+  "temporalio[opentelemetry]==1.36.1" \
+  opentelemetry-sdk==1.45.2 \
+  opentelemetry-exporter-otlp-proto-http==1.45.2 \
+  opentelemetry-instrumentation-logging==0.66b2
 ```
 
 ```mdx-code-block
@@ -149,11 +143,11 @@ uv add "pydantic-ai-slim[temporal,openai]==2.49.0" \
 ```
 
 ```bash showLineNumbers title="Terminal"
-pip install "pydantic-ai-slim[temporal,openai]==2.49.0" \
-  "temporalio[opentelemetry]==1.33.0" \
-  opentelemetry-sdk==1.44.0 \
-  opentelemetry-exporter-otlp-proto-http==1.44.0 \
-  opentelemetry-instrumentation-logging==0.65b0
+pip install "pydantic-ai-slim[temporal,openai]==2.68.0" \
+  "temporalio[opentelemetry]==1.36.1" \
+  opentelemetry-sdk==1.45.2 \
+  opentelemetry-exporter-otlp-proto-http==1.45.2 \
+  opentelemetry-instrumentation-logging==0.66b2
 ```
 
 ```mdx-code-block
@@ -817,7 +811,7 @@ payloads is out of scope for the example.
 
 ## Known Gaps
 
-As of Pydantic AI 2.49.0 and Temporal Python SDK 1.33.0, verified 2026-10-07:
+As of Pydantic AI 2.68.0 and Temporal Python SDK 1.36.1, verified 2026-11-21:
 
 - **An open case has no root span.** `RunWorkflow` is exported when the case
   closes, so a waiting case shows finished child spans under a missing
@@ -842,10 +836,6 @@ As of Pydantic AI 2.49.0 and Temporal Python SDK 1.33.0, verified 2026-10-07:
 - **The Temporal runtime does not read `OTEL_EXPORTER_OTLP_ENDPOINT`.**
   Without a full `/v1/metrics` URL in `OpenTelemetryConfig`, the SDK metrics
   go nowhere. See [Temporal SDK Metrics](#temporal-sdk-metrics).
-- **temporalio 1.33.0 holds the OpenTelemetry SDK at 1.44.0.** Its
-  replay-safe logger lacks the `enabled()` method the 1.45.0 API requires, so
-  a library that needs 1.45.0 cannot share the worker's environment until
-  temporalio ships it.
 - **Temporal history holds the content whatever the capture setting.**
   Document text travels in signal payloads and activity inputs. See
   [Content Capture and Temporal History](#content-capture-and-temporal-history).

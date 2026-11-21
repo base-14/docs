@@ -100,9 +100,9 @@ does.
 
 | Component | Version in the example |
 | --- | --- |
-| `llama-index-core` | 0.14.25 |
-| `llama-index-llms-openai-like` | 0.8.1 |
-| `llama-index-llms-openai`, `-anthropic`, `-google-genai` | 0.8.0, 0.12.0, 0.11.0 |
+| `llama-index-core` | 0.14.26 |
+| `llama-index-llms-openai-like` | 0.9.0 |
+| `llama-index-llms-openai`, `-anthropic`, `-google-genai` | 0.8.0, 0.13.0, 0.12.0 |
 | `openai`, `anthropic`, `google-genai` | 2.54.0, 0.125.0, 2.34.0 |
 | `opentelemetry-instrumentation-genai-openai`, `-genai-anthropic` | 1.3b0 |
 | `opentelemetry-instrumentation-google-genai` | 1.3b0 |
@@ -110,15 +110,13 @@ does.
 | `opentelemetry-instrumentation-logging` | 0.66b2 |
 | `fastapi` | 0.163.1 |
 | Python | 3.15 |
-| Ollama | 0.34.2, with `qwen3.5:9B` |
-| OpenTelemetry Collector Contrib | 0.163.1 |
+| Ollama | 0.40.16, with `qwen3.5:9B` |
+| OpenTelemetry Collector Contrib | 0.165.0 |
 | Example | [`ai-content-quality`](https://github.com/base-14/examples/tree/main/python/ai-content-quality) |
 
-Last verified 2026-10-06: the example's verify script passed against Ollama
-`qwen3.5:9B` with content capture off and with `span_only`, and the Quick Start
-ran against a local collector. The GenAI packages are beta and always emit the
-latest experimental conventions, so pin exact versions and re-check the spans
-after each upgrade.
+Last verified 2026-11-21 with LlamaIndex 0.14.26, against Ollama `qwen3.5:9B`.
+The GenAI packages are beta and always emit the latest experimental
+conventions, so pin exact versions and re-check the spans after each upgrade.
 
 ## Installation
 
@@ -386,8 +384,8 @@ endpoints. The example's README covers both.
 
 ## Known Gaps
 
-As of the OpenAI, Anthropic and Google GenAI packages 1.2b0 with LlamaIndex
-0.14.24, verified 2026-10-06:
+As of the OpenAI, Anthropic and Google GenAI packages 1.3b0 with LlamaIndex
+0.14.26, verified 2026-11-21:
 
 - **No official LlamaIndex instrumentation.** Only model calls are traced.
   Query engines, retrievers and workflows get no spans unless you add them;

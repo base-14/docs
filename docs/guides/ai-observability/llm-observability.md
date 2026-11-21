@@ -518,14 +518,12 @@ twice.
 
 ## Known Gaps
 
-As of the OpenAI, Anthropic and Google GenAI packages 1.2b0, verified
-2026-10-06:
+As of the OpenAI, Anthropic and Google GenAI packages 1.3b0, verified
+2026-11-21:
 
 - **`gen_ai.provider.name` is `openai` for OpenAI-compatible endpoints.**
   Correct it on spans in a span processor; the `gen_ai.client.*` metric points
   keep `openai`.
-- **No HTTP client span for OpenAI calls.** The OpenAI SDK 3.x sends through
-  `httpx2`, which `opentelemetry-instrumentation-httpx` does not patch.
 - **No application context on spans or metrics.** Add it to spans in a span
   processor. The token and duration metrics carry the provider and model only;
   record your own counter for per-agent or per-customer views.

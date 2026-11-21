@@ -1,11 +1,11 @@
 ---
 title:
-  Vercel AI SDK OpenTelemetry Instrumentation - AI SDK 7 Agents and v6
+  Vercel AI SDK OpenTelemetry Instrumentation - AI SDK 7 Agents and Middleware
 sidebar_label: Vercel AI SDK
 sidebar_position: 8
 description:
   Trace Vercel AI SDK 7 agents with @ai-sdk/otel, add conversation IDs, logs,
-  per-run cost and GenAI metrics, and instrument AI SDK v6 with middleware.
+  per-run cost and GenAI metrics, or instrument model calls with middleware.
 keywords:
   [
     vercel ai sdk opentelemetry,
@@ -20,8 +20,8 @@ keywords:
     genai semantic conventions typescript,
     vercel ai sdk metrics,
     llm token tracking typescript,
-    ai sdk v6 middleware opentelemetry,
-    LanguageModelV3Middleware,
+    ai sdk middleware opentelemetry,
+    LanguageModelV4Middleware,
     opentelemetry nodejs ai,
     ollama opentelemetry,
     gen_ai.conversation.id ai sdk,
@@ -33,8 +33,8 @@ keywords:
 
 AI SDK 7 emits OpenTelemetry spans through `@ai-sdk/otel`. You register it,
 then add what it cannot know: the run a span belongs to, the run's cost and the
-agent's fan-out. AI SDK v6 has no `@ai-sdk/otel` and is covered in
-[AI SDK v6: Semconv Middleware](#ai-sdk-v6-semconv-middleware).
+agent's fan-out. To instrument model calls yourself instead, see
+[Semconv Middleware](#semconv-middleware).
 
 The example is a Node.js service. A lead agent splits a topic into subtopics
 and runs one researcher subagent per subtopic, on local Ollama models.
@@ -44,9 +44,10 @@ and runs one researcher subagent per subtopic, on local Ollama models.
 Install `@ai-sdk/otel`, start the OpenTelemetry `NodeSDK` from a module loaded
 with `node --import`, and call `registerTelemetry(new OpenTelemetry())`. Each
 agent run then produces `invoke_agent`, `step`, `chat` and `execute_tool`
-spans. `@ai-sdk/otel` records no metrics or logs, and it captures prompts and
-completions by default. Use `enrichSpan` to add a conversation ID, a span
-processor to add cost, and the collector to derive the GenAI client metrics.
+spans and the `gen_ai.client.inference.duration` metric. `@ai-sdk/otel`
+records no token metrics or logs, and it captures prompts and completions by
+default. Use `enrichSpan` to add a conversation ID, a span processor to add
+cost, and the collector to derive the token histograms.
 
 :::
 
@@ -70,7 +71,7 @@ does.
 
 - Node.js developers running agents on the Vercel AI SDK.
 - Teams with a lead agent and subagents who want the fan-out in one trace.
-- Teams on AI SDK v6 who instrument model calls with middleware.
+- Teams who instrument model calls with their own middleware.
 
 ## Overview
 
@@ -80,45 +81,47 @@ does.
 - Nest subagent spans under the tool call that started them.
 - Compute cost per span and per run, including simulated cost.
 - Record run-level metrics with suitable bucket boundaries.
-- Derive `gen_ai.client.*` metrics from spans in the collector.
+- Derive the GenAI token histograms from spans in the collector.
 - Export trace-correlated logs through the pino instrumentation.
 - Measure the token cost of tool definitions.
-- Instrument AI SDK v6 with a `LanguageModelV3Middleware`.
+- Instrument model calls with a `LanguageModelV4Middleware`.
 
 ### Signals
 
 | Signal | What `@ai-sdk/otel` emits | What the [example](#complete-example) adds |
 | --- | --- | --- |
-| Traces | `invoke_agent`, `step`, `chat` and `execute_tool` spans with GenAI attributes. | `gen_ai.conversation.id` and `base14.*` attributes through `enrichSpan`. `gen_ai.provider.name` and cost in span processors. HTTP spans from the Node auto-instrumentations. |
-| Metrics | None. Durations and token counts are span attributes. | Six run-level instruments under `base14.*`. `gen_ai.client.inference.duration` and the `gen_ai.client.inference.operation.*` token histograms, derived from `chat` spans in the collector. |
+| Traces | `invoke_agent`, `step`, `chat` and `execute_tool` spans with GenAI attributes. | `gen_ai.conversation.id` and `base14.*` attributes through `enrichSpan`. Cost in a span processor. HTTP spans from the Node auto-instrumentations. |
+| Metrics | `gen_ai.client.inference.duration`, one point per model call. Token counts are span attributes. | Six run-level instruments under `base14.*`. The `gen_ai.client.inference.operation.*` token histograms, derived from `chat` spans in the collector. |
 | Logs | None. | `pino` records through the pino instrumentation, each with the trace and span ID. |
 
 ## Prerequisites
 
-- Node.js 26 for the v7 example. Bun 1.3 for the v6 example.
+- Node.js 26 for the `@ai-sdk/otel` example. Bun 1.3 for the middleware
+  example.
 - Ollama with the example's models pulled. No provider API key is needed.
 - An OpenTelemetry Collector. See
   [Docker Compose Setup](../../collector-setup/docker-compose-example.md).
-- For the v6 example, Postgres with pgvector. Its Compose file starts one.
+- For the middleware example, Postgres with pgvector. Its Compose file starts
+  one.
 - A base14 Scout account, optional. Both examples run without one.
 
 ### Compatibility Matrix
 
-| Component | AI SDK 7 example | AI SDK v6 example |
+| Component | `@ai-sdk/otel` example | Middleware example |
 | --- | --- | --- |
-| `ai` | 7.0.123 | 6.0.288 |
-| Telemetry | `@ai-sdk/otel` 1.0.123 | Hand-written `LanguageModelV3Middleware` |
+| `ai` | 7.0.173 | 7.0.173 |
+| Telemetry | `@ai-sdk/otel` 1.0.173 | Hand-written `LanguageModelV4Middleware` |
 | Runtime | Node.js 26 | Bun 1.3.9 |
-| Hono | 4.13.9 | 4.13.8 |
-| `@opentelemetry/sdk-node` | 0.222.0 | 0.222.0 |
-| `@opentelemetry/auto-instrumentations-node` | 0.80.0 | Not used |
-| Logs | `pino` 10.3.1, `@opentelemetry/exporter-logs-otlp-http` 0.222.0 | Not used |
-| Provider | Ollama, `ollama-ai-provider-v2` 4.0.1 | Ollama by default, Anthropic, Google or OpenAI optional |
-| OTel Collector contrib | 0.161.0 | 0.161.0 |
+| Hono | 4.13.18 | 4.13.18 |
+| `@opentelemetry/sdk-node` | 0.301.2 | 0.301.2 |
+| `@opentelemetry/auto-instrumentations-node` | 0.83.1 | Not used |
+| Logs | `pino` 10.4.0, `@opentelemetry/exporter-logs-otlp-http` 0.301.2 | `@opentelemetry/sdk-logs` |
+| Provider | Ollama, `ollama-ai-provider-v2` 4.1.0 | Ollama by default, Anthropic, Google or OpenAI optional |
+| OTel Collector contrib | 0.165.0 | 0.165.0 |
 | Example | [`ai-learning-path-planner`](https://github.com/base-14/examples/tree/main/nodejs/ai-learning-path-planner) | [`ai-contract-analyzer`](https://github.com/base-14/examples/tree/main/nodejs/ai-contract-analyzer) |
 
-Last verified 2026-09-30 for the AI SDK 7 example, with `ai` 7.0.123 and
-`@ai-sdk/otel` 1.0.123. The GenAI conventions are in Development status, so
+Last verified 2026-11-21, with `ai` 7.0.173 and `@ai-sdk/otel` 1.0.173. The
+GenAI conventions are in Development status, so
 attribute names can change between releases. Pin `ai` and `@ai-sdk/otel` to
 exact versions and re-check the spans after each upgrade.
 
@@ -129,7 +132,9 @@ npm install \
   ai @ai-sdk/otel ollama-ai-provider-v2 \
   @opentelemetry/api \
   @opentelemetry/sdk-node \
-  @opentelemetry/sdk-trace-base \
+  @opentelemetry/sdk-trace \
+  @opentelemetry/sdk-metrics \
+  @opentelemetry/sdk-logs \
   @opentelemetry/resources \
   @opentelemetry/semantic-conventions \
   @opentelemetry/auto-instrumentations-node \
@@ -216,17 +221,15 @@ import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-http";
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { resourceFromAttributes } from "@opentelemetry/resources";
-import { NodeSDK, logs as sdkLogs, metrics as sdkMetrics } from "@opentelemetry/sdk-node";
-import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
+import { BatchLogRecordProcessor } from "@opentelemetry/sdk-logs";
+import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
+import { NodeSDK } from "@opentelemetry/sdk-node";
+import { BatchSpanProcessor } from "@opentelemetry/sdk-trace";
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from "@opentelemetry/semantic-conventions";
 import { registerTelemetry } from "ai";
 import { loadConfig } from "./config.js";
 import { assertPriceModelIsKnown } from "./llm/cost.js";
-import {
-  enrichSpan,
-  PlanCostSpanProcessor,
-  ProviderNameSpanProcessor,
-} from "./telemetry/enrich.js";
+import { enrichSpan, PlanCostSpanProcessor } from "./telemetry/enrich.js";
 
 register("@opentelemetry/instrumentation/hook.mjs", import.meta.url);
 
@@ -244,14 +247,15 @@ const sdk = new NodeSDK({
     [ATTR_SERVICE_VERSION]: version,
   }),
   spanProcessors: [
-    new ProviderNameSpanProcessor(),
     new PlanCostSpanProcessor(config),
-    new BatchSpanProcessor(new OTLPTraceExporter()),
+    new BatchSpanProcessor({ exporter: new OTLPTraceExporter() }),
   ],
-  metricReader: new sdkMetrics.PeriodicExportingMetricReader({
-    exporter: new OTLPMetricExporter(),
-  }),
-  logRecordProcessors: [new sdkLogs.BatchLogRecordProcessor({ exporter: new OTLPLogExporter() })],
+  metricReaders: [
+    new PeriodicExportingMetricReader({
+      exporter: new OTLPMetricExporter(),
+    }),
+  ],
+  logRecordProcessors: [new BatchLogRecordProcessor({ exporter: new OTLPLogExporter() })],
   instrumentations: [getNodeAutoInstrumentations()],
 });
 
@@ -278,8 +282,10 @@ for (const signal of ["SIGTERM", "SIGINT"] as const) {
   integration. It uses the global tracer the `NodeSDK` registers.
 - **`usage: true`.** Adds AI SDK usage details that the `gen_ai.usage.*`
   attributes do not cover.
-- **Processor order.** `ProviderNameSpanProcessor` and `PlanCostSpanProcessor`
-  go before the exporting processor, so what they write in `onEnd` is exported.
+- **Processor order.** `PlanCostSpanProcessor` goes before the exporting
+  processor, so what it writes in `onEnd` is exported.
+- **`metricReaders`.** Exports the inference duration metric `@ai-sdk/otel`
+  records through the global meter provider, and the run-level instruments.
 - **`logRecordProcessors`.** Receives the records the pino instrumentation
   sends. `@ai-sdk/otel` emits no logs.
 - **Both signals.** Handling `SIGINT` flushes the last batch when you stop the
@@ -395,15 +401,18 @@ Attributes on the AI SDK spans:
 | --- | --- |
 | `gen_ai.operation.name` | `invoke_agent`, `agent_step`, `chat` or `execute_tool`. |
 | `gen_ai.agent.name` | The agent's `functionId`. |
-| `gen_ai.provider.name` | The AI SDK provider ID, mapped for well-known providers. Ollama arrives as `ollama.responses`. |
+| `gen_ai.provider.name` | The AI SDK provider ID, mapped for well-known providers. See [Provider Name](#provider-name). |
 | `gen_ai.request.model` | The requested model ID. |
 | `gen_ai.response.model` | The model ID the provider returned. |
 | `gen_ai.usage.input_tokens` | Input tokens. |
 | `gen_ai.usage.output_tokens` | Output tokens. |
 
-`@ai-sdk/otel` emits spans only. `chat` spans carry
-`gen_ai.client.operation.duration` as an attribute, not as a metric. The
-metrics in this guide come from the application and the collector.
+`@ai-sdk/otel` also records `gen_ai.client.inference.duration`, one point per
+model call, on a meter named `gen_ai` from the global meter provider. Its
+attributes are `gen_ai.operation.name`, `gen_ai.provider.name`,
+`gen_ai.request.model`, `gen_ai.response.model`, and `error.type` on a failed
+call. It records no token metrics. The other metrics in this guide come from
+the application and the collector.
 
 Each agent has two `invoke_agent` spans: the tool loop and a separate
 structured-output call. They are separate because the local model stops
@@ -476,35 +485,21 @@ semantic conventions.
 ### Provider Name
 
 `@ai-sdk/otel` maps well-known provider IDs, such as `openai` and `anthropic`,
-onto the GenAI provider names and passes the rest through. A span processor
-rewrites the Ollama provider ID:
+onto the GenAI provider names and passes the rest through.
+`ollama-ai-provider-v2` reports `ollama.responses`. Wrap the model with a
+`providerId` to set the name:
 
-```typescript showLineNumbers title="src/telemetry/enrich.ts"
-const ATTR_PROVIDER_NAME = "gen_ai.provider.name";
-const OLLAMA_PROVIDER_PREFIX = "ollama.";
+```typescript showLineNumbers title="src/llm/models.ts"
+import { wrapLanguageModel } from "ai";
+import { createOllama } from "ollama-ai-provider-v2";
 
-export class ProviderNameSpanProcessor implements SpanProcessor {
-  onStart(): void {}
-
-  onEnd(span: ReadableSpan): void {
-    const provider = stringAttribute(span.attributes, ATTR_PROVIDER_NAME);
-    if (provider?.startsWith(OLLAMA_PROVIDER_PREFIX)) {
-      span.attributes[ATTR_PROVIDER_NAME] = "ollama";
-    }
-  }
-
-  forceFlush(): Promise<void> {
-    return Promise.resolve();
-  }
-
-  shutdown(): Promise<void> {
-    return Promise.resolve();
-  }
-}
+const ollama = createOllama({ baseURL: config.ollamaBaseUrl });
+return wrapLanguageModel({ model: ollama(modelId), middleware: {}, providerId: "ollama" });
 ```
 
-It runs in `onEnd`, ahead of the exporting processor, so the exported span and
-the metrics the collector derives from it carry `ollama`.
+The provider ID is set before any span or metric is recorded, so the spans,
+the inference duration metric and the token histograms the collector derives
+all carry `ollama`.
 
 ## Tracing Subagents
 
@@ -668,30 +663,17 @@ request both ways:
 Compare first calls. Whole-run totals depend on how many steps the model
 takes.
 
-## GenAI Client Metrics from the Collector
+## GenAI Token Metrics from the Collector
 
-`@ai-sdk/otel` records no metrics, so a dashboard built on
-`gen_ai.client.inference.duration` and the
-`gen_ai.client.inference.operation.*` token histograms stays empty. The
-collector's `signal_to_metrics` connector derives all three from `chat` spans:
+`@ai-sdk/otel` records `gen_ai.client.inference.duration` but no token
+metrics, so a dashboard built on the `gen_ai.client.inference.operation.*`
+token histograms stays empty. The collector's `signal_to_metrics` connector
+derives both from `chat` spans:
 
 ```yaml showLineNumbers title="config/otel-collector.yaml (excerpt)"
 connectors:
   signal_to_metrics:
     spans:
-      - name: gen_ai.client.inference.duration
-        description: Duration of GenAI model calls, from chat spans.
-        unit: s
-        conditions:
-          - span.attributes["gen_ai.operation.name"] == "chat"
-        attributes:
-          - key: gen_ai.operation.name
-          - key: gen_ai.provider.name
-          - key: gen_ai.request.model
-          - key: gen_ai.response.model
-        histogram:
-          buckets: [0.01, 0.02, 0.04, 0.08, 0.16, 0.32, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 40.96, 81.92]
-          value: Seconds(span.end_time - span.start_time)
       - name: gen_ai.client.inference.operation.input_tokens
         description: Input tokens per GenAI model call, from chat spans.
         unit: "{token}"
@@ -721,13 +703,13 @@ service:
 - **One metric per direction.** The current GenAI conventions split input
   and output tokens into separate histograms, replacing
   `gen_ai.client.token.usage` and its `gen_ai.token.type` attribute.
-- **Buckets** are the boundaries the GenAI conventions advise.
+- **Buckets** are the token boundaries the GenAI conventions advise.
 - **Delta temporality.** The connector emits delta histograms.
 - **Keep it in the traces exporters.** A second config file that replaces the
   traces `exporters` list has to include `signal_to_metrics`, or the metrics
   stop.
 
-The example runs collector contrib 0.163.1. That release also accepts the
+The example runs collector contrib 0.165.0. That release also accepts the
 name `signaltometrics`, with a deprecation warning.
 
 ## Logs and Trace Correlation
@@ -763,7 +745,7 @@ only when credentials are set:
 
 ```yaml showLineNumbers title="compose.yaml (collector service)"
 otel-collector:
-  image: otel/opentelemetry-collector-contrib:0.161.0
+  image: otel/opentelemetry-collector-contrib:0.165.0
   command: --config=/etc/otel-collector.yaml ${SCOUT_CLIENT_ID:+--config=/etc/otel-collector-scout.yaml}
   volumes:
     - ./config/otel-collector.yaml:/etc/otel-collector.yaml:ro
@@ -853,19 +835,20 @@ Without `--import`, the service runs but exports nothing.
 
 ## Known Gaps
 
-As of AI SDK 7.0.123 and `@ai-sdk/otel` 1.0.123, verified 2026-09-30:
+As of AI SDK 7.0.173 and `@ai-sdk/otel` 1.0.173, verified 2026-11-21:
 
-- **No metrics.** Durations and token counts are span attributes only. Derive
-  the GenAI client metrics in the collector, as above.
+- **No token metrics.** Token counts are span attributes only. Derive the
+  token histograms in the collector, as above.
 - **No logs.** Use a logging library with an OpenTelemetry instrumentation,
   such as pino.
-- **No `error.type`.** A failed call gets error status and a recorded
+- **No `error.type` on spans.** A failed call gets error status and a recorded
   exception, plus `http.response.status_code` when the provider returned one.
-  Group failures by the exception type.
+  Group failures by the exception type. The inference duration metric carries
+  `error.type`.
 - **No `server.address` or `server.port`** on `chat` spans. The child HTTP
   client span has them.
 - **Provider names are mapped only for well-known providers.** Ollama arrives
-  as `ollama.responses`. Rewrite it in a span processor.
+  as `ollama.responses`. Wrap the model with a `providerId`.
 - **No `gen_ai.conversation.id`.** Set it through `enrichSpan`.
 - **Content capture is on by default.** `recordInputs` and `recordOutputs`
   default to `true`, and no `OTEL_*` variable changes that.
@@ -1002,11 +985,17 @@ model ID in `_shared/pricing.json`.
 The context window is too small. Ollama defaults to 4096 tokens, which a lead
 run exceeds. The example sets `OLLAMA_NUM_CTX=16384`.
 
-### No `gen_ai.client.*` metrics
+### No `gen_ai.client.inference.operation.*` token metrics
 
 `signal_to_metrics` is missing from the traces `exporters` list, often because
 a second config file replaced the list. Add it back, and keep it in the metrics
 `receivers`.
+
+### No `gen_ai.client.inference.duration` metric
+
+The `NodeSDK` has no `metricReaders`, or the SDK started after the first
+model call. `@ai-sdk/otel` records through the global meter provider, which
+the SDK registers in `sdk.start()`.
 
 ### No log records in the collector
 
@@ -1020,26 +1009,31 @@ Check that all four `SCOUT_*` variables are set for the collector, that it
 loaded the second config file, and that `docker compose logs otel-collector`
 shows no export errors.
 
-## AI SDK v6: Semconv Middleware
+## Semconv Middleware
 
-AI SDK v6 has no `@ai-sdk/otel`. Its built-in `experimental_telemetry` emits
-`ai.generateText` spans that do not follow the current GenAI conventions, for
-example `gen_ai.system` instead of `gen_ai.provider.name`. Leave it off and
-wrap each model in a `LanguageModelV3Middleware` that opens a GenAI span per
-call.
+`@ai-sdk/otel` traces the agent loop. When you call models directly and want
+one GenAI span per model call that you control, with retries, cost and
+metrics in the same place, leave `@ai-sdk/otel` out and wrap each model in a
+`LanguageModelV4Middleware`.
 
 The
 [`ai-contract-analyzer`](https://github.com/base-14/examples/tree/main/nodejs/ai-contract-analyzer)
-example does this on Bun. It uses Ollama by default and supports Anthropic,
-Google and OpenAI, with retries and provider fallback.
+example does this on Bun with AI SDK 7. It uses Ollama by default and supports
+Anthropic, Google and OpenAI, with retries and provider fallback.
 
 ```typescript showLineNumbers title="src/llm/middleware.ts"
+import type { LanguageModelV4, LanguageModelV4Middleware } from "@ai-sdk/provider";
+import { SpanKind, trace } from "@opentelemetry/api";
+import { wrapLanguageModel } from "ai";
+
+const tracer = trace.getTracer("ai-contract-analyzer");
+
 export function createSemconvMiddleware(
   target: ProviderTarget,
   pricing?: ModelPricing,
-): LanguageModelV3Middleware {
+): LanguageModelV4Middleware {
   return {
-    specificationVersion: "v3",
+    specificationVersion: "v4",
     async wrapGenerate({ doGenerate, model }) {
       const modelId = model.modelId;
       const metricAttrs = {
@@ -1064,6 +1058,8 @@ export function createSemconvMiddleware(
 
           const inputTokens = result.usage.inputTokens.total ?? 0;
           const outputTokens = result.usage.outputTokens.total ?? 0;
+          if (result.response?.modelId)
+            span.setAttribute("gen_ai.response.model", result.response.modelId);
           span.setAttribute("gen_ai.usage.input_tokens", inputTokens);
           span.setAttribute("gen_ai.usage.output_tokens", outputTokens);
 
@@ -1080,10 +1076,10 @@ export function createSemconvMiddleware(
 }
 
 export function withSemconv(
-  model: LanguageModelV3,
+  model: LanguageModelV4,
   target: ProviderTarget,
   pricing?: ModelPricing,
-): LanguageModelV3 {
+): LanguageModelV4 {
   return wrapLanguageModel({ model, middleware: createSemconvMiddleware(target, pricing) });
 }
 ```
@@ -1100,16 +1096,12 @@ The full middleware in the example also:
 `withFallback` switches to a second provider when the first one's retries run
 out. The failed call and the successful call appear as two `chat` spans.
 
-| | AI SDK v6 middleware | AI SDK 7 `@ai-sdk/otel` |
+| | Middleware | `@ai-sdk/otel` |
 | --- | --- | --- |
 | Spans | One `chat` span per model call, written by you. | Agent, step, chat and tool spans from the SDK. |
-| Metrics | `gen_ai.client.inference.operation.*` token histograms and `gen_ai.client.inference.duration` from the middleware. | None. Record your own. |
+| Metrics | `gen_ai.client.inference.operation.*` token histograms and `gen_ai.client.inference.duration` from the middleware. | `gen_ai.client.inference.duration`. Derive the token histograms in the collector. |
 | Streaming | Needs `wrapStream` as well. | Included. |
 | Run context | Set attributes on your own spans. | `enrichSpan` with runtime context. |
-
-To move from v6 to v7, remove the middleware, register `@ai-sdk/otel` and move
-cost into a span processor. Keep any metrics you need, because `@ai-sdk/otel`
-does not record them.
 
 ## FAQ
 
@@ -1122,8 +1114,8 @@ each `ToolLoopAgent`, `generateText` or `streamText` call produces
 
 ### Does `@ai-sdk/otel` record metrics?
 
-`@ai-sdk/otel` records no metrics, only span attributes. Derive
-`gen_ai.client.inference.duration` and the
+`@ai-sdk/otel` records `gen_ai.client.inference.duration` through the global
+meter provider. It records no token metrics. Derive the
 `gen_ai.client.inference.operation.*` token histograms from `chat` spans with
 the collector's `signal_to_metrics` connector, and record run-level metrics in
 your application.
@@ -1178,9 +1170,8 @@ the top of the module loaded with `node --import`.
 
 ### Which AI SDK versions does this guide cover?
 
-AI SDK 7 with `@ai-sdk/otel`, and AI SDK v6 with a
-`LanguageModelV3Middleware` in
-[AI SDK v6: Semconv Middleware](#ai-sdk-v6-semconv-middleware).
+AI SDK 7, with `@ai-sdk/otel` or with a `LanguageModelV4Middleware` in
+[Semconv Middleware](#semconv-middleware).
 
 ### Can I see prompts and completions in traces?
 
@@ -1217,7 +1208,7 @@ and [Express](./express.md).
 
 ## Complete Example
 
-### AI SDK 7
+### `@ai-sdk/otel`
 
 ```text showLineNumbers
 ai-learning-path-planner/
@@ -1225,7 +1216,7 @@ ai-learning-path-planner/
 │   ├── telemetry.ts            # NodeSDK, loader hook, registerTelemetry
 │   ├── log.ts                  # pino logger
 │   ├── telemetry/
-│   │   ├── enrich.ts           # enrichSpan, provider and cost span processors
+│   │   ├── enrich.ts           # enrichSpan, cost span processor
 │   │   └── metrics.ts          # Six run-level instruments
 │   ├── agents/
 │   │   ├── lead.ts             # Lead ToolLoopAgent and shaping call
@@ -1248,10 +1239,10 @@ ai-learning-path-planner/
 Source:
 [`nodejs/ai-learning-path-planner`](https://github.com/base-14/examples/tree/main/nodejs/ai-learning-path-planner).
 
-### AI SDK v6
+### Middleware
 
-Middleware, a multi-stage pipeline, pgvector retrieval, retries and provider
-fallback on Bun:
+A `LanguageModelV4Middleware`, a multi-stage pipeline, pgvector retrieval,
+retries and provider fallback on Bun:
 [`nodejs/ai-contract-analyzer`](https://github.com/base-14/examples/tree/main/nodejs/ai-contract-analyzer).
 
 ## References

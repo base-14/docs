@@ -536,8 +536,7 @@ traces, breaking the correlation between HTTP requests and task execution.
 POST /tasks/                                    Trace ID: abc123
 ├── INSERT task_db (PostgreSQL)
 ├── apply_async/process_task ─► RabbitMQ ─► run/process_task
-                                            ├── process_task
-                                            │   └── heavy_processing
+                                            ├── heavy_processing
                                             └── SETEX (Redis)
 ```
 
@@ -546,69 +545,58 @@ impossible to correlate the HTTP request with task execution.
 
 ### Injecting Trace Context (Producer Side)
 
-When publishing tasks from a web framework (FastAPI, Django, Flask), inject the
-trace context into Celery task headers:
+Call `CeleryInstrumentor().instrument()` in the process that publishes tasks,
+as well as in the worker. On the producer side it adds the `traceparent`
+header when a task is published, under an `apply_async/{task}` span, so the
+publishing code needs no tracing calls:
 
-```python showLineNumbers title="app/api/endpoints.py"
-from fastapi import FastAPI, Depends
-from opentelemetry.propagate import inject
+```python showLineNumbers title="app/main.py"
+from fastapi import FastAPI
 from . import tasks
 
 app = FastAPI()
 
 @app.post("/tasks/")
 def create_task(task_data: dict):
-    # Create database record, etc.
     db_task = create_task_record(task_data)
-
-    # Inject trace context into Celery task headers
-    headers = {}
-    inject(headers)
-
-    # Publish task with trace context
-    tasks.process_task.apply_async(
-        args=[db_task.id],
-        headers=headers
-    )
-
+    tasks.process_task.apply_async(args=[db_task.id])
     return {"task_id": db_task.id, "status": "queued"}
 ```
 
+Without the producer-side call, the worker starts a new trace for each task.
+
 ### Extracting Context (Worker Side)
 
-The Celery instrumentation automatically extracts context from task headers when
-properly configured. For custom span creation within tasks:
+The worker's `CeleryInstrumentor` reads the header and runs the task inside a
+`run/{task}` span in the same trace. Add attributes to that span and nest
+business spans under it:
 
 ```python showLineNumbers title="myapp/tasks.py"
 from celery import Celery
 from opentelemetry import trace
-from opentelemetry.propagate import extract
-from opentelemetry.context import attach, detach
 
 celery = Celery("tasks", broker="amqp://localhost")
+tracer = trace.get_tracer(__name__)
 
-@celery.task(bind=True)
-def process_task(self, task_id: int):
-    tracer = trace.get_tracer(__name__)
+@celery.task
+def process_task(task_id: int):
+    run_span = trace.get_current_span()
+    run_span.set_attribute("task.id", task_id)
 
-    # Create custom span within the propagated context
-    with tracer.start_as_current_span("process_task") as span:
-        span.set_attribute("task.id", task_id)
+    with tracer.start_as_current_span("heavy_processing") as processing_span:
+        result = perform_processing(task_id)
+        processing_span.set_attribute("processing.duration_ms", result.duration)
 
-        # Business logic with nested spans
-        with tracer.start_span("heavy_processing") as processing_span:
-            result = perform_processing(task_id)
-            processing_span.set_attribute("processing.duration_ms", result.duration)
-
-        span.set_attribute("task.status", "completed")
-        return {"task_id": task_id, "status": "completed"}
+    run_span.set_attribute("task.status", "completed")
+    return {"task_id": task_id, "status": "completed"}
 ```
+
+A span opened around the whole task body duplicates `run/{task}`.
 
 ### Complete Producer-Consumer Example
 
 ```python showLineNumbers title="app/main.py"
 from fastapi import FastAPI
-from opentelemetry.propagate import inject
 from . import tasks
 from .database import engine
 from .telemetry import setup_telemetry
@@ -621,14 +609,10 @@ def create_order(order_data: dict):
     """Create order and queue async processing."""
     order = Order.create(**order_data)
 
-    # Propagate trace context to Celery
-    headers = {}
-    inject(headers)
-
-    # Queue multiple tasks with same trace context
-    tasks.validate_inventory.apply_async(args=[order.id], headers=headers)
-    tasks.process_payment.apply_async(args=[order.id], headers=headers)
-    tasks.send_confirmation.apply_async(args=[order.id], headers=headers)
+    # Each publish carries the current trace context.
+    tasks.validate_inventory.apply_async(args=[order.id])
+    tasks.process_payment.apply_async(args=[order.id])
+    tasks.send_confirmation.apply_async(args=[order.id])
 
     return {"order_id": order.id}
 ```
@@ -644,33 +628,27 @@ celery = Celery("tasks")
 @celery.task
 def validate_inventory(order_id: int):
     logger.info(f"Validating inventory for order {order_id}")
-    tracer = trace.get_tracer(__name__)
-
-    with tracer.start_as_current_span("validate_inventory") as span:
-        span.set_attribute("order.id", order_id)
-        # Validation logic
-        return {"order_id": order_id, "inventory_valid": True}
+    trace.get_current_span().set_attribute("order.id", order_id)
+    # Validation logic
+    return {"order_id": order_id, "inventory_valid": True}
 
 @celery.task
 def process_payment(order_id: int):
     logger.info(f"Processing payment for order {order_id}")
-    tracer = trace.get_tracer(__name__)
-
-    with tracer.start_as_current_span("process_payment") as span:
-        span.set_attribute("order.id", order_id)
-        # Payment logic
-        return {"order_id": order_id, "payment_status": "completed"}
+    trace.get_current_span().set_attribute("order.id", order_id)
+    # Payment logic
+    return {"order_id": order_id, "payment_status": "completed"}
 
 @celery.task
 def send_confirmation(order_id: int):
     logger.info(f"Sending confirmation for order {order_id}")
-    tracer = trace.get_tracer(__name__)
-
-    with tracer.start_as_current_span("send_confirmation") as span:
-        span.set_attribute("order.id", order_id)
-        # Email logic
-        return {"order_id": order_id, "email_sent": True}
+    trace.get_current_span().set_attribute("order.id", order_id)
+    # Email logic
+    return {"order_id": order_id, "email_sent": True}
 ```
+
+The three `run/{task}` spans share the order's trace, each under its own
+`apply_async/{task}` span.
 
 ## Custom Manual Instrumentation
 
@@ -686,35 +664,37 @@ import time
 
 celery = Celery("tasks")
 
+tracer = trace.get_tracer(__name__)
+
 @celery.task
 def generate_report(report_id: int, params: dict):
-    tracer = trace.get_tracer(__name__)
+    run_span = trace.get_current_span()
+    run_span.set_attribute("report.id", report_id)
+    run_span.set_attribute("report.type", params.get("type", "standard"))
 
-    with tracer.start_as_current_span("generate_report") as span:
-        span.set_attribute("report.id", report_id)
-        span.set_attribute("report.type", params.get("type", "standard"))
+    # Data gathering phase
+    with tracer.start_as_current_span("gather_data") as data_span:
+        data = gather_report_data(report_id, params)
+        data_span.set_attribute("data.records_count", len(data))
+        data_span.add_event("Data gathered", attributes={
+            "records": len(data)
+        })
 
-        # Data gathering phase
-        with tracer.start_span("gather_data") as data_span:
-            data = gather_report_data(report_id, params)
-            data_span.set_attribute("data.records_count", len(data))
-            data_span.add_event("Data gathered", attributes={
-                "records": len(data)
-            })
+    # Processing phase
+    with tracer.start_as_current_span("process_data") as process_span:
+        processed = process_data(data)
+        process_span.set_attribute("processing.duration_ms", processed.duration)
 
-        # Processing phase
-        with tracer.start_span("process_data") as process_span:
-            processed = process_data(data)
-            process_span.set_attribute("processing.duration_ms", processed.duration)
+    # Rendering phase
+    with tracer.start_as_current_span("render_report") as render_span:
+        report = render_report(processed, params.get("format", "pdf"))
+        render_span.set_attribute("report.size_bytes", len(report))
 
-        # Rendering phase
-        with tracer.start_span("render_report") as render_span:
-            report = render_report(processed, params.get("format", "pdf"))
-            render_span.set_attribute("report.size_bytes", len(report))
-
-        span.set_status(trace.Status(trace.StatusCode.OK))
-        return {"report_id": report_id, "status": "completed"}
+    return {"report_id": report_id, "status": "completed"}
 ```
+
+The three phase spans nest under the `run/generate_report` span the
+instrumentation opens for the task.
 
 ### Adding Attributes to Current Span
 
@@ -978,13 +958,9 @@ opentelemetry-instrument celery -A myapp.tasks worker --loglevel=debug
 
 **Solutions:**
 
-1. Ensure trace context is injected when publishing tasks:
-
-   ```python
-   headers = {}
-   inject(headers)
-   task.apply_async(args=[...], headers=headers)
-   ```
+1. Ensure `CeleryInstrumentor().instrument()` runs in the process that
+   publishes tasks, not only in the worker. Look for an
+   `apply_async/{task}` span in the request's trace.
 
 2. Verify Celery instrumentation is installed:
 
@@ -1158,15 +1134,15 @@ OpenTelemetry supports Celery 5.3+ with Python 3.10+. Celery 5.6+ with Python
 
 ### How do I trace tasks across multiple services?
 
-Use `inject()` when publishing tasks and ensure all services send telemetry to
-the same Scout Collector. The trace context is automatically propagated through
-Celery task headers.
+Call `CeleryInstrumentor().instrument()` in every service that publishes or
+runs tasks, and send their telemetry to the same Scout Collector. The trace
+context travels in the Celery task headers.
 
 ### Can I use OpenTelemetry with Celery Beat (scheduled tasks)?
 
 Yes! Celery Beat scheduled tasks are automatically instrumented. Each scheduled
-execution creates a new trace. For correlation with external triggers, inject
-context when scheduling dynamic tasks.
+execution creates a new trace. A task published from instrumented code, such
+as a request handler, joins that code's trace.
 
 ### How do I monitor task retries?
 
@@ -1390,7 +1366,6 @@ def setup_telemetry(engine):
 ```python showLineNumbers title="celery_demo/main.py"
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
-from opentelemetry.propagate import inject
 from . import models, tasks
 from .database import SessionLocal, engine
 from .telemetry import setup_telemetry
@@ -1421,10 +1396,7 @@ def create_task(task_data: dict, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_task)
 
-    # Propagate trace context to Celery
-    headers = {}
-    inject(headers)
-    tasks.process_task.apply_async(args=[db_task.id], headers=headers)
+    tasks.process_task.apply_async(args=[db_task.id])
 
     return {"task_id": db_task.id, "status": "queued"}
 ```
@@ -1450,21 +1422,22 @@ celery = Celery(
 )
 
 
+tracer = trace.get_tracer(__name__)
+
+
 @celery.task
 def process_task(task_id: int):
     logger.info(f"Starting to process task {task_id}")
-    tracer = trace.get_tracer(__name__)
+    run_span = trace.get_current_span()
+    run_span.set_attribute("task.id", task_id)
 
-    with tracer.start_as_current_span("process_task") as span:
-        span.set_attribute("task.id", task_id)
+    with tracer.start_as_current_span("heavy_processing") as processing_span:
+        time.sleep(2)  # Simulate processing
+        processing_span.set_attribute("processing.duration_ms", 2000)
 
-        with tracer.start_span("heavy_processing") as processing_span:
-            time.sleep(2)  # Simulate processing
-            processing_span.set_attribute("processing.duration_ms", 2000)
-
-        span.set_attribute("task.status", "completed")
-        logger.info(f"Task {task_id} completed successfully")
-        return {"task_id": task_id, "status": "completed"}
+    run_span.set_attribute("task.status", "completed")
+    logger.info(f"Task {task_id} completed successfully")
+    return {"task_id": task_id, "status": "completed"}
 ```
 
 ### Environment Variables

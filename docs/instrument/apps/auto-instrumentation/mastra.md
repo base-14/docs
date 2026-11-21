@@ -86,7 +86,7 @@ does.
 - Read the span tree of a run, including an agent called from a tool.
 - Put a conversation ID and your own attributes on every Mastra span.
 - Keep prompts, responses and tool content off spans.
-- Add cost and a clean provider name in a span processor.
+- Add a clean provider name with `providerId` and cost in a span processor.
 - Derive `gen_ai.client.*` metrics in the Collector, since Mastra emits none.
 
 ### Signals
@@ -110,20 +110,20 @@ does.
 
 | Component | Version in the example |
 | --- | --- |
-| `@mastra/core` | 1.74.0 |
-| `@mastra/observability` | 1.18.3 |
-| `@mastra/otel-bridge` | 1.5.13 |
-| `@opentelemetry/sdk-node`, OTLP HTTP exporters | 0.222.0 |
-| `@opentelemetry/api` | 1.9.1 |
-| `ollama-ai-provider-v2` | 4.0.1 |
-| `ai` | 7.0.127, for the tool definitions the example shares with its AI SDK agents |
+| `@mastra/core` | 1.83.0 |
+| `@mastra/observability` | 1.24.0 |
+| `@mastra/otel-bridge` | 1.5.22 |
+| `@opentelemetry/sdk-node`, OTLP HTTP exporters | 0.301.2 |
+| `@opentelemetry/api` | 1.10.0 |
+| `ollama-ai-provider-v2` | 4.1.0 |
+| `ai` | 7.0.173, for the tool definitions the example shares with its AI SDK agents |
 | Node.js | 26 |
-| Ollama | 0.34.2, with `qwen3.5:9B` and `gemma4:e2b` |
-| OpenTelemetry Collector Contrib | 0.161.0 |
+| Ollama | 0.40.16, with `qwen3.5:9B` and `gemma4:e2b` |
+| OpenTelemetry Collector Contrib | 0.165.0 |
 | Example | [`ai-learning-path-planner`](https://github.com/base-14/examples/tree/main/nodejs/ai-learning-path-planner) |
 
-Last verified 2026-10-04 with `@mastra/core` 1.74.0 and `@mastra/otel-bridge`
-1.5.13. Mastra documents the bridge as experimental, and the GenAI
+Last verified 2026-11-21 with `@mastra/core` 1.83.0 and `@mastra/otel-bridge`
+1.5.22. Mastra documents the bridge as experimental, and the GenAI
 conventions are in Development status, so span and attribute names can change
 between releases. Pin the Mastra packages to exact versions and re-check the
 spans after each upgrade.
@@ -140,9 +140,9 @@ token counts, depend on the provider.
 ```
 
 ```bash showLineNumbers title="Terminal"
-npm install --save-exact @mastra/core@1.74.0 @mastra/observability@1.18.3 \
-  @mastra/otel-bridge@1.5.13 ollama-ai-provider-v2@4.0.1 zod
-npm install @opentelemetry/sdk-node @opentelemetry/sdk-trace-base \
+npm install --save-exact @mastra/core@1.83.0 @mastra/observability@1.24.0 \
+  @mastra/otel-bridge@1.5.22 ollama-ai-provider-v2@4.1.0 zod
+npm install @opentelemetry/sdk-node @opentelemetry/sdk-trace \
   @opentelemetry/exporter-trace-otlp-http
 ```
 
@@ -152,9 +152,9 @@ npm install @opentelemetry/sdk-node @opentelemetry/sdk-trace-base \
 ```
 
 ```bash showLineNumbers title="Terminal"
-pnpm add --save-exact @mastra/core@1.74.0 @mastra/observability@1.18.3 \
-  @mastra/otel-bridge@1.5.13 ollama-ai-provider-v2@4.0.1 zod
-pnpm add @opentelemetry/sdk-node @opentelemetry/sdk-trace-base \
+pnpm add --save-exact @mastra/core@1.83.0 @mastra/observability@1.24.0 \
+  @mastra/otel-bridge@1.5.22 ollama-ai-provider-v2@4.1.0 zod
+pnpm add @opentelemetry/sdk-node @opentelemetry/sdk-trace \
   @opentelemetry/exporter-trace-otlp-http
 ```
 
@@ -184,13 +184,13 @@ import { Observability } from "@mastra/observability";
 import { OtelBridge } from "@mastra/otel-bridge";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { NodeSDK } from "@opentelemetry/sdk-node";
-import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
+import { BatchSpanProcessor } from "@opentelemetry/sdk-trace";
 import { createOllama } from "ollama-ai-provider-v2";
 import { z } from "zod";
 
 const sdk = new NodeSDK({
   serviceName: "mastra-quickstart",
-  spanProcessors: [new BatchSpanProcessor(new OTLPTraceExporter())],
+  spanProcessors: [new BatchSpanProcessor({ exporter: new OTLPTraceExporter() })],
 });
 sdk.start();
 
@@ -261,7 +261,7 @@ import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentation
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { resourceFromAttributes } from "@opentelemetry/resources";
 import { NodeSDK } from "@opentelemetry/sdk-node";
-import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
+import { BatchSpanProcessor } from "@opentelemetry/sdk-trace";
 import { ATTR_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 
 // Under ESM the HTTP server span is missing unless this hook is registered before anything
@@ -270,7 +270,7 @@ register("@opentelemetry/instrumentation/hook.mjs", import.meta.url);
 
 const sdk = new NodeSDK({
   resource: resourceFromAttributes({ [ATTR_SERVICE_NAME]: "ai-learning-path-planner" }),
-  spanProcessors: [new BatchSpanProcessor(new OTLPTraceExporter())],
+  spanProcessors: [new BatchSpanProcessor({ exporter: new OTLPTraceExporter() })],
   instrumentations: [getNodeAutoInstrumentations()],
 });
 
@@ -519,9 +519,11 @@ onEnd(span: ReadableSpan): void {
 ## Adding Cost and a Provider Name
 
 Mastra sets `gen_ai.provider.name` to the AI SDK provider ID, which for
-Ollama is `ollama.responses`. It sets no cost. The example fixes both in span
-processors registered ahead of the exporter. Because usage is on `chat` spans
-only, a run's cost is summed from those:
+Ollama is `ollama.responses`. Wrap the model with a `providerId`, as on the
+[Vercel AI SDK](./vercel-ai-sdk.md#provider-name) page, so the spans carry
+`ollama`. Mastra sets no cost. Add it in a span processor registered ahead of
+the exporter. Because usage is on `chat` spans only, sum a run's cost from
+those:
 
 ```typescript showLineNumbers title="src/telemetry/enrich.ts"
 const fromMastra = span.instrumentationScope.name === MASTRA_SCOPE;
@@ -537,9 +539,32 @@ if (planId !== undefined && carriesRunUsage) {
 
 The bridge emits no metrics. The example gets the GenAI client metrics from
 the `chat` spans in the Collector, with the `signal_to_metrics` connector, and
-records its own histograms with the OpenTelemetry metrics API. The connector
-recipe is on the [Vercel AI SDK](./vercel-ai-sdk.md) page and works unchanged,
-because Mastra's `chat` spans carry the same attributes.
+records its own histograms with the OpenTelemetry metrics API. The token
+histogram rules are on the [Vercel AI SDK](./vercel-ai-sdk.md#genai-token-metrics-from-the-collector)
+page and work unchanged, because Mastra's `chat` spans carry the same
+attributes. Add a duration rule for the bridge's `chat` spans:
+
+```yaml showLineNumbers title="config/otel-collector.yaml (excerpt)"
+connectors:
+  signal_to_metrics:
+    spans:
+      - name: gen_ai.client.inference.duration
+        description: Duration of GenAI model calls, from Mastra chat spans.
+        unit: s
+        conditions:
+          - instrumentation_scope.name == "@mastra/otel-bridge" and span.attributes["gen_ai.operation.name"] == "chat"
+        attributes:
+          - key: gen_ai.operation.name
+          - key: gen_ai.provider.name
+          - key: gen_ai.request.model
+          - key: gen_ai.response.model
+        histogram:
+          buckets: [0.01, 0.02, 0.04, 0.08, 0.16, 0.32, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 40.96, 81.92]
+          value: Seconds(span.end_time - span.start_time)
+```
+
+The scope condition limits the rule to the bridge's spans. Model calls traced
+by `@ai-sdk/otel` already carry this metric, so they are not counted twice.
 
 ## Logs and Trace Correlation
 
@@ -550,8 +575,8 @@ exports each record with those IDs.
 
 ## Known Gaps
 
-As of `@mastra/core` 1.74.0 and `@mastra/otel-bridge` 1.5.13, verified
-2026-10-04:
+As of `@mastra/core` 1.83.0 and `@mastra/otel-bridge` 1.5.22, verified
+2026-11-21:
 
 - **Content is on spans by default.** Prompts, responses, tool arguments and
   tool results are recorded unless a run passes `hideInput` and `hideOutput`.
@@ -573,7 +598,7 @@ As of `@mastra/core` 1.74.0 and `@mastra/otel-bridge` 1.5.13, verified
   `filter` processor on `mastra.span.type` if you do not use them.
 - **`gen_ai.provider.name` is the AI SDK provider ID.** `ollama.responses`,
   not `ollama`, so Scout lists these calls apart from other Ollama calls.
-  Workaround: rewrite it in a span processor.
+  Workaround: wrap the model with a `providerId`.
 - **`error.type` is `unknown` on a failed model connection.** The reason is
   in `error.message` and the span's status description. Group failures by
   those.

@@ -88,7 +88,7 @@ does.
 
 ## Prerequisites
 
-- Python 3.10 or later. The example uses 3.14.
+- Python 3.10 or later. The example uses 3.15.
 - Ollama with a model that supports tool calls pulled. The Quick Start uses
   `qwen3.5:9B`. No provider API key is needed for Ollama.
 - An OpenTelemetry Collector. See
@@ -99,28 +99,22 @@ does.
 
 | Component | Version in the example |
 | --- | --- |
-| `pydantic-ai-slim` | 2.49.0, with the `openai` extra |
-| `opentelemetry-sdk`, `opentelemetry-api` | 1.44.0 |
-| `opentelemetry-exporter-otlp-proto-http` | 1.44.0 |
-| `opentelemetry-instrumentation-psycopg`, `-logging` | 0.65b0 |
+| `pydantic-ai-slim` | 2.68.0, with the `openai` extra |
+| `opentelemetry-sdk`, `opentelemetry-api` | 1.45.2 |
+| `opentelemetry-exporter-otlp-proto-http` | 1.45.2 |
+| `opentelemetry-instrumentation-psycopg`, `-logging` | 0.66b2 |
 | `fastapi` | 0.163.1 |
-| Python | 3.14 |
-| Ollama | 0.40.0, with `gemma4:e2b` and `qwen3.5:9B` |
-| OpenTelemetry Collector Contrib | 0.161.0 |
+| Python | 3.15 |
+| Ollama | 0.40.16, with `gemma4:e2b` and `qwen3.5:9B` |
+| OpenTelemetry Collector Contrib | 0.165.0 |
 | Example | [`ai-kyc-onboarding`](https://github.com/base-14/examples/tree/main/python/ai-kyc-onboarding) |
 
-Last verified 2026-10-07 with Pydantic AI 2.49.0, against
+Last verified 2026-11-21 with Pydantic AI 2.68.0, against
 [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai)
 at commit `4f85037` (2026-10-06). The GenAI conventions are in Development
 status, so attribute names can change between Pydantic AI releases. Pin
 `pydantic-ai-slim` to an exact version and re-check the spans after each
 upgrade.
-
-The example holds `opentelemetry-sdk` and `opentelemetry-api` at 1.44.0. The
-replay-safe logger in `temporalio` 1.33.0 lacks the `enabled()` method that
-the 1.45.0 API makes abstract, so the worker cannot build its logger provider
-on 1.45.0. Move the SDK pin when `temporalio` ships the method. See
-[Pydantic AI on Temporal](./pydantic-ai-temporal.md#compatibility-matrix).
 
 ## Installation
 
@@ -133,9 +127,9 @@ import TabItem from '@theme/TabItem';
 ```
 
 ```bash showLineNumbers title="Terminal"
-uv add "pydantic-ai-slim[openai]==2.49.0" \
-  opentelemetry-sdk==1.44.0 \
-  opentelemetry-exporter-otlp-proto-http==1.44.0
+uv add "pydantic-ai-slim[openai]==2.68.0" \
+  opentelemetry-sdk==1.45.2 \
+  opentelemetry-exporter-otlp-proto-http==1.45.2
 ```
 
 ```mdx-code-block
@@ -144,9 +138,9 @@ uv add "pydantic-ai-slim[openai]==2.49.0" \
 ```
 
 ```bash showLineNumbers title="Terminal"
-pip install "pydantic-ai-slim[openai]==2.49.0" \
-  opentelemetry-sdk==1.44.0 \
-  opentelemetry-exporter-otlp-proto-http==1.44.0
+pip install "pydantic-ai-slim[openai]==2.68.0" \
+  opentelemetry-sdk==1.45.2 \
+  opentelemetry-exporter-otlp-proto-http==1.45.2
 ```
 
 ```mdx-code-block
@@ -588,7 +582,7 @@ model profile matter on Ollama:
 
 ## Known Gaps
 
-As of Pydantic AI 2.49.0, verified 2026-10-07:
+As of Pydantic AI 2.68.0, verified 2026-11-21:
 
 - **No `error.type`.** A failed `chat` or `invoke_agent` span gets error
   status and a recorded exception only, so Scout cannot group failures by

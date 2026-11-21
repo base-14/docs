@@ -118,8 +118,8 @@ workflow span and nothing for its nodes.
 | Component | Version in the example |
 | --- | --- |
 | `langchain` | 1.5.0 |
-| `langchain-core` | 1.8.0 |
-| `langgraph` | 1.2.20 |
+| `langchain-core` | 1.8.1 |
+| `langgraph` | 1.2.22 |
 | `langchain-ollama` | 1.1.0 |
 | `opentelemetry-instrumentation-genai-langchain` | 1.3b0 |
 | `opentelemetry-util-genai` | 1.3b0 |
@@ -128,12 +128,12 @@ workflow span and nothing for its nodes.
 | `opentelemetry-instrumentation-sqlalchemy`, `-httpx`, `-logging` | 0.66b2 |
 | `fastapi` | 0.163.1 |
 | Python | 3.14 |
-| Ollama | 0.34.2, with `qwen3.5:9B` and `embeddinggemma` |
-| OpenTelemetry Collector Contrib | 0.163.1 |
+| Ollama | 0.40.16, with `qwen3.5:9B` and `embeddinggemma-2` |
+| OpenTelemetry Collector Contrib | 0.165.0 |
 | Example | [`ai-runbook-assistant`](https://github.com/base-14/examples/tree/main/python/ai-runbook-assistant) |
 
-Last verified 2026-10-06 with LangChain 1.3.18 and
-`opentelemetry-instrumentation-genai-langchain` 1.2b0, with content capture
+Last verified 2026-11-21 with LangChain 1.5.0 and
+`opentelemetry-instrumentation-genai-langchain` 1.3b0, with content capture
 off and with `span_only`. The package supports `langchain>=0.3.21,<2`. It is
 beta and always emits the latest experimental GenAI conventions, so attribute
 names can change between releases. Pin exact versions and re-check the spans
@@ -336,7 +336,7 @@ POST /api/v1/diagnose                 (FastAPI)
 │  │  └─ POST                         (httpx, to Ollama)
 │  ├─ execute_tool search_runbooks
 │  │  └─ retrieval
-│  │     ├─ embeddings embeddinggemma (the example's own span)
+│  │     ├─ embeddings embeddinggemma-2 (the example's own span)
 │  │     └─ SELECT runbooks           (SQLAlchemy)
 │  ├─ execute_tool query_metrics
 │  ├─ execute_tool search_logs
@@ -508,13 +508,9 @@ which is the retrieval span while a retriever runs.
 
 ## Known Gaps
 
-As of `opentelemetry-instrumentation-genai-langchain` 1.2b0 with LangChain
-1.3.18, verified 2026-10-06:
+As of `opentelemetry-instrumentation-genai-langchain` 1.3b0 with LangChain
+1.5.0, verified 2026-11-21:
 
-- **`gen_ai.response.finish_reasons` is `["error"]` on Ollama.** The package
-  reads `finish_reason` or `stop_reason`, and `ChatOllama` reports
-  `done_reason`. A successful call looks failed when you group by finish
-  reason. Filter on span status instead.
 - **No `gen_ai.request.max_tokens` on Ollama.** `ChatOllama`'s `num_predict`
   is not mapped.
 - **No `server.address` on chat spans.** The Ollama host appears only on the
@@ -795,10 +791,6 @@ read once at `instrument()`.
 The agent runs on `ainvoke`. The package does not propagate context on the
 async API. Use sync `invoke` where the nesting matters.
 
-### `gen_ai.response.finish_reasons` is `["error"]` on a successful call
-
-Expected on Ollama; see [Known Gaps](#known-gaps). Check the span status.
-
 ## FAQ
 
 ### Is there an official OpenTelemetry instrumentation for LangChain?
@@ -912,7 +904,7 @@ src/runbook_assistant/
 git clone https://github.com/base-14/examples.git
 cd examples/python/ai-runbook-assistant
 cp .env.example .env
-ollama pull qwen3.5:9B && ollama pull embeddinggemma
+ollama pull qwen3.5:9B && ollama pull embeddinggemma-2
 docker compose up -d --build
 ./scripts/test-api.sh
 ./scripts/verify-scout.sh

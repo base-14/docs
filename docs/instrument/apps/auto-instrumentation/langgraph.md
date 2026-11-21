@@ -104,10 +104,10 @@ does.
 
 | Component | Version in the example |
 | --- | --- |
-| `langgraph` | 1.2.20 |
-| `openai` | 3.7.0 |
-| `anthropic` | 2.2.0 |
-| `google-genai` | 2.21.0 |
+| `langgraph` | 1.2.22 |
+| `openai` | 3.52.0 |
+| `anthropic` | 2.9.0 |
+| `google-genai` | 2.34.0 |
 | `opentelemetry-instrumentation-genai-openai`, `-genai-anthropic` | 1.3b0 |
 | `opentelemetry-instrumentation-google-genai` | 1.3b0 |
 | `opentelemetry-sdk`, `opentelemetry-api` | 1.45.2 |
@@ -115,14 +115,13 @@ does.
 | `opentelemetry-instrumentation-sqlalchemy`, `-httpx`, `-logging` | 0.66b2 |
 | `fastapi` | 0.163.1 |
 | Python | 3.14 |
-| Ollama | 0.34.2, with `qwen3.5:9B` |
-| OpenTelemetry Collector Contrib | 0.163.1 |
+| Ollama | 0.40.16, with `qwen3.5:9B` |
+| OpenTelemetry Collector Contrib | 0.165.0 |
 | Example | [`ai-sales-intelligence`](https://github.com/base-14/examples/tree/main/python/ai-sales-intelligence) |
 
-Last verified 2026-10-06: the example's verify script passed against Ollama
-`qwen3.5:9B`, and the Quick Start ran against a local collector. The GenAI
-packages are beta and always emit the latest experimental conventions, so pin
-exact versions and re-check the spans after each upgrade.
+Last verified 2026-11-21 with LangGraph 1.2.22, against Ollama `qwen3.5:9B`.
+The GenAI packages are beta and always emit the latest experimental
+conventions, so pin exact versions and re-check the spans after each upgrade.
 
 ## Installation
 
@@ -461,8 +460,8 @@ as a `gen_ai.evaluation.result` event on the item's span, plus a
 
 ## Known Gaps
 
-As of the OpenAI, Anthropic and Google GenAI packages 1.2b0 with LangGraph
-1.2.11, verified 2026-10-06:
+As of the OpenAI, Anthropic and Google GenAI packages 1.3b0 with LangGraph
+1.2.22, verified 2026-11-21:
 
 - **No spans for plain function nodes.** Neither LangGraph nor the LangChain
   instrumentation traces them. Open an `invoke_agent` span per node.
@@ -471,9 +470,6 @@ As of the OpenAI, Anthropic and Google GenAI packages 1.2b0 with LangGraph
 - **`gen_ai.provider.name` is `openai` for Ollama.** The OpenAI package names
   any endpoint the SDK reaches `openai`. A span processor corrects the span;
   the `gen_ai.client.*` metric points still say `openai`.
-- **No HTTP client span for OpenAI or Ollama calls.** The OpenAI SDK 3.x sends
-  through `httpx2`, which `opentelemetry-instrumentation-httpx` does not
-  patch. The Anthropic and Google SDKs send through `httpx`.
 - **No node or business context on chat spans**, and none on the token and
   duration metrics. Add it to spans in a span processor; group token metrics by
   model, not by node.
