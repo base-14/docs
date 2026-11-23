@@ -37,7 +37,7 @@ These commands require authentication with a
 | [metrics](./scout-access/metrics.md) | Query service metrics |
 | [traces](./scout-access/traces.md) | Query distributed traces |
 | [service-map](./scout-access/service-map.md) | Visualize service topology |
-| [artifacts](./scout-access/artifacts.md) | Upload debug artifacts for crash symbolication |
+| [artifacts](./scout-access/artifacts.md) | Upload and list debug artifacts for crash symbolication |
 | [resources](./scout-access/resources.md) | Pull and push dashboards and alert rules as code |
 
 ## OTel Config
