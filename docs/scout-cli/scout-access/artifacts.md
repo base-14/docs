@@ -26,8 +26,9 @@ your source — turning stripped, obfuscated stack frames into readable file, li
 and symbol names. Scout matches each crash to the artifact you uploaded for that
 build, so you upload once per release.
 
-Both subcommands need upload access on your account (see
-[Permissions](#permissions)). Requires Scout CLI 0.21.0 or later for `list`.
+Uploading needs upload access on your account; listing works for any
+signed-in user of the account (see [Permissions](#permissions)). Requires
+Scout CLI 0.21.0 or later for `list`.
 
 ## Usage
 
@@ -216,10 +217,13 @@ scout artifacts list --app com.example.app --json --account my-org
 
 ## Permissions
 
-:::warning Permission required
-Uploading and listing artifacts both require additional permission on your
-account. If a command is denied, ask an administrator to grant your account
-upload access, then re-authenticate with `scout login --account <slug> --force`.
+- **`list`** works for any signed-in user of the account. Service accounts
+  that log in with client credentials need the Scout Read role.
+- **`upload`** needs upload access on your account.
+
+:::warning Upload permission required
+If an upload is denied, ask an administrator to grant your account upload
+access, then re-authenticate with `scout login --account <slug> --force`.
 :::
 
 ## See Also
