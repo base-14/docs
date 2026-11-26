@@ -347,6 +347,14 @@ view monitoring data without making changes
 | Delete Alerts | ✅ | ✅ | ❌ |
 | Share Dashboards | ✅ | ✅ | ❌ |
 | Dashboard Settings | ✅ | ✅ | ❌ |
+| **Collectors** | | | |
+| View Collectors, Change Requests and Audit | ✅ | ✅ | ✅ |
+| Change Collector Configuration | ✅ | ✅¹ | ❌ |
+| Approve or Reject Configuration Changes | ✅ | ❌ | ❌ |
+| Turn Change Approval On or Off | ✅ | ❌ | ❌ |
+
+¹ From the Scout CLI. Editing on the Collectors page is for Admins. See
+[Approve Collector Configuration Changes](./collector-change-approval.md).
 
 ## RBAC Best Practices
 
