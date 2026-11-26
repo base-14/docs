@@ -344,4 +344,6 @@ Operator sets the same thing up automatically on Kubernetes.
   collectors from the command line
 - [Collector Configuration as Code](../../operate/collector-config-as-code.md):
   manage configurations from Git
+- [Approve Collector Configuration Changes](../../operate/collector-change-approval.md):
+  hold configuration changes for an admin to approve, and audit them
 - [Scout Operator](./scout-operator/index.md): fleet management on Kubernetes

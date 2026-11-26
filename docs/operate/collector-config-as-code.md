@@ -43,7 +43,8 @@ during an incident.
 ## Before you start
 
 - [Scout CLI](../scout-cli/installation.md) 0.14.1 or later, which your
-  pipeline installs.
+  pipeline installs; 0.21.1 or later for `--reason` and for reporting changes
+  held for approval.
 - An API key with the **Collectors Write** role, from **API Keys** in Scout.
   Store its client id and secret as secrets in your repository.
 - Collectors connected to fleet management. See
@@ -130,8 +131,12 @@ scout capo agents apply \
   --match k8s.cluster.name=prod-eu \
   --match collector.role=daemon \
   --file rendered/collector.yaml \
-  --acknowledge-drift
+  --acknowledge-drift \
+  --reason "Merged ${GITHUB_SHA}"
 ```
+
+`--reason` is recorded with the change, so the audit shows which commit it came
+from.
 
 `--acknowledge-drift` is needed whenever the matched collectors are not all
 running the same configuration already. Early on they usually are not; making
@@ -156,6 +161,22 @@ as two separate numbers.
 
 Nothing is applied to a collector that is not running. A collector that
 reconnects later is offered the configuration then.
+
+## When your account requires approval
+
+If an admin has turned on
+[change approval](./collector-change-approval.md), merging does not apply the
+configuration. `apply` creates a change request and prints its ID, and the
+pipeline still succeeds:
+
+```text
+Held for approval as change 7f090abe-0f9d-456d-b56d-0c164972ff17 (12 collector(s)): assign a configuration to collector.role=daemon, k8s.cluster.name=prod-eu
+```
+
+An admin approves it on the **Change requests** tab of the Collectors page, or
+with `scout capo changes approve`. Approving applies it to the collectors
+matching at that moment. Post the change ID back to the pull request so
+reviewers can follow it to the approval.
 
 ## Reading the diff
 
@@ -191,4 +212,5 @@ scout capo agents rollback 8eaba0ff --hash 83c518d4ab98
 
 - [scout capo](../scout-cli/scout-access/capo.md), for the full command
   reference
+- [Approve Collector Configuration Changes](./collector-change-approval.md)
 - [Recommended Collector Configuration](./recommended-collector-configuration.md)
